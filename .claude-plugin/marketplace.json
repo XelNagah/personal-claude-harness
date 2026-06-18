@@ -1,0 +1,35 @@
+{
+  "name": "jllarens-harness",
+  "owner": {
+    "name": "jllarens",
+    "email": "jllarens@gmail.com"
+  },
+  "description": "Setup estándar de jllarens para inicializar repos: memoria local, preferencias de trabajo, gestión de planes y estilo de commits. Cada funcionalidad es un plugin instalable suelto; 'setup-completo' instala el orquestador que arma todo.",
+  "plugins": [
+    {
+      "name": "memoria-local",
+      "source": "./funcionalidades/memoria-local",
+      "description": "Sistema de memoria local persistida (infraestructura base)."
+    },
+    {
+      "name": "preferencias-trabajo",
+      "source": "./funcionalidades/preferencias-trabajo",
+      "description": "Preferencias de comunicación + principios de trabajo."
+    },
+    {
+      "name": "gestion-de-planes",
+      "source": "./funcionalidades/gestion-de-planes",
+      "description": "Ciclo de planes pendientes→ejecutados. Depende de memoria-local."
+    },
+    {
+      "name": "estilo-commits",
+      "source": "./funcionalidades/estilo-commits",
+      "description": "Commits en español, sin co-autoría de IA. Depende de memoria-local."
+    },
+    {
+      "name": "setup-completo",
+      "source": "./funcionalidades/setup-completo",
+      "description": "Orquestador: instala el setup completo (skill inicializar-custom)."
+    }
+  ]
+}

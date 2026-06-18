@@ -1,0 +1,6 @@
+{
+  "name": "memoria-local",
+  "description": "Sistema de memoria local persistida: memory/ + índice MEMORY.md + memorias tipadas. Infraestructura base.",
+  "version": "0.1.0",
+  "author": { "name": "jllarens", "email": "jllarens@gmail.com" }
+}

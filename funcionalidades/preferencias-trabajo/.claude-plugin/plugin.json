@@ -1,0 +1,6 @@
+{
+  "name": "preferencias-trabajo",
+  "description": "Preferencias de comunicación + principios de trabajo, como secciones del CLAUDE.md.",
+  "version": "0.1.0",
+  "author": { "name": "jllarens", "email": "jllarens@gmail.com" }
+}

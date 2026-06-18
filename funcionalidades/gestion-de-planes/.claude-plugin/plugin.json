@@ -1,0 +1,6 @@
+{
+  "name": "gestion-de-planes",
+  "description": "Ciclo de planes pendientes→ejecutados: carpetas planes/ + memoria del flujo. Depende de memoria-local.",
+  "version": "0.1.0",
+  "author": { "name": "jllarens", "email": "jllarens@gmail.com" }
+}

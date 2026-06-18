@@ -1,0 +1,10 @@
+# SO / editor
+Thumbs.db
+Desktop.ini
+.DS_Store
+*~
+.vscode/
+.idea/
+
+# Config local de Claude Code en este repo (no se distribuye)
+.claude/settings.local.json
