@@ -45,7 +45,7 @@ Este repo es un marketplace de Claude Code. En la PC destino (con git autenticad
 
 ```shell
 # 1. Registrar el marketplace (GitHub owner/repo, o git URL para privado)
-/plugin marketplace add <owner>/<repo>
+/plugin marketplace add XelNagah/personal-claude-harness
 
 # 2a. Setup completo de una pasada (instala el orquestador)
 /plugin install setup-completo@jllarens-harness
