@@ -23,7 +23,7 @@ Cada **funcionalidad/plugin** = `funcionalidades/<nombre>/` con `.claude-plugin/
 
 ## Distribución: marketplace de plugins
 
-`.claude-plugin/marketplace.json` (name `jllarens-harness`) lista los 5 plugins con `source: "./funcionalidades/<nombre>"`. Validado con `claude plugin validate .` (el `source` debe arrancar con `./`; `metadata.pluginRoot` lo rechazó esta versión del CLI). En PC destino: `/plugin marketplace add <owner>/<repo>` + `/plugin install <plugin>@jllarens-harness`. Repo privado: anda con git autenticado (clone por debajo); auto-update background necesita `GITHUB_TOKEN`.
+`.claude-plugin/marketplace.json` (name `xelnagah-harness`) lista los 5 plugins con `source: "./funcionalidades/<nombre>"`. Validado con `claude plugin validate .` (el `source` debe arrancar con `./`; `metadata.pluginRoot` lo rechazó esta versión del CLI). En PC destino: `/plugin marketplace add <owner>/<repo>` + `/plugin install <plugin>@xelnagah-harness`. Repo privado: anda con git autenticado (clone por debajo); auto-update background necesita `GITHUB_TOKEN`.
 
 ## Desarrollo local (junction, ya hecho en esta máquina)
 

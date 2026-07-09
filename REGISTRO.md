@@ -14,13 +14,13 @@ Catálogo de lo que este repo puede instalar en un proyecto nuevo. Cada funciona
 
 | Funcionalidad | Plugin | Skill |
 |---------------|--------|-------|
-| memoria-local | `memoria-local@jllarens-harness` | `inicializar-memoria-local` |
-| preferencias-trabajo | `preferencias-trabajo@jllarens-harness` | `inicializar-preferencias-trabajo` |
-| gestion-de-planes | `gestion-de-planes@jllarens-harness` | `inicializar-gestion-planes` |
-| estilo-commits | `estilo-commits@jllarens-harness` | `inicializar-estilo-commits` |
-| setup-completo | `setup-completo@jllarens-harness` | `inicializar-custom` |
+| memoria-local | `memoria-local@xelnagah-harness` | `inicializar-memoria-local` |
+| preferencias-trabajo | `preferencias-trabajo@xelnagah-harness` | `inicializar-preferencias-trabajo` |
+| gestion-de-planes | `gestion-de-planes@xelnagah-harness` | `inicializar-gestion-planes` |
+| estilo-commits | `estilo-commits@xelnagah-harness` | `inicializar-estilo-commits` |
+| setup-completo | `setup-completo@xelnagah-harness` | `inicializar-custom` |
 
-> **Instalar en otra PC:** `/plugin marketplace add <owner>/<repo>` y después `/plugin install <plugin>@jllarens-harness` (ver [README](README.md#instalación-en-otra-pc-marketplace-de-plugins)).
+> **Instalar en otra PC:** `/plugin marketplace add <owner>/<repo>` y después `/plugin install <plugin>@xelnagah-harness` (ver [README](README.md#instalación-en-otra-pc-marketplace-de-plugins)).
 > **En esta máquina** los 5 skills están enlazados por junction (autoría/edición en vivo). No mezclar junction + plugin del mismo skill en una misma máquina.
 > Las piezas siempre se pueden usar vía su `prompt.md` sin instalar nada.
 

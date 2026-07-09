@@ -48,10 +48,10 @@ Este repo es un marketplace de Claude Code. En la PC destino (con git autenticad
 /plugin marketplace add XelNagah/personal-claude-harness
 
 # 2a. Setup completo de una pasada (instala el orquestador)
-/plugin install setup-completo@jllarens-harness
+/plugin install setup-completo@xelnagah-harness
 
 # 2b. …o una pieza suelta
-/plugin install gestion-de-planes@jllarens-harness
+/plugin install gestion-de-planes@xelnagah-harness
 ```
 
 Después, en el repo a inicializar, invocar el skill (`inicializar-custom`, `inicializar-gestion-planes`, etc.).
@@ -68,7 +68,14 @@ New-Item -ItemType Junction `
   -Target "<ruta-repo>\funcionalidades\setup-completo\skills\inicializar-custom"
 ```
 
-> No mezclar en la misma máquina: junction **o** plugin instalado para un mismo skill, no ambos (colisionan por nombre). Junctions = autoría; plugin = distribución.
+En **Linux/macOS** el equivalente es un symlink:
+
+```bash
+ln -s "<ruta-repo>/funcionalidades/setup-completo/skills/inicializar-custom" \
+  ~/.claude/skills/inicializar-custom
+```
+
+> No mezclar en la misma máquina: junction/symlink **o** plugin instalado para un mismo skill, no ambos (colisionan por nombre). Enlace = autoría; plugin = distribución.
 
 ## Uso
 
