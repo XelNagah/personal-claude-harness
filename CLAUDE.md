@@ -10,6 +10,11 @@ El repo es a la vez un **marketplace de plugins de Claude Code** (estilo Matt Po
 ├── README.md                                  # presentación del repo (público)
 ├── REGISTRO.md                                # catálogo de funcionalidades
 ├── CLAUDE.md                                  # este archivo (instrucciones internas)
+├── .claude/                                   # el propio setup estándar, aplicado a este repo
+│   ├── memory/                                # memoria local + índice MEMORY.md
+│   ├── planes/                                # planes-pendientes/ + planes-ejecutados/
+│   ├── conocimiento/                          # base de conocimiento (INDICE.md)
+│   └── scripts/lint-conocimiento/             # lint de integridad del conocimiento
 ├── .claude-plugin/marketplace.json            # catálogo del marketplace (5 plugins)
 └── funcionalidades/                           # cada subcarpeta = un plugin
     ├── memoria-local/                         # infra: memory/ + MEMORY.md + formato
@@ -42,3 +47,34 @@ New-Item -ItemType Junction -Path "$env:USERPROFILE\.claude\skills\inicializar-c
 - **Dependencias actuales:** `gestion-de-planes` y `estilo-commits` dependen de `memoria-local` (guardan memorias en `memory/`). El orquestador respeta el orden: preferencias-trabajo → memoria-local → gestion-de-planes → estilo-commits.
 - **Idempotencia / leveling:** todo skill y prompt lleva una sección "Reconciliación (idempotencia)" — son seguros de re-correr y sirven para llevar al día repos a medio configurar. Reglas: inspeccionar antes de escribir, crear solo lo ausente, detectar equivalentes por tema (no pisar lo divergente, preguntar), reportar al final en tres baldes (`agregado` / `ya estaba` / `divergente`). Al tocar un workflow, conservar esa propiedad: nada de "Crear X" a secas sobre archivos compartidos (`CLAUDE.md`, `MEMORY.md`).
 - **Versionado de plugins:** cada `plugin.json` tiene `version`. Con `version` fijo, los usuarios solo reciben update al bumpearlo; si se omite, cada commit cuenta como versión nueva. Hoy en `0.1.0` — bumpear al publicar cambios, o quitar `version` para auto-versionar por commit.
+
+## Preferencias de comunicación
+
+> Al preguntar por una decisión o analizar alternativas, dar SIEMPRE ejemplos concretos de cada postura (numéricos si aplica): cómo es ahora vs. cómo quedaría y por qué, encadenando consecuencias ("A ⇒ B; si no fuera B ⇒ no A porque X"). Objetivo: ubicar inmediatamente al lector en la mecánica relevante sin que tenga que reconstruir contexto.
+
+## Principios de trabajo
+
+- Conceptual antes que implementación. Ante ambigüedad de diseño, preguntar antes de asumir. Minimizar cambios sustractivos.
+- Iterar de alto a bajo nivel: interfaces y contratos antes que implementación.
+- Nomenclatura en español para el dominio; inglés solo para infraestructura técnica.
+- Cero invención de datos: lo que no salga de una fuente verificada se marca como faltante o como interpretación propia.
+
+## Memoria del proyecto
+
+La memoria local vive en [`.claude/memory/`](.claude/memory/), indexada por [`.claude/memory/MEMORY.md`](.claude/memory/MEMORY.md). **Cargar el índice al inicio de cada sesión y respetar lo que dice.** Cada memoria es un `.md` propio con frontmatter (`name`, `description`, `metadata.type` ∈ `user` | `feedback` | `project` | `reference`); el índice lleva solo punteros, nunca contenido. Antes de crear una memoria nueva, revisar si una existente ya cubre el hecho — actualizar en vez de duplicar. Fechas siempre absolutas.
+
+## Planes del proyecto
+
+Los planes se persisten en [`.claude/planes/`](.claude/planes/): [`planes-pendientes/`](.claude/planes/planes-pendientes/) mientras esperan ejecución, [`planes-ejecutados/`](.claude/planes/planes-ejecutados/) una vez implementados. Formato de nombre: `AA-MM-DD - [Descripción corta].md`. El ciclo completo (cuándo se copia, cómo se replica cada actualización, qué agregar al mover a ejecutados) está en la memoria [`feedback_flujo_planes.md`](.claude/memory/feedback_flujo_planes.md).
+
+## Base de conocimiento del proyecto
+
+Todo lo que el agente **sabe** vive en una ubicación única: [`.claude/conocimiento/`](.claude/conocimiento/), indexado por [`INDICE.md`](.claude/conocimiento/INDICE.md). Nunca en la raíz del repo. Los `.md` de la raíz (`README.md`, `REGISTRO.md`, este `CLAUDE.md`) son **documentación del proyecto**, no conocimiento de agente: se quedan donde están.
+
+Al cerrar una tarea que escribió conocimiento, correr el lint mecánico:
+
+```bash
+node .claude/scripts/lint-conocimiento/lint-conocimiento.js
+```
+
+Chequea refs rotas, índice incompleto y huérfanos. Detalle de la convención en la memoria [`feedback_base_conocimiento.md`](.claude/memory/feedback_base_conocimiento.md).
