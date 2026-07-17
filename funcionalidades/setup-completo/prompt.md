@@ -216,10 +216,14 @@ for (const idx of indices) {
   const cat = path.dirname(idx), t = idxText.get(idx);
   for (const p of domain) {
     if (p === idx) continue;
-    if (path.dirname(p) === cat || p.startsWith(cat + path.sep)) {
+    const pdir = path.dirname(p);
+    if (pdir === cat || p.startsWith(cat + path.sep)) {
       const base = path.basename(p), stem = base.slice(0, -3);
-      const folder = path.basename(path.dirname(p));
-      if (!t.includes(base) && !t.includes(stem) && !t.includes(folder)) gaps.push([rel(idx), rel(p)]);
+      // fallback por carpeta contenedora: solo para paginas en subcarpetas (el indice lista
+      // `tema/`, no cada pagina). Para hijos directos exige el nombre: si no, folder == el dir
+      // del propio indice y su texto siempre lo contiene -> el check se autoanula.
+      const folderOk = pdir !== cat && t.includes(path.basename(pdir));
+      if (!t.includes(base) && !t.includes(stem) && !folderOk) gaps.push([rel(idx), rel(p)]);
     }
   }
 }
@@ -229,8 +233,15 @@ for (const p of domain) {
   const base = path.basename(p);
   if (base === 'INDICE.md' || base === 'README.md') continue;
   if (referenced.has(rel(p))) continue;
-  const stem = base.slice(0, -3), folder = path.basename(path.dirname(p));
-  const mentioned = indices.some(i => { const t = idxText.get(i); return t.includes(base) || t.includes(stem) || t.includes(folder); });
+  const stem = base.slice(0, -3), pdir = path.dirname(p);
+  const mentioned = indices.some(i => {
+    const t = idxText.get(i);
+    if (t.includes(base) || t.includes(stem)) return true;
+    // fallback por carpeta: valido solo si la pagina cuelga de una SUBcarpeta del indice,
+    // no de su mismo dir (ahi el nombre de la carpeta == el del propio indice, siempre matchea).
+    const idir = path.dirname(i);
+    return pdir !== idir && p.startsWith(idir + path.sep) && t.includes(path.basename(pdir));
+  });
   if (!mentioned) orphans.push(rel(p));
 }
 
