@@ -69,6 +69,8 @@ Reglas del move: proponé un plan concreto y **mové por defecto**, preservando 
 
 **Reparar refs:** paths de índices, links entre páginas, refs desde el archivo de instrucciones y las memorias/planes, y el acople de scripts que se muevan a `scripts/<tool>/`: `__dirname` (reapuntar) o **cwd** (prependerles `process.chdir(require('path').join(__dirname, '<ruta a los datos>'))`, que evita reescribir cada I/O). Corré el lint para confirmar 0 refs rotas.
 
+⚠️ **Un script referenciado por ruta en la config de permisos de tu harness NO se mueve alegremente.** Las reglas matchean por **prefijo de ruta exacto** (ej. `"Bash(bash tools/moonraker-get.sh:*)"`): moverlo rompe el match ⇒ se pierde la pre-autorización y vuelven los prompts (en headless, es una denegación directa). Antes de mover un script, buscá su ruta en la config. Si aparece: no lo muevas, o actualizá la regla a la ruta nueva en el mismo paso. Misma lógica que el `.gitignore`: mover un archivo rompe todo lo que lo referencia por ruta.
+
 **Si el repo no tiene git:** hacé `git init` + commit inicial **ANTES** de mover nada. Un commit inicial tomado después de la migración no sirve como rollback.
 
 ## 6. Reporte
