@@ -9,12 +9,13 @@ El repo es a la vez un **marketplace de plugins de Claude Code** (estilo Matt Po
 ```
 ├── README.md                                  # presentación del repo (público)
 ├── REGISTRO.md                                # catálogo de funcionalidades
-├── CLAUDE.md                                  # este archivo (instrucciones internas)
 ├── .claude/                                   # el propio setup estándar, aplicado a este repo
+│   ├── CLAUDE.md                              # este archivo (instrucciones internas)
 │   ├── memory/                                # memoria local + índice MEMORY.md
 │   ├── planes/                                # planes-pendientes/ + planes-ejecutados/
-│   ├── conocimiento/                          # base de conocimiento (INDICE.md)
-│   └── scripts/lint-conocimiento/             # lint de integridad del conocimiento
+│   ├── conocimiento/                          # lo que el agente sabe (INDICE.md)
+│   └── scripts/                               # tooling del harness, uno por carpeta
+│       └── lint-conocimiento/                 # lint de integridad de conocimiento/
 ├── .claude-plugin/marketplace.json            # catálogo del marketplace (5 plugins)
 └── funcionalidades/                           # cada subcarpeta = un plugin
     ├── memoria-local/                         # infra: memory/ + MEMORY.md + formato
@@ -61,20 +62,20 @@ New-Item -ItemType Junction -Path "$env:USERPROFILE\.claude\skills\inicializar-c
 
 ## Memoria del proyecto
 
-La memoria local vive en [`.claude/memory/`](.claude/memory/), indexada por [`.claude/memory/MEMORY.md`](.claude/memory/MEMORY.md). **Cargar el índice al inicio de cada sesión y respetar lo que dice.** Cada memoria es un `.md` propio con frontmatter (`name`, `description`, `metadata.type` ∈ `user` | `feedback` | `project` | `reference`); el índice lleva solo punteros, nunca contenido. Antes de crear una memoria nueva, revisar si una existente ya cubre el hecho — actualizar en vez de duplicar. Fechas siempre absolutas.
+La memoria local vive en [`memory/`](memory/), indexada por [`memory/MEMORY.md`](memory/MEMORY.md). **Cargar el índice al inicio de cada sesión y respetar lo que dice.** Cada memoria es un `.md` propio con frontmatter (`name`, `description`, `metadata.type` ∈ `user` | `feedback` | `project` | `reference`); el índice lleva solo punteros, nunca contenido. Antes de crear una memoria nueva, revisar si una existente ya cubre el hecho — actualizar en vez de duplicar. Fechas siempre absolutas.
 
 ## Planes del proyecto
 
-Los planes se persisten en [`.claude/planes/`](.claude/planes/): [`planes-pendientes/`](.claude/planes/planes-pendientes/) mientras esperan ejecución, [`planes-ejecutados/`](.claude/planes/planes-ejecutados/) una vez implementados. Formato de nombre: `AA-MM-DD - [Descripción corta].md`. El ciclo completo (cuándo se copia, cómo se replica cada actualización, qué agregar al mover a ejecutados) está en la memoria [`feedback_flujo_planes.md`](.claude/memory/feedback_flujo_planes.md).
+Los planes se persisten en [`planes/`](planes/): [`planes-pendientes/`](planes/planes-pendientes/) mientras esperan ejecución, [`planes-ejecutados/`](planes/planes-ejecutados/) una vez implementados. Formato de nombre: `AA-MM-DD - [Descripción corta].md`. El ciclo completo (cuándo se copia, cómo se replica cada actualización, qué agregar al mover a ejecutados) está en la memoria [`feedback_flujo_planes.md`](memory/feedback_flujo_planes.md).
 
 ## Base de conocimiento del proyecto
 
-Todo lo que el agente **sabe** vive en una ubicación única: [`.claude/conocimiento/`](.claude/conocimiento/), indexado por [`INDICE.md`](.claude/conocimiento/INDICE.md). Nunca en la raíz del repo. Los `.md` de la raíz (`README.md`, `REGISTRO.md`, este `CLAUDE.md`) son **documentación del proyecto**, no conocimiento de agente: se quedan donde están.
+Todo lo que el agente **sabe** vive en una ubicación única: [`conocimiento/`](conocimiento/), indexado por [`INDICE.md`](conocimiento/INDICE.md). Nunca en la raíz del repo. Los `.md` de la raíz (README y REGISTRO) son **documentación del proyecto**, no conocimiento de agente: se quedan donde están.
 
-Al cerrar una tarea que escribió conocimiento, correr el lint mecánico:
+Al cerrar una tarea que escribió conocimiento, correr el lint mecánico **desde la raíz del repo** (la ruta es relativa al cwd, no a este archivo):
 
 ```bash
 node .claude/scripts/lint-conocimiento/lint-conocimiento.js
 ```
 
-Chequea refs rotas, índice incompleto y huérfanos. Detalle de la convención en la memoria [`feedback_base_conocimiento.md`](.claude/memory/feedback_base_conocimiento.md).
+Chequea refs rotas, índice incompleto y huérfanos. Detalle de la convención en la memoria [`feedback_base_conocimiento.md`](memory/feedback_base_conocimiento.md).

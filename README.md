@@ -9,7 +9,12 @@ Es a la vez un **marketplace de plugins de Claude Code** (estilo [Matt Pocock](h
 ```
 ├── README.md                          # este archivo
 ├── REGISTRO.md                        # catálogo de funcionalidades (qué agrega cada una)
-├── CLAUDE.md                          # instrucciones internas de este repo
+├── .claude/                           # el propio setup estándar, aplicado a este repo
+│   ├── CLAUDE.md                      # instrucciones internas de este repo
+│   ├── memory/                        # memoria local + índice MEMORY.md
+│   ├── planes/                        # planes-pendientes/ + planes-ejecutados/
+│   ├── conocimiento/                  # lo que el agente sabe (INDICE.md)
+│   └── scripts/                       # tooling del harness, uno por carpeta
 ├── .claude-plugin/
 │   └── marketplace.json               # catálogo del marketplace (lista los 5 plugins)
 └── funcionalidades/                   # cada subcarpeta = un plugin
