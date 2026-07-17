@@ -49,7 +49,23 @@ En el archivo que tu harness carga al inicio (`CLAUDE.md`, `AGENTS.md`, etc.), c
 
 ## 5. Migración
 
-Detectá conocimiento que viva **fuera** de `<config>/conocimiento/` (árboles de md en la raíz, carpetas con su `INDICE.md`, notas de dominio sueltas). Proponé un plan de move concreto y **movelo adentro** preservando estructura; reparalo (paths de índices, links entre páginas, `__dirname` de scripts de datos) y corré el lint para confirmar 0 refs rotas. Si es ambiguo qué es conocimiento vs. contenido incidental (código, assets), listalo y preguntame antes de mover.
+Detectá conocimiento que viva **fuera** de `<config>/conocimiento/` y movelo adentro. Buscá en **tres** lugares, no solo el obvio:
+
+**(a) En la raíz del repo** — árboles de md, carpetas con su `INDICE.md`, notas de dominio sueltas.
+
+**(b) DENTRO de `<config>/memory/`** — el caso más común en repos viejos y el que más se pasa por alto: la memoria se desborda y termina siendo la base de conocimiento. Señales de que un archivo de `memory/` es conocimiento y no memoria: **no tiene frontmatter**; **es largo** (decenas/cientos de líneas con secciones); **es un diccionario, catálogo, procedimiento, formato o estructura**; o **`memory/` usa un `README.md` como índice en vez de `MEMORY.md`** (señal fuerte). Lo que sí es memoria y se queda: hechos atómicos tipados con frontmatter.
+
+**(c) Fuentes crudas — NO se mueven.** Distinguí lo que el agente **lee** de lo que **sabe**: escaneos, PDFs de resúmenes/facturas, exports, json/csv de origen. Son insumos inmutables y se quedan (salvo que ya estén entreverados dentro de una carpeta de conocimiento, y entonces se mueven con ella). El conocimiento es el md **sintetizado**.
+
+Reglas del move: proponé un plan concreto y **mové por defecto**, preservando estructura; si es ambiguo (código, assets, config de build), listalo y preguntame antes.
+
+⚠️ **Secretos / archivos gitignoreados:** antes de mover, revisá `.gitignore`. Si un archivo a mover está ignorado por su ruta (típico `memory/*-token.md`, credenciales), moverlo rompe el match y **el secreto termina commiteado**. No lo muevas, o actualizá el `.gitignore` a la ruta nueva en el mismo paso; verificá con `git status`.
+
+**Índice completo:** si ya hay un índice parcial (un README que lista 7 de 21), el `INDICE.md` nuevo debe cubrir **todos** — los no listados eran huérfanos, que es justo el problema a resolver.
+
+**Reparar refs:** paths de índices, links entre páginas, refs desde el archivo de instrucciones y las memorias/planes, y el acople de scripts que se muevan a `scripts/<tool>/`: `__dirname` (reapuntar) o **cwd** (prependerles `process.chdir(require('path').join(__dirname, '<ruta a los datos>'))`, que evita reescribir cada I/O). Corré el lint para confirmar 0 refs rotas.
+
+**Si el repo no tiene git:** hacé `git init` + commit inicial **ANTES** de mover nada. Un commit inicial tomado después de la migración no sirve como rollback.
 
 ## 6. Reporte
 
