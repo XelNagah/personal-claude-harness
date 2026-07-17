@@ -27,6 +27,11 @@
       "description": "Commits en español, sin co-autoría de IA. Depende de memoria-local."
     },
     {
+      "name": "conocimiento",
+      "source": "./funcionalidades/conocimiento",
+      "description": "Base de conocimiento en carpeta única .claude/conocimiento/ + lint de integridad. Depende de memoria-local."
+    },
+    {
       "name": "setup-completo",
       "source": "./funcionalidades/setup-completo",
       "description": "Orquestador: instala el setup completo (skill inicializar-custom)."

@@ -8,7 +8,8 @@ Catálogo de lo que este repo puede instalar en un proyecto nuevo. Cada funciona
 | **preferencias-trabajo** | Preferencias de comunicación + principios de trabajo, como secciones del `CLAUDE.md`. | — | [`preferencias-trabajo/`](funcionalidades/preferencias-trabajo/) |
 | **gestion-de-planes** | Ciclo de planes pendientes→ejecutados: carpetas `planes/` + memoria del flujo. | memoria-local | [`gestion-de-planes/`](funcionalidades/gestion-de-planes/) |
 | **estilo-commits** | Preferencia de commits (español, sin co-autoría de IA), como memoria. | memoria-local | [`estilo-commits/`](funcionalidades/estilo-commits/) |
-| **setup-completo** | Orquestador: instala las cuatro de arriba de una pasada. Conserva el skill `inicializar-custom`. | (las cuatro) | [`setup-completo/`](funcionalidades/setup-completo/) |
+| **conocimiento** | Base de conocimiento en carpeta única `conocimiento/` + lint de integridad (`scripts/lint-conocimiento/`). Migra conocimiento suelto de la raíz. | memoria-local | [`conocimiento/`](funcionalidades/conocimiento/) |
+| **setup-completo** | Orquestador: instala las cinco de arriba de una pasada. Conserva el skill `inicializar-custom`. | (las cinco) | [`setup-completo/`](funcionalidades/setup-completo/) |
 
 ## Plugin y skill (Claude Code)
 
@@ -18,6 +19,7 @@ Catálogo de lo que este repo puede instalar en un proyecto nuevo. Cada funciona
 | preferencias-trabajo | `preferencias-trabajo@xelnagah-harness` | `inicializar-preferencias-trabajo` |
 | gestion-de-planes | `gestion-de-planes@xelnagah-harness` | `inicializar-gestion-planes` |
 | estilo-commits | `estilo-commits@xelnagah-harness` | `inicializar-estilo-commits` |
+| conocimiento | `conocimiento@xelnagah-harness` | `inicializar-conocimiento` |
 | setup-completo | `setup-completo@xelnagah-harness` | `inicializar-custom` |
 
 > **Instalar en otra PC:** `/plugin marketplace add <owner>/<repo>` y después `/plugin install <plugin>@xelnagah-harness` (ver [README](README.md#instalación-en-otra-pc-marketplace-de-plugins)).

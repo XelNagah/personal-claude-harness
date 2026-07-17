@@ -5,7 +5,7 @@ description: Inicializa en el repo actual el setup estándar completo del usuari
 
 # Inicializar setup completo (orquestador)
 
-Instala el setup estándar completo del usuario aplicando las cuatro funcionalidades en orden. Los textos verbatim (memorias y bloques de preferencias) están en [PLANTILLA.md](PLANTILLA.md).
+Instala el setup estándar completo del usuario aplicando las cinco funcionalidades en orden. Los textos verbatim (memorias, bloques de preferencias y el script de lint) están en [PLANTILLA.md](PLANTILLA.md).
 
 ## Reconciliación (idempotencia)
 
@@ -20,14 +20,20 @@ Segura de re-correr: este es el modo de **"levelear"** repos que ya tienen parte
 
 ```
 .claude/
-├── CLAUDE.md          # Descripción + Preferencias de comunicación + Principios de trabajo + Memoria y planes
+├── CLAUDE.md          # Descripción + Preferencias + Principios + Memoria y planes + Base de conocimiento
 ├── memory/
 │   ├── MEMORY.md
 │   ├── feedback_flujo_planes.md
-│   └── feedback_estilo_commits.md
-└── planes/
-    ├── planes-pendientes/.gitkeep
-    └── planes-ejecutados/.gitkeep
+│   ├── feedback_estilo_commits.md
+│   └── feedback_base_conocimiento.md
+├── planes/
+│   ├── planes-pendientes/.gitkeep
+│   └── planes-ejecutados/.gitkeep
+├── conocimiento/
+│   └── INDICE.md
+└── scripts/
+    └── lint-conocimiento/
+        └── lint-conocimiento.js
 ```
 
 ## Workflow
@@ -39,5 +45,6 @@ Segura de re-correr: este es el modo de **"levelear"** repos que ya tienen parte
 2. **memoria-local** — asegurar `memory/MEMORY.md` (índice: encabezado "Cargar al inicio de cada sesión y respetar." + una línea por memoria). Si ya existe, conservar encabezado y líneas; agregar solo las que falten — nunca reescribirlo entero. Asegurar en `CLAUDE.md` la sección "Memoria del proyecto". Formato de memoria en PLANTILLA.md §Formato.
 3. **gestión-de-planes** — crear `planes/planes-pendientes/` y `planes/planes-ejecutados/` (con `.gitkeep` si usa git); instalar la memoria `feedback_flujo_planes.md` (PLANTILLA.md) e indexarla; asegurar en `CLAUDE.md` la sección "Planes del proyecto" (formato `AA-MM-DD - [Descripción corta].md`).
 4. **estilo-commits** — instalar la memoria `feedback_estilo_commits.md` (PLANTILLA.md) e indexarla.
-5. **Memorias adicionales**: si en la conversación ya surgieron preferencias u objetivos del proyecto, persistirlos con el frontmatter estándar e indexarlos.
-6. **Reportar el leveling**: por funcionalidad, qué quedó en `agregado` / `ya estaba` / `divergente`, y la estructura final. Si hubo `divergente`, listarlo aparte para que el user decida. **No hacer commit** salvo pedido explícito.
+5. **conocimiento** — asegurar `conocimiento/INDICE.md` (índice raíz; solo punteros); instalar el lint en su carpeta propia `scripts/lint-conocimiento/lint-conocimiento.js` (PLANTILLA.md §Script); instalar la memoria `feedback_base_conocimiento.md` (PLANTILLA.md) e indexarla; asegurar en `CLAUDE.md` la sección "Base de conocimiento del proyecto" (ubicación única + lint al cerrar). **Migración:** si hay conocimiento fuera de `conocimiento/` (mds en la raíz, carpetas con su INDICE), proponer plan de move y moverlo adentro reparando refs (paths de índices, links, `__dirname` de scripts de datos); correr el lint para confirmar 0 refs rotas. Ambiguo (código/assets vs conocimiento) → preguntar antes de mover.
+6. **Memorias adicionales**: si en la conversación ya surgieron preferencias u objetivos del proyecto, persistirlos con el frontmatter estándar e indexarlos.
+7. **Reportar el leveling**: por funcionalidad, qué quedó en `agregado` / `ya estaba` / `divergente`, y la estructura final. Si hubo `divergente`, listarlo aparte para que el user decida. **No hacer commit** salvo pedido explícito.
