@@ -53,7 +53,17 @@ Segura de re-correr: sirve para **"levelear"** repos que ya tienen partes. Regla
    Reglas para el move:
    - Presentar un **plan concreto** (qué carpeta/archivo → dónde dentro de `conocimiento/`).
    - **Mover por defecto** (es el objetivo). Si es ambiguo qué es conocimiento vs. contenido incidental (código, assets, config de build), listar y **preguntar antes de mover**.
-   - ⚠️ **Secretos y archivos ignorados por git.** Antes de mover, revisar `.gitignore`: si un archivo a mover está ignorado por su ruta (típico: `memory/*-token.md`, credenciales, secretos), **moverlo rompe el match del ignore y el secreto termina commiteado**. Ante un archivo así: NO moverlo, o mover y **actualizar el `.gitignore` a la ruta nueva en el mismo paso**. Verificar después con `git status` que no aparezca.
+   - ⚠️ **Material sensible — chequear en los dos sentidos.**
+
+     **(i) Lo que YA está gitignoreado:** si un archivo a mover está ignorado por su ruta (típico: `memory/*-token.md`, credenciales), **moverlo rompe el match del ignore y el secreto termina commiteado**. NO moverlo, o mover y **actualizar el `.gitignore` a la ruta nueva en el mismo paso**. Verificar con `git status` que no aparezca.
+
+     **(ii) Lo que NO está gitignoreado y debería estarlo — más importante todavía, porque el riesgo ya existe antes de migrar.** Revisar el material del repo y **sugerirle al user** ignorar lo que sea riesgo de seguridad o privacidad:
+     - **Credenciales:** tokens, API keys, `.env`, `*.key`/`*.pem`, archivos con `token`/`secret`/`credential`/`password` en el nombre o con claves embebidas en el contenido.
+     - **Documentos personales/legales:** escaneos de DNI, escrituras, certificados, declaratorias, informes de dominio.
+     - **Financiero:** resúmenes bancarios/tarjeta, libros contables, exports con movimientos.
+     - **Salud:** estudios e informes médicos.
+
+     Reportarlo como hallazgo aparte (no es parte de la migración) con el riesgo concreto y las líneas de `.gitignore` sugeridas. **Sugerir, no aplicar solo**: que el user decida — puede querer versionarlos deliberadamente en un repo local. Señalar además que un repo con este material **nunca debe pushearse a un remoto**.
    - **Índice completo, sin heredar agujeros.** Si ya existe un índice parcial (un README que lista 7 de 21), el `INDICE.md` nuevo debe cubrir **todos** los documentos, no solo los que listaba el viejo. Los no listados eran huérfanos: ese es justo el problema a resolver.
    - **Reparar referencias:** paths en cada `INDICE.md`, links entre páginas, refs desde `CLAUDE.md` y desde las memorias/planes, y el acople de los scripts que se muevan a `scripts/<tool>/` — `__dirname` (reapuntar a `.../conocimiento/...`) o **cwd** (prependerles `process.chdir(require('path').join(__dirname, '<ruta a los datos>'))`, que evita reescribir cada llamada de I/O).
    - Correr el lint tras mover y confirmar **0 refs rotas**.

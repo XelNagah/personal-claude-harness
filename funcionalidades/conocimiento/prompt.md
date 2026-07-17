@@ -59,7 +59,11 @@ Detectá conocimiento que viva **fuera** de `<config>/conocimiento/` y movelo ad
 
 Reglas del move: proponé un plan concreto y **mové por defecto**, preservando estructura; si es ambiguo (código, assets, config de build), listalo y preguntame antes.
 
-⚠️ **Secretos / archivos gitignoreados:** antes de mover, revisá `.gitignore`. Si un archivo a mover está ignorado por su ruta (típico `memory/*-token.md`, credenciales), moverlo rompe el match y **el secreto termina commiteado**. No lo muevas, o actualizá el `.gitignore` a la ruta nueva en el mismo paso; verificá con `git status`.
+⚠️ **Material sensible — chequealo en los dos sentidos.**
+
+**(i) Lo que YA está gitignoreado:** si un archivo a mover está ignorado por su ruta (típico `memory/*-token.md`, credenciales), moverlo rompe el match y **el secreto termina commiteado**. No lo muevas, o actualizá el `.gitignore` a la ruta nueva en el mismo paso; verificá con `git status`.
+
+**(ii) Lo que NO está gitignoreado y debería estarlo** — más importante, porque el riesgo ya existe antes de migrar. Revisá el repo y **sugerime** ignorar lo que sea riesgo de seguridad/privacidad: **credenciales** (tokens, API keys, `.env`, `*.key`/`*.pem`, o claves embebidas en el contenido), **documentos personales/legales** (escaneos de DNI, escrituras, certificados), **financiero** (resúmenes bancarios/tarjeta, libros contables) y **salud** (estudios médicos). Reportalo como hallazgo aparte, con el riesgo concreto y las líneas de `.gitignore` sugeridas. **Sugerí, no apliques solo** — puedo querer versionarlos a propósito en un repo local. Avisame además si el repo tiene material que nunca debería pushearse a un remoto.
 
 **Índice completo:** si ya hay un índice parcial (un README que lista 7 de 21), el `INDICE.md` nuevo debe cubrir **todos** — los no listados eran huérfanos, que es justo el problema a resolver.
 
