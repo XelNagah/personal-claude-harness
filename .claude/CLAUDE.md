@@ -16,24 +16,25 @@ El repo es a la vez un **marketplace de plugins de Claude Code** (estilo Matt Po
 │   ├── conocimiento/                          # lo que el agente sabe (INDICE.md)
 │   └── scripts/                               # tooling del harness, uno por carpeta
 │       └── lint-conocimiento/                 # lint de integridad de conocimiento/
-├── .claude-plugin/marketplace.json            # catálogo del marketplace (5 plugins)
+├── .claude-plugin/marketplace.json            # catálogo del marketplace (6 plugins)
 └── funcionalidades/                           # cada subcarpeta = un plugin
     ├── memoria-local/                         # infra: memory/ + MEMORY.md + formato
     ├── preferencias-trabajo/                  # comunicación + principios (secciones CLAUDE.md)
     ├── gestion-de-planes/                     # ciclo planes pendientes→ejecutados (dep: memoria-local)
     ├── estilo-commits/                        # memoria de commits (dep: memoria-local)
-    └── setup-completo/                        # orquestador, skill inicializar-custom (instala las 4)
+    ├── conocimiento/                          # base .claude/conocimiento/ + lint (dep: memoria-local)
+    └── setup-completo/                        # orquestador, skill inicializar-custom (instala las 5)
 ```
 
 Cada **funcionalidad/plugin** = `funcionalidades/<nombre>/` con `.claude-plugin/plugin.json` + `README.md` + `prompt.md` (agnóstico, placeholder `<config>`) + `skills/<nombre-skill>/SKILL.md` (Claude Code, `.claude/` literal) y `PLANTILLA.md` cuando lleva textos verbatim. Catálogo, dependencias, nombres de plugin/skill en `REGISTRO.md`.
 
 ## Distribución: marketplace de plugins
 
-`.claude-plugin/marketplace.json` (name `xelnagah-harness`) lista los 5 plugins con `source: "./funcionalidades/<nombre>"`. Validado con `claude plugin validate .` (el `source` debe arrancar con `./`; `metadata.pluginRoot` lo rechazó esta versión del CLI). En PC destino: `/plugin marketplace add <owner>/<repo>` + `/plugin install <plugin>@xelnagah-harness`. Repo privado: anda con git autenticado (clone por debajo); auto-update background necesita `GITHUB_TOKEN`.
+`.claude-plugin/marketplace.json` (name `xelnagah-harness`) lista los 6 plugins con `source: "./funcionalidades/<nombre>"`. Validado con `claude plugin validate .` (el `source` debe arrancar con `./`; `metadata.pluginRoot` lo rechazó esta versión del CLI). En PC destino: `/plugin marketplace add <owner>/<repo>` + `/plugin install <plugin>@xelnagah-harness`. Repo privado: anda con git autenticado (clone por debajo); auto-update background necesita `GITHUB_TOKEN`.
 
 ## Desarrollo local (junction, ya hecho en esta máquina)
 
-Los 5 skills están enlazados por **junction** (NTFS) desde `~/.claude/skills/<nombre-skill>` hacia `funcionalidades\<n>\skills\<nombre-skill>` — fuente única para editar en vivo, sin pasar por el cache de plugins. Recrear el orquestador:
+Los 6 skills están enlazados por **junction** (NTFS) desde `~/.claude/skills/<nombre-skill>` hacia `funcionalidades\<n>\skills\<nombre-skill>` — fuente única para editar en vivo, sin pasar por el cache de plugins. Recrear el orquestador:
 
 ```powershell
 New-Item -ItemType Junction -Path "$env:USERPROFILE\.claude\skills\inicializar-custom" -Target "<ruta-repo>\funcionalidades\setup-completo\skills\inicializar-custom"

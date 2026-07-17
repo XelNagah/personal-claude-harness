@@ -23,7 +23,7 @@ Catálogo de lo que este repo puede instalar en un proyecto nuevo. Cada funciona
 | setup-completo | `setup-completo@xelnagah-harness` | `inicializar-custom` |
 
 > **Instalar en otra PC:** `/plugin marketplace add <owner>/<repo>` y después `/plugin install <plugin>@xelnagah-harness` (ver [README](README.md#instalación-en-otra-pc-marketplace-de-plugins)).
-> **En esta máquina** los 5 skills están enlazados por junction (autoría/edición en vivo). No mezclar junction + plugin del mismo skill en una misma máquina.
+> **En esta máquina** los 6 skills están enlazados por junction (autoría/edición en vivo). No mezclar junction + plugin del mismo skill en una misma máquina.
 > Las piezas siempre se pueden usar vía su `prompt.md` sin instalar nada.
 
 ## Cómo agregar una funcionalidad nueva
