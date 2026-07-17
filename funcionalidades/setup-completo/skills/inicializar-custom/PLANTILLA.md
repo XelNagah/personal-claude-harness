@@ -128,7 +128,8 @@ const domain = walk(root, []);
 const read = f => fs.readFileSync(f, 'utf8');
 
 const mdLink = /\]\(([^)]+?\.md)\)/g;
-const codePath = /`([^`]+?\.md)`/g;
+// exige barra: `subtema/pagina.md` es una ref, `MEMORY.md` suelto es prosa nombrando un archivo
+const codePath = /`([^`]+?\/[^`]+?\.md)`/g;
 const wiki = /\[\[([^\]]+?)\]\]/g;
 
 const broken = [], referenced = new Set();
