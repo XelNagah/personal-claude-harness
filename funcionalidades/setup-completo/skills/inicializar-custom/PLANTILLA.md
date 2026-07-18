@@ -163,7 +163,7 @@ El conocimiento persistido del agente (documentos, estudios, temas, notas de dom
 2. Mantener `.claude/conocimiento/INDICE.md` como índice raíz (una línea por página/sección; solo punteros).
 3. **Al cerrar** una tarea que escribió conocimiento, correr el lint mecánico: `node .claude/scripts/lint-conocimiento/lint-conocimiento.js`. Chequea refs rotas, índice incompleto y huérfanos (sin LLM, sin red). Resolver los hallazgos.
 4. El **chequeo semántico** (contradicciones entre páginas, duplicación, staleness) se corre a pedido tras una incorporación grande, no en cada cierre.
-5. **Migración:** un script de datos acoplado por `__dirname` que se mueva a `.claude/scripts/<tool>/` debe reapuntar sus paths a la carpeta de datos en `conocimiento/` (`__dirname + '/../../conocimiento/<subdir>/...'`), o se rompe.
+5. **Migración:** un script de datos acoplado por `__dirname` (lee/escribe relativo a sí mismo) que se mueva a `.claude/scripts/<tool>/` debe reapuntar sus paths a la carpeta de datos en `conocimiento/` (`__dirname + '/../../conocimiento/<subdir>/...'`), o se rompe.
 ```
 
 ## §Script — `.claude/scripts/lint-conocimiento/lint-conocimiento.js`

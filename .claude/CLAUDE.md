@@ -22,7 +22,8 @@ El repo es a la vez un **marketplace de plugins de Claude Code** (estilo Matt Po
 │       ├── lint-planes/                       # lint del ciclo de planes (hook SessionStart)
 │       ├── lint-glosario/                     # lint de glosario/
 │       ├── lint-decisiones/                   # lint de decisiones/
-│       └── lint-scripts/                      # lint del registro de scripts
+│       ├── lint-scripts/                      # lint del registro de scripts
+│       └── lint-harness/                      # lint de coherencia del harness (disco↔marketplace↔REGISTRO, junctions, verbatim)
 ├── .claude-plugin/marketplace.json            # catálogo del marketplace (10 plugins)
 └── funcionalidades/                           # cada subcarpeta = un plugin
     ├── memoria-local/                         # infra: memory/ + MEMORY.md + Mapa del repo (@imports)
