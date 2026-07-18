@@ -18,6 +18,8 @@ Terminología del dominio de este repo. Una fila por concepto en la tabla de aba
 
 Solo términos **propios del dominio** (no conceptos generales de programación). Consultar al planificar y analizar. Ejemplo completo en el README de la funcionalidad `glosario`.
 
+**Toda entrada nueva pasa por el usuario:** el agente puede *proponer* términos (marcados como propuestos), pero no se asientan como canónicos sin ratificación. Preferir las palabras del usuario a acuñar nuevas.
+
 | Concepto | Definición | Alias | Detalle |
 |----------|------------|-------|---------|
 ```

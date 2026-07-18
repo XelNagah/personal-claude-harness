@@ -27,6 +27,7 @@ Reglas de conducta del agente en este repo. Siempre en contexto (importado desde
 - Iterar de alto a bajo nivel: interfaces y contratos antes que implementación.
 - Nomenclatura en español para el dominio; inglés solo para infraestructura técnica.
 - Cero invención de datos: lo que no salga de una fuente verificada se marca como faltante o como interpretación propia.
+- Terminología: no acuñar términos del dominio por cuenta propia; preferir las palabras del usuario. **Gate duro en registros canónicos** (glosario, decisiones): ningún término acuñado por el agente se asienta sin ratificación del usuario. En prosa se puede usar, marcado como propuesto.
 
 ## Adaptaciones de este repo
 
@@ -39,7 +40,15 @@ Sección de `.claude/CLAUDE.md`:
 ## Preferencias (siempre cargadas)
 
 @preferencias/PREFERENCIAS.md
+
+Al tocar las preferencias, correr el lint estructural **desde la raíz del repo** (chequea secciones Base/Adaptaciones + el `@import`):
+
+​```bash
+node .claude/scripts/lint-preferencias/lint-preferencias.js
+​```
 ```
+
+(El lint `lint-preferencias.js` está más abajo, en §Script — lint-preferencias; y `lint-memoria.js` en §Script — lint-memoria.)
 
 **Bases anteriores** (para la reconciliación): la v0 eran dos secciones inline en CLAUDE.md — "Preferencias de comunicación" (el primer bullet de Comunicación, como cita) y "Principios de trabajo" (los cuatro bullets). Verbatim iguales → migrar sin preguntar (borrar de CLAUDE.md, dejar el import); con diferencias → las diferencias van a Adaptaciones y se reporta.
 
@@ -452,6 +461,8 @@ Terminología del dominio de este repo. Una fila por concepto en la tabla de aba
 
 Solo términos **propios del dominio** (no conceptos generales de programación). Consultar al planificar y analizar. Ejemplo completo en el README de la funcionalidad `glosario`.
 
+**Toda entrada nueva pasa por el usuario:** el agente puede *proponer* términos (marcados como propuestos), pero no se asientan como canónicos sin ratificación. Preferir las palabras del usuario a acuñar nuevas.
+
 | Concepto | Definición | Alias | Detalle |
 |----------|------------|-------|---------|
 ```
@@ -856,4 +867,166 @@ if (!colgadas.length) console.log('    (ninguna)');
 console.log(`\n[4] REFS POR RUTA ROTAS EN SETTINGS (${refsRotas.length}):`);
 refsRotas.forEach(([f, p]) => console.log(`    ${f}  ->  ${p}   [no existe]`));
 if (!refsRotas.length) console.log('    (ninguna)');
+```
+
+## §Script — lint-memoria — `.claude/scripts/lint-memoria/lint-memoria.js`
+
+Contenido exacto (Node, sin dependencias, sin red):
+
+```js
+#!/usr/bin/env node
+// Lint de la memoria local: refs rotas, indice (MEMORY.md) incompleto, huerfanos, frontmatter. Sin LLM, sin red.
+// Uso: node lint-memoria.js [<carpeta>]   (default: .claude/memory)
+const fs = require('fs'), path = require('path');
+const root = path.resolve(process.argv[2] || '.claude/memory');
+const EXCLUDE = new Set(['.git', 'node_modules']);
+const TYPES = new Set(['user', 'feedback', 'project', 'reference']);
+
+function walk(dir, acc) {
+  for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
+    if (EXCLUDE.has(e.name)) continue;
+    const full = path.join(dir, e.name);
+    if (e.isDirectory()) walk(full, acc);
+    else if (e.name.endsWith('.md')) acc.push(full);
+  }
+  return acc;
+}
+const rel = p => path.relative(root, p).replace(/\\/g, '/');
+const read = f => fs.readFileSync(f, 'utf8');
+const inRoot = p => path.resolve(p).startsWith(path.resolve(root) + path.sep);
+
+const all = walk(root, []);
+const indexFile = path.join(root, 'MEMORY.md');
+const hasIndex = fs.existsSync(indexFile);
+const idxText = hasIndex ? read(indexFile) : '';
+const memos = all.filter(p => path.basename(p) !== 'MEMORY.md');
+
+// nombres validos para wikilinks: `name:` del frontmatter + stem del archivo
+const nameSet = new Set();
+for (const p of memos) {
+  nameSet.add(path.basename(p).slice(0, -3));
+  const fm = read(p).match(/^---\r?\n([\s\S]*?)\r?\n---/);
+  if (fm) { const nm = fm[1].match(/^name:\s*(\S+)/m); if (nm) nameSet.add(nm[1].trim()); }
+}
+
+const mdLink = /\]\(([^)]+?\.md)\)/g;
+const codePath = /`([^`]+?\/[^`]+?\.md)`/g;
+const wiki = /\[\[([^\]]+?)\]\]/g;
+
+// [1] refs rotas: links a .md inexistentes + wikilinks sin memoria.
+// Una memoria puede linkear a otros subsistemas (planes/, conocimiento/, ...): se resuelve
+// tambien relativo a .claude/, a la raiz del repo y al cwd, no solo dentro de memory/.
+const broken = [], referenced = new Set();
+for (const f of all) {
+  const txt = read(f), fdir = path.dirname(f);
+  for (const re of [mdLink, codePath]) {
+    let m; re.lastIndex = 0;
+    while ((m = re.exec(txt))) {
+      let t = m[1].trim();
+      if (/^https?:\/\//.test(t)) continue;
+      if (t.includes('...') || t.includes('<')) continue;
+      const cands = [
+        path.join(fdir, t),
+        path.join(root, t),
+        path.join(root, '..', t),
+        path.join(root, '..', '..', t),
+        path.resolve(t),
+      ].map(p => path.normalize(p));
+      const hit = cands.find(fs.existsSync);
+      if (hit) { if (inRoot(hit)) referenced.add(rel(hit)); }
+      else broken.push([rel(f), t, 'ref .md no existe']);
+    }
+  }
+  let m; wiki.lastIndex = 0;
+  while ((m = wiki.exec(txt))) {
+    const name = m[1].split('|')[0].trim();
+    if (!nameSet.has(name)) broken.push([rel(f), `[[${name}]]`, 'wikilink sin memoria']);
+  }
+}
+
+// [2] indice incompleto: memoria no listada en MEMORY.md (por archivo o por name)
+const gaps = [];
+for (const p of memos) {
+  const base = path.basename(p), stem = base.slice(0, -3);
+  if (!idxText.includes(base) && !idxText.includes(stem)) gaps.push(rel(p));
+}
+
+// [3] huerfanos: ni referenciada ni en el indice
+const orphans = [];
+for (const p of memos) {
+  if (referenced.has(rel(p))) continue;
+  const base = path.basename(p), stem = base.slice(0, -3);
+  if (idxText.includes(base) || idxText.includes(stem)) continue;
+  orphans.push(rel(p));
+}
+
+// [4] frontmatter: name / description / metadata.type valido
+const fmBad = [];
+for (const p of memos) {
+  const txt = read(p);
+  const fm = txt.match(/^---\r?\n([\s\S]*?)\r?\n---/);
+  if (!fm) { fmBad.push([rel(p), 'sin frontmatter']); continue; }
+  const body = fm[1];
+  if (!/\bname:\s*\S/.test(body)) fmBad.push([rel(p), 'falta name']);
+  if (!/\bdescription:\s*\S/.test(body)) fmBad.push([rel(p), 'falta description']);
+  const tm = body.match(/type:\s*([a-z]+)/);
+  if (!tm) fmBad.push([rel(p), 'falta metadata.type']);
+  else if (!TYPES.has(tm[1])) fmBad.push([rel(p), `type invalido: ${tm[1]}`]);
+}
+
+console.log(`== LINT MEMORIA: ${root} ==`);
+console.log(`memorias: ${memos.length} | indice: ${hasIndex ? 'MEMORY.md' : 'FALTA'}\n`);
+if (!hasIndex) console.log('[!] No existe MEMORY.md (indice de memoria)\n');
+console.log(`[1] REFS ROTAS (${broken.length}):`);
+broken.forEach(([f, r, w]) => console.log(`    ${f}  ->  ${r}   [${w}]`));
+if (!broken.length) console.log('    (ninguna)');
+console.log(`\n[2] INDICE INCOMPLETO (${gaps.length}):`);
+gaps.forEach(p => console.log(`    MEMORY.md  no lista  ${p}`));
+if (!gaps.length) console.log('    (completo)');
+console.log(`\n[3] HUERFANOS (${orphans.length}):`);
+orphans.forEach(o => console.log(`    ${o}`));
+if (!orphans.length) console.log('    (ninguno)');
+console.log(`\n[4] FRONTMATTER (${fmBad.length}):`);
+fmBad.forEach(([p, w]) => console.log(`    ${p}   [${w}]`));
+if (!fmBad.length) console.log('    (ok)');
+```
+
+## §Script — lint-preferencias — `.claude/scripts/lint-preferencias/lint-preferencias.js`
+
+Contenido exacto (Node, sin dependencias, sin red):
+
+```js
+#!/usr/bin/env node
+// Lint estructural de preferencias: PREFERENCIAS.md con Base/Adaptaciones + @import en CLAUDE.md. Sin LLM, sin red.
+// NO detecta contradicciones semanticas (eso es la capa semantica, a pedido).
+// Uso: node lint-preferencias.js [<carpeta .claude>]   (default: .claude)
+const fs = require('fs'), path = require('path');
+const claudeDir = path.resolve(process.argv[2] || '.claude');
+const prefFile = path.join(claudeDir, 'preferencias', 'PREFERENCIAS.md');
+const problems = [];
+
+if (!fs.existsSync(prefFile)) {
+  problems.push('no existe preferencias/PREFERENCIAS.md');
+} else {
+  const txt = fs.readFileSync(prefFile, 'utf8');
+  if (!/^##\s+Base\b/m.test(txt)) problems.push('falta la seccion "## Base"');
+  if (!/^##\s+Adaptaciones\b/mi.test(txt)) problems.push('falta la seccion "## Adaptaciones"');
+  if (txt.trim().length < 50) problems.push('PREFERENCIAS.md casi vacio (sin contenido util)');
+}
+
+// @import en CLAUDE.md (las preferencias tienen que estar siempre en contexto)
+const claudeMd = path.join(claudeDir, 'CLAUDE.md');
+if (fs.existsSync(claudeMd)) {
+  const c = fs.readFileSync(claudeMd, 'utf8');
+  if (!/@preferencias\/PREFERENCIAS\.md/.test(c)) {
+    problems.push('CLAUDE.md no importa @preferencias/PREFERENCIAS.md (no queda en contexto)');
+  }
+} else {
+  problems.push('no existe CLAUDE.md (no se pudo verificar el @import)');
+}
+
+console.log(`== LINT PREFERENCIAS: ${prefFile} ==`);
+console.log(`hallazgos: ${problems.length}\n`);
+if (!problems.length) console.log('    (ok)');
+else problems.forEach(p => console.log(`    [x] ${p}`));
 ```

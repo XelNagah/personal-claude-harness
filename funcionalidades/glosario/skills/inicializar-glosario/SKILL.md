@@ -36,6 +36,7 @@ Segura de re-correr: sirve para **"levelear"** repos que ya tienen algunas parte
 ## Concepto de la funcionalidad
 
 - **Alias registrados, no prohibidos.** Un concepto tiene un nombre canónico y sus alias quedan *identificados* en la columna Alias (todos válidos). El objetivo es mapear ("birra/chela = cerveza"), no vetar. El lint solo caza que un mismo alias no esté bajo dos conceptos distintos.
+- **Toda entrada nueva pasa por el usuario.** El agente puede *proponer* términos (marcados como propuestos), pero no se asientan como canónicos sin ratificación. Preferir las palabras del usuario a acuñar nuevas — el glosario es un registro canónico y tiene gate duro (ver preferencia de terminología).
 - **Detalle bajo demanda.** Concepto simple → una fila, columna Detalle en `—`. Concepto complejo (fórmulas, ejemplos, contraejemplos) → su fila linkea a una página `<slug>.md` en la misma carpeta.
 
 ## Workflow

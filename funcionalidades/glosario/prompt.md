@@ -27,6 +27,8 @@ Asegurá `<config>/glosario/INDICE.md`. Si no existe, crealo con encabezado + un
 
 Solo términos **propios del dominio** (no conceptos generales de programación).
 
+**Gobernanza — toda entrada nueva pasa por el usuario:** el agente puede *proponer* términos (marcados como propuestos), pero no se asientan como canónicos sin ratificación. Preferir las palabras del usuario a acuñar nuevas.
+
 ## 2. Lint de integridad
 
 Instalá `<config>/scripts/lint-glosario/lint-glosario.js` (Node, sin deps ni red): chequea **links de detalle** (resuelven), **páginas huérfanas** (toda `<slug>.md` está referenciada desde la tabla) y **colisiones de alias** (un mismo alias no cuelga de dos conceptos). El contenido exacto está en la plantilla de la versión Claude Code — `skills/inicializar-glosario/PLANTILLA.md` §Script. Corré `node <config>/scripts/lint-glosario/lint-glosario.js` al cerrar tareas que tocaron el glosario.

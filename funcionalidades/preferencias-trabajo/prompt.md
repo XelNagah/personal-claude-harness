@@ -41,6 +41,7 @@ Reglas de conducta del agente en este repo. Siempre en contexto. La sección **B
 - Iterar de alto a bajo nivel: interfaces y contratos antes que implementación.
 - Nomenclatura en español para el dominio; inglés solo para infraestructura técnica.
 - Cero invención de datos: lo que no salga de una fuente verificada se marca como faltante o como interpretación propia.
+- Terminología: no acuñar términos del dominio por cuenta propia; preferir las palabras del usuario. **Gate duro en registros canónicos** (glosario, decisiones): ningún término acuñado por el agente se asienta sin ratificación del usuario. En prosa se puede usar, marcado como propuesto.
 
 ## Adaptaciones de este repo
 
@@ -49,8 +50,14 @@ Reglas de conducta del agente en este repo. Siempre en contexto. La sección **B
 
 ## 3. Carga garantizada
 
-En el archivo de instrucciones, asegurá una sección **"Preferencias (siempre cargadas)"** que cargue PREFERENCIAS.md al contexto en cada sesión (import `@` si existe; instrucción explícita si no).
+En el archivo de instrucciones, asegurá una sección **"Preferencias (siempre cargadas)"** que cargue PREFERENCIAS.md al contexto en cada sesión (import `@` si existe; instrucción explícita si no), con el paso de correr el lint al tocar las preferencias.
 
-## 4. Reporte
+## 4. Lint de integridad
+
+Instalá el tool en **su propia carpeta**: `<config>/scripts/lint-preferencias/lint-preferencias.js`. Es un script Node sin dependencias ni red que chequea (estructural, **no** semántico): que `PREFERENCIAS.md` tenga las secciones `## Base` y `## Adaptaciones` y no esté vacío, y que el archivo de instrucciones lo cargue con `@preferencias/PREFERENCIAS.md`. Corré `node <config>/scripts/lint-preferencias/lint-preferencias.js` al tocar las preferencias.
+
+(El contenido exacto del script está en la plantilla de la versión Claude Code de esta funcionalidad — `skills/inicializar-preferencias-trabajo/PLANTILLA.md` §Script.)
+
+## 5. Reporte
 
 Reportá en los tres baldes (`agregado` / `ya estaba` / `divergente`). No hagas commit salvo que te lo pida.

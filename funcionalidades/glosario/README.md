@@ -27,6 +27,7 @@ El `INDICE.md` **es** el glosario: una tabla donde cada fila es un concepto. Lo 
 | **Cerveza** | Bebida fermentada de malta. | birra, chela, fresca | — |
 
 - **Alias registrados, no prohibidos.** Los alias quedan *identificados* (todos válidos), para mapear "birra/chela = cerveza" — no para vetar cómo se nombra algo. El lint solo caza que un mismo alias no cuelgue de dos conceptos distintos.
+- **Toda entrada nueva pasa por el usuario.** El agente puede *proponer* términos (marcados como propuestos), pero no se asientan como canónicos sin ratificación. Preferir las palabras del usuario a acuñar nuevas — gobernanza del glosario como registro canónico.
 - **Detalle bajo demanda.** Concepto simple → fila con Detalle en `—`. Concepto complejo (fórmulas, ejemplos, contraejemplos, como una FECE) → página `<slug>.md` propia, linkeada.
 - **Lint** — links de detalle resuelven, páginas sin huérfanos, alias sin colisión. Mecánico y gratis; al cerrar tareas que tocaron el glosario.
 

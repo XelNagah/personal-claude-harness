@@ -44,10 +44,16 @@ metadata:
 
 Tipos: `user` (quién es el usuario), `feedback` (correcciones y enfoques confirmados, con el porqué), `project` (objetivos/restricciones no derivables del código), `reference` (punteros externos). Antes de crear una memoria nueva, revisá si una existente ya la cubre — actualizá en vez de duplicar. Fechas siempre absolutas.
 
-## 3. Referencia en las instrucciones del proyecto
+## 3. Lint de integridad
 
-En el archivo de instrucciones que tu harness carga al inicio (`CLAUDE.md`, `AGENTS.md`, etc.), creá/extendé una sección **"Memoria del proyecto"** con link a `<config>/memory/MEMORY.md`, indicando que la memoria se carga al inicio de cada sesión y se respeta.
+Instalá el tool en **su propia carpeta**: `<config>/scripts/lint-memoria/lint-memoria.js`. Es un script Node sin dependencias ni red que chequea, sobre `<config>/memory/`: **refs `.md` rotas** y wikilinks `[[name]]` sin memoria, **índice incompleto** (toda memoria está listada en `MEMORY.md`), **huérfanos** (memorias que nada referencia ni indexa) y **frontmatter inválido** (`name` / `description` / `metadata.type` ∈ `user` · `feedback` · `project` · `reference`). Corré `node <config>/scripts/lint-memoria/lint-memoria.js` al cerrar tareas que tocaron la memoria.
 
-## 4. Reporte
+(El contenido exacto del script está en la plantilla de la versión Claude Code de esta funcionalidad — `skills/inicializar-memoria-local/PLANTILLA.md` §Script.)
+
+## 4. Referencia en las instrucciones del proyecto
+
+En el archivo de instrucciones que tu harness carga al inicio (`CLAUDE.md`, `AGENTS.md`, etc.), creá/extendé una sección **"Memoria del proyecto"** con link a `<config>/memory/MEMORY.md`, indicando que la memoria se carga al inicio de cada sesión y se respeta, y el paso de correr el lint al cerrar tareas que tocaron la memoria.
+
+## 5. Reporte
 
 Reportá en los tres baldes (`agregado` / `ya estaba` / `divergente`). No hagas commit salvo que te lo pida.

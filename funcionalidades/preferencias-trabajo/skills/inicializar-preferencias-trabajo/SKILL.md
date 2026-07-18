@@ -13,9 +13,12 @@ Por qué por-repo y no global de máquina: el user trabaja en varias computadora
 
 ```
 .claude/
-├── CLAUDE.md              # sección "Preferencias (siempre cargadas)" con el @import + "Descripción del proyecto"
-└── preferencias/
-    └── PREFERENCIAS.md    # Base (harness vN) + Adaptaciones de este repo
+├── CLAUDE.md              # sección "Preferencias (siempre cargadas)" con el @import + el lint + "Descripción del proyecto"
+├── preferencias/
+│   └── PREFERENCIAS.md    # Base (harness vN) + Adaptaciones de este repo
+└── scripts/
+    └── lint-preferencias/
+        └── lint-preferencias.js   # lint estructural (sin LLM, sin red)
 ```
 
 ## Reconciliación (idempotencia)
@@ -37,6 +40,7 @@ Si CLAUDE.md tiene las secciones "Preferencias de comunicación" y/o "Principios
 
 1. **Asegurar `.claude/CLAUDE.md`.** Si no existe, arrancarlo con **"Descripción del proyecto"** (1 a 3 párrafos inferidos del repo; si está vacío o es ambiguo, **preguntar** — no inventar). Si existe, no reescribirlo.
 2. **Migración** (sección anterior) si hay bloques viejos.
-3. **Asegurar `preferencias/PREFERENCIAS.md`** (semilla de PLANTILLA §Semilla, con la reconciliación de versiones de arriba).
-4. **Asegurar en CLAUDE.md la sección "Preferencias (siempre cargadas)"** con el `@import` (PLANTILLA §Sección).
-5. **Reportar** en los tres baldes. **No hacer commit** salvo pedido explícito.
+3. **Asegurar `preferencias/PREFERENCIAS.md`** (semilla de PLANTILLA §Semilla, con la reconciliación de versiones de arriba). La Base incluye el bullet de **Terminología** (gate duro en glosario/decisiones: nada acuñado por el agente se asienta sin ratificación).
+4. **Instalar el lint** `.claude/scripts/lint-preferencias/lint-preferencias.js` con el contenido EXACTO de [PLANTILLA.md](PLANTILLA.md) §Script. Va en **su propia carpeta** bajo `scripts/`, nunca suelto. Es un script Node sin dependencias ni red que chequea (estructural, no semántico): que `PREFERENCIAS.md` tenga las secciones `## Base` y `## Adaptaciones` y no esté vacío, y que `CLAUDE.md` lo importe con `@preferencias/PREFERENCIAS.md`.
+5. **Asegurar en CLAUDE.md la sección "Preferencias (siempre cargadas)"** con el `@import` **y el paso de lint** al tocar las preferencias (PLANTILLA §Sección). Si existe una sección equivalente sin el paso de lint, agregárselo.
+6. **Reportar** en los tres baldes. Correr el lint (`node .claude/scripts/lint-preferencias/lint-preferencias.js`) → debe dar limpio. **No hacer commit** salvo pedido explícito.

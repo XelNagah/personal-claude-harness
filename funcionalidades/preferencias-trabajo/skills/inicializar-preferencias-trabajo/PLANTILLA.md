@@ -23,6 +23,7 @@ Reglas de conducta del agente en este repo. Siempre en contexto (importado desde
 - Iterar de alto a bajo nivel: interfaces y contratos antes que implementación.
 - Nomenclatura en español para el dominio; inglés solo para infraestructura técnica.
 - Cero invención de datos: lo que no salga de una fuente verificada se marca como faltante o como interpretación propia.
+- Terminología: no acuñar términos del dominio por cuenta propia; preferir las palabras del usuario. **Gate duro en registros canónicos** (glosario, decisiones): ningún término acuñado por el agente se asienta sin ratificación del usuario. En prosa se puede usar, marcado como propuesto.
 
 ## Adaptaciones de este repo
 
@@ -35,6 +36,12 @@ Reglas de conducta del agente en este repo. Siempre en contexto (importado desde
 ## Preferencias (siempre cargadas)
 
 @preferencias/PREFERENCIAS.md
+
+Al tocar las preferencias, correr el lint estructural **desde la raíz del repo** (chequea secciones Base/Adaptaciones + el `@import`):
+
+​```bash
+node .claude/scripts/lint-preferencias/lint-preferencias.js
+​```
 ```
 
 (Ruta relativa al CLAUDE.md: si está en la raíz del repo, `@.claude/preferencias/PREFERENCIAS.md`.)
@@ -53,3 +60,43 @@ Bloques que versiones previas del harness escribían inline en CLAUDE.md. Si el 
 - Iterar de alto a bajo nivel: interfaces y contratos antes que implementación.
 - Nomenclatura en español para el dominio; inglés solo para infraestructura técnica.
 - Cero invención de datos: lo que no salga de una fuente verificada se marca como faltante o como interpretación propia.
+
+## §Script — `.claude/scripts/lint-preferencias/lint-preferencias.js`
+
+Contenido exacto (Node, sin dependencias, sin red):
+
+```js
+#!/usr/bin/env node
+// Lint estructural de preferencias: PREFERENCIAS.md con Base/Adaptaciones + @import en CLAUDE.md. Sin LLM, sin red.
+// NO detecta contradicciones semanticas (eso es la capa semantica, a pedido).
+// Uso: node lint-preferencias.js [<carpeta .claude>]   (default: .claude)
+const fs = require('fs'), path = require('path');
+const claudeDir = path.resolve(process.argv[2] || '.claude');
+const prefFile = path.join(claudeDir, 'preferencias', 'PREFERENCIAS.md');
+const problems = [];
+
+if (!fs.existsSync(prefFile)) {
+  problems.push('no existe preferencias/PREFERENCIAS.md');
+} else {
+  const txt = fs.readFileSync(prefFile, 'utf8');
+  if (!/^##\s+Base\b/m.test(txt)) problems.push('falta la seccion "## Base"');
+  if (!/^##\s+Adaptaciones\b/mi.test(txt)) problems.push('falta la seccion "## Adaptaciones"');
+  if (txt.trim().length < 50) problems.push('PREFERENCIAS.md casi vacio (sin contenido util)');
+}
+
+// @import en CLAUDE.md (las preferencias tienen que estar siempre en contexto)
+const claudeMd = path.join(claudeDir, 'CLAUDE.md');
+if (fs.existsSync(claudeMd)) {
+  const c = fs.readFileSync(claudeMd, 'utf8');
+  if (!/@preferencias\/PREFERENCIAS\.md/.test(c)) {
+    problems.push('CLAUDE.md no importa @preferencias/PREFERENCIAS.md (no queda en contexto)');
+  }
+} else {
+  problems.push('no existe CLAUDE.md (no se pudo verificar el @import)');
+}
+
+console.log(`== LINT PREFERENCIAS: ${prefFile} ==`);
+console.log(`hallazgos: ${problems.length}\n`);
+if (!problems.length) console.log('    (ok)');
+else problems.forEach(p => console.log(`    [x] ${p}`));
+```
