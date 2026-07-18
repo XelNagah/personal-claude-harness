@@ -5,7 +5,7 @@ description: Inicializa en el repo actual el setup estándar completo del usuari
 
 # Inicializar setup completo (orquestador)
 
-Instala el setup estándar completo del usuario aplicando las cinco funcionalidades en orden. Los textos verbatim (memorias, bloques de preferencias y el script de lint) están en [PLANTILLA.md](PLANTILLA.md).
+Instala el setup estándar completo del usuario aplicando las ocho funcionalidades de convención en orden. Los textos verbatim (memorias, bloques de preferencias, semillas y los scripts de lint) están en [PLANTILLA.md](PLANTILLA.md). (La skill de análisis `planificar` no se instala por-repo: es global.)
 
 ## Reconciliación (idempotencia)
 
@@ -20,20 +20,30 @@ Segura de re-correr: este es el modo de **"levelear"** repos que ya tienen parte
 
 ```
 .claude/
-├── CLAUDE.md          # Descripción + Preferencias + Principios + Memoria y planes + Base de conocimiento
+├── CLAUDE.md          # Descripción + Preferencias + Principios + Memoria + Planes + Conocimiento + Glosario + Decisiones + Scripts
 ├── memory/
 │   ├── MEMORY.md
 │   ├── feedback_flujo_planes.md
 │   ├── feedback_estilo_commits.md
-│   └── feedback_base_conocimiento.md
+│   ├── feedback_base_conocimiento.md
+│   ├── feedback_glosario.md
+│   ├── feedback_decisiones.md
+│   └── feedback_scripts.md
 ├── planes/
 │   ├── planes-pendientes/.gitkeep
 │   └── planes-ejecutados/.gitkeep
 ├── conocimiento/
 │   └── INDICE.md
+├── glosario/
+│   └── INDICE.md
+├── decisiones/
+│   └── INDICE.md
 └── scripts/
-    └── lint-conocimiento/
-        └── lint-conocimiento.js
+    ├── INDICE.md
+    ├── lint-conocimiento/lint-conocimiento.js
+    ├── lint-glosario/lint-glosario.js
+    ├── lint-decisiones/lint-decisiones.js
+    └── lint-scripts/lint-scripts.js
 ```
 
 ## Workflow
@@ -52,5 +62,8 @@ Segura de re-correr: este es el modo de **"levelear"** repos que ya tienen parte
    - **(c) fuentes crudas: NO se mueven** — lo que el agente *lee* (escaneos, PDFs de resúmenes, exports, json/csv de origen) vs. lo que *sabe* (el md sintetizado). Salvo que ya estén entreveradas dentro de una carpeta de conocimiento.
 
    Proponer plan de move y mover por defecto; ambiguo (código/assets/build) → preguntar antes. ⚠️ **Material sensible, en los dos sentidos:** (i) si un archivo a mover está **ya ignorado** por ruta (`memory/*-token.md`, credenciales), moverlo rompe el ignore y **commitea el secreto** → no moverlo o actualizar el `.gitignore` en el mismo paso (verificar con `git status`); (ii) si hay material sensible **sin ignorar** (credenciales/tokens/`.env`/`*.key`, documentos personales o legales, resúmenes bancarios, libros contables, estudios médicos) → **sugerir** las líneas de `.gitignore` y el riesgo concreto, como hallazgo aparte, sin aplicarlo solo (el user decide; puede querer versionarlos en un repo local) + avisar si el repo nunca debería pushearse a un remoto. **Índice completo:** si había un índice parcial, cubrir TODOS los documentos (los no listados eran huérfanos). **Reparar refs:** índices, links, refs desde `CLAUDE.md`/memorias/planes, y acople de scripts movidos a `scripts/<tool>/` — `__dirname` (reapuntar) o **cwd** (prepender `process.chdir(require('path').join(__dirname,'<ruta datos>'))`). ⚠️ **Script referenciado por ruta en `settings.local.json`/`settings.json`** (ej. `"Bash(bash tools/moonraker-get.sh:*)"`): las reglas de permiso matchean por prefijo exacto → moverlo rompe la pre-autorización (en headless = denegación). `grep` su ruta en los settings antes de mover: o no lo movés, o actualizás la regla en el mismo paso. Correr el lint → 0 refs rotas. **Sin git en el repo → `git init` + commit inicial ANTES de mover** (un commit inicial post-migración no sirve de rollback).
-6. **Memorias adicionales**: si en la conversación ya surgieron preferencias u objetivos del proyecto, persistirlos con el frontmatter estándar e indexarlos.
-7. **Reportar el leveling**: por funcionalidad, qué quedó en `agregado` / `ya estaba` / `divergente`, y la estructura final. Si hubo `divergente`, listarlo aparte para que el user decida. **No hacer commit** salvo pedido explícito.
+6. **glosario** — asegurar `glosario/INDICE.md` (tabla vacía; PLANTILLA.md §Glosario); instalar el lint `scripts/lint-glosario/lint-glosario.js` (PLANTILLA.md §Glosario); instalar la memoria `feedback_glosario.md` e indexarla; asegurar en `CLAUDE.md` la sección "Glosario del proyecto". Alias registrados (no prohibidos); conceptos complejos con página de detalle.
+7. **decisiones** — asegurar `decisiones/INDICE.md` (tabla vacía; PLANTILLA.md §Decisiones); instalar el lint `scripts/lint-decisiones/lint-decisiones.js`; instalar la memoria `feedback_decisiones.md` e indexarla; asegurar la sección "Decisiones del proyecto". Solo lo **estructural al propósito** del repo; misma estructura tabla+detalle que el glosario.
+8. **scripts** — asegurar `scripts/INDICE.md` (registro-tabla vacío; PLANTILLA.md §Scripts); instalar el lint `scripts/lint-scripts/lint-scripts.js` con su `README.md`; instalar la memoria `feedback_scripts.md` e indexarla; asegurar la sección "Scripts del proyecto". **Migrar el cementerio:** cada script suelto a `<tool>/` con README y fila en el registro; lo que no se sabe qué hace → `Estado: obsoleto` + reportar. ⚠️ Grep de refs por ruta en `settings`/`.gitignore`/hooks antes de mover.
+9. **Memorias adicionales**: si en la conversación ya surgieron preferencias u objetivos del proyecto, persistirlos con el frontmatter estándar e indexarlos.
+10. **Reportar el leveling**: por funcionalidad, qué quedó en `agregado` / `ya estaba` / `divergente`, y la estructura final. Si hubo `divergente`, listarlo aparte para que el user decida. **No hacer commit** salvo pedido explícito.

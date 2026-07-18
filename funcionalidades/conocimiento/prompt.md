@@ -37,7 +37,7 @@ Instalá el tool en **su propia carpeta**: `<config>/scripts/lint-conocimiento/l
 
 Si tenés sistema de memoria local, persistí la convención como una memoria tipada `feedback`:
 
-- **Ubicación única:** conocimiento nuevo siempre bajo `<config>/conocimiento/`, nunca en la raíz. Scripts de harness en `<config>/scripts/<tool>/`, cada uno en su carpeta.
+- **Ubicación única:** conocimiento nuevo siempre bajo `<config>/conocimiento/`, nunca en la raíz. (Las herramientas/scripts las gestiona la funcionalidad `scripts`.)
 - **Lint al cerrar** (mecánico, gratis); semántico (contradicciones, duplicación, staleness) a pedido.
 - **Migración:** scripts acoplados por `__dirname` que se muevan deben reapuntar sus paths de datos a `<config>/conocimiento/...`.
 

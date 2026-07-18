@@ -1,0 +1,6 @@
+{
+  "name": "glosario",
+  "description": "Glosario del dominio en .claude/glosario/ — término canónico + sinónimos a evitar, para coherencia semántica al planificar/analizar. Depende de memoria-local.",
+  "version": "0.1.0",
+  "author": { "name": "jllarens", "email": "jllarens@gmail.com" }
+}

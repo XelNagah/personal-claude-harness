@@ -12,7 +12,7 @@ Configurá en este proyecto el setup estándar completo, usando el directorio de
 - Copilot → `.github/` (instrucciones en `.github/copilot-instructions.md`)
 - Otro / sin convención → `.agent/`
 
-En lo que sigue, `<config>/` es ese directorio. Si parte ya existe, **extendé sin pisar**. Aplicá las cinco partes en orden.
+En lo que sigue, `<config>/` es ese directorio. Si parte ya existe, **extendé sin pisar**. Aplicá las ocho partes de convención en orden. (La skill de análisis `planificar` es aparte — no se instala por-repo.)
 
 ## Reconciliación (idempotencia)
 
@@ -77,7 +77,19 @@ Asegurá `<config>/conocimiento/` con un `INDICE.md` raíz (una línea por pági
 
 Proponé el plan de move y mové por defecto; ambiguo (código/assets/build) → preguntame antes. ⚠️ **Material sensible, en los dos sentidos:** (i) si un archivo a mover está **ya ignorado** por su ruta (`memory/*-token.md`, credenciales), moverlo rompe el ignore y **commitea el secreto** → no lo muevas o actualizá el `.gitignore` en el mismo paso (verificá con `git status`); (ii) si hay material sensible **sin ignorar** (credenciales/tokens/`.env`/`*.key`, documentos personales o legales, resúmenes bancarios, libros contables, estudios médicos) → **sugerime** las líneas de `.gitignore` con el riesgo concreto, como hallazgo aparte, sin aplicarlo solo (puedo querer versionarlos a propósito en un repo local) + avisame si el repo nunca debería pushearse a un remoto. **Índice completo:** si había un índice parcial, cubrí TODOS los documentos (los no listados eran huérfanos). **Reparar refs:** índices, links, refs desde el archivo de instrucciones/memorias/planes, y el acople de scripts movidos a `scripts/<tool>/` — `__dirname` (reapuntar) o **cwd** (prepender `process.chdir(require('path').join(__dirname,'<ruta datos>'))`). ⚠️ **Script referenciado por ruta en la config de permisos** (ej. `"Bash(bash tools/moonraker-get.sh:*)"`): las reglas matchean por prefijo exacto → moverlo rompe la pre-autorización (en headless = denegación). Buscá su ruta en la config antes de mover: o no lo movés, o actualizás la regla en el mismo paso. Corré el lint → 0 refs rotas. **Si el repo no tiene git: `git init` + commit inicial ANTES de mover** (un commit inicial post-migración no sirve de rollback).
 
-## 5. Reporte del leveling
+## 5. Glosario del dominio
+
+Asegurá `<config>/glosario/INDICE.md` (tabla vacía **Concepto | Definición | Alias | Detalle**; contenido al final, §Glosario) — terminología del dominio, un concepto por fila, **alias registrados (no prohibidos)**, conceptos complejos con página `<slug>.md` de detalle. Instalá el lint `<config>/scripts/lint-glosario/lint-glosario.js` (al final, §Lint-glosario). Persistí la memoria `feedback_glosario.md` (al final) e indexala. Asegurá en el archivo de instrucciones la sección **"Glosario del proyecto"**.
+
+## 6. Registro de decisiones
+
+Asegurá `<config>/decisiones/INDICE.md` (tabla vacía **N° | Decisión | Fecha | Estado | Detalle**; §Decisiones) — solo decisiones **estructurales al propósito del repo** (no "ADR", no operativas triviales), misma estructura tabla+detalle que el glosario. Instalá el lint `<config>/scripts/lint-decisiones/lint-decisiones.js` (§Lint-decisiones). Persistí `feedback_decisiones.md` e indexala. Sección **"Decisiones del proyecto"**.
+
+## 7. Gestión de scripts
+
+Asegurá `<config>/scripts/INDICE.md` (registro-tabla vacío **Tool | Qué hace | Cómo se corre | Estado**; §Scripts) — cada script en su carpeta `<tool>/` con un `README.md`; ordena el "cementerio de scripts". Instalá el lint `<config>/scripts/lint-scripts/lint-scripts.js` (§Lint-scripts) con su README. Persistí `feedback_scripts.md` e indexala. Sección **"Scripts del proyecto"**. **Migrar sueltos:** cada uno a `<tool>/` con README y fila; lo que no se sabe qué hace → `Estado: obsoleto` + reportar. ⚠️ Grep de refs por ruta en la config de permisos/`.gitignore`/hooks antes de mover.
+
+## 8. Reporte del leveling
 
 Al terminar: por parte, qué quedó en `agregado` / `ya estaba` / `divergente`, más la estructura final. Si hubo `divergente`, listalo aparte para que lo decida. No hagas commit salvo que te lo pida.
 
@@ -137,12 +149,12 @@ Mensajes de commit y descripciones de PR de este proyecto: **en español** y **s
 ```markdown
 ---
 name: base-conocimiento
-description: Convención de base de conocimiento — todo lo que el agente sabe vive en <config>/conocimiento/; scripts de harness en <config>/scripts/<tool>/; lint de integridad al cerrar.
+description: Convención de base de conocimiento — todo lo que el agente sabe vive en <config>/conocimiento/; lint de integridad al cerrar.
 metadata:
   type: feedback
 ---
 
-El conocimiento persistido del agente (documentos, estudios, temas, notas de dominio) vive en una carpeta única: `<config>/conocimiento/`, con un `INDICE.md` en su raíz. Los scripts de harness/tooling viven en `<config>/scripts/<tool>/` (cada uno en su carpeta), nunca sueltos ni en la raíz del repo.
+El conocimiento persistido del agente (documentos, estudios, temas, notas de dominio) vive en una carpeta única: `<config>/conocimiento/`, con un `INDICE.md` en su raíz. (La convención de dónde viven las herramientas/scripts la define la funcionalidad `scripts`.)
 
 **Why:** ubicación determinística → el lint y cualquier consulta saben dónde mirar sin heurística; separa lo que el agente CONOCE (`conocimiento/`) de su config y su tooling; mantiene la raíz del repo limpia.
 
@@ -256,4 +268,302 @@ if (!gaps.length) console.log('    (completo)');
 console.log(`\n[3] HUERFANOS (${orphans.length}):`);
 orphans.forEach(o => console.log(`    ${o}`));
 if (!orphans.length) console.log('    (ninguno)');
+```
+
+## Contenido de las memorias de glosario, decisiones y scripts
+
+> Reemplazá `<config>` por el directorio real de tu harness.
+
+### `feedback_glosario.md`
+
+```markdown
+---
+name: glosario
+description: Glosario del dominio en <config>/glosario/INDICE.md — tabla de conceptos con alias registrados + páginas de detalle para lo complejo; consultar al planificar/analizar; lint al cerrar.
+metadata:
+  type: feedback
+---
+
+La terminología del dominio vive en `<config>/glosario/INDICE.md`: una tabla donde cada fila es un concepto (nombre canónico, definición corta, alias, y link a página de detalle si el concepto es complejo). Los conceptos complejos tienen su propia página `<config>/glosario/<slug>.md` (fórmulas, ejemplos, contraejemplos).
+
+**Why:** coherencia semántica a lo largo de la vida del repo. Los alias **se registran, no se prohíben**: saber que "birra/chela" son la misma cerveza evita confusión, sin vetar cómo se la nombra.
+
+**How to apply:**
+
+1. **Al planificar o analizar**, consultar el glosario. Si aparece un término, ver si ya es alias de un concepto registrado; si es nuevo, agregar el concepto (o el alias) en el momento.
+2. Concepto **simple** → una fila, columna Detalle en `—`. Concepto **complejo** → fila + página de detalle linkeada.
+3. **Alias:** registrarlos en la columna Alias (no vetarlos). Un mismo alias no puede estar bajo dos conceptos distintos (el lint lo caza).
+4. **Al cerrar** una tarea que tocó el glosario, correr `node <config>/scripts/lint-glosario/lint-glosario.js` (links de detalle, huérfanos, colisión de alias).
+
+Relacionado: [[flujo-planes]].
+```
+
+### `feedback_decisiones.md`
+
+```markdown
+---
+name: decisiones
+description: Registro de decisiones estructurales del repo en <config>/decisiones/INDICE.md (tabla + detalle para las complejas, NO ADR); consultar al planificar/analizar; lint al cerrar.
+metadata:
+  type: feedback
+---
+
+Las decisiones **estructurales al propósito del repo** se asientan en `<config>/decisiones/INDICE.md`: una tabla donde cada fila es una decisión (N° secuencial, qué se decidió y por qué, fecha, estado, y link a página de detalle si requiere conceptualización mayor). Misma estructura que el glosario: lo simple vive en la fila, lo complejo en su `NNNN-slug.md`.
+
+**Why:** coherencia decisional — no re-decidir ni contradecir lo estructural. Acotado a lo estructural (no lo operativo trivial) para que el registro siga siendo señal y no ruido — es lo que hacía la "A" de ADR, generalizada a repos de cualquier propósito.
+
+**How to apply:**
+
+1. **Qué registrar:** decisiones que definen cómo es / qué hace el repo en lo esencial, o que eligen un camino que condiciona el trabajo futuro. **No** las triviales o efímeras ("busqué en internet", "usé tal comando").
+2. **Al planificar o analizar**, consultar las decisiones previas: no re-abrir ni contradecir. Reemplazar, no borrar: agregar la nueva y marcar la vieja `reemplazada por NNNN`.
+3. **Simple** → una fila, Detalle en `—`. **Compleja** → fila + página `NNNN-slug.md`.
+4. **Al cerrar**, correr `node <config>/scripts/lint-decisiones/lint-decisiones.js`.
+
+Relacionado: [[flujo-planes]].
+```
+
+### `feedback_scripts.md`
+
+```markdown
+---
+name: scripts
+description: Convención de scripts del repo — cada tool en <config>/scripts/<tool>/ con README; registro tabla en INDICE.md; lint; cuidado con refs por ruta en la config de permisos/.gitignore/hooks.
+metadata:
+  type: feedback
+---
+
+Las herramientas/scripts del repo viven en `<config>/scripts/<tool>/`: cada script en su propia carpeta (nunca suelto), con un `README.md` que dice qué hace, cómo se corre y qué lo referencia. El registro `<config>/scripts/INDICE.md` es una tabla (Tool | Qué hace | Cómo se corre | Estado) que los lista a todos.
+
+**Why:** que la carpeta de scripts no se vuelva un cementerio de archivos sin saber qué son, de dónde salieron ni cómo se usan.
+
+**How to apply:**
+
+1. Todo script nuevo va en `<config>/scripts/<tool>/` con su `README.md`. Nunca suelto.
+2. Registrarlo en `<config>/scripts/INDICE.md`. Marcar `Estado`; los `obsoleto` se pueden depurar.
+3. ⚠️ **Refs por ruta:** un script referenciado por ruta en la config de permisos, en `.gitignore` o en un hook NO se mueve/renombra alegremente — rompe el match por prefijo exacto y se pierde la pre-autorización. Antes de mover, grep su ruta; si aparece, actualizar la referencia en el mismo paso.
+4. **Al cerrar**, correr `node <config>/scripts/lint-scripts/lint-scripts.js`.
+
+Otras memorias, planes o conocimiento pueden referenciar un tool por su ruta explicando cómo usarlo.
+
+Relacionado: [[flujo-planes]], [[base-conocimiento]].
+```
+
+## §Lint-glosario — `<config>/scripts/lint-glosario/lint-glosario.js`
+
+```js
+#!/usr/bin/env node
+// Lint del glosario: links de detalle resuelven, paginas sin huerfanos, alias sin colision. Sin LLM, sin red.
+// Uso: node lint-glosario.js [<carpeta>]   (default: .claude/glosario)
+const fs = require('fs'), path = require('path');
+const root = path.resolve(process.argv[2] || '.claude/glosario');
+const glosPath = path.join(root, 'INDICE.md');
+const txt = fs.existsSync(glosPath) ? fs.readFileSync(glosPath, 'utf8') : '';
+
+// parsear filas de la tabla: | Concepto | Definicion | Alias | Detalle |
+const rows = [];
+for (const line of txt.split('\n')) {
+  const t = line.trim();
+  if (!t.startsWith('|')) continue;
+  const cells = t.split('|').slice(1, -1).map(c => c.trim());
+  if (cells.length < 4) continue;
+  const c0 = cells[0].replace(/[*\s]/g, '');
+  if (/^:?-{2,}:?$/.test(c0)) continue;                 // separador |---|
+  if (/^concepto$/i.test(c0)) continue;                  // header
+  rows.push({ concepto: cells[0].replace(/\*/g, '').trim(), alias: cells[2], detalle: cells[3] });
+}
+
+// [1] links de detalle rotos
+const linkRe = /\]\(([^)]+?\.md)\)/;
+const referenced = new Set();
+const refsRotas = [];
+for (const r of rows) {
+  const m = linkRe.exec(r.detalle);
+  if (!m) continue;
+  const target = m[1].trim();
+  const abs = path.normalize(path.join(root, target));
+  if (fs.existsSync(abs)) referenced.add(path.basename(abs));
+  else refsRotas.push([r.concepto, target]);
+}
+
+// [2] paginas .md huerfanas (en glosario/, no referenciadas por la tabla)
+const huerfanos = [];
+if (fs.existsSync(root)) {
+  for (const f of fs.readdirSync(root)) {
+    if (!f.endsWith('.md') || f === 'INDICE.md') continue;
+    if (!referenced.has(f)) huerfanos.push(f);
+  }
+}
+
+// [3] colisiones de alias (un termino bajo dos conceptos distintos)
+const conceptOf = new Map();
+const colisiones = [];
+const register = (term, concepto) => {
+  const key = term.toLowerCase();
+  if (conceptOf.has(key) && conceptOf.get(key) !== concepto) colisiones.push([term, conceptOf.get(key), concepto]);
+  else conceptOf.set(key, concepto);
+};
+for (const r of rows) register(r.concepto, r.concepto);
+for (const r of rows) {
+  for (const a of r.alias.split(/[,;]/).map(s => s.trim()).filter(s => s && s !== '—' && s !== '-')) {
+    register(a, r.concepto);
+  }
+}
+
+console.log(`== LINT GLOSARIO: ${root} ==`);
+console.log(`conceptos: ${rows.length}\n`);
+console.log(`[1] LINKS DE DETALLE ROTOS (${refsRotas.length}):`);
+refsRotas.forEach(([c, t]) => console.log(`    ${c}  ->  ${t}   [no existe]`));
+if (!refsRotas.length) console.log('    (ninguno)');
+console.log(`\n[2] PAGINAS HUERFANAS (${huerfanos.length}):`);
+huerfanos.forEach(h => console.log(`    ${h}`));
+if (!huerfanos.length) console.log('    (ninguna)');
+console.log(`\n[3] COLISIONES DE ALIAS (${colisiones.length}):`);
+colisiones.forEach(([t, a, b]) => console.log(`    "${t}"  en  ${a}  y  ${b}`));
+if (!colisiones.length) console.log('    (ninguna)');
+```
+
+## §Lint-decisiones — `<config>/scripts/lint-decisiones/lint-decisiones.js`
+
+```js
+#!/usr/bin/env node
+// Lint del registro de decisiones: numeracion, links de detalle, huerfanos, superseded. Sin LLM, sin red.
+// Uso: node lint-decisiones.js [<carpeta>]   (default: .claude/decisiones)
+const fs = require('fs'), path = require('path');
+const root = path.resolve(process.argv[2] || '.claude/decisiones');
+const mainPath = path.join(root, 'INDICE.md');
+const txt = fs.existsSync(mainPath) ? fs.readFileSync(mainPath, 'utf8') : '';
+const pad = n => String(n).padStart(4, '0');
+
+// parsear filas de la tabla: | N° | Decisión | Fecha | Estado | Detalle |
+const rows = [];
+for (const line of txt.split('\n')) {
+  const t = line.trim();
+  if (!t.startsWith('|')) continue;
+  const cells = t.split('|').slice(1, -1).map(c => c.trim());
+  if (cells.length < 5) continue;
+  const nRaw = cells[0].replace(/[*\s]/g, '');
+  if (/^:?-{2,}:?$/.test(nRaw)) continue;               // separador |---|
+  if (!/^\d{1,4}$/.test(nRaw)) continue;                 // header u otra fila sin N°
+  rows.push({ n: parseInt(nRaw, 10), estado: cells[3], detalle: cells[4] });
+}
+
+// [1] numeracion: huecos y duplicados
+const gaps = [];
+if (rows.length) {
+  const nums = rows.map(r => r.n), set = new Set(nums), seen = new Set();
+  for (let i = 1; i <= Math.max(...nums); i++) if (!set.has(i)) gaps.push(`falta ${pad(i)}`);
+  for (const n of nums) { if (seen.has(n)) gaps.push(`duplicado ${pad(n)}`); seen.add(n); }
+}
+
+// [2] links de detalle rotos + recopilar referenciados
+const linkRe = /\]\(([^)]+?\.md)\)/;
+const referenced = new Set(), refsRotas = [];
+for (const r of rows) {
+  const m = linkRe.exec(r.detalle);
+  if (!m) continue;
+  const target = m[1].trim(), abs = path.normalize(path.join(root, target));
+  if (fs.existsSync(abs)) referenced.add(path.basename(abs));
+  else refsRotas.push([pad(r.n), target]);
+}
+
+// [3] paginas de detalle huerfanas
+const huerfanos = [];
+if (fs.existsSync(root)) {
+  for (const f of fs.readdirSync(root)) {
+    if (!f.endsWith('.md') || f === 'INDICE.md') continue;
+    if (!referenced.has(f)) huerfanos.push(f);
+  }
+}
+
+// [4] superseded (en la columna Estado) que no resuelven
+const nums = new Set(rows.map(r => r.n));
+const supRe = /(?:reemplazada por|supersede-a|superseded by)[^0-9\n]{0,12}(\d{1,4})/i;
+const supRotas = [];
+for (const r of rows) {
+  const m = supRe.exec(r.estado);
+  if (m && !nums.has(parseInt(m[1], 10))) supRotas.push([pad(r.n), `reemplazada por ${pad(parseInt(m[1], 10))}`]);
+}
+
+console.log(`== LINT DECISIONES: ${root} ==`);
+console.log(`decisiones: ${rows.length}\n`);
+console.log(`[1] NUMERACION (${gaps.length}):`);
+gaps.forEach(g => console.log(`    ${g}`));
+if (!gaps.length) console.log('    (sin huecos ni duplicados)');
+console.log(`\n[2] LINKS DE DETALLE ROTOS (${refsRotas.length}):`);
+refsRotas.forEach(([n, t]) => console.log(`    ${n}  ->  ${t}   [no existe]`));
+if (!refsRotas.length) console.log('    (ninguno)');
+console.log(`\n[3] PAGINAS HUERFANAS (${huerfanos.length}):`);
+huerfanos.forEach(h => console.log(`    ${h}`));
+if (!huerfanos.length) console.log('    (ninguna)');
+console.log(`\n[4] SUPERSEDED ROTAS (${supRotas.length}):`);
+supRotas.forEach(([n, r]) => console.log(`    ${n}  ->  ${r}   [decision inexistente]`));
+if (!supRotas.length) console.log('    (ninguna)');
+```
+
+## §Lint-scripts — `<config>/scripts/lint-scripts/lint-scripts.js`
+
+```js
+#!/usr/bin/env node
+// Lint del registro de scripts: README por tool, tool en indice, filas colgadas, refs por ruta en settings. Sin LLM, sin red.
+// Uso: node lint-scripts.js [<carpeta scripts>]   (default: .claude/scripts)
+const fs = require('fs'), path = require('path');
+const root = path.resolve(process.argv[2] || '.claude/scripts');
+const idxPath = path.join(root, 'INDICE.md');
+const idx = fs.existsSync(idxPath) ? fs.readFileSync(idxPath, 'utf8') : '';
+
+// subdirectorios = tools (cada script en su carpeta)
+const tools = fs.existsSync(root)
+  ? fs.readdirSync(root, { withFileTypes: true }).filter(e => e.isDirectory()).map(e => e.name)
+  : [];
+
+// [1] README por tool
+const sinReadme = tools.filter(t => !fs.existsSync(path.join(root, t, 'README.md')));
+
+// [2] tool fuera del indice
+const fueraIndice = tools.filter(t => !idx.includes(t));
+
+// [3] filas del indice que apuntan a un directorio inexistente
+const toolSet = new Set(tools), colgadas = [];
+for (const line of idx.split('\n')) {
+  const t = line.trim();
+  if (!t.startsWith('|')) continue;
+  const cells = t.split('|').slice(1, -1).map(c => c.trim());
+  if (cells.length < 2) continue;
+  const c0 = cells[0];
+  if (/^:?-{2,}:?$/.test(c0.replace(/\s/g, ''))) continue;    // separador
+  if (/^tool$/i.test(c0.replace(/[*\s]/g, ''))) continue;      // header
+  const m = /\]\(([^)]+?)\/?\)/.exec(c0);                       // link [x](dir/)
+  const name = (m ? m[1] : c0).replace(/[*`\[\]]/g, '').replace(/\/$/, '').trim();
+  if (name && !toolSet.has(name)) colgadas.push(name);
+}
+
+// [4] refs por ruta a scripts en settings que no resuelven
+const repoRoot = path.resolve(root, '..', '..');   // .claude/scripts -> raiz del repo
+const refsRotas = [];
+for (const sf of ['.claude/settings.local.json', '.claude/settings.json']) {
+  const abs = path.join(repoRoot, sf);
+  if (!fs.existsSync(abs)) continue;
+  const txt = fs.readFileSync(abs, 'utf8');
+  const re = /([.\w/-]*scripts\/[\w./-]+?\.(?:js|sh|py|mjs|cjs|ts))/g;
+  let m;
+  while ((m = re.exec(txt))) {
+    const p = m[1], cand = path.isAbsolute(p) ? p : path.join(repoRoot, p);
+    if (!fs.existsSync(cand)) refsRotas.push([sf, p]);
+  }
+}
+
+console.log(`== LINT SCRIPTS: ${root} ==`);
+console.log(`tools: ${tools.length}\n`);
+console.log(`[1] SIN README (${sinReadme.length}):`);
+sinReadme.forEach(t => console.log(`    ${t}/`));
+if (!sinReadme.length) console.log('    (todos tienen README)');
+console.log(`\n[2] FUERA DEL INDICE (${fueraIndice.length}):`);
+fueraIndice.forEach(t => console.log(`    ${t}/`));
+if (!fueraIndice.length) console.log('    (completo)');
+console.log(`\n[3] FILAS COLGADAS (${colgadas.length}):`);
+colgadas.forEach(c => console.log(`    ${c}   [directorio no existe]`));
+if (!colgadas.length) console.log('    (ninguna)');
+console.log(`\n[4] REFS POR RUTA ROTAS EN SETTINGS (${refsRotas.length}):`);
+refsRotas.forEach(([f, p]) => console.log(`    ${f}  ->  ${p}   [no existe]`));
+if (!refsRotas.length) console.log('    (ninguna)');
 ```

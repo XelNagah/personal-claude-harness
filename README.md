@@ -1,6 +1,6 @@
 # Inicializador de Repos Custom — jllarens
 
-Fuente de verdad de mi setup estándar de trabajo con agentes de código. Sirve para **inicializar un repo nuevo** con las funcionalidades a las que ya estoy acostumbrado (gestión de planes persistida, memoria local, base de conocimiento, estilo de commits, preferencias de comunicación), y se va actualizando a medida que esas preferencias cambian.
+Fuente de verdad de mi setup estándar de trabajo con agentes de código. Sirve para **inicializar un repo nuevo** con las funcionalidades a las que ya estoy acostumbrado (gestión de planes persistida, memoria local, base de conocimiento, glosario del dominio, registro de decisiones, gestión de scripts, estilo de commits, preferencias de comunicación), y se va actualizando a medida que esas preferencias cambian.
 
 Es a la vez un **marketplace de plugins de Claude Code** (estilo [Matt Pocock](https://github.com/mattpocock)) y una colección de **prompts agnósticos**. Cada funcionalidad existe en los dos formatos.
 
@@ -14,15 +14,20 @@ Es a la vez un **marketplace de plugins de Claude Code** (estilo [Matt Pocock](h
 │   ├── memory/                        # memoria local + índice MEMORY.md
 │   ├── planes/                        # planes-pendientes/ + planes-ejecutados/
 │   ├── conocimiento/                  # lo que el agente sabe (INDICE.md)
-│   └── scripts/                       # tooling del harness, uno por carpeta
+│   ├── glosario/                      # terminología del dominio (INDICE.md)
+│   ├── decisiones/                    # decisiones estructurales (INDICE.md)
+│   └── scripts/                       # tooling del harness, uno por carpeta + INDICE.md
 ├── .claude-plugin/
-│   └── marketplace.json               # catálogo del marketplace (lista los 6 plugins)
+│   └── marketplace.json               # catálogo del marketplace (lista los 9 plugins)
 └── funcionalidades/                   # cada subcarpeta = un plugin
     ├── memoria-local/                 # sistema de memoria (infraestructura base)
     ├── preferencias-trabajo/          # preferencias de comunicación + principios
     ├── gestion-de-planes/             # ciclo planes pendientes→ejecutados
     ├── estilo-commits/                # commits en español, sin co-autoría de IA
     ├── conocimiento/                  # base de conocimiento + lint de integridad
+    ├── glosario/                      # glosario del dominio (tabla + alias + lint)
+    ├── decisiones/                    # registro de decisiones estructurales + lint
+    ├── scripts/                       # gestión de scripts (registro + lint)
     └── setup-completo/                # orquestador: instala todo (skill inicializar-custom)
 ```
 
@@ -66,7 +71,7 @@ Repo privado: el install es un `git clone` por debajo; alcanza con tener git aut
 
 ## Desarrollo local (junctions)
 
-En **esta** máquina los 6 skills están enlazados por **junction** (NTFS) desde `~/.claude/skills/` hacia cada `funcionalidades/<n>/skills/<nombre-skill>` — fuente única para editar en vivo, sin pasar por el cache de plugins. Recrear en otra máquina de desarrollo:
+En **esta** máquina los 9 skills están enlazados por **junction** (NTFS) desde `~/.claude/skills/` hacia cada `funcionalidades/<n>/skills/<nombre-skill>` — fuente única para editar en vivo, sin pasar por el cache de plugins. Recrear en otra máquina de desarrollo:
 
 ```powershell
 New-Item -ItemType Junction `

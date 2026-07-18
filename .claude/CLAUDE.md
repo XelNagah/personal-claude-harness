@@ -14,27 +14,35 @@ El repo es a la vez un **marketplace de plugins de Claude Code** (estilo Matt Po
 │   ├── memory/                                # memoria local + índice MEMORY.md
 │   ├── planes/                                # planes-pendientes/ + planes-ejecutados/
 │   ├── conocimiento/                          # lo que el agente sabe (INDICE.md)
-│   └── scripts/                               # tooling del harness, uno por carpeta
-│       └── lint-conocimiento/                 # lint de integridad de conocimiento/
-├── .claude-plugin/marketplace.json            # catálogo del marketplace (6 plugins)
+│   ├── glosario/                              # terminología del dominio (INDICE.md)
+│   ├── decisiones/                            # decisiones estructurales (INDICE.md)
+│   └── scripts/                               # tooling del harness, uno por carpeta + INDICE.md
+│       ├── lint-conocimiento/                 # lint de integridad de conocimiento/
+│       ├── lint-glosario/                     # lint de glosario/
+│       ├── lint-decisiones/                   # lint de decisiones/
+│       └── lint-scripts/                      # lint del registro de scripts
+├── .claude-plugin/marketplace.json            # catálogo del marketplace (9 plugins)
 └── funcionalidades/                           # cada subcarpeta = un plugin
     ├── memoria-local/                         # infra: memory/ + MEMORY.md + formato
     ├── preferencias-trabajo/                  # comunicación + principios (secciones CLAUDE.md)
     ├── gestion-de-planes/                     # ciclo planes pendientes→ejecutados (dep: memoria-local)
     ├── estilo-commits/                        # memoria de commits (dep: memoria-local)
     ├── conocimiento/                          # base .claude/conocimiento/ + lint (dep: memoria-local)
-    └── setup-completo/                        # orquestador, skill inicializar-custom (instala las 5)
+    ├── glosario/                              # glosario del dominio: tabla + alias + lint (dep: memoria-local)
+    ├── decisiones/                            # decisiones estructurales: tabla + detalle + lint (dep: memoria-local)
+    ├── scripts/                               # gestión de scripts: registro + lint (dep: memoria-local)
+    └── setup-completo/                        # orquestador, skill inicializar-custom (instala las 8)
 ```
 
 Cada **funcionalidad/plugin** = `funcionalidades/<nombre>/` con `.claude-plugin/plugin.json` + `README.md` + `prompt.md` (agnóstico, placeholder `<config>`) + `skills/<nombre-skill>/SKILL.md` (Claude Code, `.claude/` literal) y `PLANTILLA.md` cuando lleva textos verbatim. Catálogo, dependencias, nombres de plugin/skill en `REGISTRO.md`.
 
 ## Distribución: marketplace de plugins
 
-`.claude-plugin/marketplace.json` (name `xelnagah-harness`) lista los 6 plugins con `source: "./funcionalidades/<nombre>"`. Validado con `claude plugin validate .` (el `source` debe arrancar con `./`; `metadata.pluginRoot` lo rechazó esta versión del CLI). En PC destino: `/plugin marketplace add <owner>/<repo>` + `/plugin install <plugin>@xelnagah-harness`. Repo privado: anda con git autenticado (clone por debajo); auto-update background necesita `GITHUB_TOKEN`.
+`.claude-plugin/marketplace.json` (name `xelnagah-harness`) lista los 9 plugins con `source: "./funcionalidades/<nombre>"`. Validado con `claude plugin validate .` (el `source` debe arrancar con `./`; `metadata.pluginRoot` lo rechazó esta versión del CLI). En PC destino: `/plugin marketplace add <owner>/<repo>` + `/plugin install <plugin>@xelnagah-harness`. Repo privado: anda con git autenticado (clone por debajo); auto-update background necesita `GITHUB_TOKEN`.
 
 ## Desarrollo local (junction, ya hecho en esta máquina)
 
-Los 6 skills están enlazados por **junction** (NTFS) desde `~/.claude/skills/<nombre-skill>` hacia `funcionalidades\<n>\skills\<nombre-skill>` — fuente única para editar en vivo, sin pasar por el cache de plugins. Recrear el orquestador:
+Los 9 skills están enlazados por **junction** (NTFS) desde `~/.claude/skills/<nombre-skill>` hacia `funcionalidades\<n>\skills\<nombre-skill>` — fuente única para editar en vivo, sin pasar por el cache de plugins. Recrear el orquestador:
 
 ```powershell
 New-Item -ItemType Junction -Path "$env:USERPROFILE\.claude\skills\inicializar-custom" -Target "<ruta-repo>\funcionalidades\setup-completo\skills\inicializar-custom"
@@ -80,3 +88,33 @@ node .claude/scripts/lint-conocimiento/lint-conocimiento.js
 ```
 
 Chequea refs rotas, índice incompleto y huérfanos. Detalle de la convención en la memoria [`feedback_base_conocimiento.md`](memory/feedback_base_conocimiento.md).
+
+## Glosario del proyecto
+
+La terminología del dominio vive en [`glosario/INDICE.md`](glosario/INDICE.md): una tabla de conceptos (nombre canónico, definición, alias registrados, y link a página de detalle si el concepto es complejo). Los alias se **registran, no se prohíben**. **Consultarlo al planificar y analizar.** Al cerrar una tarea que tocó el glosario, correr el lint **desde la raíz del repo**:
+
+```bash
+node .claude/scripts/lint-glosario/lint-glosario.js
+```
+
+Detalle de la convención en la memoria [`feedback_glosario.md`](memory/feedback_glosario.md).
+
+## Decisiones del proyecto
+
+Las decisiones **estructurales al propósito del repo** (no las operativas triviales) se asientan en [`decisiones/INDICE.md`](decisiones/INDICE.md): una tabla donde cada fila es una decisión (N°, qué + por qué, fecha, estado, y link a detalle si requiere conceptualización mayor). Misma estructura que el glosario. **Consultarlas al planificar y analizar** para no re-decidir ni contradecir. Al cerrar una tarea que registró decisiones, correr el lint **desde la raíz del repo**:
+
+```bash
+node .claude/scripts/lint-decisiones/lint-decisiones.js
+```
+
+Detalle de la convención en la memoria [`feedback_decisiones.md`](memory/feedback_decisiones.md).
+
+## Scripts del proyecto
+
+Las herramientas del repo viven en [`scripts/`](scripts/): cada script en su carpeta `<tool>/` con un `README.md`, listadas en el registro [`scripts/INDICE.md`](scripts/INDICE.md) (tabla Tool | Qué hace | Cómo se corre | Estado). Nunca sueltos. ⚠️ Un script referenciado por ruta en `settings`, `.gitignore` o un hook no se mueve sin actualizar esa referencia (rompe el match por prefijo). Al cerrar una tarea que tocó scripts, correr el lint **desde la raíz del repo**:
+
+```bash
+node .claude/scripts/lint-scripts/lint-scripts.js
+```
+
+Detalle de la convención en la memoria [`feedback_scripts.md`](memory/feedback_scripts.md).

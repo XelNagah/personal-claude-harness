@@ -1,6 +1,6 @@
 {
   "name": "conocimiento",
-  "description": "Base de conocimiento del agente: carpeta única .claude/conocimiento/ para todo lo que el agente sabe + lint de integridad (índice→páginas→refs). Scripts de harness en .claude/scripts/<tool>/.",
+  "description": "Base de conocimiento del agente: carpeta única .claude/conocimiento/ para todo lo que el agente sabe + lint de integridad (índice→páginas→refs). Depende de memoria-local.",
   "version": "0.1.0",
   "author": { "name": "jllarens", "email": "jllarens@gmail.com" }
 }

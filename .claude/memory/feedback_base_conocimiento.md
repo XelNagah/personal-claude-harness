@@ -1,11 +1,11 @@
 ---
 name: base-conocimiento
-description: Convención de base de conocimiento — todo lo que el agente sabe vive en .claude/conocimiento/; scripts de harness en .claude/scripts/<tool>/; lint de integridad al cerrar.
+description: Convención de base de conocimiento — todo lo que el agente sabe vive en .claude/conocimiento/; lint de integridad al cerrar.
 metadata:
   type: feedback
 ---
 
-El conocimiento persistido del agente (documentos, estudios, temas, notas de dominio) vive en una carpeta única: `.claude/conocimiento/`, con un `INDICE.md` en su raíz. Los scripts de harness/tooling viven en `.claude/scripts/<tool>/` (cada uno en su carpeta), nunca sueltos ni en la raíz del repo.
+El conocimiento persistido del agente (documentos, estudios, temas, notas de dominio) vive en una carpeta única: `.claude/conocimiento/`, con un `INDICE.md` en su raíz. (La convención de dónde viven las herramientas/scripts la define la memoria [[scripts]].)
 
 **Why:** ubicación determinística → el lint y cualquier consulta saben dónde mirar sin heurística; separa lo que el agente CONOCE (`conocimiento/`) de su config (`memory/`, `CLAUDE.md`) y su tooling (`scripts/`); mantiene la raíz del repo limpia.
 

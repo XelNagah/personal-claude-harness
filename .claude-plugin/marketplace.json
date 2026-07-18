@@ -32,6 +32,21 @@
       "description": "Base de conocimiento en carpeta única .claude/conocimiento/ + lint de integridad. Depende de memoria-local."
     },
     {
+      "name": "glosario",
+      "source": "./funcionalidades/glosario",
+      "description": "Glosario del dominio en .claude/glosario/ (tabla de conceptos + alias registrados + detalle para lo complejo) + lint. Depende de memoria-local."
+    },
+    {
+      "name": "decisiones",
+      "source": "./funcionalidades/decisiones",
+      "description": "Registro de decisiones estructurales del repo en .claude/decisiones/ (tabla + detalle para las complejas, no ADR) + lint. Depende de memoria-local."
+    },
+    {
+      "name": "scripts",
+      "source": "./funcionalidades/scripts",
+      "description": "Gestión de scripts: cada tool en .claude/scripts/<tool>/ con README, registro tabla + lint. Ordena el cementerio de scripts. Depende de memoria-local."
+    },
+    {
       "name": "setup-completo",
       "source": "./funcionalidades/setup-completo",
       "description": "Orquestador: instala el setup completo (skill inicializar-custom)."
