@@ -4,9 +4,9 @@ Catálogo de lo que este repo puede instalar en un proyecto nuevo. Cada funciona
 
 | Funcionalidad | Qué hace | Depende de | Carpeta |
 |---------------|----------|-----------|---------|
-| **memoria-local** | Sistema de memoria local: `memory/` + índice `MEMORY.md` + formato de memorias tipadas. Infraestructura base. | — | [`memoria-local/`](funcionalidades/memoria-local/) |
-| **preferencias-trabajo** | Preferencias de comunicación + principios de trabajo, como secciones del `CLAUDE.md`. | — | [`preferencias-trabajo/`](funcionalidades/preferencias-trabajo/) |
-| **gestion-de-planes** | Ciclo de planes pendientes→ejecutados: carpetas `planes/` + memoria del flujo. | memoria-local | [`gestion-de-planes/`](funcionalidades/gestion-de-planes/) |
+| **memoria-local** | Sistema de memoria local: `memory/` + índice `MEMORY.md` + formato de memorias tipadas + bloque "Mapa del repo" (`@imports` de índices en CLAUDE.md). Infraestructura base. | — | [`memoria-local/`](funcionalidades/memoria-local/) |
+| **preferencias-trabajo** | Preferencias versionadas en `preferencias/PREFERENCIAS.md` (Base del harness + Adaptaciones del repo), importadas siempre al contexto vía `@`. | — | [`preferencias-trabajo/`](funcionalidades/preferencias-trabajo/) |
+| **gestion-de-planes** | Ciclo de planes `pendientes/ejecutados/descartados` + registro `PLANES.md` (prioridad, estado, fechas) + `lint-planes` + hook SessionStart. | memoria-local | [`gestion-de-planes/`](funcionalidades/gestion-de-planes/) |
 | **estilo-commits** | Preferencia de commits (español, sin co-autoría de IA), como memoria. | memoria-local | [`estilo-commits/`](funcionalidades/estilo-commits/) |
 | **conocimiento** | Base de conocimiento en carpeta única `conocimiento/` + lint de integridad (`scripts/lint-conocimiento/`). Migra conocimiento suelto de la raíz. | memoria-local | [`conocimiento/`](funcionalidades/conocimiento/) |
 | **glosario** | Glosario del dominio en `glosario/` (tabla de conceptos + alias registrados + detalle para lo complejo) + lint. Coherencia semántica al planificar/analizar. | memoria-local | [`glosario/`](funcionalidades/glosario/) |

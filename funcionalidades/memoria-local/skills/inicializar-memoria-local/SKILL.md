@@ -11,10 +11,17 @@ Instala el sistema de memoria local persistida en el proyecto actual. Es infraes
 
 ```
 .claude/
-├── CLAUDE.md          # se le asegura la sección "Memoria del proyecto"
+├── CLAUDE.md          # secciones "Mapa del repo (siempre cargado)" y "Memoria del proyecto"
 └── memory/
     └── MEMORY.md      # índice (solo punteros, nunca contenido)
 ```
+
+## Índices siempre cargados vs. reglas inline
+
+Dos mecanismos, no uno:
+
+- **Datos** se cargan por **índice + fetch**: el bloque "Mapa del repo" importa los índices vía `@` — entran al contexto en todo arranque de sesión, sin depender de que el agente decida leerlos. La pregunta del user dispara la lectura del archivo apuntado. Para que esto rinda, las `description` del índice se escriben como **ganchos que cargan el dato clave** (ej.: "calendario de cobros — sueldo ~15, jerarquización ~15"), no como títulos vagos.
+- **Reglas de conducta** NO alcanza con indexarlas: nada dispara ir a buscarlas (el agente que está por violar una regla no se pregunta si existe). Van **inline**, siempre en contexto — en este setup, vía la funcionalidad `preferencias` (o importadas individualmente si son del repo).
 
 ## Reconciliación (idempotencia)
 
@@ -42,6 +49,15 @@ Segura de re-correr: sirve para **"levelear"** repos que ya tienen algunas parte
    ```
 
    Tipos: `user` (quién es el usuario), `feedback` (correcciones y enfoques confirmados, con el porqué), `project` (objetivos/restricciones no derivables del código), `reference` (punteros externos). Antes de crear una memoria nueva, revisar si una existente ya la cubre — actualizar en vez de duplicar. Fechas siempre absolutas.
-3. **En `.claude/CLAUDE.md`** asegurar una sección **"Memoria del proyecto"** con link a `memory/MEMORY.md`, indicando que la memoria se carga al inicio de cada sesión y se respeta. Si el archivo no existe, crearlo con esa sección; si existe pero ya tiene una sección equivalente (mismo tema, otro título), no duplicar.
-4. **Memorias que ya hayan surgido** en la conversación (preferencias, objetivos del proyecto) → persistirlas con el frontmatter de arriba y registrarlas en el índice, salvo que ya exista una que cubra el hecho.
-5. **Reportar** en los tres baldes (`agregado` / `ya estaba` / `divergente`). **No hacer commit** salvo pedido explícito.
+3. **En `.claude/CLAUDE.md`** asegurar la sección **"Mapa del repo (siempre cargado)"** con el import del índice:
+
+   ```markdown
+   ## Mapa del repo (siempre cargado)
+
+   @memory/MEMORY.md
+   ```
+
+   (Ruta relativa al CLAUDE.md: si está en la raíz del repo en vez de `.claude/`, usar `@.claude/memory/MEMORY.md`.) Las demás funcionalidades agregan acá sus propios índices al instalarse (`@planes/PLANES.md`, `@conocimiento/INDICE.md`, `@scripts/INDICE.md`). Si el CLAUDE.md ya carga la memoria por instrucción textual ("leer al inicio"), **reemplazar** esa instrucción por el import — es la misma convención con mecanismo en vez de obediencia (reportar el reemplazo, no preguntar).
+4. **Asegurar también la sección "Memoria del proyecto"** con link a `memory/MEMORY.md` y el criterio de uso (respetar lo cargado; antes de crear una memoria, revisar si una existente la cubre). Si existe una sección equivalente, no duplicar.
+5. **Memorias que ya hayan surgido** en la conversación (preferencias, objetivos del proyecto) → persistirlas con el frontmatter de arriba y registrarlas en el índice, salvo que ya exista una que cubra el hecho.
+6. **Reportar** en los tres baldes (`agregado` / `ya estaba` / `divergente`). **No hacer commit** salvo pedido explícito.

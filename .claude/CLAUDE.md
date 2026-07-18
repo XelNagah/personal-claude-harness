@@ -12,20 +12,22 @@ El repo es a la vez un **marketplace de plugins de Claude Code** (estilo Matt Po
 ├── .claude/                                   # el propio setup estándar, aplicado a este repo
 │   ├── CLAUDE.md                              # este archivo (instrucciones internas)
 │   ├── memory/                                # memoria local + índice MEMORY.md
-│   ├── planes/                                # planes-pendientes/ + planes-ejecutados/
+│   ├── preferencias/                          # PREFERENCIAS.md (Base versionada + Adaptaciones)
+│   ├── planes/                                # PLANES.md (registro) + pendientes/ ejecutados/ descartados/
 │   ├── conocimiento/                          # lo que el agente sabe (INDICE.md)
 │   ├── glosario/                              # terminología del dominio (INDICE.md)
 │   ├── decisiones/                            # decisiones estructurales (INDICE.md)
 │   └── scripts/                               # tooling del harness, uno por carpeta + INDICE.md
 │       ├── lint-conocimiento/                 # lint de integridad de conocimiento/
+│       ├── lint-planes/                       # lint del ciclo de planes (hook SessionStart)
 │       ├── lint-glosario/                     # lint de glosario/
 │       ├── lint-decisiones/                   # lint de decisiones/
 │       └── lint-scripts/                      # lint del registro de scripts
 ├── .claude-plugin/marketplace.json            # catálogo del marketplace (10 plugins)
 └── funcionalidades/                           # cada subcarpeta = un plugin
-    ├── memoria-local/                         # infra: memory/ + MEMORY.md + formato
-    ├── preferencias-trabajo/                  # comunicación + principios (secciones CLAUDE.md)
-    ├── gestion-de-planes/                     # ciclo planes pendientes→ejecutados (dep: memoria-local)
+    ├── memoria-local/                         # infra: memory/ + MEMORY.md + Mapa del repo (@imports)
+    ├── preferencias-trabajo/                  # preferencias versionadas Base/Adaptaciones (@import)
+    ├── gestion-de-planes/                     # ciclo pendientes/ejecutados/descartados + PLANES.md + lint + hook (dep: memoria-local)
     ├── estilo-commits/                        # memoria de commits (dep: memoria-local)
     ├── conocimiento/                          # base .claude/conocimiento/ + lint (dep: memoria-local)
     ├── glosario/                              # glosario del dominio: tabla + alias + lint (dep: memoria-local)
@@ -59,16 +61,16 @@ New-Item -ItemType Junction -Path "$env:USERPROFILE\.claude\skills\inicializar-c
 - **Idempotencia / leveling:** todo skill y prompt lleva una sección "Reconciliación (idempotencia)" — son seguros de re-correr y sirven para llevar al día repos a medio configurar. Reglas: inspeccionar antes de escribir, crear solo lo ausente, detectar equivalentes por tema (no pisar lo divergente, preguntar), reportar al final en tres baldes (`agregado` / `ya estaba` / `divergente`). Al tocar un workflow, conservar esa propiedad: nada de "Crear X" a secas sobre archivos compartidos (`CLAUDE.md`, `MEMORY.md`).
 - **Versionado de plugins:** cada `plugin.json` tiene `version`. Con `version` fijo, los usuarios solo reciben update al bumpearlo; si se omite, cada commit cuenta como versión nueva. Hoy en `0.1.0` — bumpear al publicar cambios, o quitar `version` para auto-versionar por commit.
 
-## Preferencias de comunicación
+## Preferencias (siempre cargadas)
 
-> Al preguntar por una decisión o analizar alternativas, dar SIEMPRE ejemplos concretos de cada postura (numéricos si aplica): cómo es ahora vs. cómo quedaría y por qué, encadenando consecuencias ("A ⇒ B; si no fuera B ⇒ no A porque X"). Objetivo: ubicar inmediatamente al lector en la mecánica relevante sin que tenga que reconstruir contexto.
+@preferencias/PREFERENCIAS.md
 
-## Principios de trabajo
+## Mapa del repo (siempre cargado)
 
-- Conceptual antes que implementación. Ante ambigüedad de diseño, preguntar antes de asumir. Minimizar cambios sustractivos.
-- Iterar de alto a bajo nivel: interfaces y contratos antes que implementación.
-- Nomenclatura en español para el dominio; inglés solo para infraestructura técnica.
-- Cero invención de datos: lo que no salga de una fuente verificada se marca como faltante o como interpretación propia.
+@memory/MEMORY.md
+@planes/PLANES.md
+@conocimiento/INDICE.md
+@scripts/INDICE.md
 
 ## Memoria del proyecto
 
@@ -76,7 +78,11 @@ La memoria local vive en [`memory/`](memory/), indexada por [`memory/MEMORY.md`]
 
 ## Planes del proyecto
 
-Los planes se persisten en [`planes/`](planes/): [`planes-pendientes/`](planes/planes-pendientes/) mientras esperan ejecución, [`planes-ejecutados/`](planes/planes-ejecutados/) una vez implementados. Formato de nombre: `AA-MM-DD - [Descripción corta].md`. El ciclo completo (cuándo se copia, cómo se replica cada actualización, qué agregar al mover a ejecutados) está en la memoria [`feedback_flujo_planes.md`](memory/feedback_flujo_planes.md).
+Los planes se persisten en [`planes/`](planes/): `pendientes/` (backlog amplio — foco y estacionados), `ejecutados/` y `descartados/` (registro, con motivo). Nombre = slug estable sin fecha; prioridad, estado y fechas viven en el registro [`planes/PLANES.md`](planes/PLANES.md). Ciclo completo en la memoria [`feedback_flujo_planes.md`](memory/feedback_flujo_planes.md). Al cerrar una tarea que tocó planes, correr el lint **desde la raíz del repo**:
+
+```bash
+node .claude/scripts/lint-planes/lint-planes.js
+```
 
 ## Base de conocimiento del proyecto
 

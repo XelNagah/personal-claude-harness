@@ -1,0 +1,14 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node .claude/scripts/lint-planes/lint-planes.js --quiet"
+          }
+        ]
+      }
+    ]
+  }
+}

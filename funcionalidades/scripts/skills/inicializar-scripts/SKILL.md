@@ -56,5 +56,5 @@ Si el repo ya tiene una carpeta de scripts desordenada (archivos sueltos, sin do
 3. **Instalar el lint** `.claude/scripts/lint-scripts/lint-scripts.js` (contenido EXACTO de PLANTILLA.md §Script) con su propio `README.md`.
 4. **Migrar** scripts sueltos existentes a `<tool>/` con README y fila en el registro (ver Migración). Grep de refs por ruta antes de mover.
 5. **Asegurar la memoria `feedback_scripts.md`** (verbatim de PLANTILLA.md §Memoria) y su línea en `memory/MEMORY.md`.
-6. **En `.claude/CLAUDE.md`** asegurar la sección **"Scripts del proyecto"** (PLANTILLA.md §Sección). No reescribir el archivo entero.
+6. **En `.claude/CLAUDE.md`** asegurar la sección **"Scripts del proyecto"** (PLANTILLA.md §Sección). No reescribir el archivo entero. Si existe el bloque **"Mapa del repo (siempre cargado)"** (de `memoria-local`), asegurar la línea `@scripts/INDICE.md` en él.
 7. **Reportar** en los tres baldes. Correr el lint (`node .claude/scripts/lint-scripts/lint-scripts.js`). **No hacer commit** salvo pedido explícito.

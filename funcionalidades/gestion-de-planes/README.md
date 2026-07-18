@@ -1,25 +1,32 @@
 # Gestión de planes
 
-Instala el ciclo de **planes pendientes→ejecutados** del usuario: planes persistidos fuera del plan-mode efímero del harness, con trazabilidad de qué se planificó, cuándo se cerró y cómo se ejecutó.
+Instala el ciclo de planes del usuario: **carpetas = ciclo de vida grueso** (`pendientes/` como backlog amplio, `ejecutados/` y `descartados/` como registro), **registro `PLANES.md` = lo fino** (prioridad foco/estacionado, estado, fechas de creación y cierre, origen). Nombres de plan = slug estable sin fecha. Con `lint-planes` + hook de inicio de sesión como trigger mecánico — sin él, mover planes depende de acordarse y no se sostiene.
 
 ## Qué agrega al repo destino
 
 ```
 <config>/
-├── CLAUDE.md          # se le asegura la sección "Planes del proyecto"
+├── CLAUDE.md          # sección "Planes del proyecto" + @planes/PLANES.md en el Mapa del repo
+├── settings.json      # hook SessionStart → lint-planes --quiet
 ├── memory/
-│   └── feedback_flujo_planes.md     # el ciclo completo, como memoria
-└── planes/
-    ├── planes-pendientes/
-    └── planes-ejecutados/
+│   ├── feedback_flujo_planes.md     # el ciclo completo, como memoria
+│   └── feedback_artefacto_estado.md # estado vivo de exploraciones multi-variable
+├── planes/
+│   ├── PLANES.md      # registro: Plan | Prioridad | Estado | Creado | Cerrado | Origen | Notas
+│   ├── pendientes/
+│   ├── ejecutados/
+│   └── descartados/
+└── scripts/
+    └── lint-planes/   # lint del ciclo (js + README)
 ```
 
-- **`planes/`** — dos carpetas para el ciclo de vida. Nombre de plan: `AA-MM-DD - [Descripción corta].md`.
-- **Memoria `flujo-planes`** — fuente de verdad del flujo: cuándo copiar a pendientes, cuándo mover a ejecutados, qué secciones agregar al cerrar.
+- **`pendientes/`** es backlog amplio: planes en foco y estacionados conviven; la prioridad vive en el registro.
+- **Descartar es un cierre válido** — a `descartados/` con motivo (p. ej. superseded por otro plan).
+- **Migración**: detecta el esquema viejo (`planes-pendientes/`/`planes-ejecutados/`, fecha en el nombre) y lo convierte, reparando referencias por ruta.
 
 ## Dependencias
 
-**`memoria-local`** — la memoria del flujo se guarda en `memory/`. Si no está instalada, instalarla primero.
+**`memoria-local`** — las memorias del flujo se guardan en `memory/`. Si no está instalada, instalarla primero.
 
 ## Formatos
 

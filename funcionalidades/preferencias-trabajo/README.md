@@ -1,15 +1,19 @@
-# Preferencias de trabajo
+# Preferencias
 
-Escribe en el archivo de instrucciones del proyecto las **preferencias de comunicación** y los **principios de trabajo** del usuario. Son secciones de instrucciones (no memorias), por eso esta funcionalidad no depende de `memoria-local`.
+Instala el sistema de preferencias del usuario: `preferencias/PREFERENCIAS.md` con dos secciones — **Base** (del harness, versionada: el leveleo la actualiza cuando detecta versión vieja) y **Adaptaciones de este repo** (del user; el leveleo nunca la toca) — **importado siempre al contexto** vía `@` desde el archivo de instrucciones. Las preferencias son reglas de conducta: tienen que estar inline, no disponibles-a-pedido (nada dispara "ir a buscar" una regla que se está por violar).
+
+Por qué por-repo y no global de máquina: el user trabaja en varias computadoras y sincroniza por git — el repo es su unidad de sincronización. La duplicación entre repos es deliberada; el versionado de la Base la vuelve actualizable sin pisar adaptaciones locales.
 
 ## Qué agrega al repo destino
 
-En `<config>/CLAUDE.md` (o el archivo de instrucciones del harness):
+```
+<config>/
+├── CLAUDE.md              # sección "Preferencias (siempre cargadas)" con el @import + "Descripción del proyecto"
+└── preferencias/
+    └── PREFERENCIAS.md    # Base (harness vN) + Adaptaciones de este repo
+```
 
-- **Preferencias de comunicación** — al analizar alternativas, siempre ejemplos concretos encadenando consecuencias ("A ⇒ B; si no fuera B ⇒ no A porque X").
-- **Principios de trabajo** — conceptual antes que implementación; ante ambigüedad preguntar; iterar de alto a bajo nivel; nomenclatura en español para el dominio; cero invención de datos.
-
-Si el `CLAUDE.md` no existe, lo crea arrancando con una **Descripción del proyecto** inferida del repo.
+Si el `CLAUDE.md` no existe, lo crea arrancando con una **Descripción del proyecto** inferida del repo. Migra los bloques inline viejos ("Preferencias de comunicación" / "Principios de trabajo"): iguales a una Base conocida → los reemplaza por el import; editados → las diferencias van a Adaptaciones.
 
 ## Dependencias
 
@@ -19,5 +23,5 @@ Ninguna.
 
 | Formato | Archivo |
 |---------|---------|
-| Skill (Claude Code) | [`skills/inicializar-preferencias-trabajo/SKILL.md`](skills/inicializar-preferencias-trabajo/SKILL.md) |
+| Skill (Claude Code) | [`skills/inicializar-preferencias-trabajo/SKILL.md`](skills/inicializar-preferencias-trabajo/SKILL.md) + [`PLANTILLA.md`](skills/inicializar-preferencias-trabajo/PLANTILLA.md) |
 | Prompt agnóstico | [`prompt.md`](prompt.md) |
