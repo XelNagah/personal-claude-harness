@@ -30,3 +30,9 @@ Cambia la Base de preferencias ⇒ evaluar bump de "harness v1" y de `version` e
 - `inicializar-preferencias-trabajo` en scratch instala la Base con el bullet de terminología.
 - `inicializar-glosario` en scratch instala el `INDICE.md` con la línea de gobernanza.
 - `node .claude/scripts/lint-harness/lint-harness.js` verde (verbatim coherente entre funcionalidad y orquestador).
+
+## Notas de implementación
+
+- **26-07-18, commit `5e989fb`** — decisión 0004 + bullet de terminología en la Base + línea de gobernanza del glosario, aplicados a este repo.
+- **26-07-18, commit `4ff41ee`** — propagados a `preferencias-trabajo` (Base), `glosario` (header) y orquestador + `REGISTRO.md`.
+- **Divergencia detectada (pendiente):** `setup-completo/prompt.md` usa el modelo v0 de preferencias *inline* (no crea `PREFERENCIAS.md`), divergiendo de su propio SKILL/PLANTILLA. Se dejó nota aditiva; migrar del todo ese prompt al modelo versionado queda como tarea aparte.

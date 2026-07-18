@@ -44,3 +44,9 @@ Estructural: headers `## Base` y `## Adaptaciones` presentes, `@import` de `PREF
 - `node .claude/scripts/lint-harness/lint-harness.js` verde (coherencia disco↔marketplace↔REGISTRO, conteos).
 - `claude plugin validate .` verde.
 - `inicializar-custom` en scratch instala ambos lints.
+
+## Notas de implementación
+
+- **26-07-18, commit `9e3a4ac`** — `lint-memoria` + `lint-preferencias` escritos y probados sobre este repo (regresión con fixtures rotos), README + fila en `scripts/INDICE.md` + pasos de lint en `CLAUDE.md`.
+- **26-07-18, commit `4ff41ee`** — propagados a las funcionalidades `memoria-local` / `preferencias-trabajo` + orquestador (`§Script` byte-exacto) + `REGISTRO.md`. Verde: `lint-harness`, `lint-scripts`, `claude plugin validate`.
+- Ejecutado junto con el plan de gobernanza de terminología (ambos tocaban `preferencias-trabajo`).

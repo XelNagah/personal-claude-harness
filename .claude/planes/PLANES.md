@@ -11,9 +11,9 @@ Lo fino de cada plan vive acá, no en el nombre del archivo. Las carpetas dan el
 
 | Plan | Prioridad | Estado | Creado | Cerrado | Origen | Notas |
 |------|-----------|--------|--------|---------|--------|-------|
-| [Completar cobertura de lint mecanico - memoria y preferencias.md](pendientes/Completar cobertura de lint mecanico - memoria y preferencias.md) | foco | en diseño | 26-07-18 | — | Rework README | prerequisito: lint-memoria + lint-preferencias → patrón mecánico 6/6 |
+| [Completar cobertura de lint mecanico - memoria y preferencias.md](ejecutados/Completar cobertura de lint mecanico - memoria y preferencias.md) | foco | ejecutado | 26-07-18 | 26-07-18 | Rework README | commits 9e3a4ac + 4ff41ee; lint-memoria + lint-preferencias en repo y harness |
 | [Rework README raiz + patron carpeta-indice-lint + audit sub-README.md](pendientes/Rework README raiz + patron carpeta-indice-lint + audit sub-README.md) | foco | en diseño | 26-07-18 | — | — | reencuadre multipropósito + patrón + mermaid + audit 10 sub-README; dep: lints |
-| [Propagar gobernanza de terminologia al harness.md](pendientes/Propagar gobernanza de terminologia al harness.md) | foco | en diseño | 26-07-18 | — | Rework README | decisión 0004 a preferencias-trabajo + glosario; coord con plan lints |
+| [Propagar gobernanza de terminologia al harness.md](ejecutados/Propagar gobernanza de terminologia al harness.md) | foco | ejecutado | 26-07-18 | 26-07-18 | Rework README | commit 4ff41ee; decisión 0004 a preferencias-trabajo + glosario + orquestador |
 | [Capa semantica de coherencia - contradicciones e incompatibilidades.md](pendientes/Capa semantica de coherencia - contradicciones e incompatibilidades.md) | estacionado | idea | 26-07-18 | — | Rework README | capa semántica transversal; analizar dentro del patrón general |
 | [Habilidad para poblar subsistemas desde un repo existente.md](pendientes/Habilidad para poblar subsistemas desde un repo existente.md) | estacionado | idea | 26-07-18 | — | Rework README | barrido activo de un repo poblado → siembra los subsistemas |
 | [26-07-18 - Stack coherencia glosario decisiones scripts y analisis.md](ejecutados/26-07-18 - Stack coherencia glosario decisiones scripts y analisis.md) | foco | ejecutado | 26-07-18 | 26-07-18 | — | commits 7db0666 + aebfb9c |
