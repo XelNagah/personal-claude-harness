@@ -9,3 +9,4 @@ Cargar al inicio de cada sesión y respetar.
 - [Glosario](feedback_glosario.md) — terminología del dominio en `.claude/glosario/`; tabla + alias registrados + detalle para lo complejo; consultar al planificar/analizar.
 - [Decisiones](feedback_decisiones.md) — decisiones estructurales en `.claude/decisiones/` (no ADR); tabla + detalle; consultar para no re-decidir ni contradecir.
 - [Scripts](feedback_scripts.md) — cada tool en `.claude/scripts/<tool>/` con README; registro + lint; cuidado con refs por ruta.
+- [Propagación al harness](feedback_propagacion_harness.md) — propagar cambios verbatim a funcionalidades + orquestador: delegar a subagente fresco (no fork), verificar byte-exactness de los embebidos uno mismo.
