@@ -10,6 +10,8 @@ Registro de las herramientas del repo. Cada script vive en su carpeta `<tool>/` 
 | Tool | Qué hace | Cómo se corre | Estado |
 |------|----------|---------------|--------|
 | [lint-conocimiento](lint-conocimiento/) | Lint de la base de conocimiento: refs rotas, índice incompleto, huérfanos | `node .claude/scripts/lint-conocimiento/lint-conocimiento.js` | vigente |
+| [lint-memoria](lint-memoria/) | Lint de la memoria local: refs/wikilinks rotos, `MEMORY.md` incompleto, huérfanos, frontmatter inválido | `node .claude/scripts/lint-memoria/lint-memoria.js` | vigente |
+| [lint-preferencias](lint-preferencias/) | Lint estructural de preferencias: secciones Base/Adaptaciones + `@import` en CLAUDE.md | `node .claude/scripts/lint-preferencias/lint-preferencias.js` | vigente |
 | [lint-planes](lint-planes/) | Lint del ciclo de planes: carpeta↔registro, sueltos, resueltos sin mover, focos envejecidos | `node .claude/scripts/lint-planes/lint-planes.js` | vigente |
 | [lint-glosario](lint-glosario/) | Lint del glosario: links de detalle, páginas huérfanas, colisión de alias | `node .claude/scripts/lint-glosario/lint-glosario.js` | vigente |
 | [lint-decisiones](lint-decisiones/) | Lint de decisiones: numeración, links de detalle, huérfanos, superseded | `node .claude/scripts/lint-decisiones/lint-decisiones.js` | vigente |
