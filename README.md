@@ -18,7 +18,7 @@ Es a la vez un **marketplace de plugins de Claude Code** (estilo [Matt Pocock](h
 │   ├── decisiones/                    # decisiones estructurales (INDICE.md)
 │   └── scripts/                       # tooling del harness, uno por carpeta + INDICE.md
 ├── .claude-plugin/
-│   └── marketplace.json               # catálogo del marketplace (lista los 9 plugins)
+│   └── marketplace.json               # catálogo del marketplace (lista los 10 plugins)
 └── funcionalidades/                   # cada subcarpeta = un plugin
     ├── memoria-local/                 # sistema de memoria (infraestructura base)
     ├── preferencias-trabajo/          # preferencias de comunicación + principios
@@ -28,7 +28,8 @@ Es a la vez un **marketplace de plugins de Claude Code** (estilo [Matt Pocock](h
     ├── glosario/                      # glosario del dominio (tabla + alias + lint)
     ├── decisiones/                    # registro de decisiones estructurales + lint
     ├── scripts/                       # gestión de scripts (registro + lint)
-    └── setup-completo/                # orquestador: instala todo (skill inicializar-custom)
+    ├── setup-completo/                # orquestador: instala todo (skill inicializar-custom)
+    └── planificar/                    # skill de análisis (operacional, no instala; skill planificar)
 ```
 
 Cada funcionalidad/plugin tiene adentro:
@@ -71,7 +72,7 @@ Repo privado: el install es un `git clone` por debajo; alcanza con tener git aut
 
 ## Desarrollo local (junctions)
 
-En **esta** máquina los 9 skills están enlazados por **junction** (NTFS) desde `~/.claude/skills/` hacia cada `funcionalidades/<n>/skills/<nombre-skill>` — fuente única para editar en vivo, sin pasar por el cache de plugins. Recrear en otra máquina de desarrollo:
+En **esta** máquina los 10 skills están enlazados por **junction** (NTFS) desde `~/.claude/skills/` hacia cada `funcionalidades/<n>/skills/<nombre-skill>` — fuente única para editar en vivo, sin pasar por el cache de plugins. Recrear en otra máquina de desarrollo:
 
 ```powershell
 New-Item -ItemType Junction `

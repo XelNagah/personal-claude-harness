@@ -13,6 +13,7 @@ Catálogo de lo que este repo puede instalar en un proyecto nuevo. Cada funciona
 | **decisiones** | Registro de decisiones estructurales en `decisiones/` (tabla + detalle, **no ADR**) + lint. Coherencia decisional. | memoria-local | [`decisiones/`](funcionalidades/decisiones/) |
 | **scripts** | Gestión de scripts: cada tool en `scripts/<tool>/` con README, registro-tabla + lint. Ordena el cementerio de scripts. | memoria-local | [`scripts/`](funcionalidades/scripts/) |
 | **setup-completo** | Orquestador: instala las ocho de convención de una pasada. Conserva el skill `inicializar-custom`. | (las ocho) | [`setup-completo/`](funcionalidades/setup-completo/) |
+| **planificar** | Skill de análisis: interroga un plan contra la sabiduría del repo (glosario + decisiones + conocimiento) hasta acuerdo y lo critica (problemas, faltantes, sobreingeniería). **Operacional**: no instala nada ni entra al orquestador. Reemplaza `grill-with-docs`. | (usa glosario/decisiones/conocimiento) | [`planificar/`](funcionalidades/planificar/) |
 
 ## Plugin y skill (Claude Code)
 
@@ -27,11 +28,12 @@ Catálogo de lo que este repo puede instalar en un proyecto nuevo. Cada funciona
 | decisiones | `decisiones@xelnagah-harness` | `inicializar-decisiones` |
 | scripts | `scripts@xelnagah-harness` | `inicializar-scripts` |
 | setup-completo | `setup-completo@xelnagah-harness` | `inicializar-custom` |
+| planificar | `planificar@xelnagah-harness` | `planificar` |
 
 > **Instalar en otra PC:** `/plugin marketplace add <owner>/<repo>` y después `/plugin install <plugin>@xelnagah-harness` (ver [README](README.md#instalación-en-otra-pc-marketplace-de-plugins)).
-> **En esta máquina** los 9 skills están enlazados por junction (autoría/edición en vivo). No mezclar junction + plugin del mismo skill en una misma máquina.
+> **En esta máquina** los 10 skills están enlazados por junction (autoría/edición en vivo). No mezclar junction + plugin del mismo skill en una misma máquina.
 > Las piezas siempre se pueden usar vía su `prompt.md` sin instalar nada.
-> **Pendiente:** `planificar` — skill de análisis/grilling que interroga un plan contra la sabiduría del repo (glosario + decisiones + conocimiento) hasta llegar a acuerdo, y lo critica (problemas, faltantes, sobreingeniería). Reemplaza a `grill-with-docs`. Operacional, no se instala por-repo. En diseño; se suma cuando se reconcilie el `/analizar-plan` de la oficina.
+> **Nota:** `planificar` es la única funcionalidad **operacional** (no instala nada en el repo destino; se invoca y opera). Las otras nueve instalan convención. Por eso `planificar` no entra al orquestador.
 
 ## Cómo agregar una funcionalidad nueva
 

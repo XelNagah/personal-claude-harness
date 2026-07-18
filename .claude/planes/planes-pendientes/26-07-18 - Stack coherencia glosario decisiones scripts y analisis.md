@@ -52,4 +52,13 @@ Sacar la convención de scripts de: `funcionalidades/conocimiento/skills/.../PLA
 `claude plugin validate .` (10 plugins) · `inicializar-custom` en scratch instala 8 · regresión lint-decisiones (hueco de numeración, fuera de índice) · regresión lint-scripts (tool sin README, fuera de registro, ref por ruta rota) · dueño único de scripts (grep en conocimiento) · skill análisis interroga hasta acuerdo + marca conflicto de término y decisión contradictoria · barrido conteos 6→10 · commits español sin Co-Authored-By.
 
 ## Notas de ejecución
-_(se completan al implementar: hashes de commit, divergencias vs lo planificado)_
+
+- **26-07-18, commit `7db0666`** — construidas y aplicadas glosario, decisiones y scripts (funcionalidades + lints probados + orquestador + REGISTRO/README/CLAUDE + junctions + dogfooding sobre este repo). `claude plugin validate .` verde con 9 plugins; los 4 lints corren limpios sobre este repo.
+- **Divergencias vs lo planificado:**
+  - Glosario/decisiones: formato revisado a **tabla + detalle opcional** (no "canónico simple") y **alias registrados, no prohibidos** (pedido del user).
+  - Decisiones: criterio acotado a lo **estructural al propósito** (no solo "elige entre varias").
+  - Naming: **todos los índices se llaman `INDICE.md`** (unificado; el directorio dice qué son).
+  - Skill de análisis renombrada a **`planificar`** (funcionalidad + skill).
+- **26-07-18 — `planificar` construida** (funcionalidad + skill + prompt agnóstico + marketplace + junction + docs a 10). No estaba bloqueada: el `/analizar-plan` de la oficina era pulido opcional, no requisito (mala caracterización mía). Incorpora: recorrer el árbol de decisión, agrupar preguntas independientes en tandas (dejar los cruces que mandan de a una), cola final en una tanda, y **siempre sugerir la respuesta recomendada** (sugerencia para agilizar, NO default que se toma solo — el usuario siempre responde).
+- **Pulido opcional pendiente:** fusionar lo que aporte el `/analizar-plan` de la oficina cuando el user lo traiga.
+- Sin pushear todavía (commits locales `7db0666` + el de planificar).

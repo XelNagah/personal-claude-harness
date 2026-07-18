@@ -50,6 +50,11 @@
       "name": "setup-completo",
       "source": "./funcionalidades/setup-completo",
       "description": "Orquestador: instala el setup completo (skill inicializar-custom)."
+    },
+    {
+      "name": "planificar",
+      "source": "./funcionalidades/planificar",
+      "description": "Skill de análisis (skill planificar): interroga un plan contra la sabiduría del repo y lo critica. Reemplaza grill-with-docs. Operacional, no se instala por-repo."
     }
   ]
 }
