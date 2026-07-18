@@ -1,6 +1,6 @@
 # Rework del README raíz + patrón carpeta-índice-lint + audit de sub-README
 
-**Estado: en diseño · Creado 26-07-18.** Foco. Refinado en la sesión de `/planificar` (26-07-18). Depende del plan [Completar cobertura de lint mecánico](Completar%20cobertura%20de%20lint%20mecanico%20-%20memoria%20y%20preferencias.md) (para describir el patrón 6/6 sin excepciones).
+**Estado: listo · Creado 26-07-18.** Foco. Refinado en dos sesiones de `/planificar` (26-07-18). Dep [Completar cobertura de lint mecánico](../ejecutados/Completar%20cobertura%20de%20lint%20mecanico%20-%20memoria%20y%20preferencias.md) **ya cerrada**: el patrón es 6/6 sin excepciones.
 
 ## Objetivo
 
@@ -29,7 +29,11 @@ Términos afinados en glosario: `propósito`, `multipropósito`, `subsistema`, `
 7. **Con otro agente (no Claude Code)** — pegar el `prompt.md` agnóstico.
 8. **Uso avanzado** — piezas sueltas · desarrollo local (junctions/symlinks) · repo privado/auto-update · mantenimiento → `REGISTRO.md`.
 
-## Mermaid acordado (borrador; iterar si al render no cierra — el user está en el teléfono)
+**Altitud (2ª sesión):** se conservan las 8 secciones (README autocontenido), pero 7-8 quedan **marcadas explícitamente como avanzado** al final: el que skimea corta antes de llegar; el que necesita el detalle lo tiene sin saltar a otro archivo. No se podan a `REGISTRO.md`.
+
+## Mermaid — validar render antes de escribir el README (2ª sesión)
+
+Es un formato nuevo y visual. **Antes** de reescribir el README: renderizar el mermaid a imagen y mandárselo al usuario para aprobar/corregir (está en el teléfono; evita commitear un diagrama que en GitHub no cierra). Recién con el OK se escribe el README. Borrador acordado abajo (iterar sobre él si el render no cierra).
 
 ```mermaid
 flowchart TD
@@ -57,10 +61,27 @@ Los 10 ya existen y siguen la forma (título + párrafo → "Qué agrega al repo
 ## Alcance / archivos
 - `README.md` (raíz) — reescritura según las 8 secciones.
 - `funcionalidades/*/README.md` (×10) — pase de consistencia acotado.
-- Coherencia con `CLAUDE.md` y `REGISTRO.md` (no duplicar; linkear). Ojo: `CLAUDE.md` línea 3 y `REGISTRO.md` abren con "marketplace de plugins de Claude Code / mis repositorios" — evaluar si armonizar con el reencuadre multipropósito o dejar (son internos).
+- **`CLAUDE.md` → Objetivo** — reescribir del encuadre viejo ("inicializar rápido mis repositorios con mis preferencias") al **multipropósito** (decisión 0001). Definido en la 2ª sesión: armonizar, no dejar — dejarlo divergente crearía una contradicción semántica público/interno.
+- **`REGISTRO.md` línea 3** — reencuadrar la apertura ("Catálogo de lo que este repo puede instalar en un proyecto nuevo") al mismo encuadre multipropósito.
+- Coherencia general con `CLAUDE.md`/`REGISTRO.md`: no duplicar, linkear.
+- **Fuera de alcance:** el nombre del repo/carpeta ("Inicializador de Repos Custom") queda — renombrar rompe los targets de los junctions y las rutas; es etiqueta, no encuadre. Si se quiere, es su propio plan.
+
+## Notas de implementación
+
+Ejecutado 26-07-18.
+
+- **Diagramas:** el mermaid se partió en **dos** (decidido en sesión, no estaba en el borrador): diagrama 1 = bucle de aprendizaje de alto nivel (propósito → trabajar → aprender → persistir → más capaz, con retorno "compone"); diagrama 2 = mecanismo índice + entradas + lint. Aprobados por render antes de escribir. Quedaron como primera iteración.
+- **README raíz:** reescrito a las 8 secciones; cola avanzada (7-8) separada con regla + nota "saltalas si solo querés instalar".
+- **Armonización:** Objetivo de `CLAUDE.md` y apertura de `REGISTRO.md` al encuadre multipropósito (decisión 0001).
+- **6 sub-README de acumulación:** línea del patrón con link a `README#cómo-aprende`. En conocimiento se sacó "grafo" (chocaba con decisión 0002).
+- **Terminología:** durante la ejecución se coló "acretar" (palabra inventada); el usuario lo marcó → decisión **0004 ampliada** (español corriente en todo, ratificada) + plan estacionado *Propagar guardarraíl al harness*.
+- **Detectado de paso:** README de `setup-completo` stale (dice 4, instala 8) → plan estacionado propio.
+- **Lints:** harness, preferencias, decisiones, planes — todos verdes.
 
 ## Verificación
-- README se lee de corrido y ubica al recién llegado sin pedir contexto técnico.
+- Mermaid renderizado y aprobado por el usuario **antes** de escribir el README.
+- README se lee de corrido y ubica al recién llegado sin pedir contexto técnico; secciones 7-8 marcadas como avanzado.
+- CLAUDE.md (Objetivo) y REGISTRO.md (apertura) armonizados al encuadre multipropósito: sin contradicción con la decisión 0001 ni entre público/interno.
 - Los 6 sub-README de acumulación arrancan con el patrón; cubren qué/cómo/estructura/lint.
 - Sin refs rotas a `REGISTRO.md`/`CLAUDE.md`.
 - `node .claude/scripts/lint-harness/lint-harness.js` verde.
