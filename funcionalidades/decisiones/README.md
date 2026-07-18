@@ -2,6 +2,8 @@
 
 Instala un **registro de decisiones** del repo, con la misma estructura que el glosario: una tabla donde lo simple vive en la fila y lo complejo linkea a una página de detalle propia. Se consulta al planificar y analizar para mantener **coherencia decisional** — no re-decidir ni contradecir lo ya resuelto.
 
+> **Subsistema de acumulación** — sigue el patrón índice + entradas + lint del harness ([cómo aprende](../../README.md#cómo-aprende)). Acá el índice es `decisiones/INDICE.md`.
+
 > **No son "ADR".** La sigla ADR (*Architecture Decision Record*) viene del software y asume "arquitectura". Estos repos son de propósito general, así que se cae la "A" — pero se conserva su función de **acotar**: solo lo estructural, no cada elección operativa.
 
 ## Qué se registra

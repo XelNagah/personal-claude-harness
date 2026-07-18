@@ -2,6 +2,8 @@
 
 Instala el ciclo de planes del usuario: **carpetas = ciclo de vida grueso** (`pendientes/` como backlog amplio, `ejecutados/` y `descartados/` como registro), **registro `PLANES.md` = lo fino** (prioridad foco/estacionado, estado, fechas de creación y cierre, origen). Nombres de plan = slug estable sin fecha. Con `lint-planes` + hook de inicio de sesión como trigger mecánico — sin él, mover planes depende de acordarse y no se sostiene.
 
+> **Subsistema de acumulación** — sigue el patrón índice + entradas + lint del harness ([cómo aprende](../../README.md#cómo-aprende)). Acá el índice es `PLANES.md` y las entradas son los planes en `pendientes/ejecutados/descartados/`.
+
 ## Qué agrega al repo destino
 
 ```

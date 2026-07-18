@@ -2,6 +2,8 @@
 
 Instala la convención de scripts del repo: cada herramienta en su carpeta `<tool>/` con un README, listadas en un registro-tabla, con un lint. Ordena el **cementerio de scripts** — esa carpeta llena de archivos sueltos sin saber qué son, de dónde salieron ni cómo se usan. Mismo patrón que glosario/decisiones.
 
+> **Subsistema de acumulación** — sigue el patrón índice + entradas + lint del harness ([cómo aprende](../../README.md#cómo-aprende)). Acá el índice es `scripts/INDICE.md` y cada entrada abre la carpeta `<tool>/`.
+
 ## Qué agrega al repo destino
 
 ```

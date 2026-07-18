@@ -1,96 +1,129 @@
 # Inicializador de Repos Custom — jllarens
 
-Fuente de verdad de mi setup estándar de trabajo con agentes de código. Sirve para **inicializar un repo nuevo** con las funcionalidades a las que ya estoy acostumbrado (gestión de planes persistida, memoria local, base de conocimiento, glosario del dominio, registro de decisiones, gestión de scripts, estilo de commits, preferencias de comunicación), y se va actualizando a medida que esas preferencias cambian.
+Herramientas para agentes de código de **propósito general**. Vos le decís al repo **qué querés lograr** (llevar la contabilidad, analizar dónde mudarte, probar modelos de IA) y el agente construye ese dominio **sesión a sesión**: aprende algo, lo persiste fuera de la memoria efímera del chat, y por eso la próxima vez arranca más capaz. El mismo setup sirve a cualquier propósito.
 
-Es a la vez un **marketplace de plugins de Claude Code** (estilo [Matt Pocock](https://github.com/mattpocock)) y una colección de **prompts agnósticos**. Cada funcionalidad existe en los dos formatos.
+Se instala sobre un **repo vacío** o sobre uno que **ya tenga cosas** — es idempotente y reconciliable: inspecciona lo que hay, agrega lo que falta y no pisa lo que difiere.
 
-## Estructura
+## Ejemplos
 
+El propósito lo ponés vos. Tres reales:
+
+- **Contable** — un agente que lleva las cuentas en GnuCash (por MCP) y sincroniza los archivos por Dropbox. Su glosario son las cuentas y categorías; sus decisiones, los criterios de imputación.
+- **Modelos de IA** — un agente que baja modelos, los prueba y anota qué anduvo. Su conocimiento son los benchmarks; sus planes, la cola de experimentos.
+- **Mudanza** — un agente que analiza casas para elegir dónde mudarse. Su glosario son los barrios y criterios; sus decisiones, los descartes y por qué.
+
+Mismo harness, tres dominios. Lo que cambia es lo que se acumula adentro.
+
+## Qué te da
+
+Diez funcionalidades, cada una instalable suelta o todas juntas. En tres capas:
+
+- **Base (siempre en contexto):**
+  - **preferencias-trabajo** — cómo trabaja el agente (comunicación + principios), versionadas e importadas siempre al contexto.
+  - **memoria-local** — `memory/` + índice `MEMORY.md`: un `.md` por hecho, tipado. Es la infraestructura sobre la que se apoyan las demás.
+- **Subsistemas que acumulan** (patrón índice + entradas + lint, ver [Cómo aprende](#cómo-aprende)):
+  - **conocimiento** — lo que el agente sabe del dominio.
+  - **glosario** — la terminología del dominio (conceptos + alias registrados).
+  - **decisiones** — las decisiones estructurales, para no re-decidir ni contradecir.
+  - **gestion-de-planes** — el ciclo pendientes → ejecutados / descartados, con registro.
+  - **scripts** — cada herramienta en su carpeta, ordenada en un registro.
+  - **estilo-commits** — convención de commits (español, sin co-autoría de IA), como memoria.
+- **Orquestación:**
+  - **setup-completo** — arma el setup estándar de una pasada (skill `inicializar-custom`).
+  - **planificar** — sesión de análisis que interroga un plan contra la sabiduría del repo.
+
+## Cómo aprende
+
+El corazón del harness es un **bucle de aprendizaje**: hay un propósito, el agente trabaja hacia él, aprende algo (una decisión, un término, un plan, un hecho), lo **persiste** por escrito, y por eso arranca más capaz la próxima vez — y **compone**: cada sesión suma sobre la anterior.
+
+```mermaid
+flowchart TD
+    P(["PROPÓSITO<br/>lo que querés lograr"])
+    W["el agente TRABAJA la sesión<br/>hacia el propósito"]
+    L["APRENDE algo<br/>una decisión · un término · un plan · un hecho"]
+    S["lo PERSISTE<br/>queda escrito · fuera del chat efímero"]
+    C["arranca MÁS CAPAZ<br/>y compone: cada sesión suma"]
+    P --> W
+    W --> L
+    L --> S
+    S --> C
+    C -->|vuelve a trabajar, sabiendo más| W
 ```
-├── README.md                          # este archivo
-├── REGISTRO.md                        # catálogo de funcionalidades (qué agrega cada una)
-├── .claude/                           # el propio setup estándar, aplicado a este repo
-│   ├── CLAUDE.md                      # instrucciones internas de este repo
-│   ├── memory/                        # memoria local + índice MEMORY.md
-│   ├── planes/                        # planes-pendientes/ + planes-ejecutados/
-│   ├── conocimiento/                  # lo que el agente sabe (INDICE.md)
-│   ├── glosario/                      # terminología del dominio (INDICE.md)
-│   ├── decisiones/                    # decisiones estructurales (INDICE.md)
-│   └── scripts/                       # tooling del harness, uno por carpeta + INDICE.md
-├── .claude-plugin/
-│   └── marketplace.json               # catálogo del marketplace (lista los 10 plugins)
-└── funcionalidades/                   # cada subcarpeta = un plugin
-    ├── memoria-local/                 # sistema de memoria (infraestructura base)
-    ├── preferencias-trabajo/          # preferencias de comunicación + principios
-    ├── gestion-de-planes/             # ciclo planes pendientes→ejecutados
-    ├── estilo-commits/                # commits en español, sin co-autoría de IA
-    ├── conocimiento/                  # base de conocimiento + lint de integridad
-    ├── glosario/                      # glosario del dominio (tabla + alias + lint)
-    ├── decisiones/                    # registro de decisiones estructurales + lint
-    ├── scripts/                       # gestión de scripts (registro + lint)
-    ├── setup-completo/                # orquestador: instala todo (skill inicializar-custom)
-    └── planificar/                    # skill de análisis (operacional, no instala; skill planificar)
+
+Para que ese "lo persiste" sea confiable, cada subsistema sigue el mismo **patrón índice + entradas + lint**. Un `INDICE.md` (siempre en contexto) contiene **entradas**; cada entrada puede abrir un **documento** de detalle (opcional) o una **carpeta con su propio índice** (recursión). Un **lint mecánico** valida la coherencia — sin LLM, sin red.
+
+```mermaid
+flowchart TD
+    IDX["INDICE.md<br/>punteros · siempre en contexto"]
+    E["entradas<br/>una por tema"]
+    D["documento .md<br/>el detalle · opcional"]
+    F["carpeta con su índice<br/>recursión del patrón"]
+    LINT[["lint mecánico"]]
+    IDX -->|contiene| E
+    E -->|puede abrir| D
+    E -->|o una| F
+    LINT -.->|valida: refs · huérfanos · índice · colisiones| IDX
 ```
 
-Cada funcionalidad/plugin tiene adentro:
+Los subsistemas **nacen vacíos** y se van llenando con lo aprendido. La integridad tiene dos capas: la **mecánica** (los lints, obligatoria para todo subsistema que persiste estado) y la **semántica** (contradicciones, duplicación, staleness — requiere entender el significado; hoy informal).
 
-```
-funcionalidades/<nombre>/
-├── .claude-plugin/plugin.json         # manifiesto del plugin
-├── README.md                          # qué hace
-├── prompt.md                          # versión agnóstica de agente
-└── skills/<nombre-skill>/             # versión Claude Code
-    ├── SKILL.md
-    └── PLANTILLA.md                   # si lleva textos verbatim
-```
+## Cómo se usa
 
-Los dos formatos intercambiables:
-
-- **Skill / plugin** — para Claude Code, instalable por marketplace e invocable por nombre.
-- **Prompt agnóstico** — texto para pegar a cualquier agente (Codex, Cursor, Copilot, Gemini CLI…), que arma el equivalente en su propio harness.
-
-Ver [REGISTRO.md](REGISTRO.md) para el catálogo completo.
-
-## Instalación en otra PC (marketplace de plugins)
-
-Este repo es un marketplace de Claude Code. En la PC destino (con git autenticado contra el repo — `gh auth login` o SSH si es privado):
+El camino cómodo, con Claude Code, parado en la raíz del repo a inicializar:
 
 ```shell
-# 1. Registrar el marketplace (GitHub owner/repo, o git URL para privado)
+# 1. Registrar el marketplace (una vez, con git autenticado contra el repo)
 /plugin marketplace add XelNagah/personal-claude-harness
 
-# 2a. Setup completo de una pasada (instala el orquestador)
+# 2. Instalar el orquestador
 /plugin install setup-completo@xelnagah-harness
 
-# 2b. …o una pieza suelta
-/plugin install gestion-de-planes@xelnagah-harness
+# 3. En el repo a inicializar, invocar el skill
+inicializar-custom
 ```
 
-Después, en el repo a inicializar, invocar el skill (`inicializar-custom`, `inicializar-gestion-planes`, etc.).
+A partir de ahí, trabajás normal: el agente lee sus índices al arrancar y escribe lo aprendido al cerrar. El catálogo completo de funcionalidades, dependencias y nombres de skill está en [REGISTRO.md](REGISTRO.md).
 
-Repo privado: el install es un `git clone` por debajo; alcanza con tener git autenticado. Para auto-update en background, exportar `GITHUB_TOKEN` con scope `repo`.
+## Estructura del repo
 
-## Desarrollo local (junctions)
-
-En **esta** máquina los 10 skills están enlazados por **junction** (NTFS) desde `~/.claude/skills/` hacia cada `funcionalidades/<n>/skills/<nombre-skill>` — fuente única para editar en vivo, sin pasar por el cache de plugins. Recrear en otra máquina de desarrollo:
-
-```powershell
-New-Item -ItemType Junction `
-  -Path   "$env:USERPROFILE\.claude\skills\inicializar-custom" `
-  -Target "<ruta-repo>\funcionalidades\setup-completo\skills\inicializar-custom"
+```
+├── README.md                  # este archivo
+├── REGISTRO.md                # catálogo de funcionalidades
+├── .claude/                   # el propio setup, aplicado a este repo
+│   ├── CLAUDE.md              # instrucciones internas
+│   ├── memory/ preferencias/ planes/ conocimiento/ glosario/ decisiones/ scripts/
+│   └── ...                    # cada subsistema con su índice + lint
+├── .claude-plugin/
+│   └── marketplace.json       # catálogo del marketplace (10 plugins)
+└── funcionalidades/           # cada subcarpeta = un plugin
+    └── <nombre>/              # plugin.json + README + prompt.md + skills/<skill>/
 ```
 
-En **Linux/macOS** el equivalente es un symlink:
+El detalle de cada funcionalidad vive en su `funcionalidades/<nombre>/README.md`; el de la mecánica interna, en [`.claude/CLAUDE.md`](.claude/CLAUDE.md) y [REGISTRO.md](REGISTRO.md).
 
-```bash
-ln -s "<ruta-repo>/funcionalidades/setup-completo/skills/inicializar-custom" \
-  ~/.claude/skills/inicializar-custom
-```
+---
 
-> No mezclar en la misma máquina: junction/symlink **o** plugin instalado para un mismo skill, no ambos (colisionan por nombre). Enlace = autoría; plugin = distribución.
+_Las dos secciones que siguen son de uso avanzado — saltalas si solo querés instalar y usar._
 
-## Uso
+## Con otro agente (no Claude Code)
 
-- **Setup completo con Claude Code:** invocar el skill `inicializar-custom` parado en la raíz del proyecto.
-- **Una funcionalidad puntual:** invocar su skill (p. ej. `inicializar-gestion-planes`) o pegar su `funcionalidades/<nombre>/prompt.md`.
-- **Con otro agente** (Codex, Cursor, Copilot…): pegar el `prompt.md` de la funcionalidad que quieras.
+Cada funcionalidad existe en **dos formatos** intercambiables:
+
+- **Skill / plugin** — para Claude Code, instalable por marketplace e invocable por nombre.
+- **Prompt agnóstico** — el `funcionalidades/<nombre>/prompt.md`: texto para pegar a cualquier agente (Codex, Cursor, Copilot, Gemini CLI…), que arma el equivalente en su propio harness.
+
+Para usar el harness con otro agente, pegá el `prompt.md` de la funcionalidad que quieras.
+
+## Uso avanzado
+
+- **Piezas sueltas** — cada funcionalidad se instala sola: `/plugin install gestion-de-planes@xelnagah-harness`, o su skill `inicializar-<nombre>`, o su `prompt.md`.
+- **Desarrollo local (junctions / symlinks)** — en esta máquina los 10 skills están enlazados por **junction** (NTFS) desde `~/.claude/skills/` hacia cada `funcionalidades/<n>/skills/<skill>` — fuente única para editar en vivo sin pasar por el cache de plugins. En Linux/macOS el equivalente es `ln -s`. No mezclar enlace + plugin del mismo skill en una máquina (colisionan por nombre).
+
+  ```powershell
+  New-Item -ItemType Junction `
+    -Path   "$env:USERPROFILE\.claude\skills\inicializar-custom" `
+    -Target "<ruta-repo>\funcionalidades\setup-completo\skills\inicializar-custom"
+  ```
+
+- **Repo privado / auto-update** — el install es un `git clone` por debajo; alcanza con git autenticado (`gh auth login` o SSH). Para auto-update en background, exportar `GITHUB_TOKEN` con scope `repo`.
+- **Mantenimiento** — cómo agregar una funcionalidad, propagar un cambio a los dos formatos y validar el marketplace: en [REGISTRO.md](REGISTRO.md) y [`.claude/CLAUDE.md`](.claude/CLAUDE.md).

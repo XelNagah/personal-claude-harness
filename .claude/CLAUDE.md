@@ -1,6 +1,6 @@
 # Inicializador de Repos Custom — jllarens
 
-**Objetivo:** poder inicializar rápido mis repositorios con mis preferencias de trabajo (gestión de planes persistida, memoria local, estilo de commits, preferencias de comunicación). Este proyecto se va a ir actualizando a medida que esas preferencias cambien — es la fuente de verdad del setup estándar.
+**Objetivo:** herramientas para agentes de código de **propósito general** (multipropósito). El usuario define el propósito del repo (contabilidad, análisis de mudanza, prueba de modelos…) y los subsistemas se llenan con lo aprendido para lograrlo, sesión a sesión. Se instala sobre un repo vacío o sobre uno que ya tenga cosas (idempotente/reconciliable). Este repo es la **fuente de verdad del setup estándar** y se actualiza a medida que las preferencias cambian.
 
 El repo es a la vez un **marketplace de plugins de Claude Code** (estilo Matt Pocock, https://github.com/mattpocock) y una colección de prompts agnósticos. Cada funcionalidad = un plugin.
 

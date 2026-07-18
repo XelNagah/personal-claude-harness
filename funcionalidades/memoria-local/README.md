@@ -2,6 +2,8 @@
 
 Instala el sistema de **memoria local persistida** del usuario: un directorio `memory/` con un índice y un archivo `.md` por hecho, tipado con frontmatter. Es infraestructura base — otras funcionalidades (`gestion-de-planes`, `estilo-commits`) guardan sus memorias acá.
 
+> **Subsistema de acumulación** — sigue el patrón índice + entradas + lint del harness ([cómo aprende](../../README.md#cómo-aprende)). Acá el índice es `MEMORY.md`.
+
 ## Qué agrega al repo destino
 
 ```

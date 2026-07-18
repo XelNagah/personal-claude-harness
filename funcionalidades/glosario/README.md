@@ -2,6 +2,8 @@
 
 Instala un **glosario del dominio** del repo: una tabla de conceptos (nombre canónico, definición, alias registrados) donde los conceptos complejos linkean a una página de detalle propia. Se consulta al planificar y analizar para mantener **coherencia semántica** a lo largo de la vida del repo.
 
+> **Subsistema de acumulación** — sigue el patrón índice + entradas + lint del harness ([cómo aprende](../../README.md#cómo-aprende)). Acá el índice es `glosario/INDICE.md`.
+
 ## Qué agrega al repo destino
 
 ```

@@ -1,6 +1,8 @@
 # Base de conocimiento
 
-Instala la convención de **base de conocimiento** del usuario: una carpeta única donde vive todo lo que el agente sabe, más un **lint de integridad** que mantiene sano el grafo índice→páginas→referencias.
+Instala la convención de **base de conocimiento** del usuario: una carpeta única donde vive todo lo que el agente sabe, más un **lint de integridad** que mantiene sanas las referencias índice → páginas.
+
+> **Subsistema de acumulación** — sigue el patrón índice + entradas + lint del harness ([cómo aprende](../../README.md#cómo-aprende)). Acá el índice es `conocimiento/INDICE.md`.
 
 ## Qué agrega al repo destino
 
