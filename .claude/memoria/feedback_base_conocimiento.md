@@ -7,7 +7,7 @@ metadata:
 
 El conocimiento persistido del agente (documentos, estudios, temas, notas de dominio) vive en una carpeta única: `.claude/conocimiento/`, con un `INDICE.md` en su raíz. (La convención de dónde viven las herramientas/scripts la define la memoria [[scripts]].)
 
-**Why:** ubicación determinística → el lint y cualquier consulta saben dónde mirar sin heurística; separa lo que el agente CONOCE (`conocimiento/`) de su config (`memory/`, `CLAUDE.md`) y su tooling (`scripts/`); mantiene la raíz del repo limpia.
+**Why:** ubicación determinística → el lint y cualquier consulta saben dónde mirar sin heurística; separa lo que el agente CONOCE (`conocimiento/`) de su config (`memoria/`, `CLAUDE.md`) y su tooling (`scripts/`); mantiene la raíz del repo limpia.
 
 **How to apply:**
 

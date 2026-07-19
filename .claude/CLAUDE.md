@@ -11,9 +11,9 @@ El repo es a la vez un **marketplace de plugins de Claude Code** (estilo Matt Po
 ├── REGISTRO.md                                # catálogo de funcionalidades
 ├── .claude/                                   # el propio setup estándar, aplicado a este repo
 │   ├── CLAUDE.md                              # este archivo (instrucciones internas)
-│   ├── memory/                                # memoria local + índice MEMORY.md
+│   ├── memoria/                                # memoria local + índice MEMORIA.md
 │   ├── preferencias/                          # PREFERENCIAS.md (Base versionada + Adaptaciones)
-│   ├── planes/                                # PLANES.md (registro) + pendientes/ ejecutados/ descartados/
+│   ├── planes/                                # PLANES.md (registro) + ESTADOS.md (estados) + pendientes/ ejecutados/ descartados/
 │   ├── conocimiento/                          # lo que el agente sabe (INDICE.md)
 │   ├── glosario/                              # terminología del dominio (INDICE.md)
 │   ├── decisiones/                            # decisiones estructurales (INDICE.md)
@@ -26,7 +26,7 @@ El repo es a la vez un **marketplace de plugins de Claude Code** (estilo Matt Po
 │       └── lint-harness/                      # lint de coherencia del harness (disco↔marketplace↔REGISTRO, junctions, verbatim)
 ├── .claude-plugin/marketplace.json            # catálogo del marketplace (10 plugins)
 └── funcionalidades/                           # cada subcarpeta = un plugin
-    ├── memoria-local/                         # infra: memory/ + MEMORY.md + Mapa del repo (@imports)
+    ├── memoria-local/                         # infra: memoria/ + MEMORIA.md + Mapa del repo (@imports)
     ├── preferencias-trabajo/                  # preferencias versionadas Base/Adaptaciones (@import)
     ├── gestion-de-planes/                     # ciclo pendientes/ejecutados/descartados + PLANES.md + lint + hook (dep: memoria-local)
     ├── estilo-commits/                        # memoria de commits (dep: memoria-local)
@@ -58,8 +58,8 @@ New-Item -ItemType Junction -Path "$env:USERPROFILE\.claude\skills\inicializar-c
 
 - **Cambia una preferencia** → actualizar los **dos formatos** de la funcionalidad afectada (`prompt.md` agnóstico y `skills/<nombre-skill>/` Claude Code) **y** el orquestador `setup-completo` (su `PLANTILLA.md` y `prompt.md` duplican los textos verbatim, porque tanto el junction como el cache de plugins aíslan la carpeta del skill — no pueden leer las piezas en runtime). Divergentes en forma, no en contenido.
 - **Agregar una funcionalidad nueva** → crear `funcionalidades/<nombre>/` (plugin.json + README + skills/<skill>/ + prompt.md), sumarla a `marketplace.json`, crear su junction si se edita en vivo, registrarla en `REGISTRO.md`, y sumarla al orquestador si es parte del setup base. Validar con `claude plugin validate .`. Procedimiento en `REGISTRO.md`.
-- **Dependencias actuales:** `gestion-de-planes` y `estilo-commits` dependen de `memoria-local` (guardan memorias en `memory/`). El orquestador respeta el orden: preferencias-trabajo → memoria-local → gestion-de-planes → estilo-commits.
-- **Idempotencia / leveling:** todo skill y prompt lleva una sección "Reconciliación (idempotencia)" — son seguros de re-correr y sirven para llevar al día repos a medio configurar. Reglas: inspeccionar antes de escribir, crear solo lo ausente, detectar equivalentes por tema (no pisar lo divergente, preguntar), reportar al final en tres baldes (`agregado` / `ya estaba` / `divergente`). Al tocar un workflow, conservar esa propiedad: nada de "Crear X" a secas sobre archivos compartidos (`CLAUDE.md`, `MEMORY.md`).
+- **Dependencias actuales:** `gestion-de-planes` y `estilo-commits` dependen de `memoria-local` (guardan memorias en `memoria/`). El orquestador respeta el orden: preferencias-trabajo → memoria-local → gestion-de-planes → estilo-commits.
+- **Idempotencia / leveling:** todo skill y prompt lleva una sección "Reconciliación (idempotencia)" — son seguros de re-correr y sirven para llevar al día repos a medio configurar. Reglas: inspeccionar antes de escribir, crear solo lo ausente, detectar equivalentes por tema (no pisar lo divergente, preguntar), reportar al final en tres baldes (`agregado` / `ya estaba` / `divergente`). Al tocar un workflow, conservar esa propiedad: nada de "Crear X" a secas sobre archivos compartidos (`CLAUDE.md`, `MEMORIA.md`).
 - **Versionado de plugins:** cada `plugin.json` tiene `version`. Con `version` fijo, los usuarios solo reciben update al bumpearlo; si se omite, cada commit cuenta como versión nueva. Hoy en `0.1.0` — bumpear al publicar cambios, o quitar `version` para auto-versionar por commit.
 
 ## Preferencias (siempre cargadas)
@@ -74,24 +74,24 @@ node .claude/scripts/lint-preferencias/lint-preferencias.js
 
 ## Mapa del repo (siempre cargado)
 
-@memory/MEMORY.md
+@memoria/MEMORIA.md
 @planes/PLANES.md
 @conocimiento/INDICE.md
 @scripts/INDICE.md
 
 ## Memoria del proyecto
 
-La memoria local vive en [`memory/`](memory/), indexada por [`memory/MEMORY.md`](memory/MEMORY.md). **Cargar el índice al inicio de cada sesión y respetar lo que dice.** Cada memoria es un `.md` propio con frontmatter (`name`, `description`, `metadata.type` ∈ `user` | `feedback` | `project` | `reference`); el índice lleva solo punteros, nunca contenido. Antes de crear una memoria nueva, revisar si una existente ya cubre el hecho — actualizar en vez de duplicar. Fechas siempre absolutas. Al cerrar una tarea que tocó la memoria, correr el lint **desde la raíz del repo**:
+La memoria local vive en [`memoria/`](memoria/), indexada por [`memoria/MEMORIA.md`](memoria/MEMORIA.md). **Cargar el índice al inicio de cada sesión y respetar lo que dice.** Cada memoria es un `.md` propio con frontmatter (`name`, `description`, `metadata.type` ∈ `user` | `feedback` | `project` | `reference`); el índice lleva solo punteros, nunca contenido. Antes de crear una memoria nueva, revisar si una existente ya cubre el hecho — actualizar en vez de duplicar. Fechas siempre absolutas. Al cerrar una tarea que tocó la memoria, correr el lint **desde la raíz del repo**:
 
 ```bash
 node .claude/scripts/lint-memoria/lint-memoria.js
 ```
 
-Chequea refs/wikilinks rotos, `MEMORY.md` incompleto, huérfanos y frontmatter inválido.
+Chequea refs/wikilinks rotos, `MEMORIA.md` incompleto, huérfanos y frontmatter inválido.
 
 ## Planes del proyecto
 
-Los planes se persisten en [`planes/`](planes/): `pendientes/` (backlog amplio — foco y estacionados), `ejecutados/` y `descartados/` (registro, con motivo). Nombre = slug estable sin fecha; prioridad, estado y fechas viven en el registro [`planes/PLANES.md`](planes/PLANES.md). Ciclo completo en la memoria [`feedback_flujo_planes.md`](memory/feedback_flujo_planes.md). Al cerrar una tarea que tocó planes, correr el lint **desde la raíz del repo**:
+Los planes se persisten en [`planes/`](planes/): `pendientes/` (planes vivos: `Nuevo`, `En curso`, `Diferido`), `ejecutados/` y `descartados/` (registro, con motivo). Nombre = slug estable sin fecha; estado y fechas viven en el registro [`planes/PLANES.md`](planes/PLANES.md), y los estados disponibles (con su carpeta y si son terminales) en [`planes/ESTADOS.md`](planes/ESTADOS.md) — configurable, que el lint lee. Ciclo completo en la memoria [`feedback_flujo_planes.md`](memoria/feedback_flujo_planes.md). Al cerrar una tarea que tocó planes, correr el lint **desde la raíz del repo**:
 
 ```bash
 node .claude/scripts/lint-planes/lint-planes.js
@@ -107,7 +107,7 @@ Al cerrar una tarea que escribió conocimiento, correr el lint mecánico **desde
 node .claude/scripts/lint-conocimiento/lint-conocimiento.js
 ```
 
-Chequea refs rotas, índice incompleto y huérfanos. Detalle de la convención en la memoria [`feedback_base_conocimiento.md`](memory/feedback_base_conocimiento.md).
+Chequea refs rotas, índice incompleto y huérfanos. Detalle de la convención en la memoria [`feedback_base_conocimiento.md`](memoria/feedback_base_conocimiento.md).
 
 ## Glosario del proyecto
 
@@ -117,7 +117,7 @@ La terminología del dominio vive en [`glosario/INDICE.md`](glosario/INDICE.md):
 node .claude/scripts/lint-glosario/lint-glosario.js
 ```
 
-Detalle de la convención en la memoria [`feedback_glosario.md`](memory/feedback_glosario.md).
+Detalle de la convención en la memoria [`feedback_glosario.md`](memoria/feedback_glosario.md).
 
 ## Decisiones del proyecto
 
@@ -127,7 +127,7 @@ Las decisiones **estructurales al propósito del repo** (no las operativas trivi
 node .claude/scripts/lint-decisiones/lint-decisiones.js
 ```
 
-Detalle de la convención en la memoria [`feedback_decisiones.md`](memory/feedback_decisiones.md).
+Detalle de la convención en la memoria [`feedback_decisiones.md`](memoria/feedback_decisiones.md).
 
 ## Scripts del proyecto
 
@@ -137,4 +137,4 @@ Las herramientas del repo viven en [`scripts/`](scripts/): cada script en su car
 node .claude/scripts/lint-scripts/lint-scripts.js
 ```
 
-Detalle de la convención en la memoria [`feedback_scripts.md`](memory/feedback_scripts.md).
+Detalle de la convención en la memoria [`feedback_scripts.md`](memoria/feedback_scripts.md).

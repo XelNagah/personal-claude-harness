@@ -8,10 +8,10 @@ Contenido exacto (Node, sin dependencias, sin red):
 
 ```js
 #!/usr/bin/env node
-// Lint de la memoria local: refs rotas, indice (MEMORY.md) incompleto, huerfanos, frontmatter. Sin LLM, sin red.
-// Uso: node lint-memoria.js [<carpeta>]   (default: .claude/memory)
+// Lint de la memoria local: refs rotas, indice (MEMORIA.md) incompleto, huerfanos, frontmatter. Sin LLM, sin red.
+// Uso: node lint-memoria.js [<carpeta>]   (default: .claude/memoria)
 const fs = require('fs'), path = require('path');
-const root = path.resolve(process.argv[2] || '.claude/memory');
+const root = path.resolve(process.argv[2] || '.claude/memoria');
 const EXCLUDE = new Set(['.git', 'node_modules']);
 const TYPES = new Set(['user', 'feedback', 'project', 'reference']);
 
@@ -29,10 +29,10 @@ const read = f => fs.readFileSync(f, 'utf8');
 const inRoot = p => path.resolve(p).startsWith(path.resolve(root) + path.sep);
 
 const all = walk(root, []);
-const indexFile = path.join(root, 'MEMORY.md');
+const indexFile = path.join(root, 'MEMORIA.md');
 const hasIndex = fs.existsSync(indexFile);
 const idxText = hasIndex ? read(indexFile) : '';
-const memos = all.filter(p => path.basename(p) !== 'MEMORY.md');
+const memos = all.filter(p => path.basename(p) !== 'MEMORIA.md');
 
 // nombres validos para wikilinks: `name:` del frontmatter + stem del archivo
 const nameSet = new Set();
@@ -48,7 +48,7 @@ const wiki = /\[\[([^\]]+?)\]\]/g;
 
 // [1] refs rotas: links a .md inexistentes + wikilinks sin memoria.
 // Una memoria puede linkear a otros subsistemas (planes/, conocimiento/, ...): se resuelve
-// tambien relativo a .claude/, a la raiz del repo y al cwd, no solo dentro de memory/.
+// tambien relativo a .claude/, a la raiz del repo y al cwd, no solo dentro de memoria/.
 const broken = [], referenced = new Set();
 for (const f of all) {
   const txt = read(f), fdir = path.dirname(f);
@@ -77,7 +77,7 @@ for (const f of all) {
   }
 }
 
-// [2] indice incompleto: memoria no listada en MEMORY.md (por archivo o por name)
+// [2] indice incompleto: memoria no listada en MEMORIA.md (por archivo o por name)
 const gaps = [];
 for (const p of memos) {
   const base = path.basename(p), stem = base.slice(0, -3);
@@ -108,13 +108,13 @@ for (const p of memos) {
 }
 
 console.log(`== LINT MEMORIA: ${root} ==`);
-console.log(`memorias: ${memos.length} | indice: ${hasIndex ? 'MEMORY.md' : 'FALTA'}\n`);
-if (!hasIndex) console.log('[!] No existe MEMORY.md (indice de memoria)\n');
+console.log(`memorias: ${memos.length} | indice: ${hasIndex ? 'MEMORIA.md' : 'FALTA'}\n`);
+if (!hasIndex) console.log('[!] No existe MEMORIA.md (indice de memoria)\n');
 console.log(`[1] REFS ROTAS (${broken.length}):`);
 broken.forEach(([f, r, w]) => console.log(`    ${f}  ->  ${r}   [${w}]`));
 if (!broken.length) console.log('    (ninguna)');
 console.log(`\n[2] INDICE INCOMPLETO (${gaps.length}):`);
-gaps.forEach(p => console.log(`    MEMORY.md  no lista  ${p}`));
+gaps.forEach(p => console.log(`    MEMORIA.md  no lista  ${p}`));
 if (!gaps.length) console.log('    (completo)');
 console.log(`\n[3] HUERFANOS (${orphans.length}):`);
 orphans.forEach(o => console.log(`    ${o}`));

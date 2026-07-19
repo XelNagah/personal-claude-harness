@@ -18,7 +18,7 @@ Solo decisiones **estructurales al propósito del repo**: las que definen cómo 
 ├── decisiones/
 │   ├── INDICE.md                      # tabla: N° | Decisión | Fecha | Estado | Detalle
 │   └── NNNN-slug.md                       # página de detalle, solo decisiones complejas
-├── memory/
+├── memoria/
 │   └── feedback_decisiones.md             # la convención, como memoria (+ índice)
 └── scripts/
     └── lint-decisiones/

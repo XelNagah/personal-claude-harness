@@ -1,6 +1,6 @@
 # Capa semántica de coherencia: contradicciones e incompatibilidades
 
-**Estado: idea · Creado 26-07-18.** Estacionado. Surgió en la sesión de `/planificar` del rework del README, del caso "preferencias mutuamente excluyentes". A analizar como parte del patrón/estructura general.
+**Estado: Diferido · Creado 26-07-18.** Surgió en la sesión de `/planificar` del rework del README, del caso "preferencias mutuamente excluyentes". A analizar como parte del patrón/estructura general.
 
 ## Objetivo
 

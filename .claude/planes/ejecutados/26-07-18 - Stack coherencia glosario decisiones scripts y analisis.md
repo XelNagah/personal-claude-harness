@@ -1,6 +1,6 @@
 # Stack de coherencia semántica y decisional: glosario, decisiones, scripts + análisis
 
-**Plan cerrado: 26-07-18 · Ejecutado: 26-07-18** (commits `7db0666` + `aebfb9c`). Cerrado y aprobado tras la sesión de análisis; reemplaza al placeholder EN DISEÑO del 26-07-17. Implementado el mismo día.
+**Plan cerrado: 26-07-18 · Ejecutado: 26-07-18** (commits `7db0666` + `aebfb9c`). Cerrado y aprobado tras la sesión de análisis; reemplaza al placeholder previo del 26-07-17. Implementado el mismo día.
 
 ## Objetivo
 
@@ -32,7 +32,7 @@ Registro-tabla `.claude/scripts/INDICE.md` (`Tool | Qué hace | Cómo se corre |
 Skill de grilling merge, español, propósito general, consume la "sabiduría del repo" (`.claude/glosario` + `.claude/decisiones` + `.claude/conocimiento`). "Entender qué hacer" vía interrogatorio hasta acuerdo + crítica de calidad. No entra al orquestador. Base: portar `analizar-con-docs` repuntado + lente de crítica de `/analizar-plan`. Alias `/planify` en repos en inglés.
 
 ## Refactor `conocimiento` (D4)
-Sacar la convención de scripts de: `funcionalidades/conocimiento/skills/.../PLANTILLA.md` (§Memoria), `funcionalidades/conocimiento/prompt.md` (paso 3), `funcionalidades/setup-completo/{prompt.md, .../PLANTILLA.md}`. En este repo: quitar scripts de `.claude/memory/feedback_base_conocimiento.md`, crear `.claude/memory/feedback_scripts.md`.
+Sacar la convención de scripts de: `funcionalidades/conocimiento/skills/.../PLANTILLA.md` (§Memoria), `funcionalidades/conocimiento/prompt.md` (paso 3), `funcionalidades/setup-completo/{prompt.md, .../PLANTILLA.md}`. En este repo: quitar scripts de `.claude/memoria/feedback_base_conocimiento.md`, crear `.claude/memoria/feedback_scripts.md`.
 
 ## Limpieza
 - Quitar `grill-with-docs` de uso (el user lo desinstala).

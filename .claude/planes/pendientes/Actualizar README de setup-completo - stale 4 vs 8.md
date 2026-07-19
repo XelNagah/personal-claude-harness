@@ -1,6 +1,6 @@
 # Actualizar el README de setup-completo (stale: dice 4, instala 8)
 
-**Estado: idea · Creado 26-07-18.** Estacionado. Origen: [Rework README raíz](../ejecutados/Rework%20README%20raiz%20+%20patron%20carpeta-indice-lint%20+%20audit%20sub-README.md) (detectado en el pase de sub-README).
+**Estado: Diferido · Creado 26-07-18.** Origen: [Rework README raíz](../ejecutados/Rework%20README%20raiz%20+%20patron%20carpeta-indice-lint%20+%20audit%20sub-README.md) (detectado en el pase de sub-README).
 
 ## El problema
 
@@ -8,6 +8,7 @@
 - Dice *"orquestando las **cuatro** funcionalidades"* y lista 4 en "Orden de orquestación" (preferencias, memoria, planes, commits).
 - Pero `REGISTRO.md` y `.claude/CLAUDE.md` dicen que el orquestador instala **8** (suma conocimiento, glosario, decisiones, scripts).
 - Su bloque "Qué agrega al repo destino" muestra el esquema viejo de planes (`planes-pendientes/` / `planes-ejecutados/`), ya migrado a `pendientes/ejecutados/descartados/`.
+- **(26-07-18)** No refleja la máquina de estados nueva (un eje + `ESTADOS.md`): al propagar el rediseño de estados, el resto de `setup-completo` se actualizó pero este README se dejó intacto por estar globalmente stale — corregirlo acá, en una sola pasada con lo demás. La skill (`SKILL.md`/`PLANTILLA.md`/`prompt.md`) ya quedó al día.
 
 ## Antes de reescribir — verificar qué instala de verdad
 

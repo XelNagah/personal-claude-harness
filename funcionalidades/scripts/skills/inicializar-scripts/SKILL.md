@@ -7,7 +7,7 @@ description: Instala la gestión de scripts del usuario en el repo actual (.clau
 
 Instala la convención de scripts del repo: cada herramienta en su carpeta `.claude/scripts/<tool>/` con un `README.md`, listadas en un registro-tabla, con un lint. Ordena el "cementerio de scripts" — archivos sueltos sin saber qué son ni cómo se usan. Si parte ya existe, **extender sin pisar**.
 
-**Depende de `memoria-local`**: la convención se guarda como memoria. Si `.claude/memory/MEMORY.md` no existe, ejecutar primero la skill `inicializar-memoria-local`.
+**Depende de `memoria-local`**: la convención se guarda como memoria. Si `.claude/memoria/MEMORIA.md` no existe, ejecutar primero la skill `inicializar-memoria-local`.
 
 ## Estructura objetivo
 
@@ -22,7 +22,7 @@ Instala la convención de scripts del repo: cada herramienta en su carpeta `.cla
 │   └── lint-scripts/
 │       ├── README.md
 │       └── lint-scripts.js
-└── memory/
+└── memoria/
     └── feedback_scripts.md
 ```
 
@@ -51,10 +51,10 @@ Si el repo ya tiene una carpeta de scripts desordenada (archivos sueltos, sin do
 
 ## Workflow
 
-1. **Verificar `memoria-local`.** Si `.claude/memory/` no existe, instalarla primero.
+1. **Verificar `memoria-local`.** Si `.claude/memoria/` no existe, instalarla primero.
 2. **Asegurar `.claude/scripts/INDICE.md`** con la semilla de [PLANTILLA.md](PLANTILLA.md) §Índice (encabezado + tabla vacía). Formato de la ficha por tool en §README-tool.
 3. **Instalar el lint** `.claude/scripts/lint-scripts/lint-scripts.js` (contenido EXACTO de PLANTILLA.md §Script) con su propio `README.md`.
 4. **Migrar** scripts sueltos existentes a `<tool>/` con README y fila en el registro (ver Migración). Grep de refs por ruta antes de mover.
-5. **Asegurar la memoria `feedback_scripts.md`** (verbatim de PLANTILLA.md §Memoria) y su línea en `memory/MEMORY.md`.
+5. **Asegurar la memoria `feedback_scripts.md`** (verbatim de PLANTILLA.md §Memoria) y su línea en `memoria/MEMORIA.md`.
 6. **En `.claude/CLAUDE.md`** asegurar la sección **"Scripts del proyecto"** (PLANTILLA.md §Sección). No reescribir el archivo entero. Si existe el bloque **"Mapa del repo (siempre cargado)"** (de `memoria-local`), asegurar la línea `@scripts/INDICE.md` en él.
 7. **Reportar** en los tres baldes. Correr el lint (`node .claude/scripts/lint-scripts/lint-scripts.js`). **No hacer commit** salvo pedido explícito.

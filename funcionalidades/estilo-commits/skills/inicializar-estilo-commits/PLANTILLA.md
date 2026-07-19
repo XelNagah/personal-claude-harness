@@ -1,6 +1,6 @@
 # Plantilla de la memoria de estilo de commits
 
-Copiar **verbatim** como `.claude/memory/feedback_estilo_commits.md` y registrar en `MEMORY.md`. (El formato general de una memoria está definido por la funcionalidad `memoria-local`.)
+Copiar **verbatim** como `.claude/memoria/feedback_estilo_commits.md` y registrar en `MEMORIA.md`. (El formato general de una memoria está definido por la funcionalidad `memoria-local`.)
 
 ```markdown
 ---

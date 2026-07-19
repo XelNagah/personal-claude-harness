@@ -34,7 +34,7 @@ Registro de las herramientas del repo. Cada script vive en su carpeta `<tool>/` 
 **Notas (opcional):** <lo que haga falta>.
 ```
 
-## §Memoria — `.claude/memory/feedback_scripts.md`
+## §Memoria — `.claude/memoria/feedback_scripts.md`
 
 ```markdown
 ---
@@ -71,7 +71,7 @@ Las herramientas del repo viven en [`scripts/`](scripts/): cada script en su car
 node .claude/scripts/lint-scripts/lint-scripts.js
 ​```
 
-Detalle de la convención en la memoria [`feedback_scripts.md`](memory/feedback_scripts.md).
+Detalle de la convención en la memoria [`feedback_scripts.md`](memoria/feedback_scripts.md).
 ```
 
 ## §Script — `.claude/scripts/lint-scripts/lint-scripts.js`

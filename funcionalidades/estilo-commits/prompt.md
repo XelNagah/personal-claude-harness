@@ -10,11 +10,11 @@
 
 Seguro de re-correr: sirve para **"levelear"** repos que ya tienen algunas partes.
 
-- **Inspeccioná antes de escribir.** Leé `<config>/memory/MEMORY.md` y los `.md` existentes. Nunca reescribas de cuajo un archivo existente; agregá solo la entrada de índice faltante.
+- **Inspeccioná antes de escribir.** Leé `<config>/memoria/MEMORIA.md` y los `.md` existentes. Nunca reescribas de cuajo un archivo existente; agregá solo la entrada de índice faltante.
 - **Detectá equivalentes.** La preferencia de commits puede estar ya como otra memoria (mismo tema, otro `name`). Buscá por tema. Igual → no tocar. Distinto → **no pises**: reportá la divergencia y preguntame antes de reconciliar.
 - **Reportá al final** en tres baldes: `agregado` / `ya estaba` / `divergente`.
 
-Asegurá la memoria `feedback_estilo_commits.md` bajo el directorio `<config>/memory/` de tu harness (`.claude/`, `.codex/`, etc.) y su línea en `MEMORY.md` — solo si no existe ya una equivalente. Contenido:
+Asegurá la memoria `feedback_estilo_commits.md` bajo el directorio `<config>/memoria/` de tu harness (`.claude/`, `.codex/`, etc.) y su línea en `MEMORIA.md` — solo si no existe ya una equivalente. Contenido:
 
 ```markdown
 ---

@@ -36,7 +36,7 @@ Alternativas: cuáles se consideraron y por qué se eligió esta.
 Consecuencias: efectos no obvios (solo si los hay).
 ```
 
-## §Memoria — `.claude/memory/feedback_decisiones.md`
+## §Memoria — `.claude/memoria/feedback_decisiones.md`
 
 ```markdown
 ---
@@ -71,7 +71,7 @@ Las decisiones **estructurales al propósito del repo** (no las operativas trivi
 node .claude/scripts/lint-decisiones/lint-decisiones.js
 ​```
 
-Detalle de la convención en la memoria [`feedback_decisiones.md`](memory/feedback_decisiones.md).
+Detalle de la convención en la memoria [`feedback_decisiones.md`](memoria/feedback_decisiones.md).
 ```
 
 ## §Script — `.claude/scripts/lint-decisiones/lint-decisiones.js`

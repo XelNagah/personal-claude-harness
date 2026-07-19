@@ -4,7 +4,7 @@ Catálogo de las funcionalidades que este repo instala para armar un agente de *
 
 | Funcionalidad | Qué hace | Depende de | Carpeta |
 |---------------|----------|-----------|---------|
-| **memoria-local** | Sistema de memoria local: `memory/` + índice `MEMORY.md` + formato de memorias tipadas + bloque "Mapa del repo" (`@imports` de índices en CLAUDE.md) + lint (`scripts/lint-memoria/`: refs/wikilinks rotos, índice incompleto, huérfanos, frontmatter). Infraestructura base. | — | [`memoria-local/`](funcionalidades/memoria-local/) |
+| **memoria-local** | Sistema de memoria local: `memoria/` + índice `MEMORIA.md` + formato de memorias tipadas + bloque "Mapa del repo" (`@imports` de índices en CLAUDE.md) + lint (`scripts/lint-memoria/`: refs/wikilinks rotos, índice incompleto, huérfanos, frontmatter). Infraestructura base. | — | [`memoria-local/`](funcionalidades/memoria-local/) |
 | **preferencias-trabajo** | Preferencias versionadas en `preferencias/PREFERENCIAS.md` (Base del harness + Adaptaciones del repo), importadas siempre al contexto vía `@`, con regla de **terminología** (gate duro en registros canónicos) + lint estructural (`scripts/lint-preferencias/`: secciones Base/Adaptaciones + el `@import`). | — | [`preferencias-trabajo/`](funcionalidades/preferencias-trabajo/) |
 | **gestion-de-planes** | Ciclo de planes `pendientes/ejecutados/descartados` + registro `PLANES.md` (prioridad, estado, fechas) + `lint-planes` + hook SessionStart. | memoria-local | [`gestion-de-planes/`](funcionalidades/gestion-de-planes/) |
 | **estilo-commits** | Preferencia de commits (español, sin co-autoría de IA), como memoria. | memoria-local | [`estilo-commits/`](funcionalidades/estilo-commits/) |

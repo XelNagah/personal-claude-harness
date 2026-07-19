@@ -12,7 +12,7 @@ Instala un **glosario del dominio** del repo: una tabla de conceptos (nombre can
 ├── glosario/
 │   ├── INDICE.md                    # tabla: Concepto | Definición | Alias | Detalle
 │   └── <slug>.md                      # página de detalle, solo para conceptos complejos
-├── memory/
+├── memoria/
 │   └── feedback_glosario.md           # la convención, como memoria (+ índice)
 └── scripts/
     └── lint-glosario/

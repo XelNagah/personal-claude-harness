@@ -1,6 +1,6 @@
 ---
 name: inicializar-conocimiento
-description: Instala la base de conocimiento del usuario en el repo actual (.claude/conocimiento/ como ubicación única + lint de integridad en .claude/scripts/lint-conocimiento/). Migra el conocimiento que esté disperso — en la raíz del repo Y dentro de memory/ (documentos sin frontmatter que se archivaron ahí de más). Use when el usuario dice "inicializar conocimiento", "base de conocimiento", "armá el conocimiento", o como parte del setup completo.
+description: Instala la base de conocimiento del usuario en el repo actual (.claude/conocimiento/ como ubicación única + lint de integridad en .claude/scripts/lint-conocimiento/). Migra el conocimiento que esté disperso — en la raíz del repo Y dentro de memoria/ (documentos sin frontmatter que se archivaron ahí de más). Use when el usuario dice "inicializar conocimiento", "base de conocimiento", "armá el conocimiento", o como parte del setup completo.
 ---
 
 # Inicializar base de conocimiento
@@ -13,7 +13,7 @@ Instala la convención de **base de conocimiento**: una carpeta única `.claude/
 .claude/
 ├── conocimiento/
 │   └── INDICE.md                          # índice raíz (solo punteros)
-├── memory/
+├── memoria/
 │   └── feedback_base_conocimiento.md      # la convención, como memoria
 └── scripts/
     └── lint-conocimiento/
@@ -33,18 +33,18 @@ Segura de re-correr: sirve para **"levelear"** repos que ya tienen partes. Regla
 
 1. **Carpeta de conocimiento.** Asegurar `.claude/conocimiento/` con un `INDICE.md` raíz (encabezado + una línea por página/sección; solo punteros, nunca contenido). Si no existe, crear.
 2. **Tool de lint.** Instalar `.claude/scripts/lint-conocimiento/lint-conocimiento.js` con el contenido EXACTO de [PLANTILLA.md](PLANTILLA.md) §Script. Va en **su propia carpeta** bajo `scripts/`, nunca suelto.
-3. **Memoria de la convención.** Instalar `.claude/memory/feedback_base_conocimiento.md` (PLANTILLA.md §Memoria) e indexarla en `MEMORY.md` (agregar solo la línea si falta).
-   **Chequeo de la dependencia `memoria-local`:** si **no existe `.claude/memory/MEMORY.md`**, el repo diverge del estándar (típico: usa un `README.md` como índice, o no tiene índice). Crearlo con el formato estándar (encabezado `Cargar al inicio de cada sesión y respetar.` + una línea por memoria) y reportar la divergencia. Si había un `README.md` haciendo de índice, su contenido casi seguro describe **conocimiento**, no memorias → usarlo como base del `INDICE.md` del paso 1 (ver paso 5b) y no dejar dos índices compitiendo.
+3. **Memoria de la convención.** Instalar `.claude/memoria/feedback_base_conocimiento.md` (PLANTILLA.md §Memoria) e indexarla en `MEMORIA.md` (agregar solo la línea si falta).
+   **Chequeo de la dependencia `memoria-local`:** si **no existe `.claude/memoria/MEMORIA.md`**, el repo diverge del estándar (típico: usa un `README.md` como índice, o no tiene índice). Crearlo con el formato estándar (encabezado `Cargar al inicio de cada sesión y respetar.` + una línea por memoria) y reportar la divergencia. Si había un `README.md` haciendo de índice, su contenido casi seguro describe **conocimiento**, no memorias → usarlo como base del `INDICE.md` del paso 1 (ver paso 5b) y no dejar dos índices compitiendo.
 4. **Sección en `CLAUDE.md`.** Asegurar una sección **"Base de conocimiento del proyecto"** con link a `conocimiento/INDICE.md`, la regla de ubicación única, y el paso de lint al cerrar. Si ya hay una equivalente (otro título, mismo tema), no duplicar. Si existe el bloque **"Mapa del repo (siempre cargado)"** (de `memoria-local`), asegurar la línea `@conocimiento/INDICE.md` en él.
 5. **Migración (el punto de la funcionalidad).** Detectar conocimiento que viva **fuera** de `.claude/conocimiento/` y moverlo adentro. Buscar en **tres** lugares, no solo el obvio:
 
    **(a) En la raíz del repo** — árboles de md, carpetas con su propio `INDICE.md`, notas de dominio sueltas.
 
-   **(b) DENTRO de `memory/` — el caso más común en repos viejos, y el que más se pasa por alto.** La memoria se desborda y termina siendo la base de conocimiento. Señales de que un archivo de `memory/` es en realidad conocimiento, no memoria:
+   **(b) DENTRO de `memoria/` — el caso más común en repos viejos, y el que más se pasa por alto.** La memoria se desborda y termina siendo la base de conocimiento. Señales de que un archivo de `memoria/` es en realidad conocimiento, no memoria:
    - **No tiene frontmatter** (`name`/`description`/`metadata.type`) → nunca fue una memoria del estándar.
    - **Es largo** (decenas o cientos de líneas, con secciones propias) → es un documento, no un hecho atómico.
    - **Es un diccionario, catálogo, procedimiento, formato de reporte o estructura** → conocimiento de dominio.
-   - **`memory/` usa un `README.md` como índice en vez de `MEMORY.md`** → señal fuerte de que ese directorio se usó como base de conocimiento.
+   - **`memoria/` usa un `README.md` como índice en vez de `MEMORIA.md`** → señal fuerte de que ese directorio se usó como base de conocimiento.
 
    Lo que **sí** es memoria y se queda: hechos atómicos tipados con frontmatter (`user`/`feedback`/`project`/`reference`).
 
@@ -55,7 +55,7 @@ Segura de re-correr: sirve para **"levelear"** repos que ya tienen partes. Regla
    - **Mover por defecto** (es el objetivo). Si es ambiguo qué es conocimiento vs. contenido incidental (código, assets, config de build), listar y **preguntar antes de mover**.
    - ⚠️ **Material sensible — chequear en los dos sentidos.**
 
-     **(i) Lo que YA está gitignoreado:** si un archivo a mover está ignorado por su ruta (típico: `memory/*-token.md`, credenciales), **moverlo rompe el match del ignore y el secreto termina commiteado**. NO moverlo, o mover y **actualizar el `.gitignore` a la ruta nueva en el mismo paso**. Verificar con `git status` que no aparezca.
+     **(i) Lo que YA está gitignoreado:** si un archivo a mover está ignorado por su ruta (típico: `memoria/*-token.md`, credenciales), **moverlo rompe el match del ignore y el secreto termina commiteado**. NO moverlo, o mover y **actualizar el `.gitignore` a la ruta nueva en el mismo paso**. Verificar con `git status` que no aparezca.
 
      **(ii) Lo que NO está gitignoreado y debería estarlo — más importante todavía, porque el riesgo ya existe antes de migrar.** Revisar el material del repo y **sugerirle al user** ignorar lo que sea riesgo de seguridad o privacidad:
      - **Credenciales:** tokens, API keys, `.env`, `*.key`/`*.pem`, archivos con `token`/`secret`/`credential`/`password` en el nombre o con claves embebidas en el contenido.

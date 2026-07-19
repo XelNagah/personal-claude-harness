@@ -1,6 +1,6 @@
 # Habilidad para poblar subsistemas desde un repo existente
 
-**Estado: idea · Creado 26-07-18.** Estacionado. Surgió al aclarar que el harness se instala **también sobre repos que ya tienen cosas** ([decisión 0001](../../decisiones/INDICE.md)), no solo vacíos.
+**Estado: Diferido · Creado 26-07-18.** Surgió al aclarar que el harness se instala **también sobre repos que ya tienen cosas** ([decisión 0001](../../decisiones/INDICE.md)), no solo vacíos.
 
 ## Objetivo
 

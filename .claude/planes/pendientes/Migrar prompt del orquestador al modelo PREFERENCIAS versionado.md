@@ -1,6 +1,6 @@
 # Migrar el prompt del orquestador al modelo PREFERENCIAS.md versionado
 
-**Estado: idea · Creado 26-07-18.** Estacionado. Detectado al propagar los lints al harness (commit `4ff41ee`); se dejó una nota aditiva sin refactorizar.
+**Estado: Diferido · Creado 26-07-18.** Detectado al propagar los lints al harness (commit `4ff41ee`); se dejó una nota aditiva sin refactorizar.
 
 ## Objetivo
 

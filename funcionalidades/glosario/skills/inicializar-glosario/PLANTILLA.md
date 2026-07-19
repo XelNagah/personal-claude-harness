@@ -24,7 +24,7 @@ Solo términos **propios del dominio** (no conceptos generales de programación)
 |----------|------------|-------|---------|
 ```
 
-## §Memoria — `.claude/memory/feedback_glosario.md`
+## §Memoria — `.claude/memoria/feedback_glosario.md`
 
 ```markdown
 ---
@@ -59,7 +59,7 @@ La terminología del dominio vive en [`glosario/INDICE.md`](glosario/INDICE.md):
 node .claude/scripts/lint-glosario/lint-glosario.js
 ​```
 
-Detalle de la convención en la memoria [`feedback_glosario.md`](memory/feedback_glosario.md).
+Detalle de la convención en la memoria [`feedback_glosario.md`](memoria/feedback_glosario.md).
 ```
 
 ## §Script — `.claude/scripts/lint-glosario/lint-glosario.js`

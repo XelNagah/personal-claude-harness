@@ -1,6 +1,6 @@
 # Propagar la gobernanza de terminología al harness
 
-**Estado: en diseño · Creado 26-07-18.** Foco. Aplica la [decisión 0004](../../decisiones/INDICE.md) a las funcionalidades (hoy solo aplicada a este repo). Surgió en la sesión de `/planificar` del rework del README, tras un término inventado ("sustrato") que se coló al glosario/decisión.
+**Estado: Ejecutado · Creado 26-07-18.** Aplica la [decisión 0004](../../decisiones/INDICE.md) a las funcionalidades (hoy solo aplicada a este repo). Surgió en la sesión de `/planificar` del rework del README, tras un término inventado ("sustrato") que se coló al glosario/decisión.
 
 ## Objetivo
 

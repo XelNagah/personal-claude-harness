@@ -18,7 +18,7 @@ En lo que sigue, `<config>/` es ese directorio. Si parte ya existe, **extendé s
 
 Este prompt es seguro de re-correr: este es el modo de **"levelear"** repos que ya tienen partes del setup (unas sí, otras no). Aplicá a cada paso que escribe:
 
-- **Inspeccioná antes de escribir.** Leé primero el archivo/carpeta destino. Nunca reescribas de cuajo un archivo existente (en especial el archivo de instrucciones y `memory/MEMORY.md`).
+- **Inspeccioná antes de escribir.** Leé primero el archivo/carpeta destino. Nunca reescribas de cuajo un archivo existente (en especial el archivo de instrucciones y `memoria/MEMORIA.md`).
 - **Creá solo lo ausente.** No existe → crear. Existe → agregar únicamente lo que falte, preservando el resto tal cual.
 - **Detectá equivalentes.** Una sección o memoria puede estar ya con otro título o redacción (de pedidos previos). Buscá por tema, no solo por nombre exacto. Igual → no tocar. Distinto → **no pises**: reportá la divergencia y preguntame antes de reconciliar.
 - **Reportá al final** en tres baldes por parte: `agregado` (faltaba), `ya estaba` (ok), `divergente` (existe distinto, requiere tu decisión).
@@ -36,15 +36,15 @@ Creá/extendé el archivo de instrucciones que tu harness carga al inicio (`CLAU
    - Nomenclatura en español para el dominio; inglés solo para infraestructura técnica.
    - Cero invención de datos: lo que no salga de una fuente verificada se marca como faltante o como interpretación propia.
    - Terminología: no acuñar términos del dominio por cuenta propia; preferir las palabras del usuario. **Gate duro en registros canónicos** (glosario, decisiones): ningún término acuñado por el agente se asienta sin ratificación del usuario. En prosa se puede usar, marcado como propuesto.
-4. **Sección "Memoria y planes del proyecto"** con links a `<config>/memory/MEMORY.md`, `<config>/planes/planes-pendientes/` y `<config>/planes/planes-ejecutados/`, indicando que la memoria se carga al inicio de cada sesión y se respeta.
+4. **Sección "Memoria y planes del proyecto"** con links a `<config>/memoria/MEMORIA.md`, al registro `<config>/planes/PLANES.md` y al archivo de estados `<config>/planes/ESTADOS.md`, indicando que la memoria se carga al inicio de cada sesión y se respeta. El ciclo de planes vive en las carpetas `pendientes/`/`ejecutados/`/`descartados/`.
 
 > **Preferencias como archivo versionado (recomendado):** en vez de inline, preferí persistir las preferencias en `<config>/preferencias/PREFERENCIAS.md` con secciones **Base** (del harness — incluye el bullet de terminología) y **Adaptaciones de este repo**, importada siempre al contexto (`@` si tu harness lo soporta). Instalá entonces el lint `<config>/scripts/lint-preferencias/lint-preferencias.js` (al final, §Script — lint-preferencias), que verifica esa estructura (secciones Base/Adaptaciones + el `@import`); correlo al tocar las preferencias. (Detalle en la funcionalidad `preferencias-trabajo`.)
 
 ## 2. Memoria local
 
-Asegurá `<config>/memory/` con:
+Asegurá `<config>/memoria/` con:
 
-- `MEMORY.md` — índice: una línea por memoria, formato `- [Título](archivo.md) — resumen corto`. Encabezado: "Cargar al inicio de cada sesión y respetar." Acá nunca va contenido, solo punteros. Si ya existe, conservá su encabezado y todas sus líneas y agregá solo las que falten — nunca lo reescribas entero.
+- `MEMORIA.md` — índice: una línea por memoria, formato `- [Título](archivo.md) — resumen corto`. Encabezado: "Cargar al inicio de cada sesión y respetar." Acá nunca va contenido, solo punteros. Si ya existe, conservá su encabezado y todas sus líneas y agregá solo las que falten — nunca lo reescribas entero.
 - Un `.md` por memoria, con este frontmatter:
 
   ```markdown
@@ -60,16 +60,18 @@ Asegurá `<config>/memory/` con:
 
 - Tipos: `user`, `feedback`, `project`, `reference`. Antes de crear una memoria nueva, revisar si una existente ya la cubre. Fechas siempre absolutas.
 
-Instalá el lint en su carpeta propia `<config>/scripts/lint-memoria/lint-memoria.js` (contenido al final, §Script — lint-memoria) — chequea sobre `<config>/memory/`: refs `.md`/wikilinks rotos, `MEMORY.md` incompleto, huérfanos y frontmatter inválido; correlo al cerrar tareas que tocaron la memoria. Asegurá en la sección "Memoria del proyecto" del archivo de instrucciones el paso de correr el lint al cerrar.
+Instalá el lint en su carpeta propia `<config>/scripts/lint-memoria/lint-memoria.js` (contenido al final, §Script — lint-memoria) — chequea sobre `<config>/memoria/`: refs `.md`/wikilinks rotos, `MEMORIA.md` incompleto, huérfanos y frontmatter inválido; correlo al cerrar tareas que tocaron la memoria. Asegurá en la sección "Memoria del proyecto" del archivo de instrucciones el paso de correr el lint al cerrar.
 
-Creá las dos memorias iniciales (contenido completo al final) y registralas en `MEMORY.md`:
+Creá las dos memorias iniciales (contenido completo al final) y registralas en `MEMORIA.md`:
 
 - `feedback_flujo_planes.md`
 - `feedback_estilo_commits.md`
 
 ## 3. Gestión de planes
 
-Creá `<config>/planes/planes-pendientes/` y `<config>/planes/planes-ejecutados/` (con `.gitkeep` si el repo usa git). El ciclo de vida completo queda definido en `feedback_flujo_planes.md`.
+Creá `<config>/planes/pendientes/`, `<config>/planes/ejecutados/` y `<config>/planes/descartados/` (con `.gitkeep` si el repo usa git), más el registro `<config>/planes/PLANES.md` y el archivo de estados `<config>/planes/ESTADOS.md` (fuente de verdad configurable de los estados, que el lint lee; contenido al final, §Estados). El ciclo de vida —máquina de **un solo eje**: `Nuevo · En curso · Diferido · Ejecutado · Descartado`— queda definido en `feedback_flujo_planes.md`.
+
+Si el repo trae un esquema viejo, migralo antes (dos casos, pueden darse juntos): **dos carpetas → tres** (`planes-pendientes/`/`planes-ejecutados/` → `pendientes/`/`ejecutados/` + `descartados/`; grep y reparar refs por ruta); **dos ejes → un eje** (si `PLANES.md` tiene columna `Prioridad` foco/estacionado + estados viejos `idea`/`en diseño`/`listo`/`en ejecución`: quitar la columna `Prioridad`, remapear `estacionado`/`idea`/`en diseño`/`listo` → `Diferido`, `en ejecución` → `En curso`, las cerradas conservan `Ejecutado`/`Descartado`, y sembrar `ESTADOS.md`). Los términos viejos se **barren, no se registran como alias**.
 
 ## 4. Base de conocimiento
 
@@ -77,10 +79,10 @@ Asegurá `<config>/conocimiento/` con un `INDICE.md` raíz (una línea por pági
 
 **Migración — buscá en tres lugares, no solo el obvio:**
 - **(a) raíz del repo:** árboles de md, carpetas con su `INDICE.md`, notas sueltas.
-- **(b) dentro de `<config>/memory/`** (el caso más común en repos viejos, y el que más se pasa por alto): la memoria se desborda y termina siendo la base de conocimiento. Señales → **sin frontmatter**, **largo** (decenas/cientos de líneas con secciones), **diccionario/catálogo/procedimiento/formato/estructura**, o **`memory/` indexado por un `README.md` en vez de `MEMORY.md`**. Se quedan solo los hechos atómicos tipados con frontmatter.
+- **(b) dentro de `<config>/memoria/`** (el caso más común en repos viejos, y el que más se pasa por alto): la memoria se desborda y termina siendo la base de conocimiento. Señales → **sin frontmatter**, **largo** (decenas/cientos de líneas con secciones), **diccionario/catálogo/procedimiento/formato/estructura**, o **`memoria/` indexado por un `README.md` en vez de `MEMORIA.md`**. Se quedan solo los hechos atómicos tipados con frontmatter.
 - **(c) fuentes crudas: NO se mueven** — lo que el agente *lee* (escaneos, PDFs de resúmenes, exports, json/csv de origen) vs. lo que *sabe* (el md sintetizado). Salvo que ya estén entreveradas dentro de una carpeta de conocimiento.
 
-Proponé el plan de move y mové por defecto; ambiguo (código/assets/build) → preguntame antes. ⚠️ **Material sensible, en los dos sentidos:** (i) si un archivo a mover está **ya ignorado** por su ruta (`memory/*-token.md`, credenciales), moverlo rompe el ignore y **commitea el secreto** → no lo muevas o actualizá el `.gitignore` en el mismo paso (verificá con `git status`); (ii) si hay material sensible **sin ignorar** (credenciales/tokens/`.env`/`*.key`, documentos personales o legales, resúmenes bancarios, libros contables, estudios médicos) → **sugerime** las líneas de `.gitignore` con el riesgo concreto, como hallazgo aparte, sin aplicarlo solo (puedo querer versionarlos a propósito en un repo local) + avisame si el repo nunca debería pushearse a un remoto. **Índice completo:** si había un índice parcial, cubrí TODOS los documentos (los no listados eran huérfanos). **Reparar refs:** índices, links, refs desde el archivo de instrucciones/memorias/planes, y el acople de scripts movidos a `scripts/<tool>/` — `__dirname` (reapuntar) o **cwd** (prepender `process.chdir(require('path').join(__dirname,'<ruta datos>'))`). ⚠️ **Script referenciado por ruta en la config de permisos** (ej. `"Bash(bash tools/moonraker-get.sh:*)"`): las reglas matchean por prefijo exacto → moverlo rompe la pre-autorización (en headless = denegación). Buscá su ruta en la config antes de mover: o no lo movés, o actualizás la regla en el mismo paso. Corré el lint → 0 refs rotas. **Si el repo no tiene git: `git init` + commit inicial ANTES de mover** (un commit inicial post-migración no sirve de rollback).
+Proponé el plan de move y mové por defecto; ambiguo (código/assets/build) → preguntame antes. ⚠️ **Material sensible, en los dos sentidos:** (i) si un archivo a mover está **ya ignorado** por su ruta (`memoria/*-token.md`, credenciales), moverlo rompe el ignore y **commitea el secreto** → no lo muevas o actualizá el `.gitignore` en el mismo paso (verificá con `git status`); (ii) si hay material sensible **sin ignorar** (credenciales/tokens/`.env`/`*.key`, documentos personales o legales, resúmenes bancarios, libros contables, estudios médicos) → **sugerime** las líneas de `.gitignore` con el riesgo concreto, como hallazgo aparte, sin aplicarlo solo (puedo querer versionarlos a propósito en un repo local) + avisame si el repo nunca debería pushearse a un remoto. **Índice completo:** si había un índice parcial, cubrí TODOS los documentos (los no listados eran huérfanos). **Reparar refs:** índices, links, refs desde el archivo de instrucciones/memorias/planes, y el acople de scripts movidos a `scripts/<tool>/` — `__dirname` (reapuntar) o **cwd** (prepender `process.chdir(require('path').join(__dirname,'<ruta datos>'))`). ⚠️ **Script referenciado por ruta en la config de permisos** (ej. `"Bash(bash tools/moonraker-get.sh:*)"`): las reglas matchean por prefijo exacto → moverlo rompe la pre-autorización (en headless = denegación). Buscá su ruta en la config antes de mover: o no lo movés, o actualizás la regla en el mismo paso. Corré el lint → 0 refs rotas. **Si el repo no tiene git: `git init` + commit inicial ANTES de mover** (un commit inicial post-migración no sirve de rollback).
 
 ## 5. Glosario del dominio
 
@@ -107,29 +109,27 @@ Al terminar: por parte, qué quedó en `agregado` / `ya estaba` / `divergente`, 
 ```markdown
 ---
 name: flujo-planes
-description: "Cómo gestionar planes en este proyecto — persistencia en <config>/planes/, ciclo pendiente→ejecutado, formato de nombre, secciones obligatorias al ejecutar"
+description: "Cómo gestionar planes — <config>/planes/ (pendientes/ejecutados/descartados), registro PLANES.md, estados en ESTADOS.md (máquina de un eje), slug estable, lint al cerrar"
 metadata:
   type: feedback
 ---
 
-Persistir y gestionar planes en este proyecto bajo `<config>/planes/` con dos subcarpetas: `planes-pendientes/` y `planes-ejecutados/`.
+Persistir y gestionar planes bajo `<config>/planes/` con tres subcarpetas: `pendientes/` (planes vivos: `Nuevo`, `En curso`, `Diferido`), `ejecutados/` y `descartados/` (registro, siempre con motivo). Lo fino (estado, fechas, origen) vive en el registro `planes/PLANES.md`, no en el nombre del archivo. Los **estados disponibles y su semántica** (a qué carpeta mapea cada uno, cuáles son terminales) están en `planes/ESTADOS.md` — fuente de verdad configurable que el lint lee.
 
-**Why:** El user quiere trazabilidad de qué se planificó, cuándo se cerró y cuándo y cómo se ejecutó — sin depender de archivos efímeros de plan-mode que genere el harness.
+**Máquina de un solo eje:** un plan está en exactamente un estado. `Nuevo` (creado, sin ejecutar; la revisión con `planificar` ocurre acá) → `En curso` (se tomó el plan y se está ejecutando) → `Ejecutado` (terminal). `Diferido` = pospuesto, retomable. `Descartado` = abandonado con motivo (terminal). No hay estado de "diseño": la revisión es parte de estar `Nuevo`.
+
+**Why:** trazabilidad de qué se planificó, cuándo se creó y cuándo y cómo se cerró — sin depender de archivos efímeros de plan-mode del harness, y sin mirar carpetas a ojo: el registro es la vista, y está siempre en contexto vía el Mapa del repo. Un solo eje (en vez de prioridad × progreso) porque en la práctica un plan pausado siempre está sin empezar, y la distinción diseño/ejecución no aporta al flujo.
 
 **How to apply:**
 
-1. **Al cerrar un plan** (listo para ejecutar): copiar a `<config>/planes/planes-pendientes/AA-MM-DD - [Descripción corta].md`. Fecha = día en que se cerró. Formato año dos dígitos.
-2. **Cada actualización al plan** se replica en la versión persistida en `planes-pendientes/`. La copia es la fuente de verdad para el seguimiento — no el archivo interno del harness.
-3. **Al detectar evidencia de implementación** (commit en repo, mensaje del user, código verificado, otro agente lo informó): mover el archivo de `planes-pendientes/` a `planes-ejecutados/`. Renombrar:
-   - Reemplazar fecha del nombre por la fecha de ejecución (o del momento en que se entera el agente).
-   - Dentro del `.md`, agregar una línea **`Plan cerrado: AA-MM-DD`** (fecha original del filename antes del renombre — para no perderla).
-   - Agregar sección **`## Notas de implementación`** con: cómo se implementó efectivamente vs planificado, hash de commit (preferentemente), cosas notables.
-4. **Reparar referencias entrantes al plan.** Mover/renombrar rompe links que apuntaban al plan: buscar y actualizar referencias en memorias y otros planes antes de cerrar.
-5. Tras esos pasos el plan se considera implementado.
+1. **Al crear un plan:** copiar a `<config>/planes/pendientes/<slug-estable>.md` (sin fecha en el nombre) y agregar su fila en `PLANES.md`: Estado (de `ESTADOS.md`), Creado, Origen si se desprende de otro plan.
+2. **Cada actualización al plan** se replica en la versión persistida — es la fuente de verdad, no el archivo del plans-folder del harness. Los cambios de estado se reflejan en `PLANES.md`, y el archivo se mueve a la carpeta que el estado indica.
+3. **Al detectar evidencia de implementación** (commit, mensaje del user, código verificado, otro agente): pasar a `Ejecutado` y mover a `ejecutados/` **sin renombrar**, completar `Cerrado` en el registro y agregar sección **`## Notas de implementación`** (cómo se implementó vs planificado, hash de commit, cosas notables).
+4. **Descartar es un cierre válido:** `Descartado`, mover a `descartados/`, completar `Cerrado` y una línea de motivo en Notas (p. ej. "superseded por <plan>").
+5. **Reparar referencias entrantes** si las hubiera (el slug estable minimiza esto; preferir linkear planes vía `PLANES.md`).
+6. **Al cerrar** una tarea que tocó planes, correr el lint: `node <config>/scripts/lint-planes/lint-planes.js`.
 
-Importante: borrar el archivo de `planes-pendientes/` al moverlo — no duplicar.
-
-Nota: un plan puede persistirse en `planes-pendientes/` **antes** de estar cerrado si el user lo pide (p. ej. para cortar una sesión larga de diseño); en ese caso debe llevar al tope un bloque de estado explícito ("EN DISEÑO — no listo para ejecutar") y la lista de pendientes para retomar.
+Importante: borrar el archivo de `pendientes/` al moverlo — no duplicar. Un plan puede persistirse antes de arrancar la ejecución (p. ej. para cortar una sesión larga de diseño): Estado `Nuevo` o `Diferido` en el registro y bloque al tope con los pendientes para retomar.
 ```
 
 ### `feedback_estilo_commits.md`
@@ -174,6 +174,57 @@ El conocimiento persistido del agente (documentos, estudios, temas, notas de dom
 
 > Reemplazá `<config>` por el directorio real de tu harness en las tres memorias.
 
+## §Estados — `<config>/planes/ESTADOS.md`
+
+Fuente de verdad de los estados de planes (paso 3). El lint lo lee: cambiar el juego de estados = editar esta tabla, no el código.
+
+```markdown
+# Estados de planes
+
+Define los estados disponibles para los planes de este repo y su semántica. Es la **fuente de verdad**: el lint (`lint-planes`) lee este archivo para validar la columna `Estado` de `PLANES.md` y el mapeo estado↔carpeta. Cambiar el juego de estados = editar esta tabla, no el código del lint.
+
+Máquina de **un solo eje**: un plan está en exactamente **un** estado a la vez.
+
+- **Estado** — nombre canónico (el valor que va en la columna `Estado` de `PLANES.md`).
+- **Sentido** — qué significa que un plan esté en ese estado.
+- **Carpeta** — subcarpeta de `planes/` donde vive el archivo del plan mientras está en ese estado.
+- **Terminal** — `sí` si es un estado de cierre (el plan ya no se mueve); `no` si sigue vivo.
+
+| Estado | Sentido | Carpeta | Terminal |
+|--------|---------|---------|----------|
+| Nuevo | Creado; todavía sin ejecutar. La revisión de alto nivel (con `planificar`) ocurre acá, antes de arrancar. | `pendientes/` | no |
+| En curso | Se tomó el plan y se está **ejecutando**. | `pendientes/` | no |
+| Diferido | Pospuesto a propósito; retomable más adelante. | `pendientes/` | no |
+| Ejecutado | Terminado con éxito. | `ejecutados/` | sí |
+| Descartado | Abandonado; no se hará (motivo obligatorio en Notas). | `descartados/` | sí |
+
+No hay estado de "diseño": todo plan `Nuevo` se revisa en alto nivel antes de ejecutarse, así que la revisión es parte de estar `Nuevo`, no un estado aparte. El lint vigila la antigüedad del estado **activo** (`En curso`) — un plan que se está ejecutando hace demasiado y quedó frenado (ver la constante `VIGILAR_ANTIGUEDAD` en `lint-planes.js`).
+
+## Transiciones
+
+​```
+  Nuevo ──────► En curso ──────► Ejecutado
+    │              │             (terminal)
+    ├──► Diferido ◄┘   (retomable → En curso)
+    │
+    └──► Descartado   (terminal, con motivo)
+​```
+
+- `Nuevo` → En curso · Diferido · Descartado
+- `En curso` → Diferido · Ejecutado · Descartado
+- `Diferido` → En curso · Descartado
+- `Ejecutado` — terminal
+- `Descartado` — terminal
+
+## Cómo cambiar los estados
+
+Editar la tabla de arriba (agregar/quitar filas o renombrar un estado). Reglas que el lint espera:
+
+- Cada estado no-terminal debe mapear a una carpeta que exista bajo `planes/`.
+- Debe haber al menos un estado terminal por carpeta de cierre.
+- El valor de la columna `Estado` en `PLANES.md` debe coincidir exactamente con un `Estado` de esta tabla.
+```
+
 ## §Script — `<config>/scripts/lint-conocimiento/lint-conocimiento.js`
 
 ```js
@@ -198,7 +249,7 @@ const domain = walk(root, []);
 const read = f => fs.readFileSync(f, 'utf8');
 
 const mdLink = /\]\(([^)]+?\.md)\)/g;
-// exige barra: `subtema/pagina.md` es una ref, `MEMORY.md` suelto es prosa nombrando un archivo
+// exige barra: `subtema/pagina.md` es una ref, `MEMORIA.md` suelto es prosa nombrando un archivo
 const codePath = /`([^`]+?\/[^`]+?\.md)`/g;
 const wiki = /\[\[([^\]]+?)\]\]/g;
 
@@ -579,10 +630,10 @@ if (!refsRotas.length) console.log('    (ninguna)');
 
 ```js
 #!/usr/bin/env node
-// Lint de la memoria local: refs rotas, indice (MEMORY.md) incompleto, huerfanos, frontmatter. Sin LLM, sin red.
-// Uso: node lint-memoria.js [<carpeta>]   (default: .claude/memory)
+// Lint de la memoria local: refs rotas, indice (MEMORIA.md) incompleto, huerfanos, frontmatter. Sin LLM, sin red.
+// Uso: node lint-memoria.js [<carpeta>]   (default: .claude/memoria)
 const fs = require('fs'), path = require('path');
-const root = path.resolve(process.argv[2] || '.claude/memory');
+const root = path.resolve(process.argv[2] || '.claude/memoria');
 const EXCLUDE = new Set(['.git', 'node_modules']);
 const TYPES = new Set(['user', 'feedback', 'project', 'reference']);
 
@@ -600,10 +651,10 @@ const read = f => fs.readFileSync(f, 'utf8');
 const inRoot = p => path.resolve(p).startsWith(path.resolve(root) + path.sep);
 
 const all = walk(root, []);
-const indexFile = path.join(root, 'MEMORY.md');
+const indexFile = path.join(root, 'MEMORIA.md');
 const hasIndex = fs.existsSync(indexFile);
 const idxText = hasIndex ? read(indexFile) : '';
-const memos = all.filter(p => path.basename(p) !== 'MEMORY.md');
+const memos = all.filter(p => path.basename(p) !== 'MEMORIA.md');
 
 // nombres validos para wikilinks: `name:` del frontmatter + stem del archivo
 const nameSet = new Set();
@@ -619,7 +670,7 @@ const wiki = /\[\[([^\]]+?)\]\]/g;
 
 // [1] refs rotas: links a .md inexistentes + wikilinks sin memoria.
 // Una memoria puede linkear a otros subsistemas (planes/, conocimiento/, ...): se resuelve
-// tambien relativo a .claude/, a la raiz del repo y al cwd, no solo dentro de memory/.
+// tambien relativo a .claude/, a la raiz del repo y al cwd, no solo dentro de memoria/.
 const broken = [], referenced = new Set();
 for (const f of all) {
   const txt = read(f), fdir = path.dirname(f);
@@ -648,7 +699,7 @@ for (const f of all) {
   }
 }
 
-// [2] indice incompleto: memoria no listada en MEMORY.md (por archivo o por name)
+// [2] indice incompleto: memoria no listada en MEMORIA.md (por archivo o por name)
 const gaps = [];
 for (const p of memos) {
   const base = path.basename(p), stem = base.slice(0, -3);
@@ -679,13 +730,13 @@ for (const p of memos) {
 }
 
 console.log(`== LINT MEMORIA: ${root} ==`);
-console.log(`memorias: ${memos.length} | indice: ${hasIndex ? 'MEMORY.md' : 'FALTA'}\n`);
-if (!hasIndex) console.log('[!] No existe MEMORY.md (indice de memoria)\n');
+console.log(`memorias: ${memos.length} | indice: ${hasIndex ? 'MEMORIA.md' : 'FALTA'}\n`);
+if (!hasIndex) console.log('[!] No existe MEMORIA.md (indice de memoria)\n');
 console.log(`[1] REFS ROTAS (${broken.length}):`);
 broken.forEach(([f, r, w]) => console.log(`    ${f}  ->  ${r}   [${w}]`));
 if (!broken.length) console.log('    (ninguna)');
 console.log(`\n[2] INDICE INCOMPLETO (${gaps.length}):`);
-gaps.forEach(p => console.log(`    MEMORY.md  no lista  ${p}`));
+gaps.forEach(p => console.log(`    MEMORIA.md  no lista  ${p}`));
 if (!gaps.length) console.log('    (completo)');
 console.log(`\n[3] HUERFANOS (${orphans.length}):`);
 orphans.forEach(o => console.log(`    ${o}`));

@@ -53,7 +53,7 @@ Detectá conocimiento que viva **fuera** de `<config>/conocimiento/` y movelo ad
 
 **(a) En la raíz del repo** — árboles de md, carpetas con su `INDICE.md`, notas de dominio sueltas.
 
-**(b) DENTRO de `<config>/memory/`** — el caso más común en repos viejos y el que más se pasa por alto: la memoria se desborda y termina siendo la base de conocimiento. Señales de que un archivo de `memory/` es conocimiento y no memoria: **no tiene frontmatter**; **es largo** (decenas/cientos de líneas con secciones); **es un diccionario, catálogo, procedimiento, formato o estructura**; o **`memory/` usa un `README.md` como índice en vez de `MEMORY.md`** (señal fuerte). Lo que sí es memoria y se queda: hechos atómicos tipados con frontmatter.
+**(b) DENTRO de `<config>/memoria/`** — el caso más común en repos viejos y el que más se pasa por alto: la memoria se desborda y termina siendo la base de conocimiento. Señales de que un archivo de `memoria/` es conocimiento y no memoria: **no tiene frontmatter**; **es largo** (decenas/cientos de líneas con secciones); **es un diccionario, catálogo, procedimiento, formato o estructura**; o **`memoria/` usa un `README.md` como índice en vez de `MEMORIA.md`** (señal fuerte). Lo que sí es memoria y se queda: hechos atómicos tipados con frontmatter.
 
 **(c) Fuentes crudas — NO se mueven.** Distinguí lo que el agente **lee** de lo que **sabe**: escaneos, PDFs de resúmenes/facturas, exports, json/csv de origen. Son insumos inmutables y se quedan (salvo que ya estén entreverados dentro de una carpeta de conocimiento, y entonces se mueven con ella). El conocimiento es el md **sintetizado**.
 
@@ -61,7 +61,7 @@ Reglas del move: proponé un plan concreto y **mové por defecto**, preservando 
 
 ⚠️ **Material sensible — chequealo en los dos sentidos.**
 
-**(i) Lo que YA está gitignoreado:** si un archivo a mover está ignorado por su ruta (típico `memory/*-token.md`, credenciales), moverlo rompe el match y **el secreto termina commiteado**. No lo muevas, o actualizá el `.gitignore` a la ruta nueva en el mismo paso; verificá con `git status`.
+**(i) Lo que YA está gitignoreado:** si un archivo a mover está ignorado por su ruta (típico `memoria/*-token.md`, credenciales), moverlo rompe el match y **el secreto termina commiteado**. No lo muevas, o actualizá el `.gitignore` a la ruta nueva en el mismo paso; verificá con `git status`.
 
 **(ii) Lo que NO está gitignoreado y debería estarlo** — más importante, porque el riesgo ya existe antes de migrar. Revisá el repo y **sugerime** ignorar lo que sea riesgo de seguridad/privacidad: **credenciales** (tokens, API keys, `.env`, `*.key`/`*.pem`, o claves embebidas en el contenido), **documentos personales/legales** (escaneos de DNI, escrituras, certificados), **financiero** (resúmenes bancarios/tarjeta, libros contables) y **salud** (estudios médicos). Reportalo como hallazgo aparte, con el riesgo concreto y las líneas de `.gitignore` sugeridas. **Sugerí, no apliques solo** — puedo querer versionarlos a propósito en un repo local. Avisame además si el repo tiene material que nunca debería pushearse a un remoto.
 

@@ -6,7 +6,7 @@ Instala como **memoria de feedback** la preferencia del usuario sobre mensajes d
 
 ```
 <config>/
-└── memory/
+└── memoria/
     └── feedback_estilo_commits.md
 ```
 

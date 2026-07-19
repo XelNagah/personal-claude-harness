@@ -1,6 +1,6 @@
 # Rework del README raíz + patrón carpeta-índice-lint + audit de sub-README
 
-**Estado: listo · Creado 26-07-18.** Foco. Refinado en dos sesiones de `/planificar` (26-07-18). Dep [Completar cobertura de lint mecánico](../ejecutados/Completar%20cobertura%20de%20lint%20mecanico%20-%20memoria%20y%20preferencias.md) **ya cerrada**: el patrón es 6/6 sin excepciones.
+**Estado: Ejecutado · Creado 26-07-18.** Refinado en dos sesiones de `/planificar` (26-07-18). Dep [Completar cobertura de lint mecánico](../ejecutados/Completar%20cobertura%20de%20lint%20mecanico%20-%20memoria%20y%20preferencias.md) **ya cerrada**: el patrón es 6/6 sin excepciones.
 
 ## Objetivo
 
@@ -74,8 +74,8 @@ Ejecutado 26-07-18.
 - **README raíz:** reescrito a las 8 secciones; cola avanzada (7-8) separada con regla + nota "saltalas si solo querés instalar".
 - **Armonización:** Objetivo de `CLAUDE.md` y apertura de `REGISTRO.md` al encuadre multipropósito (decisión 0001).
 - **6 sub-README de acumulación:** línea del patrón con link a `README#cómo-aprende`. En conocimiento se sacó "grafo" (chocaba con decisión 0002).
-- **Terminología:** durante la ejecución se coló "acretar" (palabra inventada); el usuario lo marcó → decisión **0004 ampliada** (español corriente en todo, ratificada) + plan estacionado *Propagar guardarraíl al harness*.
-- **Detectado de paso:** README de `setup-completo` stale (dice 4, instala 8) → plan estacionado propio.
+- **Terminología:** durante la ejecución se coló "acretar" (palabra inventada); el usuario lo marcó → decisión **0004 ampliada** (español corriente en todo, ratificada) + plan diferido *Propagar guardarraíl al harness*.
+- **Detectado de paso:** README de `setup-completo` stale (dice 4, instala 8) → plan diferido propio.
 - **Lints:** harness, preferencias, decisiones, planes — todos verdes.
 
 ## Verificación

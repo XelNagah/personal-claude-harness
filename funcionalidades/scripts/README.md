@@ -17,7 +17,7 @@ Instala la convención de scripts del repo: cada herramienta en su carpeta `<too
 │   └── lint-scripts/
 │       ├── README.md
 │       └── lint-scripts.js            # lint mecánico (sin LLM, sin red)
-└── memory/
+└── memoria/
     └── feedback_scripts.md            # la convención, como memoria (+ índice)
 ```
 

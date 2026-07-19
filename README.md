@@ -20,7 +20,7 @@ Diez funcionalidades, cada una instalable suelta o todas juntas. En tres capas:
 
 - **Base (siempre en contexto):**
   - **preferencias-trabajo** — cómo trabaja el agente (comunicación + principios), versionadas e importadas siempre al contexto.
-  - **memoria-local** — `memory/` + índice `MEMORY.md`: un `.md` por hecho, tipado. Es la infraestructura sobre la que se apoyan las demás.
+  - **memoria-local** — `memoria/` + índice `MEMORIA.md`: un `.md` por hecho, tipado. Es la infraestructura sobre la que se apoyan las demás.
 - **Subsistemas que acumulan** (patrón índice + entradas + lint, ver [Cómo aprende](#cómo-aprende)):
   - **conocimiento** — lo que el agente sabe del dominio.
   - **glosario** — la terminología del dominio (conceptos + alias registrados).
@@ -91,7 +91,7 @@ A partir de ahí, trabajás normal: el agente lee sus índices al arrancar y esc
 ├── REGISTRO.md                # catálogo de funcionalidades
 ├── .claude/                   # el propio setup, aplicado a este repo
 │   ├── CLAUDE.md              # instrucciones internas
-│   ├── memory/ preferencias/ planes/ conocimiento/ glosario/ decisiones/ scripts/
+│   ├── memoria/ preferencias/ planes/ conocimiento/ glosario/ decisiones/ scripts/
 │   └── ...                    # cada subsistema con su índice + lint
 ├── .claude-plugin/
 │   └── marketplace.json       # catálogo del marketplace (10 plugins)

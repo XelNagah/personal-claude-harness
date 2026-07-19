@@ -7,7 +7,7 @@ description: Instala el glosario del dominio del usuario en el repo actual (.cla
 
 Instala un glosario del dominio: una **tabla** de conceptos (nombre canónico, definición, alias registrados) donde los conceptos complejos linkean a una **página de detalle** propia. Se consulta al planificar/analizar para mantener coherencia semántica. Si parte ya existe, **extender sin pisar**.
 
-**Depende de `memoria-local`**: la convención se guarda como memoria. Si `.claude/memory/MEMORY.md` no existe, ejecutar primero la skill `inicializar-memoria-local`.
+**Depende de `memoria-local`**: la convención se guarda como memoria. Si `.claude/memoria/MEMORIA.md` no existe, ejecutar primero la skill `inicializar-memoria-local`.
 
 ## Estructura objetivo
 
@@ -17,7 +17,7 @@ Instala un glosario del dominio: una **tabla** de conceptos (nombre canónico, d
 ├── glosario/
 │   ├── INDICE.md    # tabla: Concepto | Definición | Alias | Detalle
 │   └── <slug>.md      # página de detalle, solo para conceptos complejos
-├── memory/
+├── memoria/
 │   └── feedback_glosario.md
 └── scripts/
     └── lint-glosario/
@@ -41,9 +41,9 @@ Segura de re-correr: sirve para **"levelear"** repos que ya tienen algunas parte
 
 ## Workflow
 
-1. **Verificar `memoria-local`.** Si `.claude/memory/` no existe, instalarla primero.
+1. **Verificar `memoria-local`.** Si `.claude/memoria/` no existe, instalarla primero.
 2. **Asegurar `.claude/glosario/INDICE.md`** con la semilla de [PLANTILLA.md](PLANTILLA.md) §Glosario (encabezado + tabla vacía). Si ya existe un glosario equivalente (ej. un `CONTEXT.md` en la raíz), **no duplicar**: reportar `divergente` y preguntar si migrar su contenido a la tabla.
 3. **Instalar el lint** `.claude/scripts/lint-glosario/lint-glosario.js` con el contenido EXACTO de PLANTILLA.md §Script.
-4. **Asegurar la memoria `feedback_glosario.md`** (verbatim de PLANTILLA.md §Memoria) y su línea en `memory/MEMORY.md`. Equivalente presente → no duplicar; difiere → reportar.
+4. **Asegurar la memoria `feedback_glosario.md`** (verbatim de PLANTILLA.md §Memoria) y su línea en `memoria/MEMORIA.md`. Equivalente presente → no duplicar; difiere → reportar.
 5. **En `.claude/CLAUDE.md`** asegurar la sección **"Glosario del proyecto"** (PLANTILLA.md §Sección). Equivalente presente → no duplicar. No reescribir el archivo entero.
 6. **Reportar** en los tres baldes. Correr el lint (`node .claude/scripts/lint-glosario/lint-glosario.js`) → debe dar limpio sobre el glosario vacío. **No hacer commit** salvo pedido explícito.

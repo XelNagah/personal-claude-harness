@@ -9,7 +9,7 @@ Instala un registro de las decisiones **estructurales al propósito del repo**. 
 
 > **No son "ADR".** Estos repos son de propósito general, no solo software: se cae la "A" de *Architecture*. Pero se conserva su espíritu de acotar: solo lo **estructural**, no lo operativo trivial.
 
-**Depende de `memoria-local`**: la convención se guarda como memoria. Si `.claude/memory/MEMORY.md` no existe, ejecutar primero la skill `inicializar-memoria-local`.
+**Depende de `memoria-local`**: la convención se guarda como memoria. Si `.claude/memoria/MEMORIA.md` no existe, ejecutar primero la skill `inicializar-memoria-local`.
 
 ## Estructura objetivo
 
@@ -19,7 +19,7 @@ Instala un registro de las decisiones **estructurales al propósito del repo**. 
 ├── decisiones/
 │   ├── INDICE.md  # tabla: N° | Decisión | Fecha | Estado | Detalle
 │   └── NNNN-slug.md   # página de detalle, solo para decisiones complejas
-├── memory/
+├── memoria/
 │   └── feedback_decisiones.md
 └── scripts/
     └── lint-decisiones/
@@ -43,9 +43,9 @@ Segura de re-correr: sirve para **"levelear"** repos que ya tienen algunas parte
 
 ## Workflow
 
-1. **Verificar `memoria-local`.** Si `.claude/memory/` no existe, instalarla primero.
+1. **Verificar `memoria-local`.** Si `.claude/memoria/` no existe, instalarla primero.
 2. **Asegurar `.claude/decisiones/INDICE.md`** con la semilla de [PLANTILLA.md](PLANTILLA.md) §Decisiones (encabezado + tabla vacía). Formato de página de detalle en §Detalle. Si ya existe un registro equivalente (ej. `docs/adr/`), no duplicar: reportar `divergente` y preguntar si migrar.
 3. **Instalar el lint** `.claude/scripts/lint-decisiones/lint-decisiones.js` con el contenido EXACTO de PLANTILLA.md §Script.
-4. **Asegurar la memoria `feedback_decisiones.md`** (verbatim de PLANTILLA.md §Memoria) y su línea en `memory/MEMORY.md`. Equivalente presente → no duplicar; difiere → reportar.
+4. **Asegurar la memoria `feedback_decisiones.md`** (verbatim de PLANTILLA.md §Memoria) y su línea en `memoria/MEMORIA.md`. Equivalente presente → no duplicar; difiere → reportar.
 5. **En `.claude/CLAUDE.md`** asegurar la sección **"Decisiones del proyecto"** (PLANTILLA.md §Sección). Equivalente presente → no duplicar. No reescribir el archivo entero.
 6. **Reportar** en los tres baldes. Correr el lint (`node .claude/scripts/lint-decisiones/lint-decisiones.js`) → debe dar limpio sobre el registro vacío. **No hacer commit** salvo pedido explícito.

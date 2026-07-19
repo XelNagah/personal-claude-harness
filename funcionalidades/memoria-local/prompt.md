@@ -25,11 +25,11 @@ Este prompt es seguro de re-correr: sirve para **"levelear"** repos que ya tiene
 
 ## 1. Índice de memoria
 
-Asegurá `<config>/memory/MEMORY.md` — índice con una línea por memoria, formato `- [Título](archivo.md) — resumen corto`. Encabezado: `Cargar al inicio de cada sesión y respetar.` Acá nunca va contenido, solo punteros. Si ya existe, conservá su encabezado y todas sus líneas y agregá solo las entradas que falten — nunca lo reescribas entero.
+Asegurá `<config>/memoria/MEMORIA.md` — índice con una línea por memoria, formato `- [Título](archivo.md) — resumen corto`. Encabezado: `Cargar al inicio de cada sesión y respetar.` Acá nunca va contenido, solo punteros. Si ya existe, conservá su encabezado y todas sus líneas y agregá solo las entradas que falten — nunca lo reescribas entero.
 
 ## 2. Formato de memoria
 
-Cada memoria es un `.md` propio bajo `<config>/memory/` con este frontmatter:
+Cada memoria es un `.md` propio bajo `<config>/memoria/` con este frontmatter:
 
 ```markdown
 ---
@@ -46,13 +46,13 @@ Tipos: `user` (quién es el usuario), `feedback` (correcciones y enfoques confir
 
 ## 3. Lint de integridad
 
-Instalá el tool en **su propia carpeta**: `<config>/scripts/lint-memoria/lint-memoria.js`. Es un script Node sin dependencias ni red que chequea, sobre `<config>/memory/`: **refs `.md` rotas** y wikilinks `[[name]]` sin memoria, **índice incompleto** (toda memoria está listada en `MEMORY.md`), **huérfanos** (memorias que nada referencia ni indexa) y **frontmatter inválido** (`name` / `description` / `metadata.type` ∈ `user` · `feedback` · `project` · `reference`). Corré `node <config>/scripts/lint-memoria/lint-memoria.js` al cerrar tareas que tocaron la memoria.
+Instalá el tool en **su propia carpeta**: `<config>/scripts/lint-memoria/lint-memoria.js`. Es un script Node sin dependencias ni red que chequea, sobre `<config>/memoria/`: **refs `.md` rotas** y wikilinks `[[name]]` sin memoria, **índice incompleto** (toda memoria está listada en `MEMORIA.md`), **huérfanos** (memorias que nada referencia ni indexa) y **frontmatter inválido** (`name` / `description` / `metadata.type` ∈ `user` · `feedback` · `project` · `reference`). Corré `node <config>/scripts/lint-memoria/lint-memoria.js` al cerrar tareas que tocaron la memoria.
 
 (El contenido exacto del script está en la plantilla de la versión Claude Code de esta funcionalidad — `skills/inicializar-memoria-local/PLANTILLA.md` §Script.)
 
 ## 4. Referencia en las instrucciones del proyecto
 
-En el archivo de instrucciones que tu harness carga al inicio (`CLAUDE.md`, `AGENTS.md`, etc.), creá/extendé una sección **"Memoria del proyecto"** con link a `<config>/memory/MEMORY.md`, indicando que la memoria se carga al inicio de cada sesión y se respeta, y el paso de correr el lint al cerrar tareas que tocaron la memoria.
+En el archivo de instrucciones que tu harness carga al inicio (`CLAUDE.md`, `AGENTS.md`, etc.), creá/extendé una sección **"Memoria del proyecto"** con link a `<config>/memoria/MEMORIA.md`, indicando que la memoria se carga al inicio de cada sesión y se respeta, y el paso de correr el lint al cerrar tareas que tocaron la memoria.
 
 ## 5. Reporte
 
