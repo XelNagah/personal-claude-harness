@@ -16,11 +16,14 @@ if (!fs.existsSync(prefFile)) {
   if (txt.trim().length < 50) problems.push('PREFERENCIAS.md casi vacio (sin contenido util)');
 }
 
-// @import en CLAUDE.md (las preferencias tienen que estar siempre en contexto)
-const claudeMd = path.join(claudeDir, 'CLAUDE.md');
+// @import en CLAUDE.md (las preferencias tienen que estar siempre en contexto).
+// CLAUDE.md puede vivir dentro de <config>/ (layout del harness) o en la raiz del repo (layout estandar de Claude Code).
+let claudeMd = path.join(claudeDir, 'CLAUDE.md');
+if (!fs.existsSync(claudeMd)) claudeMd = path.join(path.dirname(claudeDir), 'CLAUDE.md');
 if (fs.existsSync(claudeMd)) {
   const c = fs.readFileSync(claudeMd, 'utf8');
-  if (!/@preferencias\/PREFERENCIAS\.md/.test(c)) {
+  // el import lleva el prefijo del <config> segun donde viva el CLAUDE.md: @preferencias/... o @.claude/preferencias/...
+  if (!/@[\w./-]*preferencias\/PREFERENCIAS\.md/.test(c)) {
     problems.push('CLAUDE.md no importa @preferencias/PREFERENCIAS.md (no queda en contexto)');
   }
 } else {
