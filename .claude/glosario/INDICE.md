@@ -15,7 +15,8 @@ Solo términos **propios del dominio** (no conceptos generales de programación)
 |----------|------------|-------|---------|
 | Propósito | Objetivo de dominio que el usuario define para el repo; los subsistemas se llenan con lo aprendido para lograrlo. | — | — |
 | Multipropósito | El mismo harness sirve a cualquier propósito con el mismo setup (contable, análisis, código…): el usuario lo define y los subsistemas se llenan hacia él. | — | — |
-| Subsistema | Área del harness que persiste estado siguiendo el patrón índice + entradas + lint (memoria, conocimiento, glosario, decisiones, planes, scripts). | subsistema de acumulación | — |
+| Subsistema | Área del harness que persiste estado siguiendo el patrón índice + entradas + lint (memoria, conocimiento, glosario, decisiones, planes, herramientas). | subsistema de acumulación | — |
+| Herramienta | Capacidad que el repo se fabricó para su Propósito y el agente invoca para tareas repetibles. Tipos: script, skill local del repo, MCP local. **No** incluye los lints (esos son infra del Patrón de cada subsistema, decisión 0003). | Tool | — |
 | Entrada | Elemento de un índice (fila o línea). Puede ser autocontenida o referenciar un documento o una carpeta. | Entry | — |
 | Documento | El `.md` que una entrada referencia (opcional en glosario/decisiones, siempre en memoria/planes). | Document | — |
 | Carpeta | Referencia de una entrada que es un directorio con su propio índice → recursión del patrón. | Folder, directorio | — |

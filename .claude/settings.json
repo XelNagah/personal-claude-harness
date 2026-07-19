@@ -5,7 +5,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node .claude/scripts/lint-planes/lint-planes.js --quiet"
+            "command": "node .claude/planes/lint-planes/lint-planes.js --quiet"
           }
         ]
       }

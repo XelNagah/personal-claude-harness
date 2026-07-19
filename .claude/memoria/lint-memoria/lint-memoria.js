@@ -10,7 +10,7 @@ function walk(dir, acc) {
   for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
     if (EXCLUDE.has(e.name)) continue;
     const full = path.join(dir, e.name);
-    if (e.isDirectory()) walk(full, acc);
+    if (e.isDirectory()) { if (e.name.startsWith('lint-')) continue; walk(full, acc); }  // el lint co-ubicado del subsistema no es contenido
     else if (e.name.endsWith('.md')) acc.push(full);
   }
   return acc;

@@ -1,6 +1,6 @@
 # Inicializador de Repos Custom — jllarens
 
-**Objetivo:** herramientas para agentes de código de **propósito general** (multipropósito). El usuario define el propósito del repo (contabilidad, análisis de mudanza, prueba de modelos…) y los subsistemas se llenan con lo aprendido para lograrlo, sesión a sesión. Se instala sobre un repo vacío o sobre uno que ya tenga cosas (idempotente/reconciliable). Este repo es la **fuente de verdad del setup estándar** y se actualiza a medida que las preferencias cambian.
+**Objetivo:** funcionalidades para agentes de código de **propósito general** (multipropósito). El usuario define el propósito del repo (contabilidad, análisis de mudanza, prueba de modelos…) y los subsistemas se llenan con lo aprendido para lograrlo, sesión a sesión. Se instala sobre un repo vacío o sobre uno que ya tenga cosas (idempotente/reconciliable). Este repo es la **fuente de verdad del setup estándar** y se actualiza a medida que las preferencias cambian.
 
 El repo es a la vez un **marketplace de plugins de Claude Code** (estilo Matt Pocock, https://github.com/mattpocock) y una colección de prompts agnósticos. Cada funcionalidad = un plugin.
 
@@ -11,18 +11,14 @@ El repo es a la vez un **marketplace de plugins de Claude Code** (estilo Matt Po
 ├── REGISTRO.md                                # catálogo de funcionalidades
 ├── .claude/                                   # el propio setup estándar, aplicado a este repo
 │   ├── CLAUDE.md                              # este archivo (instrucciones internas)
-│   ├── memoria/                                # memoria local + índice MEMORIA.md
-│   ├── preferencias/                          # PREFERENCIAS.md (Base versionada + Adaptaciones)
-│   ├── planes/                                # PLANES.md (registro) + ESTADOS.md (estados) + pendientes/ ejecutados/ descartados/
-│   ├── conocimiento/                          # lo que el agente sabe (INDICE.md)
-│   ├── glosario/                              # terminología del dominio (INDICE.md)
-│   ├── decisiones/                            # decisiones estructurales (INDICE.md)
-│   └── scripts/                               # tooling del harness, uno por carpeta + INDICE.md
-│       ├── lint-conocimiento/                 # lint de integridad de conocimiento/
-│       ├── lint-planes/                       # lint del ciclo de planes (hook SessionStart)
-│       ├── lint-glosario/                     # lint de glosario/
-│       ├── lint-decisiones/                   # lint de decisiones/
-│       ├── lint-scripts/                      # lint del registro de scripts
+│   ├── memoria/                                # memoria local + índice MEMORIA.md + lint-memoria/
+│   ├── preferencias/                          # PREFERENCIAS.md (Base + Adaptaciones) + lint-preferencias/
+│   ├── planes/                                # PLANES.md + ESTADOS.md + pendientes/ ejecutados/ descartados/ + lint-planes/ (hook SessionStart)
+│   ├── conocimiento/                          # lo que el agente sabe (INDICE.md) + lint-conocimiento/
+│   ├── glosario/                              # terminología del dominio (INDICE.md) + lint-glosario/
+│   ├── decisiones/                            # decisiones estructurales (INDICE.md) + lint-decisiones/
+│   └── herramientas/                          # tools del Propósito (INDICE.md, columna Tipo); los lints de subsistema viven con su subsistema, no acá
+│       ├── lint-herramientas/                 # lint del registro de Herramientas
 │       └── lint-harness/                      # lint de coherencia del harness (disco↔marketplace↔REGISTRO, junctions, verbatim)
 ├── .claude-plugin/marketplace.json            # catálogo del marketplace (10 plugins)
 └── funcionalidades/                           # cada subcarpeta = un plugin
@@ -69,7 +65,7 @@ New-Item -ItemType Junction -Path "$env:USERPROFILE\.claude\skills\inicializar-c
 Al tocar las preferencias, correr el lint estructural **desde la raíz del repo** (chequea secciones Base/Adaptaciones + el `@import`):
 
 ```bash
-node .claude/scripts/lint-preferencias/lint-preferencias.js
+node .claude/preferencias/lint-preferencias/lint-preferencias.js
 ```
 
 ## Mapa del repo (siempre cargado)
@@ -77,14 +73,14 @@ node .claude/scripts/lint-preferencias/lint-preferencias.js
 @memoria/MEMORIA.md
 @planes/PLANES.md
 @conocimiento/INDICE.md
-@scripts/INDICE.md
+@herramientas/INDICE.md
 
 ## Memoria del proyecto
 
 La memoria local vive en [`memoria/`](memoria/), indexada por [`memoria/MEMORIA.md`](memoria/MEMORIA.md). **Cargar el índice al inicio de cada sesión y respetar lo que dice.** Cada memoria es un `.md` propio con frontmatter (`name`, `description`, `metadata.type` ∈ `user` | `feedback` | `project` | `reference`); el índice lleva solo punteros, nunca contenido. Antes de crear una memoria nueva, revisar si una existente ya cubre el hecho — actualizar en vez de duplicar. Fechas siempre absolutas. Al cerrar una tarea que tocó la memoria, correr el lint **desde la raíz del repo**:
 
 ```bash
-node .claude/scripts/lint-memoria/lint-memoria.js
+node .claude/memoria/lint-memoria/lint-memoria.js
 ```
 
 Chequea refs/wikilinks rotos, `MEMORIA.md` incompleto, huérfanos y frontmatter inválido.
@@ -94,7 +90,7 @@ Chequea refs/wikilinks rotos, `MEMORIA.md` incompleto, huérfanos y frontmatter 
 Los planes se persisten en [`planes/`](planes/): `pendientes/` (planes vivos: `Nuevo`, `En curso`, `Diferido`), `ejecutados/` y `descartados/` (registro, con motivo). Nombre = slug estable sin fecha; estado y fechas viven en el registro [`planes/PLANES.md`](planes/PLANES.md), y los estados disponibles (con su carpeta y si son terminales) en [`planes/ESTADOS.md`](planes/ESTADOS.md) — configurable, que el lint lee. Ciclo completo en la memoria [`feedback_flujo_planes.md`](memoria/feedback_flujo_planes.md). Al cerrar una tarea que tocó planes, correr el lint **desde la raíz del repo**:
 
 ```bash
-node .claude/scripts/lint-planes/lint-planes.js
+node .claude/planes/lint-planes/lint-planes.js
 ```
 
 ## Base de conocimiento del proyecto
@@ -104,7 +100,7 @@ Todo lo que el agente **sabe** vive en una ubicación única: [`conocimiento/`](
 Al cerrar una tarea que escribió conocimiento, correr el lint mecánico **desde la raíz del repo** (la ruta es relativa al cwd, no a este archivo):
 
 ```bash
-node .claude/scripts/lint-conocimiento/lint-conocimiento.js
+node .claude/conocimiento/lint-conocimiento/lint-conocimiento.js
 ```
 
 Chequea refs rotas, índice incompleto y huérfanos. Detalle de la convención en la memoria [`feedback_base_conocimiento.md`](memoria/feedback_base_conocimiento.md).
@@ -114,7 +110,7 @@ Chequea refs rotas, índice incompleto y huérfanos. Detalle de la convención e
 La terminología del dominio vive en [`glosario/INDICE.md`](glosario/INDICE.md): una tabla de conceptos (nombre canónico, definición, alias registrados, y link a página de detalle si el concepto es complejo). Los alias se **registran, no se prohíben**. **Consultarlo al planificar y analizar.** Al cerrar una tarea que tocó el glosario, correr el lint **desde la raíz del repo**:
 
 ```bash
-node .claude/scripts/lint-glosario/lint-glosario.js
+node .claude/glosario/lint-glosario/lint-glosario.js
 ```
 
 Detalle de la convención en la memoria [`feedback_glosario.md`](memoria/feedback_glosario.md).
@@ -124,17 +120,17 @@ Detalle de la convención en la memoria [`feedback_glosario.md`](memoria/feedbac
 Las decisiones **estructurales al propósito del repo** (no las operativas triviales) se asientan en [`decisiones/INDICE.md`](decisiones/INDICE.md): una tabla donde cada fila es una decisión (N°, qué + por qué, fecha, estado, y link a detalle si requiere conceptualización mayor). Misma estructura que el glosario. **Consultarlas al planificar y analizar** para no re-decidir ni contradecir. Al cerrar una tarea que registró decisiones, correr el lint **desde la raíz del repo**:
 
 ```bash
-node .claude/scripts/lint-decisiones/lint-decisiones.js
+node .claude/decisiones/lint-decisiones/lint-decisiones.js
 ```
 
 Detalle de la convención en la memoria [`feedback_decisiones.md`](memoria/feedback_decisiones.md).
 
-## Scripts del proyecto
+## Herramientas del proyecto
 
-Las herramientas del repo viven en [`scripts/`](scripts/): cada script en su carpeta `<tool>/` con un `README.md`, listadas en el registro [`scripts/INDICE.md`](scripts/INDICE.md) (tabla Tool | Qué hace | Cómo se corre | Estado). Nunca sueltos. ⚠️ Un script referenciado por ruta en `settings`, `.gitignore` o un hook no se mueve sin actualizar esa referencia (rompe el match por prefijo). Al cerrar una tarea que tocó scripts, correr el lint **desde la raíz del repo**:
+Las **Herramientas** del repo — las *tools* que el Propósito requiere (tipos `script`, `skill` local, `MCP` local) — viven en [`herramientas/`](herramientas/), listadas en el registro [`herramientas/INDICE.md`](herramientas/INDICE.md) (tabla Herramienta | Tipo | Qué hace | Cómo se invoca | Estado). Los **lints de subsistema no son Herramientas**: son infra del Patrón y viven con su subsistema (`.claude/<sub>/lint-<sub>/`, decisión 0008). ⚠️ Una tool referenciada por ruta en `settings`, `.gitignore` o un hook no se mueve sin actualizar esa referencia (rompe el match por prefijo). Al cerrar una tarea que tocó Herramientas, correr el lint **desde la raíz del repo**:
 
 ```bash
-node .claude/scripts/lint-scripts/lint-scripts.js
+node .claude/herramientas/lint-herramientas/lint-herramientas.js
 ```
 
-Detalle de la convención en la memoria [`feedback_scripts.md`](memoria/feedback_scripts.md).
+Detalle de la convención en la memoria [`feedback_herramientas.md`](memoria/feedback_herramientas.md).
