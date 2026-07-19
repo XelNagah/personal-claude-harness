@@ -91,7 +91,7 @@ for (const r of rows) {
 const resueltosSinMover = [], ejecSinNotas = [];
 for (const [rel, carpeta] of enDisco) {
   const txt = fs.readFileSync(path.join(root, rel), 'utf8');
-  if (carpeta === 'pendientes' && /(✅|RESUELTO|## Notas de implementación)/i.test(txt)) resueltosSinMover.push(rel);
+  if (carpeta === 'pendientes' && (/\bRESUELTO\b/.test(txt) || /##\s*Notas de implementación/i.test(txt))) resueltosSinMover.push(rel);
   if (carpeta === 'ejecutados' && !/## Notas de implementación/i.test(txt)) ejecSinNotas.push(rel);
 }
 
