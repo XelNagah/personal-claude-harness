@@ -28,17 +28,42 @@ Este prompt es seguro de re-correr: este es el modo de **"levelear"** repos que 
 Creá/extendé el archivo de instrucciones que tu harness carga al inicio (`CLAUDE.md`, `AGENTS.md`, etc.) con:
 
 1. **Descripción del proyecto** — 1 a 3 párrafos inferidos del repo; si está vacío o es ambiguo, preguntame antes de inventar.
-2. **Preferencias de comunicación:**
-   > Al preguntar por una decisión o analizar alternativas, dar SIEMPRE ejemplos concretos de cada postura (numéricos si aplica): cómo es ahora vs. cómo quedaría y por qué, encadenando consecuencias ("A ⇒ B; si no fuera B ⇒ no A porque X"). Objetivo: ubicar inmediatamente al lector en la mecánica relevante sin que tenga que reconstruir contexto.
-3. **Principios de trabajo:**
-   - Conceptual antes que implementación. Ante ambigüedad de diseño, preguntar antes de asumir. Minimizar cambios sustractivos.
-   - Iterar de alto a bajo nivel: interfaces y contratos antes que implementación.
-   - Nomenclatura en español para el dominio; inglés solo para infraestructura técnica.
-   - Cero invención de datos: lo que no salga de una fuente verificada se marca como faltante o como interpretación propia.
-   - Terminología: no acuñar términos del dominio por cuenta propia; preferir las palabras del usuario. **Español corriente en todo**: nada de palabras inventadas o raras (aunque suenen técnicas), ni en prosa ni en diagramas — no solo en los registros. **Gate duro en registros canónicos** (glosario, decisiones): ningún término acuñado por el agente se asienta sin ratificación del usuario. En prosa/diagramas se puede usar, marcado como propuesto.
-4. **Sección "Memoria y planes del proyecto"** con links a `<config>/memoria/MEMORIA.md`, al registro `<config>/planes/PLANES.md` y al archivo de estados `<config>/planes/ESTADOS.md`, indicando que la memoria se carga al inicio de cada sesión y se respeta. El ciclo de planes vive en las carpetas `pendientes/`/`ejecutados/`/`descartados/`.
+2. **Preferencias (siempre cargadas)** — las preferencias de trabajo **no van inline** acá: se persisten versionadas en `<config>/preferencias/PREFERENCIAS.md` (ver abajo). Asegurá en el archivo de instrucciones una sección "Preferencias (siempre cargadas)" que las cargue al contexto en cada sesión (import `@preferencias/PREFERENCIAS.md` si tu harness lo soporta; instrucción de carga obligatoria si no), con el paso de correr el lint al tocarlas.
+3. **Sección "Memoria y planes del proyecto"** con links a `<config>/memoria/MEMORIA.md`, al registro `<config>/planes/PLANES.md` y al archivo de estados `<config>/planes/ESTADOS.md`, indicando que la memoria se carga al inicio de cada sesión y se respeta. El ciclo de planes vive en las carpetas `pendientes/`/`ejecutados/`/`descartados/`.
 
-> **Preferencias como archivo versionado (recomendado):** en vez de inline, preferí persistir las preferencias en `<config>/preferencias/PREFERENCIAS.md` con secciones **Base** (del harness — incluye el bullet de terminología) y **Adaptaciones de este repo**, importada siempre al contexto (`@` si tu harness lo soporta). Instalá entonces el lint `<config>/scripts/lint-preferencias/lint-preferencias.js` (al final, §Script — lint-preferencias), que verifica esa estructura (secciones Base/Adaptaciones + el `@import`); correlo al tocar las preferencias. (Detalle en la funcionalidad `preferencias-trabajo`.)
+### El archivo de preferencias
+
+Creá `<config>/preferencias/PREFERENCIAS.md` con secciones **Base** (del harness, versionada) y **Adaptaciones de este repo**. Las preferencias son reglas de conducta: tienen que estar inline en el contexto, no disponibles-a-pedido.
+
+```markdown
+# Preferencias
+
+Reglas de conducta del agente en este repo. Siempre en contexto. La sección **Base** viene de mi harness y se actualiza al levelear (no editarla acá: los ajustes de este repo van en **Adaptaciones**).
+
+## Base (harness v2)
+
+**Comunicación:**
+
+- Al preguntar por una decisión o analizar alternativas, dar SIEMPRE ejemplos concretos de cada postura (numéricos si aplica): cómo es ahora vs. cómo quedaría y por qué, encadenando consecuencias ("A ⇒ B; si no fuera B ⇒ no A porque X"). Objetivo: ubicar inmediatamente al lector en la mecánica relevante sin que tenga que reconstruir contexto.
+- Ante un informe o visualización de **formato nuevo**: mostrar primero el esqueleto con datos de juguete marcados como DUMMY, acordar la representación, recién después calcular en serio. **Nunca re-producir completo un formato rechazado**: volver al esqueleto y realinear.
+- Tareas en background: esperar la notificación de finalización; no reportar ni consultar estado a cada rato — solo ante sospecha de cuelgue.
+
+**Principios de trabajo:**
+
+- Conceptual antes que implementación. Ante ambigüedad de diseño, preguntar antes de asumir. Minimizar cambios sustractivos.
+- Iterar de alto a bajo nivel: interfaces y contratos antes que implementación.
+- Nomenclatura en español para el dominio; inglés solo para infraestructura técnica.
+- Cero invención de datos: lo que no salga de una fuente verificada se marca como faltante o como interpretación propia.
+- Terminología: no acuñar términos del dominio por cuenta propia; preferir las palabras del usuario. **Español corriente en todo**: nada de palabras inventadas o raras (aunque suenen técnicas), ni en prosa ni en diagramas — no solo en los registros. **Gate duro en registros canónicos** (glosario, decisiones): ningún término acuñado por el agente se asienta sin ratificación del usuario. En prosa/diagramas se puede usar, marcado como propuesto.
+
+## Adaptaciones de este repo
+
+(ninguna todavía — agregar acá lo específico de este proyecto)
+```
+
+Instalá el lint `<config>/scripts/lint-preferencias/lint-preferencias.js` (al final, §Script — lint-preferencias) en su carpeta propia y registralo en `scripts/INDICE.md`; verifica las secciones Base/Adaptaciones + el `@import`. Corré `node <config>/scripts/lint-preferencias/lint-preferencias.js` al tocar las preferencias.
+
+**Reconciliación de preferencias:** la Base es versionada — si el repo tiene una Base de versión anterior, reemplazala entera por la actual (reportar como actualización, no divergencia); si fue editada a mano, mové lo ajeno a **Adaptaciones** y reinstalá la Base limpia. **Adaptaciones nunca se toca.** Si el archivo de instrucciones tiene bloques inline viejos "Preferencias de comunicación"/"Principios de trabajo": iguales a una Base anterior → borralos y dejá solo la carga de `PREFERENCIAS.md`; distintos → las diferencias van a Adaptaciones.
 
 ## 2. Memoria local
 
