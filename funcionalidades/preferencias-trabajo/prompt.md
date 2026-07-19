@@ -27,7 +27,7 @@ Creá `<config>/preferencias/PREFERENCIAS.md`:
 
 Reglas de conducta del agente en este repo. Siempre en contexto. La sección **Base** viene de mi harness y se actualiza al levelear (no editarla acá: los ajustes de este repo van en **Adaptaciones**).
 
-## Base (harness v1)
+## Base (harness v2)
 
 **Comunicación:**
 
@@ -41,7 +41,7 @@ Reglas de conducta del agente en este repo. Siempre en contexto. La sección **B
 - Iterar de alto a bajo nivel: interfaces y contratos antes que implementación.
 - Nomenclatura en español para el dominio; inglés solo para infraestructura técnica.
 - Cero invención de datos: lo que no salga de una fuente verificada se marca como faltante o como interpretación propia.
-- Terminología: no acuñar términos del dominio por cuenta propia; preferir las palabras del usuario. **Gate duro en registros canónicos** (glosario, decisiones): ningún término acuñado por el agente se asienta sin ratificación del usuario. En prosa se puede usar, marcado como propuesto.
+- Terminología: no acuñar términos del dominio por cuenta propia; preferir las palabras del usuario. **Español corriente en todo**: nada de palabras inventadas o raras (aunque suenen técnicas), ni en prosa ni en diagramas — no solo en los registros. **Gate duro en registros canónicos** (glosario, decisiones): ningún término acuñado por el agente se asienta sin ratificación del usuario. En prosa/diagramas se puede usar, marcado como propuesto.
 
 ## Adaptaciones de este repo
 

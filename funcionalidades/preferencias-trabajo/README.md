@@ -19,7 +19,7 @@ Por qué por-repo y no global de máquina: el user trabaja en varias computadora
 Si el `CLAUDE.md` no existe, lo crea arrancando con una **Descripción del proyecto** inferida del repo. Migra los bloques inline viejos ("Preferencias de comunicación" / "Principios de trabajo"): iguales a una Base conocida → los reemplaza por el import; editados → las diferencias van a Adaptaciones.
 
 - **Lint** — estructural: chequea que `PREFERENCIAS.md` tenga las secciones `## Base` y `## Adaptaciones` y no esté vacío, y que `CLAUDE.md` lo importe con `@preferencias/PREFERENCIAS.md` (para que quede siempre en contexto). Mecánico y gratis; **no** detecta contradicciones semánticas (eso es la capa semántica, a pedido).
-- **Regla de terminología** (en la Base) — no acuñar términos del dominio por cuenta propia; preferir las palabras del usuario. **Gate duro en registros canónicos** (glosario, decisiones): ningún término acuñado por el agente se asienta sin ratificación. En prosa se puede usar, marcado como propuesto.
+- **Regla de terminología** (en la Base) — no acuñar términos del dominio por cuenta propia; preferir las palabras del usuario. **Español corriente en todo** (nada de palabras inventadas o raras, ni en prosa ni en diagramas — no solo en los registros). **Gate duro en registros canónicos** (glosario, decisiones): ningún término acuñado por el agente se asienta sin ratificación. En prosa/diagramas se puede usar, marcado como propuesto.
 
 ## Dependencias
 
