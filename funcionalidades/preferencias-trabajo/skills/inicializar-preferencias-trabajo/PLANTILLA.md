@@ -40,7 +40,7 @@ Reglas de conducta del agente en este repo. Siempre en contexto (importado desde
 Al tocar las preferencias, correr el lint estructural **desde la raíz del repo** (chequea secciones Base/Adaptaciones + el `@import`):
 
 ​```bash
-node .claude/scripts/lint-preferencias/lint-preferencias.js
+node .claude/preferencias/lint-preferencias/lint-preferencias.js
 ​```
 ```
 
@@ -61,7 +61,7 @@ Bloques que versiones previas del harness escribían inline en CLAUDE.md. Si el 
 - Nomenclatura en español para el dominio; inglés solo para infraestructura técnica.
 - Cero invención de datos: lo que no salga de una fuente verificada se marca como faltante o como interpretación propia.
 
-## §Script — `.claude/scripts/lint-preferencias/lint-preferencias.js`
+## §Script — `.claude/preferencias/lint-preferencias/lint-preferencias.js`
 
 Contenido exacto (Node, sin dependencias, sin red):
 

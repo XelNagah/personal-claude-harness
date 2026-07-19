@@ -29,7 +29,7 @@ Asegurá `<config>/conocimiento/` con un `INDICE.md` raíz — índice con una l
 
 ## 2. Lint de integridad
 
-Instalá el tool en **su propia carpeta**: `<config>/scripts/lint-conocimiento/lint-conocimiento.js`. Es un script Node sin dependencias ni red que chequea, sobre `<config>/conocimiento/`: **refs rotas** (todo link/ruta `.md` mencionado existe), **índice incompleto** (todo `.md` está listado en su `INDICE.md`), **huérfanos** (páginas que nada referencia). Ignora placeholders (`...`, `<...>`, plantillas de fecha). Corré `node <config>/scripts/lint-conocimiento/lint-conocimiento.js` al cerrar tareas que escribieron conocimiento.
+Instalá el tool en **su propia carpeta**: `<config>/conocimiento/lint-conocimiento/lint-conocimiento.js`. Es un script Node sin dependencias ni red que chequea, sobre `<config>/conocimiento/`: **refs rotas** (todo link/ruta `.md` mencionado existe), **índice incompleto** (todo `.md` está listado en su `INDICE.md`), **huérfanos** (páginas que nada referencia). Ignora placeholders (`...`, `<...>`, plantillas de fecha). Corré `node <config>/conocimiento/lint-conocimiento/lint-conocimiento.js` al cerrar tareas que escribieron conocimiento.
 
 (El contenido exacto del script está en la plantilla de la versión Claude Code de esta funcionalidad — `skills/inicializar-conocimiento/PLANTILLA.md` §Script.)
 
@@ -37,7 +37,7 @@ Instalá el tool en **su propia carpeta**: `<config>/scripts/lint-conocimiento/l
 
 Si tenés sistema de memoria local, persistí la convención como una memoria tipada `feedback`:
 
-- **Ubicación única:** conocimiento nuevo siempre bajo `<config>/conocimiento/`, nunca en la raíz. (Las herramientas/scripts las gestiona la funcionalidad `scripts`.)
+- **Ubicación única:** conocimiento nuevo siempre bajo `<config>/conocimiento/`, nunca en la raíz. (Las herramientas las gestiona la funcionalidad `herramientas`.)
 - **Lint al cerrar** (mecánico, gratis); semántico (contradicciones, duplicación, staleness) a pedido.
 - **Migración:** scripts acoplados por `__dirname` que se muevan deben reapuntar sus paths de datos a `<config>/conocimiento/...`.
 
@@ -67,7 +67,7 @@ Reglas del move: proponé un plan concreto y **mové por defecto**, preservando 
 
 **Índice completo:** si ya hay un índice parcial (un README que lista 7 de 21), el `INDICE.md` nuevo debe cubrir **todos** — los no listados eran huérfanos, que es justo el problema a resolver.
 
-**Reparar refs:** paths de índices, links entre páginas, refs desde el archivo de instrucciones y las memorias/planes, y el acople de scripts que se muevan a `scripts/<tool>/`: `__dirname` (reapuntar) o **cwd** (prependerles `process.chdir(require('path').join(__dirname, '<ruta a los datos>'))`, que evita reescribir cada I/O). Corré el lint para confirmar 0 refs rotas.
+**Reparar refs:** paths de índices, links entre páginas, refs desde el archivo de instrucciones y las memorias/planes, y el acople de scripts que se muevan a `<config>/herramientas/<tool>/`: `__dirname` (reapuntar) o **cwd** (prependerles `process.chdir(require('path').join(__dirname, '<ruta a los datos>'))`, que evita reescribir cada I/O). Corré el lint para confirmar 0 refs rotas.
 
 ⚠️ **Un script referenciado por ruta en la config de permisos de tu harness NO se mueve alegremente.** Las reglas matchean por **prefijo de ruta exacto** (ej. `"Bash(bash tools/moonraker-get.sh:*)"`): moverlo rompe el match ⇒ se pierde la pre-autorización y vuelven los prompts (en headless, es una denegación directa). Antes de mover un script, buscá su ruta en la config. Si aparece: no lo muevas, o actualizá la regla a la ruta nueva en el mismo paso. Misma lógica que el `.gitignore`: mover un archivo rompe todo lo que lo referencia por ruta.
 

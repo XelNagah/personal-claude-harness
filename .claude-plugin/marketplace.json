@@ -42,9 +42,9 @@
       "description": "Registro de decisiones estructurales del repo en .claude/decisiones/ (tabla + detalle para las complejas, no ADR) + lint. Depende de memoria-local."
     },
     {
-      "name": "scripts",
-      "source": "./funcionalidades/scripts",
-      "description": "Gestión de scripts: cada tool en .claude/scripts/<tool>/ con README, registro tabla + lint. Ordena el cementerio de scripts. Depende de memoria-local."
+      "name": "herramientas",
+      "source": "./funcionalidades/herramientas",
+      "description": "Gestión de Herramientas del repo: las tools del Propósito (script/skill local/MCP local) en .claude/herramientas/ con registro INDICE.md (columna Tipo) + lint. Los lints de subsistema no son herramientas. Depende de memoria-local."
     },
     {
       "name": "setup-completo",

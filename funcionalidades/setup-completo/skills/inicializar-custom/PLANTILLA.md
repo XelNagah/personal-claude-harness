@@ -44,7 +44,7 @@ Sección de `.claude/CLAUDE.md`:
 Al tocar las preferencias, correr el lint estructural **desde la raíz del repo** (chequea secciones Base/Adaptaciones + el `@import`):
 
 ​```bash
-node .claude/scripts/lint-preferencias/lint-preferencias.js
+node .claude/preferencias/lint-preferencias/lint-preferencias.js
 ​```
 ```
 
@@ -62,7 +62,7 @@ Lo crea `memoria-local`; cada funcionalidad con índice agrega su línea al inst
 @memoria/MEMORIA.md
 @planes/PLANES.md
 @conocimiento/INDICE.md
-@scripts/INDICE.md
+@herramientas/INDICE.md
 ```
 
 (Solo las líneas de lo instalado; rutas relativas al CLAUDE.md. **Datos** van por índice+fetch — las descriptions del índice se escriben como ganchos que carguen el dato clave. **Reglas de conducta** no: van inline vía §Preferencias.)
@@ -107,7 +107,7 @@ Persistir y gestionar planes bajo `.claude/planes/` con tres subcarpetas: `pendi
 3. **Al detectar evidencia de implementación** (commit, mensaje del user, código verificado, otro agente): pasar a `Ejecutado` y mover a `ejecutados/` **sin renombrar**, completar `Cerrado` en el registro y agregar sección **`## Notas de implementación`** (cómo se implementó vs planificado, hash de commit, cosas notables).
 4. **Descartar es un cierre válido:** `Descartado`, mover a `descartados/`, completar `Cerrado` y una línea de motivo en Notas (p. ej. "superseded por <plan>").
 5. **Reparar referencias entrantes** si las hubiera (el slug estable minimiza esto; preferir linkear planes vía `PLANES.md`).
-6. **Al cerrar** una tarea que tocó planes, correr el lint: `node .claude/scripts/lint-planes/lint-planes.js`.
+6. **Al cerrar** una tarea que tocó planes, correr el lint: `node .claude/planes/lint-planes/lint-planes.js`.
 
 Importante: borrar el archivo de `pendientes/` al moverlo — no duplicar. Un plan puede persistirse antes de arrancar la ejecución (p. ej. para cortar una sesión larga de diseño): Estado `Nuevo` o `Diferido` en el registro y bloque al tope con los pendientes para retomar.
 
@@ -164,20 +164,20 @@ metadata:
   type: feedback
 ---
 
-El conocimiento persistido del agente (documentos, estudios, temas, notas de dominio) vive en una carpeta única: `.claude/conocimiento/`, con un `INDICE.md` en su raíz. (La convención de dónde viven las herramientas/scripts la define la memoria [[scripts]].)
+El conocimiento persistido del agente (documentos, estudios, temas, notas de dominio) vive en una carpeta única: `.claude/conocimiento/`, con un `INDICE.md` en su raíz. (La convención de dónde viven las herramientas la define la memoria [[herramientas]].)
 
-**Why:** ubicación determinística → el lint y cualquier consulta saben dónde mirar sin heurística; separa lo que el agente CONOCE (`conocimiento/`) de su config (`memoria/`, `CLAUDE.md`) y su tooling (`scripts/`); mantiene la raíz del repo limpia.
+**Why:** ubicación determinística → el lint y cualquier consulta saben dónde mirar sin heurística; separa lo que el agente CONOCE (`conocimiento/`) de su config (`memoria/`, `CLAUDE.md`) y su tooling (`herramientas/`); mantiene la raíz del repo limpia.
 
 **How to apply:**
 
 1. Todo md de conocimiento nuevo va bajo `.claude/conocimiento/` (subcarpetas por tema; cada una con su `INDICE.md` si crece). Nunca en la raíz del repo.
 2. Mantener `.claude/conocimiento/INDICE.md` como índice raíz (una línea por página/sección; solo punteros).
-3. **Al cerrar** una tarea que escribió conocimiento, correr el lint mecánico: `node .claude/scripts/lint-conocimiento/lint-conocimiento.js`. Chequea refs rotas, índice incompleto y huérfanos (sin LLM, sin red). Resolver los hallazgos.
+3. **Al cerrar** una tarea que escribió conocimiento, correr el lint mecánico: `node .claude/conocimiento/lint-conocimiento/lint-conocimiento.js`. Chequea refs rotas, índice incompleto y huérfanos (sin LLM, sin red). Resolver los hallazgos.
 4. El **chequeo semántico** (contradicciones entre páginas, duplicación, staleness) se corre a pedido tras una incorporación grande, no en cada cierre.
-5. **Migración:** un script de datos acoplado por `__dirname` (lee/escribe relativo a sí mismo) que se mueva a `.claude/scripts/<tool>/` debe reapuntar sus paths a la carpeta de datos en `conocimiento/` (`__dirname + '/../../conocimiento/<subdir>/...'`), o se rompe.
+5. **Migración:** un script de datos acoplado por `__dirname` (lee/escribe relativo a sí mismo) que se mueva a `.claude/herramientas/<tool>/` debe reapuntar sus paths a la carpeta de datos en `conocimiento/` (`__dirname + '/../../conocimiento/<subdir>/...'`), o se rompe.
 ```
 
-## §Script — `.claude/scripts/lint-conocimiento/lint-conocimiento.js`
+## §Script — `.claude/conocimiento/lint-conocimiento/lint-conocimiento.js`
 
 Contenido exacto (Node, sin dependencias, sin red):
 
@@ -193,7 +193,7 @@ function walk(dir, acc) {
   for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
     if (EXCLUDE.has(e.name)) continue;
     const full = path.join(dir, e.name);
-    if (e.isDirectory()) walk(full, acc);
+    if (e.isDirectory()) { if (e.name.startsWith('lint-')) continue; walk(full, acc); }  // el lint co-ubicado del subsistema no es contenido
     else if (e.name.endsWith('.md')) acc.push(full);
   }
   return acc;
@@ -359,7 +359,7 @@ Sección de `.claude/CLAUDE.md` — "Planes del proyecto":
 Los planes se persisten en [`planes/`](planes/): `pendientes/` (planes vivos: `Nuevo`, `En curso`, `Diferido`), `ejecutados/` y `descartados/` (registro, con motivo). Nombre = slug estable sin fecha; estado y fechas viven en el registro [`planes/PLANES.md`](planes/PLANES.md), y los estados disponibles (con su carpeta y si son terminales) en [`planes/ESTADOS.md`](planes/ESTADOS.md) — configurable, que el lint lee. Ciclo completo en la memoria [`feedback_flujo_planes.md`](memoria/feedback_flujo_planes.md). Al cerrar una tarea que tocó planes, correr el lint **desde la raíz del repo**:
 
 ​```bash
-node .claude/scripts/lint-planes/lint-planes.js
+node .claude/planes/lint-planes/lint-planes.js
 ​```
 ```
 
@@ -373,7 +373,7 @@ Hook (merge sin pisar hooks existentes en `.claude/settings.json`; con `--quiet`
         "hooks": [
           {
             "type": "command",
-            "command": "node .claude/scripts/lint-planes/lint-planes.js --quiet"
+            "command": "node .claude/planes/lint-planes/lint-planes.js --quiet"
           }
         ]
       }
@@ -382,20 +382,20 @@ Hook (merge sin pisar hooks existentes en `.claude/settings.json`; con `--quiet`
 }
 ```
 
-`.claude/scripts/lint-planes/README.md`:
+`.claude/planes/lint-planes/README.md`:
 
 ```markdown
 # lint-planes
 
 **Qué hace:** lint del ciclo de planes — lee los estados de `planes/ESTADOS.md` (data-driven) y valida: coherencia estado↔carpeta y carpeta↔registro (PLANES.md), planes sueltos, estados inválidos (fuera de ESTADOS.md), pendientes ya resueltos sin mover, cierres a medias (sin fecha, sin motivo, sin notas de implementación) y activos (`En curso`) envejecidos. Sin LLM, sin red.
-**Cómo se corre:** `node .claude/scripts/lint-planes/lint-planes.js` (desde la raíz del repo). Flags: `--quiet` (solo imprime si hay hallazgos; usado por el hook), `--dias N` (umbral de envejecimiento, default 30).
+**Cómo se corre:** `node .claude/planes/lint-planes/lint-planes.js` (desde la raíz del repo). Flags: `--quiet` (solo imprime si hay hallazgos; usado por el hook), `--dias N` (umbral de envejecimiento, default 30).
 **Estado:** vigente.
 **Referenciado por:** hook `SessionStart` en `.claude/settings.json` — actualizar el hook si se mueve.
 **Dependencias:** Node.js (sin libs externas).
 **Origen (opcional):** funcionalidad `gestion-de-planes` del harness.
 ```
 
-## §Script — `.claude/scripts/lint-planes/lint-planes.js`
+## §Script — `.claude/planes/lint-planes/lint-planes.js`
 
 Contenido exacto (Node, sin dependencias, sin red):
 
@@ -574,7 +574,7 @@ La terminología del dominio vive en `.claude/glosario/INDICE.md`: una tabla don
 1. **Al planificar o analizar**, consultar el glosario. Si aparece un término, ver si ya es alias de un concepto registrado; si es nuevo, agregar el concepto (o el alias) en el momento.
 2. Concepto **simple** → una fila, columna Detalle en `—`. Concepto **complejo** → fila + página de detalle linkeada.
 3. **Alias:** registrarlos en la columna Alias (no vetarlos). Un mismo alias no puede estar bajo dos conceptos distintos (el lint lo caza).
-4. **Al cerrar** una tarea que tocó el glosario, correr el lint: `node .claude/scripts/lint-glosario/lint-glosario.js` (links de detalle resuelven, páginas sin huérfanos, alias sin colisión).
+4. **Al cerrar** una tarea que tocó el glosario, correr el lint: `node .claude/glosario/lint-glosario/lint-glosario.js` (links de detalle resuelven, páginas sin huérfanos, alias sin colisión).
 
 Relacionado: [[flujo-planes]] (consultar el glosario al planificar/analizar).
 ```
@@ -587,13 +587,13 @@ Sección de `.claude/CLAUDE.md` — "Glosario del proyecto":
 La terminología del dominio vive en [`glosario/INDICE.md`](glosario/INDICE.md): una tabla de conceptos (nombre canónico, definición, alias registrados, y link a página de detalle si el concepto es complejo). Los alias se **registran, no se prohíben**. **Consultarlo al planificar y analizar.** Al cerrar una tarea que tocó el glosario, correr el lint **desde la raíz del repo**:
 
 ​```bash
-node .claude/scripts/lint-glosario/lint-glosario.js
+node .claude/glosario/lint-glosario/lint-glosario.js
 ​```
 
 Detalle de la convención en la memoria [`feedback_glosario.md`](memoria/feedback_glosario.md).
 ```
 
-Lint `.claude/scripts/lint-glosario/lint-glosario.js` (Node, sin dependencias, sin red):
+Lint `.claude/glosario/lint-glosario/lint-glosario.js` (Node, sin dependencias, sin red):
 
 ```js
 #!/usr/bin/env node
@@ -720,7 +720,7 @@ Las decisiones **estructurales al propósito del repo** se asientan en `.claude/
 1. **Qué registrar:** decisiones que definen cómo es / qué hace el repo en lo esencial, o que eligen un camino que condiciona el trabajo futuro. **No** las triviales o efímeras ("busqué en internet", "usé tal comando").
 2. **Al planificar o analizar**, consultar las decisiones previas: no re-abrir lo cerrado ni contradecirlo. Reemplazar, no borrar: agregar la nueva y marcar la vieja `reemplazada por NNNN`.
 3. **Simple** → una fila, Detalle en `—`. **Compleja** (contexto, alternativas, consecuencias) → fila + página `NNNN-slug.md`.
-4. **Al cerrar** una tarea que registró decisiones, correr el lint: `node .claude/scripts/lint-decisiones/lint-decisiones.js` (numeración, links de detalle, huérfanos, superseded).
+4. **Al cerrar** una tarea que registró decisiones, correr el lint: `node .claude/decisiones/lint-decisiones/lint-decisiones.js` (numeración, links de detalle, huérfanos, superseded).
 
 Relacionado: [[flujo-planes]] (consultar/registrar decisiones al cerrar planes).
 ```
@@ -733,13 +733,13 @@ Sección de `.claude/CLAUDE.md` — "Decisiones del proyecto":
 Las decisiones **estructurales al propósito del repo** (no las operativas triviales) se asientan en [`decisiones/INDICE.md`](decisiones/INDICE.md): una tabla donde cada fila es una decisión (N°, qué + por qué, fecha, estado, y link a detalle si requiere conceptualización mayor). Misma estructura que el glosario. **Consultarlas al planificar y analizar** para no re-decidir ni contradecir. Al cerrar una tarea que registró decisiones, correr el lint **desde la raíz del repo**:
 
 ​```bash
-node .claude/scripts/lint-decisiones/lint-decisiones.js
+node .claude/decisiones/lint-decisiones/lint-decisiones.js
 ​```
 
 Detalle de la convención en la memoria [`feedback_decisiones.md`](memoria/feedback_decisiones.md).
 ```
 
-Lint `.claude/scripts/lint-decisiones/lint-decisiones.js` (Node, sin dependencias, sin red):
+Lint `.claude/decisiones/lint-decisiones/lint-decisiones.js` (Node, sin dependencias, sin red):
 
 ```js
 #!/usr/bin/env node
@@ -817,31 +817,34 @@ supRotas.forEach(([n, r]) => console.log(`    ${n}  ->  ${r}   [decision inexist
 if (!supRotas.length) console.log('    (ninguna)');
 ```
 
-## §Scripts — `.claude/scripts/`
+## §Herramientas — `.claude/herramientas/`
 
-Semilla de `.claude/scripts/INDICE.md` (tabla vacía — sin filas de ejemplo):
+Semilla de `.claude/herramientas/INDICE.md` (tabla vacía — sin filas de ejemplo):
 
 ```markdown
-# Scripts del proyecto
+# Herramientas del proyecto
 
-Registro de las herramientas del repo. Cada script vive en su carpeta `<tool>/` con un `README.md` (su ficha); nunca suelto. Una fila por tool. Ordena el "cementerio de scripts": qué es cada uno, cómo se corre, si sigue vigente.
+Registro de las **Herramientas** del repo: las *tools* que el **Propósito** del repo requiere y el agente invoca para tareas repetibles. Tipos: `script`, `skill` local del repo, `MCP` local. Una fila por Herramienta. Ordena el "cementerio de tools": qué es cada una, cómo se invoca, si sigue vigente.
 
-- **Tool** — link a la carpeta `<tool>/` (adentro, el README y el código).
+> Los **lints de subsistema** (lint-memoria, lint-glosario, …) **no** van acá: son infra del Patrón de cada subsistema y viven con su subsistema (`.claude/<sub>/lint-<sub>/`). Acá solo van tools de dominio.
+
+- **Herramienta** — nombre; si es tipo `script` con carpeta local, link a `<tool>/` (adentro, README + código). Si es `skill` o `MCP`, link a donde vive (`.claude/skills/<skill>/`, `.mcp.json`).
+- **Tipo** — `script` | `skill` | `mcp`.
 - **Qué hace** — una línea.
-- **Cómo se corre** — el comando de invocación.
+- **Cómo se invoca** — el comando (`script`), el nombre de skill que dispara el modelo (`skill`), o cómo se conecta y qué tool-calls expone (`mcp`).
 - **Estado** — `vigente`, `experimental` u `obsoleto` (los obsoletos se pueden depurar).
 
-| Tool | Qué hace | Cómo se corre | Estado |
-|------|----------|---------------|--------|
+| Herramienta | Tipo | Qué hace | Cómo se invoca | Estado |
+|-------------|------|----------|----------------|--------|
 ```
 
-Plantilla de la ficha `.claude/scripts/<tool>/README.md`:
+Plantilla de la ficha `.claude/herramientas/<tool>/README.md` (tipo script):
 
 ```markdown
 # <tool>
 
 **Qué hace:** <una o dos frases>.
-**Cómo se corre:** `<comando>` <args si los hay>.
+**Cómo se invoca:** `<comando>` <args si los hay>.
 **Estado:** vigente | experimental | obsoleto.
 **Referenciado por:** <settings.local.json / .gitignore / hook / otro script / nadie> — quién lo invoca por ruta.
 **Dependencias:** <runtime, libs, credenciales que necesita>.
@@ -849,69 +852,73 @@ Plantilla de la ficha `.claude/scripts/<tool>/README.md`:
 **Notas (opcional):** <lo que haga falta>.
 ```
 
-Memoria `.claude/memoria/feedback_scripts.md`:
+Memoria `.claude/memoria/feedback_herramientas.md`:
 
 ```markdown
 ---
-name: scripts
-description: Convención de scripts del repo — cada tool en .claude/scripts/<tool>/ con README; registro tabla en INDICE.md; lint; cuidado con refs por ruta en settings/.gitignore/hooks.
+name: herramientas
+description: Convención de Herramientas del repo — las tools del Propósito (script/skill local/MCP local) en .claude/herramientas/ con registro INDICE.md (columna Tipo); los lints de subsistema NO son herramientas (viven con su subsistema); cuidado con refs por ruta en settings/.gitignore/hooks.
 metadata:
   type: feedback
 ---
 
-Las herramientas/scripts del repo viven en `.claude/scripts/<tool>/`: cada script en su propia carpeta (nunca suelto), con un `README.md` que dice qué hace, cómo se corre y qué lo referencia. El registro `.claude/scripts/INDICE.md` es una tabla (Tool | Qué hace | Cómo se corre | Estado) que los lista a todos.
+Las **Herramientas** del repo son las *tools* que el **Propósito** del repo requiere y el agente invoca para tareas repetibles. Tipos: `script`, `skill` local del repo, `MCP` local. Viven catalogadas en `.claude/herramientas/INDICE.md` — tabla (Herramienta | Tipo | Qué hace | Cómo se invoca | Estado). Cada fila linkea a donde vive la tool: un `script` en su carpeta `<tool>/` bajo herramientas, una `skill` en `.claude/skills/<skill>/`, un `MCP` en `.mcp.json`.
 
-**Why:** que la carpeta de scripts no se vuelva un cementerio de archivos sin saber qué son, de dónde salieron ni cómo se usan. Ubicación determinística + registro escaneável + ficha por tool.
+**Los lints de subsistema NO son Herramientas:** son infra del Patrón de cada subsistema (índice + entradas + lint) y viven con su subsistema (`.claude/<sub>/lint-<sub>/`). Acá solo van tools de dominio.
+
+**Why:** que la colección de tools del Propósito no se vuelva un cementerio de archivos sin saber qué son, de dónde salieron ni cómo se usan. Ubicación determinística + registro escaneable + ficha por tool.
 
 **How to apply:**
 
-1. Todo script nuevo va en `.claude/scripts/<tool>/` con su `README.md`. Nunca suelto en `scripts/`.
-2. Registrarlo en `.claude/scripts/INDICE.md` (una fila). Marcar `Estado`; los `obsoleto` se pueden depurar.
-3. ⚠️ **Refs por ruta:** un script referenciado por ruta en `settings.local.json`/`settings.json` (regla de permiso), en `.gitignore` o en un hook NO se mueve/renombra alegremente — rompe el match por prefijo exacto y se pierde la pre-autorización (en headless, denegación directa). Antes de mover, grep su ruta; si aparece, actualizar la referencia en el mismo paso. Anotar quién lo referencia en el README del tool.
-4. **Al cerrar** una tarea que tocó scripts, correr el lint: `node .claude/scripts/lint-scripts/lint-scripts.js` (README por tool, registro completo, filas colgadas, refs por ruta en settings).
+1. Toda Herramienta nueva va al registro `.claude/herramientas/INDICE.md` (una fila) con su `Tipo`. Un `script` vive en `.claude/herramientas/<tool>/` con su `README.md` (nunca suelto); una `skill`/`MCP` se linkea donde vive.
+2. Marcar `Estado`; los `obsoleto` se pueden depurar.
+3. ⚠️ **Refs por ruta:** una tool referenciada por ruta en `settings.local.json`/`settings.json` (regla de permiso), en `.gitignore` o en un hook NO se mueve/renombra alegremente — rompe el match por prefijo exacto y se pierde la pre-autorización (en headless, denegación directa). Antes de mover, grep su ruta; si aparece, actualizar la referencia en el mismo paso.
+4. **Al cerrar** una tarea que tocó Herramientas, correr el lint: `node .claude/herramientas/lint-herramientas/lint-herramientas.js` (README por herramienta local, registro completo, filas colgadas, refs por ruta de lint en settings).
 
-Otras memorias, planes o conocimiento pueden referenciar un tool por su ruta explicando cómo usarlo en su contexto.
+Otras memorias, planes o conocimiento pueden referenciar una tool por su ruta explicando cómo usarla en su contexto.
 
 Relacionado: [[flujo-planes]], [[base-conocimiento]].
 ```
 
-Sección de `.claude/CLAUDE.md` — "Scripts del proyecto":
+Sección de `.claude/CLAUDE.md` — "Herramientas del proyecto":
 
 ```markdown
-## Scripts del proyecto
+## Herramientas del proyecto
 
-Las herramientas del repo viven en [`scripts/`](scripts/): cada script en su carpeta `<tool>/` con un `README.md`, listadas en el registro [`scripts/INDICE.md`](scripts/INDICE.md) (tabla Tool | Qué hace | Cómo se corre | Estado). Nunca sueltos. ⚠️ Un script referenciado por ruta en `settings`, `.gitignore` o un hook no se mueve sin actualizar esa referencia (rompe el match por prefijo). Al cerrar una tarea que tocó scripts, correr el lint **desde la raíz del repo**:
+Las **Herramientas** del repo — las *tools* que el Propósito requiere (tipos `script`, `skill` local, `MCP` local) — viven en [`herramientas/`](herramientas/), listadas en el registro [`herramientas/INDICE.md`](herramientas/INDICE.md) (tabla Herramienta | Tipo | Qué hace | Cómo se invoca | Estado). Los **lints de subsistema no son Herramientas**: son infra del Patrón y viven con su subsistema (`.claude/<sub>/lint-<sub>/`). ⚠️ Una tool referenciada por ruta en `settings`, `.gitignore` o un hook no se mueve sin actualizar esa referencia (rompe el match por prefijo). Al cerrar una tarea que tocó Herramientas, correr el lint **desde la raíz del repo**:
 
 ​```bash
-node .claude/scripts/lint-scripts/lint-scripts.js
+node .claude/herramientas/lint-herramientas/lint-herramientas.js
 ​```
 
-Detalle de la convención en la memoria [`feedback_scripts.md`](memoria/feedback_scripts.md).
+Detalle de la convención en la memoria [`feedback_herramientas.md`](memoria/feedback_herramientas.md).
 ```
 
-Lint `.claude/scripts/lint-scripts/lint-scripts.js` (Node, sin dependencias, sin red):
+Lint `.claude/herramientas/lint-herramientas/lint-herramientas.js` (Node, sin dependencias, sin red):
 
 ```js
 #!/usr/bin/env node
-// Lint del registro de scripts: README por tool, tool en indice, filas colgadas, refs por ruta en settings. Sin LLM, sin red.
-// Uso: node lint-scripts.js [<carpeta scripts>]   (default: .claude/scripts)
+// Lint del registro de Herramientas: README por herramienta con carpeta local, herramienta en indice,
+// filas colgadas (link a subdir local inexistente), refs por ruta de lint en settings. Sin LLM, sin red.
+// Uso: node lint-herramientas.js [<carpeta herramientas>]   (default: .claude/herramientas)
 const fs = require('fs'), path = require('path');
-const root = path.resolve(process.argv[2] || '.claude/scripts');
+const root = path.resolve(process.argv[2] || '.claude/herramientas');
 const idxPath = path.join(root, 'INDICE.md');
 const idx = fs.existsSync(idxPath) ? fs.readFileSync(idxPath, 'utf8') : '';
 
-// subdirectorios = tools (cada script en su carpeta)
+// subdirectorios = herramientas tipo script/tool que viven aca (skill/MCP viven en su casa nativa)
 const tools = fs.existsSync(root)
   ? fs.readdirSync(root, { withFileTypes: true }).filter(e => e.isDirectory()).map(e => e.name)
   : [];
 
-// [1] README por tool
+// [1] README por herramienta con carpeta local
 const sinReadme = tools.filter(t => !fs.existsSync(path.join(root, t, 'README.md')));
 
-// [2] tool fuera del indice
+// [2] carpeta local fuera del indice
 const fueraIndice = tools.filter(t => !idx.includes(t));
 
-// [3] filas del indice que apuntan a un directorio inexistente
+// [3] filas del indice cuyo link apunta a un subdir LOCAL inexistente
+//     (se saltan links externos: ../skills/, .mcp.json, etc. — esos no viven bajo herramientas/)
 const toolSet = new Set(tools), colgadas = [];
 for (const line of idx.split('\n')) {
   const t = line.trim();
@@ -919,21 +926,24 @@ for (const line of idx.split('\n')) {
   const cells = t.split('|').slice(1, -1).map(c => c.trim());
   if (cells.length < 2) continue;
   const c0 = cells[0];
-  if (/^:?-{2,}:?$/.test(c0.replace(/\s/g, ''))) continue;    // separador
-  if (/^tool$/i.test(c0.replace(/[*\s]/g, ''))) continue;      // header
-  const m = /\]\(([^)]+?)\/?\)/.exec(c0);                       // link [x](dir/)
-  const name = (m ? m[1] : c0).replace(/[*`\[\]]/g, '').replace(/\/$/, '').trim();
+  if (/^:?-{2,}:?$/.test(c0.replace(/\s/g, ''))) continue;     // separador
+  if (/^herramienta$/i.test(c0.replace(/[*\s]/g, ''))) continue; // header
+  const m = /\]\(([^)]+?)\)/.exec(c0);                          // link [x](target)
+  if (!m) continue;                                             // fila sin link -> no se valida ruta
+  const target = m[1].trim();
+  if (target.startsWith('..') || target.includes('.json') || /^\w+:/.test(target)) continue; // externo
+  const name = target.replace(/\/$/, '').replace(/[`]/g, '').trim();
   if (name && !toolSet.has(name)) colgadas.push(name);
 }
 
-// [4] refs por ruta a scripts en settings que no resuelven
-const repoRoot = path.resolve(root, '..', '..');   // .claude/scripts -> raiz del repo
+// [4] refs por ruta a lints en settings que no resuelven (cualquier .claude/**/*.js|sh|...)
+const repoRoot = path.resolve(root, '..', '..');   // .claude/herramientas -> raiz del repo
 const refsRotas = [];
 for (const sf of ['.claude/settings.local.json', '.claude/settings.json']) {
   const abs = path.join(repoRoot, sf);
   if (!fs.existsSync(abs)) continue;
   const txt = fs.readFileSync(abs, 'utf8');
-  const re = /([.\w/-]*scripts\/[\w./-]+?\.(?:js|sh|py|mjs|cjs|ts))/g;
+  const re = /([.\w/-]*\.claude\/[\w./-]+?\.(?:js|sh|py|mjs|cjs|ts))/g;
   let m;
   while ((m = re.exec(txt))) {
     const p = m[1], cand = path.isAbsolute(p) ? p : path.join(repoRoot, p);
@@ -941,23 +951,23 @@ for (const sf of ['.claude/settings.local.json', '.claude/settings.json']) {
   }
 }
 
-console.log(`== LINT SCRIPTS: ${root} ==`);
-console.log(`tools: ${tools.length}\n`);
+console.log(`== LINT HERRAMIENTAS: ${root} ==`);
+console.log(`herramientas con carpeta local: ${tools.length}\n`);
 console.log(`[1] SIN README (${sinReadme.length}):`);
 sinReadme.forEach(t => console.log(`    ${t}/`));
-if (!sinReadme.length) console.log('    (todos tienen README)');
+if (!sinReadme.length) console.log('    (todas tienen README)');
 console.log(`\n[2] FUERA DEL INDICE (${fueraIndice.length}):`);
 fueraIndice.forEach(t => console.log(`    ${t}/`));
 if (!fueraIndice.length) console.log('    (completo)');
 console.log(`\n[3] FILAS COLGADAS (${colgadas.length}):`);
-colgadas.forEach(c => console.log(`    ${c}   [directorio no existe]`));
+colgadas.forEach(c => console.log(`    ${c}   [subdir local no existe]`));
 if (!colgadas.length) console.log('    (ninguna)');
-console.log(`\n[4] REFS POR RUTA ROTAS EN SETTINGS (${refsRotas.length}):`);
+console.log(`\n[4] REFS POR RUTA DE LINT ROTAS EN SETTINGS (${refsRotas.length}):`);
 refsRotas.forEach(([f, p]) => console.log(`    ${f}  ->  ${p}   [no existe]`));
 if (!refsRotas.length) console.log('    (ninguna)');
 ```
 
-## §Script — lint-memoria — `.claude/scripts/lint-memoria/lint-memoria.js`
+## §Script — lint-memoria — `.claude/memoria/lint-memoria/lint-memoria.js`
 
 Contenido exacto (Node, sin dependencias, sin red):
 
@@ -974,7 +984,7 @@ function walk(dir, acc) {
   for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
     if (EXCLUDE.has(e.name)) continue;
     const full = path.join(dir, e.name);
-    if (e.isDirectory()) walk(full, acc);
+    if (e.isDirectory()) { if (e.name.startsWith('lint-')) continue; walk(full, acc); }  // el lint co-ubicado del subsistema no es contenido
     else if (e.name.endsWith('.md')) acc.push(full);
   }
   return acc;
@@ -1079,7 +1089,7 @@ fmBad.forEach(([p, w]) => console.log(`    ${p}   [${w}]`));
 if (!fmBad.length) console.log('    (ok)');
 ```
 
-## §Script — lint-preferencias — `.claude/scripts/lint-preferencias/lint-preferencias.js`
+## §Script — lint-preferencias — `.claude/preferencias/lint-preferencias/lint-preferencias.js`
 
 Contenido exacto (Node, sin dependencias, sin red):
 

@@ -4,14 +4,14 @@ Catálogo de las funcionalidades que este repo instala para armar un agente de *
 
 | Funcionalidad | Qué hace | Depende de | Carpeta |
 |---------------|----------|-----------|---------|
-| **memoria-local** | Sistema de memoria local: `memoria/` + índice `MEMORIA.md` + formato de memorias tipadas + bloque "Mapa del repo" (`@imports` de índices en CLAUDE.md) + lint (`scripts/lint-memoria/`: refs/wikilinks rotos, índice incompleto, huérfanos, frontmatter). Infraestructura base. | — | [`memoria-local/`](funcionalidades/memoria-local/) |
-| **preferencias-trabajo** | Preferencias versionadas en `preferencias/PREFERENCIAS.md` (Base del harness + Adaptaciones del repo), importadas siempre al contexto vía `@`, con regla de **terminología** (gate duro en registros canónicos) + lint estructural (`scripts/lint-preferencias/`: secciones Base/Adaptaciones + el `@import`). | — | [`preferencias-trabajo/`](funcionalidades/preferencias-trabajo/) |
+| **memoria-local** | Sistema de memoria local: `memoria/` + índice `MEMORIA.md` + formato de memorias tipadas + bloque "Mapa del repo" (`@imports` de índices en CLAUDE.md) + lint (`memoria/lint-memoria/`: refs/wikilinks rotos, índice incompleto, huérfanos, frontmatter). Infraestructura base. | — | [`memoria-local/`](funcionalidades/memoria-local/) |
+| **preferencias-trabajo** | Preferencias versionadas en `preferencias/PREFERENCIAS.md` (Base del harness + Adaptaciones del repo), importadas siempre al contexto vía `@`, con regla de **terminología** (gate duro en registros canónicos) + lint estructural (`preferencias/lint-preferencias/`: secciones Base/Adaptaciones + el `@import`). | — | [`preferencias-trabajo/`](funcionalidades/preferencias-trabajo/) |
 | **gestion-de-planes** | Ciclo de planes `pendientes/ejecutados/descartados` + registro `PLANES.md` (prioridad, estado, fechas) + `lint-planes` + hook SessionStart. | memoria-local | [`gestion-de-planes/`](funcionalidades/gestion-de-planes/) |
 | **estilo-commits** | Preferencia de commits (español, sin co-autoría de IA), como memoria. | memoria-local | [`estilo-commits/`](funcionalidades/estilo-commits/) |
-| **conocimiento** | Base de conocimiento en carpeta única `conocimiento/` + lint de integridad (`scripts/lint-conocimiento/`). Migra conocimiento suelto de la raíz. | memoria-local | [`conocimiento/`](funcionalidades/conocimiento/) |
+| **conocimiento** | Base de conocimiento en carpeta única `conocimiento/` + lint de integridad (`conocimiento/lint-conocimiento/`). Migra conocimiento suelto de la raíz. | memoria-local | [`conocimiento/`](funcionalidades/conocimiento/) |
 | **glosario** | Glosario del dominio en `glosario/` (tabla de conceptos + alias registrados + detalle para lo complejo) + lint + gobernanza (**toda entrada nueva pasa por el usuario**: el agente propone, no ratifica). Coherencia semántica al planificar/analizar. | memoria-local | [`glosario/`](funcionalidades/glosario/) |
 | **decisiones** | Registro de decisiones estructurales en `decisiones/` (tabla + detalle, **no ADR**) + lint. Coherencia decisional. | memoria-local | [`decisiones/`](funcionalidades/decisiones/) |
-| **scripts** | Gestión de scripts: cada tool en `scripts/<tool>/` con README, registro-tabla + lint. Ordena el cementerio de scripts. | memoria-local | [`scripts/`](funcionalidades/scripts/) |
+| **herramientas** | Gestión de Herramientas: las *tools* que el Propósito requiere (tipos `script`/`skill` local/`MCP` local) en `herramientas/` con registro-tabla (columna Tipo) + lint. Los lints de subsistema **no** van acá (viven con su subsistema). Ordena el cementerio de tools. | memoria-local | [`herramientas/`](funcionalidades/herramientas/) |
 | **setup-completo** | Orquestador: instala las ocho de convención de una pasada. Conserva el skill `inicializar-custom`. | (las ocho) | [`setup-completo/`](funcionalidades/setup-completo/) |
 | **planificar** | Skill de análisis: interroga un plan contra la sabiduría del repo (glosario + decisiones + conocimiento) hasta acuerdo y lo critica (problemas, faltantes, sobreingeniería). **Operacional**: no instala nada ni entra al orquestador. Reemplaza `grill-with-docs`. | (usa glosario/decisiones/conocimiento) | [`planificar/`](funcionalidades/planificar/) |
 
@@ -26,7 +26,7 @@ Catálogo de las funcionalidades que este repo instala para armar un agente de *
 | conocimiento | `conocimiento@xelnagah-harness` | `inicializar-conocimiento` |
 | glosario | `glosario@xelnagah-harness` | `inicializar-glosario` |
 | decisiones | `decisiones@xelnagah-harness` | `inicializar-decisiones` |
-| scripts | `scripts@xelnagah-harness` | `inicializar-scripts` |
+| herramientas | `herramientas@xelnagah-harness` | `inicializar-herramientas` |
 | setup-completo | `setup-completo@xelnagah-harness` | `inicializar-custom` |
 | planificar | `planificar@xelnagah-harness` | `planificar` |
 

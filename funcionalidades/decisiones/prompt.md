@@ -30,7 +30,7 @@ Asegurá `<config>/decisiones/INDICE.md`. Si no existe, crealo con encabezado + 
 
 ## 2. Lint de integridad
 
-Instalá `<config>/scripts/lint-decisiones/lint-decisiones.js` (Node, sin deps ni red): chequea **numeración** (sin huecos ni duplicados), **links de detalle** (resuelven), **páginas huérfanas** (toda `NNNN-slug.md` referenciada) y **superseded** (todo `reemplazada por NNNN` apunta a una decisión existente). Contenido exacto en la plantilla de la versión Claude Code — `skills/inicializar-decisiones/PLANTILLA.md` §Script. Corré `node <config>/scripts/lint-decisiones/lint-decisiones.js` al cerrar tareas que registraron decisiones.
+Instalá `<config>/decisiones/lint-decisiones/lint-decisiones.js` (Node, sin deps ni red): chequea **numeración** (sin huecos ni duplicados), **links de detalle** (resuelven), **páginas huérfanas** (toda `NNNN-slug.md` referenciada) y **superseded** (todo `reemplazada por NNNN` apunta a una decisión existente). Contenido exacto en la plantilla de la versión Claude Code — `skills/inicializar-decisiones/PLANTILLA.md` §Script. Corré `node <config>/decisiones/lint-decisiones/lint-decisiones.js` al cerrar tareas que registraron decisiones.
 
 ## 3. Convención como memoria
 

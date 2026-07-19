@@ -54,7 +54,7 @@ En el archivo de instrucciones, asegurá una sección **"Preferencias (siempre c
 
 ## 4. Lint de integridad
 
-Instalá el tool en **su propia carpeta**: `<config>/scripts/lint-preferencias/lint-preferencias.js`. Es un script Node sin dependencias ni red que chequea (estructural, **no** semántico): que `PREFERENCIAS.md` tenga las secciones `## Base` y `## Adaptaciones` y no esté vacío, y que el archivo de instrucciones lo cargue con `@preferencias/PREFERENCIAS.md`. Corré `node <config>/scripts/lint-preferencias/lint-preferencias.js` al tocar las preferencias.
+Instalá el tool en **su propia carpeta**: `<config>/preferencias/lint-preferencias/lint-preferencias.js`. Es un script Node sin dependencias ni red que chequea (estructural, **no** semántico): que `PREFERENCIAS.md` tenga las secciones `## Base` y `## Adaptaciones` y no esté vacío, y que el archivo de instrucciones lo cargue con `@preferencias/PREFERENCIAS.md`. Corré `node <config>/preferencias/lint-preferencias/lint-preferencias.js` al tocar las preferencias.
 
 (El contenido exacto del script está en la plantilla de la versión Claude Code de esta funcionalidad — `skills/inicializar-preferencias-trabajo/PLANTILLA.md` §Script.)
 

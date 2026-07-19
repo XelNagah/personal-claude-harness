@@ -12,9 +12,8 @@ Instala el sistema de memoria local persistida en el proyecto actual. Es infraes
 ```
 .claude/
 ├── CLAUDE.md          # secciones "Mapa del repo (siempre cargado)" y "Memoria del proyecto"
-├── memoria/
-│   └── MEMORIA.md      # índice (solo punteros, nunca contenido)
-└── scripts/
+└── memoria/
+    ├── MEMORIA.md      # índice (solo punteros, nunca contenido)
     └── lint-memoria/
         └── lint-memoria.js   # lint mecánico de la memoria (sin LLM, sin red)
 ```
@@ -60,8 +59,8 @@ Segura de re-correr: sirve para **"levelear"** repos que ya tienen algunas parte
    @memoria/MEMORIA.md
    ```
 
-   (Ruta relativa al CLAUDE.md: si está en la raíz del repo en vez de `.claude/`, usar `@.claude/memoria/MEMORIA.md`.) Las demás funcionalidades agregan acá sus propios índices al instalarse (`@planes/PLANES.md`, `@conocimiento/INDICE.md`, `@scripts/INDICE.md`). Si el CLAUDE.md ya carga la memoria por instrucción textual ("leer al inicio"), **reemplazar** esa instrucción por el import — es la misma convención con mecanismo en vez de obediencia (reportar el reemplazo, no preguntar).
-4. **Instalar el lint de la memoria** `.claude/scripts/lint-memoria/lint-memoria.js` con el contenido EXACTO de [PLANTILLA.md](PLANTILLA.md) §Script. Va en **su propia carpeta** bajo `scripts/`, nunca suelto. Es un script Node sin dependencias ni red que chequea, sobre `.claude/memoria/`: **refs `.md` rotas** y wikilinks `[[name]]` sin memoria, **`MEMORIA.md` incompleto** (memorias no listadas), **huérfanos** y **frontmatter inválido** (`name`/`description`/`metadata.type` ∈ `user`·`feedback`·`project`·`reference`).
-5. **Asegurar también la sección "Memoria del proyecto"** con link a `memoria/MEMORIA.md`, el criterio de uso (respetar lo cargado; antes de crear una memoria, revisar si una existente la cubre) y el **paso de lint al cerrar**: al cerrar una tarea que tocó la memoria, correr **desde la raíz del repo** `node .claude/scripts/lint-memoria/lint-memoria.js`. Si existe una sección equivalente, no duplicar; si le falta el paso de lint, agregarlo.
+   (Ruta relativa al CLAUDE.md: si está en la raíz del repo en vez de `.claude/`, usar `@.claude/memoria/MEMORIA.md`.) Las demás funcionalidades agregan acá sus propios índices al instalarse (`@planes/PLANES.md`, `@conocimiento/INDICE.md`, `@herramientas/INDICE.md`). Si el CLAUDE.md ya carga la memoria por instrucción textual ("leer al inicio"), **reemplazar** esa instrucción por el import — es la misma convención con mecanismo en vez de obediencia (reportar el reemplazo, no preguntar).
+4. **Instalar el lint de la memoria** `.claude/memoria/lint-memoria/lint-memoria.js` con el contenido EXACTO de [PLANTILLA.md](PLANTILLA.md) §Script. Va en **su propia carpeta** co-ubicado con el subsistema (`.claude/memoria/lint-memoria/`), nunca suelto. Es un script Node sin dependencias ni red que chequea, sobre `.claude/memoria/`: **refs `.md` rotas** y wikilinks `[[name]]` sin memoria, **`MEMORIA.md` incompleto** (memorias no listadas), **huérfanos** y **frontmatter inválido** (`name`/`description`/`metadata.type` ∈ `user`·`feedback`·`project`·`reference`).
+5. **Asegurar también la sección "Memoria del proyecto"** con link a `memoria/MEMORIA.md`, el criterio de uso (respetar lo cargado; antes de crear una memoria, revisar si una existente la cubre) y el **paso de lint al cerrar**: al cerrar una tarea que tocó la memoria, correr **desde la raíz del repo** `node .claude/memoria/lint-memoria/lint-memoria.js`. Si existe una sección equivalente, no duplicar; si le falta el paso de lint, agregarlo.
 6. **Memorias que ya hayan surgido** en la conversación (preferencias, objetivos del proyecto) → persistirlas con el frontmatter de arriba y registrarlas en el índice, salvo que ya exista una que cubra el hecho.
-7. **Reportar** en los tres baldes (`agregado` / `ya estaba` / `divergente`). Correr el lint (`node .claude/scripts/lint-memoria/lint-memoria.js`) → debe dar limpio. **No hacer commit** salvo pedido explícito.
+7. **Reportar** en los tres baldes (`agregado` / `ya estaba` / `divergente`). Correr el lint (`node .claude/memoria/lint-memoria/lint-memoria.js`) → debe dar limpio. **No hacer commit** salvo pedido explícito.

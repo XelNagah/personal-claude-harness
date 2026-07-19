@@ -1,6 +1,0 @@
-{
-  "name": "scripts",
-  "description": "Gestión de scripts del repo: cada tool en .claude/scripts/<tool>/ con README, registro en INDICE.md + lint. Ordena el cementerio de scripts. Depende de memoria-local.",
-  "version": "0.1.0",
-  "author": { "name": "jllarens", "email": "jllarens@gmail.com" }
-}

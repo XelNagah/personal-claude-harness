@@ -9,9 +9,8 @@ Instala el sistema de **memoria local persistida** del usuario: un directorio `m
 ```
 <config>/
 ├── CLAUDE.md          # se le asegura la sección "Memoria del proyecto"
-├── memoria/
-│   └── MEMORIA.md      # índice (solo punteros, nunca contenido)
-└── scripts/
+└── memoria/
+    ├── MEMORIA.md      # índice (solo punteros, nunca contenido)
     └── lint-memoria/
         └── lint-memoria.js   # lint mecánico (sin LLM, sin red)
 ```

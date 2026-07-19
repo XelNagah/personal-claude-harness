@@ -8,10 +8,11 @@ Es la forma cómoda de arrancar un repo nuevo. Cada funcionalidad también se pu
 
 ```
 <config>/
-├── CLAUDE.md          # Descripción + Preferencias (@import) + Mapa del repo (@imports) + Memoria + Planes + Conocimiento + Glosario + Decisiones + Scripts
+├── CLAUDE.md          # Descripción + Preferencias (@import) + Mapa del repo (@imports) + Memoria + Planes + Conocimiento + Glosario + Decisiones + Herramientas
 ├── settings.json      # hook SessionStart → lint-planes --quiet
 ├── preferencias/
-│   └── PREFERENCIAS.md    # Base (harness vN) + Adaptaciones de este repo
+│   ├── PREFERENCIAS.md    # Base (harness vN) + Adaptaciones de este repo
+│   └── lint-preferencias/
 ├── memoria/
 │   ├── MEMORIA.md
 │   ├── feedback_flujo_planes.md
@@ -20,28 +21,27 @@ Es la forma cómoda de arrancar un repo nuevo. Cada funcionalidad también se pu
 │   ├── feedback_base_conocimiento.md
 │   ├── feedback_glosario.md
 │   ├── feedback_decisiones.md
-│   └── feedback_scripts.md
+│   ├── feedback_herramientas.md
+│   └── lint-memoria/
 ├── planes/
 │   ├── ESTADOS.md     # estados: Estado | Sentido | Carpeta | Terminal (fuente de verdad, la lee el lint)
 │   ├── PLANES.md      # registro: Plan | Estado | Creado | Cerrado | Origen | Notas
 │   ├── pendientes/
 │   ├── ejecutados/
-│   └── descartados/
+│   ├── descartados/
+│   └── lint-planes/
 ├── conocimiento/
-│   └── INDICE.md
+│   ├── INDICE.md
+│   └── lint-conocimiento/
 ├── glosario/
-│   └── INDICE.md
+│   ├── INDICE.md
+│   └── lint-glosario/
 ├── decisiones/
-│   └── INDICE.md
-└── scripts/
+│   ├── INDICE.md
+│   └── lint-decisiones/
+└── herramientas/
     ├── INDICE.md
-    ├── lint-preferencias/
-    ├── lint-memoria/
-    ├── lint-conocimiento/
-    ├── lint-planes/
-    ├── lint-glosario/
-    ├── lint-decisiones/
-    └── lint-scripts/
+    └── lint-herramientas/
 ```
 
 ## Orden de orquestación
@@ -53,7 +53,7 @@ Es la forma cómoda de arrancar un repo nuevo. Cada funcionalidad también se pu
 5. [`conocimiento`](../conocimiento/) — `conocimiento/INDICE.md` + lint (migra conocimiento disperso).
 6. [`glosario`](../glosario/) — `glosario/INDICE.md` + lint.
 7. [`decisiones`](../decisiones/) — `decisiones/INDICE.md` + lint.
-8. [`scripts`](../scripts/) — `scripts/INDICE.md` + lint (ordena el cementerio de scripts).
+8. [`herramientas`](../herramientas/) — `herramientas/INDICE.md` (columna Tipo) + lint (ordena el cementerio de tools del Propósito; los lints de subsistema no van acá).
 
 Dependencias: 4–8 dependen de `memoria-local` (guardan memorias en `memoria/`). El orden las respeta.
 

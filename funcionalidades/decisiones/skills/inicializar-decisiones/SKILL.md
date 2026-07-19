@@ -18,12 +18,11 @@ Instala un registro de las decisiones **estructurales al propósito del repo**. 
 ├── CLAUDE.md          # se le asegura la sección "Decisiones del proyecto"
 ├── decisiones/
 │   ├── INDICE.md  # tabla: N° | Decisión | Fecha | Estado | Detalle
-│   └── NNNN-slug.md   # página de detalle, solo para decisiones complejas
-├── memoria/
-│   └── feedback_decisiones.md
-└── scripts/
-    └── lint-decisiones/
-        └── lint-decisiones.js
+│   ├── NNNN-slug.md   # página de detalle, solo para decisiones complejas
+│   └── lint-decisiones/
+│       └── lint-decisiones.js
+└── memoria/
+    └── feedback_decisiones.md
 ```
 
 ## Reconciliación (idempotencia)
@@ -45,7 +44,7 @@ Segura de re-correr: sirve para **"levelear"** repos que ya tienen algunas parte
 
 1. **Verificar `memoria-local`.** Si `.claude/memoria/` no existe, instalarla primero.
 2. **Asegurar `.claude/decisiones/INDICE.md`** con la semilla de [PLANTILLA.md](PLANTILLA.md) §Decisiones (encabezado + tabla vacía). Formato de página de detalle en §Detalle. Si ya existe un registro equivalente (ej. `docs/adr/`), no duplicar: reportar `divergente` y preguntar si migrar.
-3. **Instalar el lint** `.claude/scripts/lint-decisiones/lint-decisiones.js` con el contenido EXACTO de PLANTILLA.md §Script.
+3. **Instalar el lint** `.claude/decisiones/lint-decisiones/lint-decisiones.js` con el contenido EXACTO de PLANTILLA.md §Script.
 4. **Asegurar la memoria `feedback_decisiones.md`** (verbatim de PLANTILLA.md §Memoria) y su línea en `memoria/MEMORIA.md`. Equivalente presente → no duplicar; difiere → reportar.
 5. **En `.claude/CLAUDE.md`** asegurar la sección **"Decisiones del proyecto"** (PLANTILLA.md §Sección). Equivalente presente → no duplicar. No reescribir el archivo entero.
-6. **Reportar** en los tres baldes. Correr el lint (`node .claude/scripts/lint-decisiones/lint-decisiones.js`) → debe dar limpio sobre el registro vacío. **No hacer commit** salvo pedido explícito.
+6. **Reportar** en los tres baldes. Correr el lint (`node .claude/decisiones/lint-decisiones/lint-decisiones.js`) → debe dar limpio sobre el registro vacío. **No hacer commit** salvo pedido explícito.

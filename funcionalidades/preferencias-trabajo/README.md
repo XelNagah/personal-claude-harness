@@ -9,9 +9,8 @@ Por qué por-repo y no global de máquina: el user trabaja en varias computadora
 ```
 <config>/
 ├── CLAUDE.md              # sección "Preferencias (siempre cargadas)" con el @import + el lint + "Descripción del proyecto"
-├── preferencias/
-│   └── PREFERENCIAS.md    # Base (harness vN) + Adaptaciones de este repo
-└── scripts/
+└── preferencias/
+    ├── PREFERENCIAS.md    # Base (harness vN) + Adaptaciones de este repo
     └── lint-preferencias/
         └── lint-preferencias.js   # lint estructural (sin LLM, sin red)
 ```

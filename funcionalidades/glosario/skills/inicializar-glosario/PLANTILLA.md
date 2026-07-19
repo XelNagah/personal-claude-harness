@@ -43,7 +43,7 @@ La terminología del dominio vive en `.claude/glosario/INDICE.md`: una tabla don
 1. **Al planificar o analizar**, consultar el glosario. Si aparece un término, ver si ya es alias de un concepto registrado; si es nuevo, agregar el concepto (o el alias) en el momento.
 2. Concepto **simple** → una fila, columna Detalle en `—`. Concepto **complejo** → fila + página de detalle linkeada.
 3. **Alias:** registrarlos en la columna Alias (no vetarlos). Un mismo alias no puede estar bajo dos conceptos distintos (el lint lo caza).
-4. **Al cerrar** una tarea que tocó el glosario, correr el lint: `node .claude/scripts/lint-glosario/lint-glosario.js` (links de detalle resuelven, páginas sin huérfanos, alias sin colisión).
+4. **Al cerrar** una tarea que tocó el glosario, correr el lint: `node .claude/glosario/lint-glosario/lint-glosario.js` (links de detalle resuelven, páginas sin huérfanos, alias sin colisión).
 
 Relacionado: [[flujo-planes]] (consultar el glosario al planificar/analizar).
 ```
@@ -56,13 +56,13 @@ Relacionado: [[flujo-planes]] (consultar el glosario al planificar/analizar).
 La terminología del dominio vive en [`glosario/INDICE.md`](glosario/INDICE.md): una tabla de conceptos (nombre canónico, definición, alias registrados, y link a página de detalle si el concepto es complejo). Los alias se **registran, no se prohíben**. **Consultarlo al planificar y analizar.** Al cerrar una tarea que tocó el glosario, correr el lint **desde la raíz del repo**:
 
 ​```bash
-node .claude/scripts/lint-glosario/lint-glosario.js
+node .claude/glosario/lint-glosario/lint-glosario.js
 ​```
 
 Detalle de la convención en la memoria [`feedback_glosario.md`](memoria/feedback_glosario.md).
 ```
 
-## §Script — `.claude/scripts/lint-glosario/lint-glosario.js`
+## §Script — `.claude/glosario/lint-glosario/lint-glosario.js`
 
 Contenido exacto (Node, sin dependencias, sin red):
 

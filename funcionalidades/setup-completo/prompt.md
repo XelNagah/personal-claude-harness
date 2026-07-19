@@ -61,7 +61,7 @@ Reglas de conducta del agente en este repo. Siempre en contexto. La sección **B
 (ninguna todavía — agregar acá lo específico de este proyecto)
 ```
 
-Instalá el lint `<config>/scripts/lint-preferencias/lint-preferencias.js` (al final, §Script — lint-preferencias) en su carpeta propia y registralo en `scripts/INDICE.md`; verifica las secciones Base/Adaptaciones + el `@import`. Corré `node <config>/scripts/lint-preferencias/lint-preferencias.js` al tocar las preferencias.
+Instalá el lint `<config>/preferencias/lint-preferencias/lint-preferencias.js` (al final, §Script — lint-preferencias) en su carpeta propia co-ubicada con el subsistema; verifica las secciones Base/Adaptaciones + el `@import`. Corré `node <config>/preferencias/lint-preferencias/lint-preferencias.js` al tocar las preferencias.
 
 **Reconciliación de preferencias:** la Base es versionada — si el repo tiene una Base de versión anterior, reemplazala entera por la actual (reportar como actualización, no divergencia); si fue editada a mano, mové lo ajeno a **Adaptaciones** y reinstalá la Base limpia. **Adaptaciones nunca se toca.** Si el archivo de instrucciones tiene bloques inline viejos "Preferencias de comunicación"/"Principios de trabajo": iguales a una Base anterior → borralos y dejá solo la carga de `PREFERENCIAS.md`; distintos → las diferencias van a Adaptaciones.
 
@@ -85,7 +85,7 @@ Asegurá `<config>/memoria/` con:
 
 - Tipos: `user`, `feedback`, `project`, `reference`. Antes de crear una memoria nueva, revisar si una existente ya la cubre. Fechas siempre absolutas.
 
-Instalá el lint en su carpeta propia `<config>/scripts/lint-memoria/lint-memoria.js` (contenido al final, §Script — lint-memoria) — chequea sobre `<config>/memoria/`: refs `.md`/wikilinks rotos, `MEMORIA.md` incompleto, huérfanos y frontmatter inválido; correlo al cerrar tareas que tocaron la memoria. Asegurá en la sección "Memoria del proyecto" del archivo de instrucciones el paso de correr el lint al cerrar.
+Instalá el lint en su carpeta propia `<config>/memoria/lint-memoria/lint-memoria.js` (contenido al final, §Script — lint-memoria) — chequea sobre `<config>/memoria/`: refs `.md`/wikilinks rotos, `MEMORIA.md` incompleto, huérfanos y frontmatter inválido; correlo al cerrar tareas que tocaron la memoria. Asegurá en la sección "Memoria del proyecto" del archivo de instrucciones el paso de correr el lint al cerrar.
 
 Creá las dos memorias iniciales (contenido completo al final) y registralas en `MEMORIA.md`:
 
@@ -100,26 +100,26 @@ Si el repo trae un esquema viejo, migralo antes (dos casos, pueden darse juntos)
 
 ## 4. Base de conocimiento
 
-Asegurá `<config>/conocimiento/` con un `INDICE.md` raíz (una línea por página/sección; solo punteros) — es la **ubicación única** de todo lo que el agente sabe. Instalá el lint en su carpeta propia `<config>/scripts/lint-conocimiento/lint-conocimiento.js` (contenido al final, §Script) — chequea refs rotas, índice incompleto y huérfanos sobre `conocimiento/`; correlo al cerrar tareas que escribieron conocimiento. Persistí la memoria `feedback_base_conocimiento.md` (contenido al final) e indexala. Asegurá en el archivo de instrucciones la sección **"Base de conocimiento del proyecto"** (ubicación única + lint al cerrar).
+Asegurá `<config>/conocimiento/` con un `INDICE.md` raíz (una línea por página/sección; solo punteros) — es la **ubicación única** de todo lo que el agente sabe. Instalá el lint en su carpeta propia `<config>/conocimiento/lint-conocimiento/lint-conocimiento.js` (contenido al final, §Script) — chequea refs rotas, índice incompleto y huérfanos sobre `conocimiento/`; correlo al cerrar tareas que escribieron conocimiento. Persistí la memoria `feedback_base_conocimiento.md` (contenido al final) e indexala. Asegurá en el archivo de instrucciones la sección **"Base de conocimiento del proyecto"** (ubicación única + lint al cerrar).
 
 **Migración — buscá en tres lugares, no solo el obvio:**
 - **(a) raíz del repo:** árboles de md, carpetas con su `INDICE.md`, notas sueltas.
 - **(b) dentro de `<config>/memoria/`** (el caso más común en repos viejos, y el que más se pasa por alto): la memoria se desborda y termina siendo la base de conocimiento. Señales → **sin frontmatter**, **largo** (decenas/cientos de líneas con secciones), **diccionario/catálogo/procedimiento/formato/estructura**, o **`memoria/` indexado por un `README.md` en vez de `MEMORIA.md`**. Se quedan solo los hechos atómicos tipados con frontmatter.
 - **(c) fuentes crudas: NO se mueven** — lo que el agente *lee* (escaneos, PDFs de resúmenes, exports, json/csv de origen) vs. lo que *sabe* (el md sintetizado). Salvo que ya estén entreveradas dentro de una carpeta de conocimiento.
 
-Proponé el plan de move y mové por defecto; ambiguo (código/assets/build) → preguntame antes. ⚠️ **Material sensible, en los dos sentidos:** (i) si un archivo a mover está **ya ignorado** por su ruta (`memoria/*-token.md`, credenciales), moverlo rompe el ignore y **commitea el secreto** → no lo muevas o actualizá el `.gitignore` en el mismo paso (verificá con `git status`); (ii) si hay material sensible **sin ignorar** (credenciales/tokens/`.env`/`*.key`, documentos personales o legales, resúmenes bancarios, libros contables, estudios médicos) → **sugerime** las líneas de `.gitignore` con el riesgo concreto, como hallazgo aparte, sin aplicarlo solo (puedo querer versionarlos a propósito en un repo local) + avisame si el repo nunca debería pushearse a un remoto. **Índice completo:** si había un índice parcial, cubrí TODOS los documentos (los no listados eran huérfanos). **Reparar refs:** índices, links, refs desde el archivo de instrucciones/memorias/planes, y el acople de scripts movidos a `scripts/<tool>/` — `__dirname` (reapuntar) o **cwd** (prepender `process.chdir(require('path').join(__dirname,'<ruta datos>'))`). ⚠️ **Script referenciado por ruta en la config de permisos** (ej. `"Bash(bash tools/moonraker-get.sh:*)"`): las reglas matchean por prefijo exacto → moverlo rompe la pre-autorización (en headless = denegación). Buscá su ruta en la config antes de mover: o no lo movés, o actualizás la regla en el mismo paso. Corré el lint → 0 refs rotas. **Si el repo no tiene git: `git init` + commit inicial ANTES de mover** (un commit inicial post-migración no sirve de rollback).
+Proponé el plan de move y mové por defecto; ambiguo (código/assets/build) → preguntame antes. ⚠️ **Material sensible, en los dos sentidos:** (i) si un archivo a mover está **ya ignorado** por su ruta (`memoria/*-token.md`, credenciales), moverlo rompe el ignore y **commitea el secreto** → no lo muevas o actualizá el `.gitignore` en el mismo paso (verificá con `git status`); (ii) si hay material sensible **sin ignorar** (credenciales/tokens/`.env`/`*.key`, documentos personales o legales, resúmenes bancarios, libros contables, estudios médicos) → **sugerime** las líneas de `.gitignore` con el riesgo concreto, como hallazgo aparte, sin aplicarlo solo (puedo querer versionarlos a propósito en un repo local) + avisame si el repo nunca debería pushearse a un remoto. **Índice completo:** si había un índice parcial, cubrí TODOS los documentos (los no listados eran huérfanos). **Reparar refs:** índices, links, refs desde el archivo de instrucciones/memorias/planes, y el acople de scripts movidos a `<config>/herramientas/<tool>/` — `__dirname` (reapuntar) o **cwd** (prepender `process.chdir(require('path').join(__dirname,'<ruta datos>'))`). ⚠️ **Script referenciado por ruta en la config de permisos** (ej. `"Bash(bash tools/moonraker-get.sh:*)"`): las reglas matchean por prefijo exacto → moverlo rompe la pre-autorización (en headless = denegación). Buscá su ruta en la config antes de mover: o no lo movés, o actualizás la regla en el mismo paso. Corré el lint → 0 refs rotas. **Si el repo no tiene git: `git init` + commit inicial ANTES de mover** (un commit inicial post-migración no sirve de rollback).
 
 ## 5. Glosario del dominio
 
-Asegurá `<config>/glosario/INDICE.md` (tabla vacía **Concepto | Definición | Alias | Detalle**; contenido al final, §Glosario) — terminología del dominio, un concepto por fila, **alias registrados (no prohibidos)**, conceptos complejos con página `<slug>.md` de detalle. **Gobernanza — toda entrada nueva pasa por el usuario:** el agente puede *proponer* términos (marcados como propuestos), pero no se asientan como canónicos sin ratificación (dejar la línea en el header del glosario). Instalá el lint `<config>/scripts/lint-glosario/lint-glosario.js` (al final, §Lint-glosario). Persistí la memoria `feedback_glosario.md` (al final) e indexala. Asegurá en el archivo de instrucciones la sección **"Glosario del proyecto"**.
+Asegurá `<config>/glosario/INDICE.md` (tabla vacía **Concepto | Definición | Alias | Detalle**; contenido al final, §Glosario) — terminología del dominio, un concepto por fila, **alias registrados (no prohibidos)**, conceptos complejos con página `<slug>.md` de detalle. **Gobernanza — toda entrada nueva pasa por el usuario:** el agente puede *proponer* términos (marcados como propuestos), pero no se asientan como canónicos sin ratificación (dejar la línea en el header del glosario). Instalá el lint `<config>/glosario/lint-glosario/lint-glosario.js` (al final, §Lint-glosario). Persistí la memoria `feedback_glosario.md` (al final) e indexala. Asegurá en el archivo de instrucciones la sección **"Glosario del proyecto"**.
 
 ## 6. Registro de decisiones
 
-Asegurá `<config>/decisiones/INDICE.md` (tabla vacía **N° | Decisión | Fecha | Estado | Detalle**; §Decisiones) — solo decisiones **estructurales al propósito del repo** (no "ADR", no operativas triviales), misma estructura tabla+detalle que el glosario. Instalá el lint `<config>/scripts/lint-decisiones/lint-decisiones.js` (§Lint-decisiones). Persistí `feedback_decisiones.md` e indexala. Sección **"Decisiones del proyecto"**.
+Asegurá `<config>/decisiones/INDICE.md` (tabla vacía **N° | Decisión | Fecha | Estado | Detalle**; §Decisiones) — solo decisiones **estructurales al propósito del repo** (no "ADR", no operativas triviales), misma estructura tabla+detalle que el glosario. Instalá el lint `<config>/decisiones/lint-decisiones/lint-decisiones.js` (§Lint-decisiones). Persistí `feedback_decisiones.md` e indexala. Sección **"Decisiones del proyecto"**.
 
-## 7. Gestión de scripts
+## 7. Gestión de Herramientas
 
-Asegurá `<config>/scripts/INDICE.md` (registro-tabla vacío **Tool | Qué hace | Cómo se corre | Estado**; §Scripts) — cada script en su carpeta `<tool>/` con un `README.md`; ordena el "cementerio de scripts". Instalá el lint `<config>/scripts/lint-scripts/lint-scripts.js` (§Lint-scripts) con su README. Persistí `feedback_scripts.md` e indexala. Sección **"Scripts del proyecto"**. **Migrar sueltos:** cada uno a `<tool>/` con README y fila; lo que no se sabe qué hace → `Estado: obsoleto` + reportar. ⚠️ Grep de refs por ruta en la config de permisos/`.gitignore`/hooks antes de mover.
+Asegurá `<config>/herramientas/INDICE.md` (registro-tabla vacío **Herramienta | Tipo | Qué hace | Cómo se invoca | Estado**; §Herramientas) — las *tools* que el Propósito del repo requiere (tipos `script`, `skill` local, `MCP` local); un `script` vive en su carpeta `<tool>/` bajo herramientas con un `README.md`, una `skill`/`MCP` se linkea donde vive; ordena el "cementerio de tools". Instalá el lint `<config>/herramientas/lint-herramientas/lint-herramientas.js` (§Lint-herramientas) con su README. Persistí `feedback_herramientas.md` e indexala. Sección **"Herramientas del proyecto"**. Los **lints de subsistema no van acá** — son infra del Patrón y viven con su subsistema (`<config>/<sub>/lint-<sub>/`). **Migrar sueltos:** cada script suelto a `<tool>/` con README y fila (`Tipo: script`); lo que no se sabe qué hace → `Estado: obsoleto` + reportar. ⚠️ Grep de refs por ruta en la config de permisos/`.gitignore`/hooks antes de mover.
 
 ## 8. Reporte del leveling
 
@@ -152,7 +152,7 @@ Persistir y gestionar planes bajo `<config>/planes/` con tres subcarpetas: `pend
 3. **Al detectar evidencia de implementación** (commit, mensaje del user, código verificado, otro agente): pasar a `Ejecutado` y mover a `ejecutados/` **sin renombrar**, completar `Cerrado` en el registro y agregar sección **`## Notas de implementación`** (cómo se implementó vs planificado, hash de commit, cosas notables).
 4. **Descartar es un cierre válido:** `Descartado`, mover a `descartados/`, completar `Cerrado` y una línea de motivo en Notas (p. ej. "superseded por <plan>").
 5. **Reparar referencias entrantes** si las hubiera (el slug estable minimiza esto; preferir linkear planes vía `PLANES.md`).
-6. **Al cerrar** una tarea que tocó planes, correr el lint: `node <config>/scripts/lint-planes/lint-planes.js`.
+6. **Al cerrar** una tarea que tocó planes, correr el lint: `node <config>/planes/lint-planes/lint-planes.js`.
 
 Importante: borrar el archivo de `pendientes/` al moverlo — no duplicar. Un plan puede persistirse antes de arrancar la ejecución (p. ej. para cortar una sesión larga de diseño): Estado `Nuevo` o `Diferido` en el registro y bloque al tope con los pendientes para retomar.
 ```
@@ -184,7 +184,7 @@ metadata:
   type: feedback
 ---
 
-El conocimiento persistido del agente (documentos, estudios, temas, notas de dominio) vive en una carpeta única: `<config>/conocimiento/`, con un `INDICE.md` en su raíz. (La convención de dónde viven las herramientas/scripts la define la funcionalidad `scripts`.)
+El conocimiento persistido del agente (documentos, estudios, temas, notas de dominio) vive en una carpeta única: `<config>/conocimiento/`, con un `INDICE.md` en su raíz. (La convención de dónde viven las herramientas la define la funcionalidad `herramientas`.)
 
 **Why:** ubicación determinística → el lint y cualquier consulta saben dónde mirar sin heurística; separa lo que el agente CONOCE (`conocimiento/`) de su config y su tooling; mantiene la raíz del repo limpia.
 
@@ -192,9 +192,9 @@ El conocimiento persistido del agente (documentos, estudios, temas, notas de dom
 
 1. Todo md de conocimiento nuevo va bajo `<config>/conocimiento/` (subcarpetas por tema; cada una con su `INDICE.md` si crece). Nunca en la raíz.
 2. Mantener `<config>/conocimiento/INDICE.md` como índice raíz (solo punteros).
-3. **Al cerrar** una tarea que escribió conocimiento, correr `node <config>/scripts/lint-conocimiento/lint-conocimiento.js` (refs rotas, índice incompleto, huérfanos; sin LLM, sin red) y resolver hallazgos.
+3. **Al cerrar** una tarea que escribió conocimiento, correr `node <config>/conocimiento/lint-conocimiento/lint-conocimiento.js` (refs rotas, índice incompleto, huérfanos; sin LLM, sin red) y resolver hallazgos.
 4. El **chequeo semántico** (contradicciones, duplicación, staleness) a pedido tras una incorporación grande.
-5. **Migración:** un script de datos acoplado por `__dirname` que se mueva a `scripts/<tool>/` debe reapuntar sus paths a `<config>/conocimiento/...`, o se rompe.
+5. **Migración:** un script de datos acoplado por `__dirname` que se mueva a `<config>/herramientas/<tool>/` debe reapuntar sus paths a `<config>/conocimiento/...`, o se rompe.
 ```
 
 > Reemplazá `<config>` por el directorio real de tu harness en las tres memorias.
@@ -250,7 +250,7 @@ Editar la tabla de arriba (agregar/quitar filas o renombrar un estado). Reglas q
 - El valor de la columna `Estado` en `PLANES.md` debe coincidir exactamente con un `Estado` de esta tabla.
 ```
 
-## §Script — `<config>/scripts/lint-conocimiento/lint-conocimiento.js`
+## §Script — `<config>/conocimiento/lint-conocimiento/lint-conocimiento.js`
 
 ```js
 #!/usr/bin/env node
@@ -264,7 +264,7 @@ function walk(dir, acc) {
   for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
     if (EXCLUDE.has(e.name)) continue;
     const full = path.join(dir, e.name);
-    if (e.isDirectory()) walk(full, acc);
+    if (e.isDirectory()) { if (e.name.startsWith('lint-')) continue; walk(full, acc); }  // el lint co-ubicado del subsistema no es contenido
     else if (e.name.endsWith('.md')) acc.push(full);
   }
   return acc;
@@ -286,6 +286,7 @@ for (const f of domain) {
     while ((m = re.exec(txt))) {
       let t = m[1].trim();
       if (/^https?:\/\//.test(t)) continue;
+      // saltar placeholders/taquigrafia: elipsis, plantillas de nombre, angulos
       if (t.includes('...') || t.includes('<') || /A{3,}|AA-MM|MM-DD/.test(t)) continue;
       const c1 = path.normalize(path.join(fdir, t));
       const c2 = path.normalize(path.join(root, t));
@@ -351,7 +352,7 @@ orphans.forEach(o => console.log(`    ${o}`));
 if (!orphans.length) console.log('    (ninguno)');
 ```
 
-## Contenido de las memorias de glosario, decisiones y scripts
+## Contenido de las memorias de glosario, decisiones y herramientas
 
 > Reemplazá `<config>` por el directorio real de tu harness.
 
@@ -374,7 +375,7 @@ La terminología del dominio vive en `<config>/glosario/INDICE.md`: una tabla do
 1. **Al planificar o analizar**, consultar el glosario. Si aparece un término, ver si ya es alias de un concepto registrado; si es nuevo, agregar el concepto (o el alias) en el momento.
 2. Concepto **simple** → una fila, columna Detalle en `—`. Concepto **complejo** → fila + página de detalle linkeada.
 3. **Alias:** registrarlos en la columna Alias (no vetarlos). Un mismo alias no puede estar bajo dos conceptos distintos (el lint lo caza).
-4. **Al cerrar** una tarea que tocó el glosario, correr `node <config>/scripts/lint-glosario/lint-glosario.js` (links de detalle, huérfanos, colisión de alias).
+4. **Al cerrar** una tarea que tocó el glosario, correr `node <config>/glosario/lint-glosario/lint-glosario.js` (links de detalle, huérfanos, colisión de alias).
 
 Relacionado: [[flujo-planes]].
 ```
@@ -398,38 +399,40 @@ Las decisiones **estructurales al propósito del repo** se asientan en `<config>
 1. **Qué registrar:** decisiones que definen cómo es / qué hace el repo en lo esencial, o que eligen un camino que condiciona el trabajo futuro. **No** las triviales o efímeras ("busqué en internet", "usé tal comando").
 2. **Al planificar o analizar**, consultar las decisiones previas: no re-abrir ni contradecir. Reemplazar, no borrar: agregar la nueva y marcar la vieja `reemplazada por NNNN`.
 3. **Simple** → una fila, Detalle en `—`. **Compleja** → fila + página `NNNN-slug.md`.
-4. **Al cerrar**, correr `node <config>/scripts/lint-decisiones/lint-decisiones.js`.
+4. **Al cerrar**, correr `node <config>/decisiones/lint-decisiones/lint-decisiones.js`.
 
 Relacionado: [[flujo-planes]].
 ```
 
-### `feedback_scripts.md`
+### `feedback_herramientas.md`
 
 ```markdown
 ---
-name: scripts
-description: Convención de scripts del repo — cada tool en <config>/scripts/<tool>/ con README; registro tabla en INDICE.md; lint; cuidado con refs por ruta en la config de permisos/.gitignore/hooks.
+name: herramientas
+description: Convención de Herramientas del repo — las tools del Propósito (script/skill local/MCP local) en <config>/herramientas/ con registro INDICE.md (columna Tipo); los lints de subsistema NO son herramientas (viven con su subsistema); cuidado con refs por ruta en settings/.gitignore/hooks.
 metadata:
   type: feedback
 ---
 
-Las herramientas/scripts del repo viven en `<config>/scripts/<tool>/`: cada script en su propia carpeta (nunca suelto), con un `README.md` que dice qué hace, cómo se corre y qué lo referencia. El registro `<config>/scripts/INDICE.md` es una tabla (Tool | Qué hace | Cómo se corre | Estado) que los lista a todos.
+Las **Herramientas** del repo son las *tools* que el **Propósito** del repo requiere y el agente invoca para tareas repetibles. Tipos: `script`, `skill` local del repo, `MCP` local. Viven catalogadas en `<config>/herramientas/INDICE.md` — tabla (Herramienta | Tipo | Qué hace | Cómo se invoca | Estado). Cada fila linkea a donde vive la tool: un `script` en su carpeta `<tool>/` bajo herramientas, una `skill` en `<config>/skills/<skill>/`, un `MCP` en `.mcp.json`.
 
-**Why:** que la carpeta de scripts no se vuelva un cementerio de archivos sin saber qué son, de dónde salieron ni cómo se usan.
+**Los lints de subsistema NO son Herramientas:** son infra del Patrón de cada subsistema (índice + entradas + lint) y viven con su subsistema (`<config>/<sub>/lint-<sub>/`). Acá solo van tools de dominio.
+
+**Why:** que la colección de tools del Propósito no se vuelva un cementerio de archivos sin saber qué son, de dónde salieron ni cómo se usan. Ubicación determinística + registro escaneable + ficha por tool.
 
 **How to apply:**
 
-1. Todo script nuevo va en `<config>/scripts/<tool>/` con su `README.md`. Nunca suelto.
-2. Registrarlo en `<config>/scripts/INDICE.md`. Marcar `Estado`; los `obsoleto` se pueden depurar.
-3. ⚠️ **Refs por ruta:** un script referenciado por ruta en la config de permisos, en `.gitignore` o en un hook NO se mueve/renombra alegremente — rompe el match por prefijo exacto y se pierde la pre-autorización. Antes de mover, grep su ruta; si aparece, actualizar la referencia en el mismo paso.
-4. **Al cerrar**, correr `node <config>/scripts/lint-scripts/lint-scripts.js`.
+1. Toda Herramienta nueva va al registro `<config>/herramientas/INDICE.md` (una fila) con su `Tipo`. Un `script` vive en `<config>/herramientas/<tool>/` con su `README.md` (nunca suelto); una `skill`/`MCP` se linkea donde vive.
+2. Marcar `Estado`; los `obsoleto` se pueden depurar.
+3. ⚠️ **Refs por ruta:** una tool referenciada por ruta en `settings.local.json`/`settings.json` (regla de permiso), en `.gitignore` o en un hook NO se mueve/renombra alegremente — rompe el match por prefijo exacto y se pierde la pre-autorización (en headless, denegación directa). Antes de mover, grep su ruta; si aparece, actualizar la referencia en el mismo paso.
+4. **Al cerrar** una tarea que tocó Herramientas, correr el lint: `node <config>/herramientas/lint-herramientas/lint-herramientas.js` (README por herramienta local, registro completo, filas colgadas, refs por ruta de lint en settings).
 
-Otras memorias, planes o conocimiento pueden referenciar un tool por su ruta explicando cómo usarlo.
+Otras memorias, planes o conocimiento pueden referenciar una tool por su ruta explicando cómo usarla en su contexto.
 
 Relacionado: [[flujo-planes]], [[base-conocimiento]].
 ```
 
-## §Lint-glosario — `<config>/scripts/lint-glosario/lint-glosario.js`
+## §Lint-glosario — `<config>/glosario/lint-glosario/lint-glosario.js`
 
 ```js
 #!/usr/bin/env node
@@ -503,7 +506,7 @@ colisiones.forEach(([t, a, b]) => console.log(`    "${t}"  en  ${a}  y  ${b}`));
 if (!colisiones.length) console.log('    (ninguna)');
 ```
 
-## §Lint-decisiones — `<config>/scripts/lint-decisiones/lint-decisiones.js`
+## §Lint-decisiones — `<config>/decisiones/lint-decisiones/lint-decisiones.js`
 
 ```js
 #!/usr/bin/env node
@@ -581,29 +584,31 @@ supRotas.forEach(([n, r]) => console.log(`    ${n}  ->  ${r}   [decision inexist
 if (!supRotas.length) console.log('    (ninguna)');
 ```
 
-## §Lint-scripts — `<config>/scripts/lint-scripts/lint-scripts.js`
+## §Lint-herramientas — `<config>/herramientas/lint-herramientas/lint-herramientas.js`
 
 ```js
 #!/usr/bin/env node
-// Lint del registro de scripts: README por tool, tool en indice, filas colgadas, refs por ruta en settings. Sin LLM, sin red.
-// Uso: node lint-scripts.js [<carpeta scripts>]   (default: .claude/scripts)
+// Lint del registro de Herramientas: README por herramienta con carpeta local, herramienta en indice,
+// filas colgadas (link a subdir local inexistente), refs por ruta de lint en settings. Sin LLM, sin red.
+// Uso: node lint-herramientas.js [<carpeta herramientas>]   (default: .claude/herramientas)
 const fs = require('fs'), path = require('path');
-const root = path.resolve(process.argv[2] || '.claude/scripts');
+const root = path.resolve(process.argv[2] || '.claude/herramientas');
 const idxPath = path.join(root, 'INDICE.md');
 const idx = fs.existsSync(idxPath) ? fs.readFileSync(idxPath, 'utf8') : '';
 
-// subdirectorios = tools (cada script en su carpeta)
+// subdirectorios = herramientas tipo script/tool que viven aca (skill/MCP viven en su casa nativa)
 const tools = fs.existsSync(root)
   ? fs.readdirSync(root, { withFileTypes: true }).filter(e => e.isDirectory()).map(e => e.name)
   : [];
 
-// [1] README por tool
+// [1] README por herramienta con carpeta local
 const sinReadme = tools.filter(t => !fs.existsSync(path.join(root, t, 'README.md')));
 
-// [2] tool fuera del indice
+// [2] carpeta local fuera del indice
 const fueraIndice = tools.filter(t => !idx.includes(t));
 
-// [3] filas del indice que apuntan a un directorio inexistente
+// [3] filas del indice cuyo link apunta a un subdir LOCAL inexistente
+//     (se saltan links externos: ../skills/, .mcp.json, etc. — esos no viven bajo herramientas/)
 const toolSet = new Set(tools), colgadas = [];
 for (const line of idx.split('\n')) {
   const t = line.trim();
@@ -611,21 +616,24 @@ for (const line of idx.split('\n')) {
   const cells = t.split('|').slice(1, -1).map(c => c.trim());
   if (cells.length < 2) continue;
   const c0 = cells[0];
-  if (/^:?-{2,}:?$/.test(c0.replace(/\s/g, ''))) continue;    // separador
-  if (/^tool$/i.test(c0.replace(/[*\s]/g, ''))) continue;      // header
-  const m = /\]\(([^)]+?)\/?\)/.exec(c0);                       // link [x](dir/)
-  const name = (m ? m[1] : c0).replace(/[*`\[\]]/g, '').replace(/\/$/, '').trim();
+  if (/^:?-{2,}:?$/.test(c0.replace(/\s/g, ''))) continue;     // separador
+  if (/^herramienta$/i.test(c0.replace(/[*\s]/g, ''))) continue; // header
+  const m = /\]\(([^)]+?)\)/.exec(c0);                          // link [x](target)
+  if (!m) continue;                                             // fila sin link -> no se valida ruta
+  const target = m[1].trim();
+  if (target.startsWith('..') || target.includes('.json') || /^\w+:/.test(target)) continue; // externo
+  const name = target.replace(/\/$/, '').replace(/[`]/g, '').trim();
   if (name && !toolSet.has(name)) colgadas.push(name);
 }
 
-// [4] refs por ruta a scripts en settings que no resuelven
-const repoRoot = path.resolve(root, '..', '..');   // .claude/scripts -> raiz del repo
+// [4] refs por ruta a lints en settings que no resuelven (cualquier .claude/**/*.js|sh|...)
+const repoRoot = path.resolve(root, '..', '..');   // .claude/herramientas -> raiz del repo
 const refsRotas = [];
 for (const sf of ['.claude/settings.local.json', '.claude/settings.json']) {
   const abs = path.join(repoRoot, sf);
   if (!fs.existsSync(abs)) continue;
   const txt = fs.readFileSync(abs, 'utf8');
-  const re = /([.\w/-]*scripts\/[\w./-]+?\.(?:js|sh|py|mjs|cjs|ts))/g;
+  const re = /([.\w/-]*\.claude\/[\w./-]+?\.(?:js|sh|py|mjs|cjs|ts))/g;
   let m;
   while ((m = re.exec(txt))) {
     const p = m[1], cand = path.isAbsolute(p) ? p : path.join(repoRoot, p);
@@ -633,23 +641,23 @@ for (const sf of ['.claude/settings.local.json', '.claude/settings.json']) {
   }
 }
 
-console.log(`== LINT SCRIPTS: ${root} ==`);
-console.log(`tools: ${tools.length}\n`);
+console.log(`== LINT HERRAMIENTAS: ${root} ==`);
+console.log(`herramientas con carpeta local: ${tools.length}\n`);
 console.log(`[1] SIN README (${sinReadme.length}):`);
 sinReadme.forEach(t => console.log(`    ${t}/`));
-if (!sinReadme.length) console.log('    (todos tienen README)');
+if (!sinReadme.length) console.log('    (todas tienen README)');
 console.log(`\n[2] FUERA DEL INDICE (${fueraIndice.length}):`);
 fueraIndice.forEach(t => console.log(`    ${t}/`));
 if (!fueraIndice.length) console.log('    (completo)');
 console.log(`\n[3] FILAS COLGADAS (${colgadas.length}):`);
-colgadas.forEach(c => console.log(`    ${c}   [directorio no existe]`));
+colgadas.forEach(c => console.log(`    ${c}   [subdir local no existe]`));
 if (!colgadas.length) console.log('    (ninguna)');
-console.log(`\n[4] REFS POR RUTA ROTAS EN SETTINGS (${refsRotas.length}):`);
+console.log(`\n[4] REFS POR RUTA DE LINT ROTAS EN SETTINGS (${refsRotas.length}):`);
 refsRotas.forEach(([f, p]) => console.log(`    ${f}  ->  ${p}   [no existe]`));
 if (!refsRotas.length) console.log('    (ninguna)');
 ```
 
-## §Script — lint-memoria — `<config>/scripts/lint-memoria/lint-memoria.js`
+## §Script — lint-memoria — `<config>/memoria/lint-memoria/lint-memoria.js`
 
 > Reemplazá `.claude` por el directorio real de tu harness.
 
@@ -666,7 +674,7 @@ function walk(dir, acc) {
   for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
     if (EXCLUDE.has(e.name)) continue;
     const full = path.join(dir, e.name);
-    if (e.isDirectory()) walk(full, acc);
+    if (e.isDirectory()) { if (e.name.startsWith('lint-')) continue; walk(full, acc); }  // el lint co-ubicado del subsistema no es contenido
     else if (e.name.endsWith('.md')) acc.push(full);
   }
   return acc;
@@ -771,7 +779,7 @@ fmBad.forEach(([p, w]) => console.log(`    ${p}   [${w}]`));
 if (!fmBad.length) console.log('    (ok)');
 ```
 
-## §Script — lint-preferencias — `<config>/scripts/lint-preferencias/lint-preferencias.js`
+## §Script — lint-preferencias — `<config>/preferencias/lint-preferencias/lint-preferencias.js`
 
 > Reemplazá `.claude` por el directorio real de tu harness.
 

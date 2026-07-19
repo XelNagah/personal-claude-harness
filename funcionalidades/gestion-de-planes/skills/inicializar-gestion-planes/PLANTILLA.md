@@ -25,7 +25,7 @@ Persistir y gestionar planes bajo `.claude/planes/` con tres subcarpetas: `pendi
 3. **Al detectar evidencia de implementación** (commit, mensaje del user, código verificado, otro agente): pasar a `Ejecutado` y mover a `ejecutados/` **sin renombrar**, completar `Cerrado` en el registro y agregar sección **`## Notas de implementación`** (cómo se implementó vs planificado, hash de commit, cosas notables).
 4. **Descartar es un cierre válido:** `Descartado`, mover a `descartados/`, completar `Cerrado` y una línea de motivo en Notas (p. ej. "superseded por <plan>").
 5. **Reparar referencias entrantes** si las hubiera (el slug estable minimiza esto; preferir linkear planes vía `PLANES.md`).
-6. **Al cerrar** una tarea que tocó planes, correr el lint: `node .claude/scripts/lint-planes/lint-planes.js`.
+6. **Al cerrar** una tarea que tocó planes, correr el lint: `node .claude/planes/lint-planes/lint-planes.js`.
 
 Importante: borrar el archivo de `pendientes/` al moverlo — no duplicar. Un plan puede persistirse antes de arrancar la ejecución (p. ej. para cortar una sesión larga de diseño): Estado `Nuevo` o `Diferido` en el registro y bloque al tope con los pendientes para retomar.
 
@@ -131,7 +131,7 @@ Los **estados** y su semántica (a qué carpeta mapea cada uno, cuáles son term
 Los planes se persisten en [`planes/`](planes/): `pendientes/` (planes vivos: `Nuevo`, `En curso`, `Diferido`), `ejecutados/` y `descartados/` (registro, con motivo). Nombre = slug estable sin fecha; estado y fechas viven en el registro [`planes/PLANES.md`](planes/PLANES.md), y los estados disponibles (con su carpeta y si son terminales) en [`planes/ESTADOS.md`](planes/ESTADOS.md) — configurable, que el lint lee. Ciclo completo en la memoria [`feedback_flujo_planes.md`](memoria/feedback_flujo_planes.md). Al cerrar una tarea que tocó planes, correr el lint **desde la raíz del repo**:
 
 ​```bash
-node .claude/scripts/lint-planes/lint-planes.js
+node .claude/planes/lint-planes/lint-planes.js
 ​```
 ```
 
@@ -147,7 +147,7 @@ Merge (sin pisar hooks existentes) en `.claude/settings.json` del repo:
         "hooks": [
           {
             "type": "command",
-            "command": "node .claude/scripts/lint-planes/lint-planes.js --quiet"
+            "command": "node .claude/planes/lint-planes/lint-planes.js --quiet"
           }
         ]
       }
@@ -158,9 +158,9 @@ Merge (sin pisar hooks existentes) en `.claude/settings.json` del repo:
 
 Con `--quiet` el lint solo imprime cuando hay hallazgos: sesión limpia = hook silencioso. Es el trigger mecánico del ciclo — sin él, mover planes vuelve a depender de acordarse.
 
-## §Script — `.claude/scripts/lint-planes/lint-planes.js`
+## §Script — `.claude/planes/lint-planes/lint-planes.js`
 
-Contenido exacto (Node, sin dependencias, sin red). Si la funcionalidad `scripts` está instalada, registrarlo también en `scripts/INDICE.md` con su `README.md`.
+Contenido exacto (Node, sin dependencias, sin red). El lint va co-ubicado con el subsistema (`.claude/planes/lint-planes/`) con su `README.md`; es infra del Patrón, **no** una Herramienta, así que no se registra en `herramientas/INDICE.md` (decisión 0008).
 
 ```js
 #!/usr/bin/env node
@@ -296,13 +296,13 @@ for (const [titulo, items] of secciones) {
 }
 ```
 
-## §README del tool — `.claude/scripts/lint-planes/README.md`
+## §README del tool — `.claude/planes/lint-planes/README.md`
 
 ```markdown
 # lint-planes
 
 **Qué hace:** lint del ciclo de planes — lee los estados de `planes/ESTADOS.md` (data-driven) y valida: coherencia estado↔carpeta y carpeta↔registro (PLANES.md), planes sueltos, estados inválidos (fuera de ESTADOS.md), pendientes ya resueltos sin mover, cierres a medias (sin fecha, sin motivo, sin notas de implementación) y activos (`En curso`) envejecidos. Sin LLM, sin red.
-**Cómo se corre:** `node .claude/scripts/lint-planes/lint-planes.js` (desde la raíz del repo). Flags: `--quiet` (solo imprime si hay hallazgos; usado por el hook), `--dias N` (umbral de envejecimiento, default 30).
+**Cómo se corre:** `node .claude/planes/lint-planes/lint-planes.js` (desde la raíz del repo). Flags: `--quiet` (solo imprime si hay hallazgos; usado por el hook), `--dias N` (umbral de envejecimiento, default 30).
 **Estado:** vigente.
 **Referenciado por:** hook `SessionStart` en `.claude/settings.json` — actualizar el hook si se mueve.
 **Dependencias:** Node.js (sin libs externas).

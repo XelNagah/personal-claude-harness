@@ -1,6 +1,6 @@
 ---
 name: inicializar-conocimiento
-description: Instala la base de conocimiento del usuario en el repo actual (.claude/conocimiento/ como ubicación única + lint de integridad en .claude/scripts/lint-conocimiento/). Migra el conocimiento que esté disperso — en la raíz del repo Y dentro de memoria/ (documentos sin frontmatter que se archivaron ahí de más). Use when el usuario dice "inicializar conocimiento", "base de conocimiento", "armá el conocimiento", o como parte del setup completo.
+description: Instala la base de conocimiento del usuario en el repo actual (.claude/conocimiento/ como ubicación única + lint de integridad en .claude/conocimiento/lint-conocimiento/). Migra el conocimiento que esté disperso — en la raíz del repo Y dentro de memoria/ (documentos sin frontmatter que se archivaron ahí de más). Use when el usuario dice "inicializar conocimiento", "base de conocimiento", "armá el conocimiento", o como parte del setup completo.
 ---
 
 # Inicializar base de conocimiento
@@ -12,12 +12,11 @@ Instala la convención de **base de conocimiento**: una carpeta única `.claude/
 ```
 .claude/
 ├── conocimiento/
-│   └── INDICE.md                          # índice raíz (solo punteros)
-├── memoria/
-│   └── feedback_base_conocimiento.md      # la convención, como memoria
-└── scripts/
-    └── lint-conocimiento/
-        └── lint-conocimiento.js           # lint mecánico
+│   ├── INDICE.md                          # índice raíz (solo punteros)
+│   └── lint-conocimiento/
+│       └── lint-conocimiento.js           # lint mecánico
+└── memoria/
+    └── feedback_base_conocimiento.md      # la convención, como memoria
 ```
 
 ## Reconciliación (idempotencia)
@@ -32,7 +31,7 @@ Segura de re-correr: sirve para **"levelear"** repos que ya tienen partes. Regla
 ## Workflow
 
 1. **Carpeta de conocimiento.** Asegurar `.claude/conocimiento/` con un `INDICE.md` raíz (encabezado + una línea por página/sección; solo punteros, nunca contenido). Si no existe, crear.
-2. **Tool de lint.** Instalar `.claude/scripts/lint-conocimiento/lint-conocimiento.js` con el contenido EXACTO de [PLANTILLA.md](PLANTILLA.md) §Script. Va en **su propia carpeta** bajo `scripts/`, nunca suelto.
+2. **Tool de lint.** Instalar `.claude/conocimiento/lint-conocimiento/lint-conocimiento.js` con el contenido EXACTO de [PLANTILLA.md](PLANTILLA.md) §Script. Va en **su propia carpeta** co-ubicado con el subsistema (`.claude/conocimiento/lint-conocimiento/`), nunca suelto.
 3. **Memoria de la convención.** Instalar `.claude/memoria/feedback_base_conocimiento.md` (PLANTILLA.md §Memoria) e indexarla en `MEMORIA.md` (agregar solo la línea si falta).
    **Chequeo de la dependencia `memoria-local`:** si **no existe `.claude/memoria/MEMORIA.md`**, el repo diverge del estándar (típico: usa un `README.md` como índice, o no tiene índice). Crearlo con el formato estándar (encabezado `Cargar al inicio de cada sesión y respetar.` + una línea por memoria) y reportar la divergencia. Si había un `README.md` haciendo de índice, su contenido casi seguro describe **conocimiento**, no memorias → usarlo como base del `INDICE.md` del paso 1 (ver paso 5b) y no dejar dos índices compitiendo.
 4. **Sección en `CLAUDE.md`.** Asegurar una sección **"Base de conocimiento del proyecto"** con link a `conocimiento/INDICE.md`, la regla de ubicación única, y el paso de lint al cerrar. Si ya hay una equivalente (otro título, mismo tema), no duplicar. Si existe el bloque **"Mapa del repo (siempre cargado)"** (de `memoria-local`), asegurar la línea `@conocimiento/INDICE.md` en él.
@@ -65,7 +64,7 @@ Segura de re-correr: sirve para **"levelear"** repos que ya tienen partes. Regla
 
      Reportarlo como hallazgo aparte (no es parte de la migración) con el riesgo concreto y las líneas de `.gitignore` sugeridas. **Sugerir, no aplicar solo**: que el user decida — puede querer versionarlos deliberadamente en un repo local. Señalar además que un repo con este material **nunca debe pushearse a un remoto**.
    - **Índice completo, sin heredar agujeros.** Si ya existe un índice parcial (un README que lista 7 de 21), el `INDICE.md` nuevo debe cubrir **todos** los documentos, no solo los que listaba el viejo. Los no listados eran huérfanos: ese es justo el problema a resolver.
-   - **Reparar referencias:** paths en cada `INDICE.md`, links entre páginas, refs desde `CLAUDE.md` y desde las memorias/planes, y el acople de los scripts que se muevan a `scripts/<tool>/` — `__dirname` (reapuntar a `.../conocimiento/...`) o **cwd** (prependerles `process.chdir(require('path').join(__dirname, '<ruta a los datos>'))`, que evita reescribir cada llamada de I/O).
+   - **Reparar referencias:** paths en cada `INDICE.md`, links entre páginas, refs desde `CLAUDE.md` y desde las memorias/planes, y el acople de los scripts que se muevan a `herramientas/<tool>/` — `__dirname` (reapuntar a `.../conocimiento/...`) o **cwd** (prependerles `process.chdir(require('path').join(__dirname, '<ruta a los datos>'))`, que evita reescribir cada llamada de I/O).
    - ⚠️ **Un script referenciado por ruta en `settings.local.json` / `settings.json` NO se mueve alegremente.** Las reglas de permisos matchean por **prefijo de ruta exacto** (ej. `"Bash(bash tools/moonraker-get.sh:*)"`): moverlo rompe el match ⇒ el agente pierde su pre-autorización y vuelven los prompts (en headless, eso es una denegación). Antes de mover cualquier script, `grep` su ruta en los settings. Si aparece: o **no lo movés**, o lo movés y **actualizás la regla a la ruta nueva en el mismo paso**. Misma lógica que el `.gitignore`: mover un archivo rompe todo lo que lo referencia por ruta.
    - Correr el lint tras mover y confirmar **0 refs rotas**.
    Si ya está todo bajo `conocimiento/`, no-op.

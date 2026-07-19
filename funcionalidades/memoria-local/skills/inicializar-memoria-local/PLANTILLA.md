@@ -2,7 +2,7 @@
 
 Textos verbatim que la skill instala en el repo destino.
 
-## §Script — `.claude/scripts/lint-memoria/lint-memoria.js`
+## §Script — `.claude/memoria/lint-memoria/lint-memoria.js`
 
 Contenido exacto (Node, sin dependencias, sin red):
 
@@ -19,7 +19,7 @@ function walk(dir, acc) {
   for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
     if (EXCLUDE.has(e.name)) continue;
     const full = path.join(dir, e.name);
-    if (e.isDirectory()) walk(full, acc);
+    if (e.isDirectory()) { if (e.name.startsWith('lint-')) continue; walk(full, acc); }  // el lint co-ubicado del subsistema no es contenido
     else if (e.name.endsWith('.md')) acc.push(full);
   }
   return acc;

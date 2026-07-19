@@ -46,7 +46,7 @@ Tipos: `user` (quién es el usuario), `feedback` (correcciones y enfoques confir
 
 ## 3. Lint de integridad
 
-Instalá el tool en **su propia carpeta**: `<config>/scripts/lint-memoria/lint-memoria.js`. Es un script Node sin dependencias ni red que chequea, sobre `<config>/memoria/`: **refs `.md` rotas** y wikilinks `[[name]]` sin memoria, **índice incompleto** (toda memoria está listada en `MEMORIA.md`), **huérfanos** (memorias que nada referencia ni indexa) y **frontmatter inválido** (`name` / `description` / `metadata.type` ∈ `user` · `feedback` · `project` · `reference`). Corré `node <config>/scripts/lint-memoria/lint-memoria.js` al cerrar tareas que tocaron la memoria.
+Instalá el tool en **su propia carpeta**: `<config>/memoria/lint-memoria/lint-memoria.js`. Es un script Node sin dependencias ni red que chequea, sobre `<config>/memoria/`: **refs `.md` rotas** y wikilinks `[[name]]` sin memoria, **índice incompleto** (toda memoria está listada en `MEMORIA.md`), **huérfanos** (memorias que nada referencia ni indexa) y **frontmatter inválido** (`name` / `description` / `metadata.type` ∈ `user` · `feedback` · `project` · `reference`). Corré `node <config>/memoria/lint-memoria/lint-memoria.js` al cerrar tareas que tocaron la memoria.
 
 (El contenido exacto del script está en la plantilla de la versión Claude Code de esta funcionalidad — `skills/inicializar-memoria-local/PLANTILLA.md` §Script.)
 

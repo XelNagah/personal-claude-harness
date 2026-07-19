@@ -31,7 +31,7 @@ Solo términos **propios del dominio** (no conceptos generales de programación)
 
 ## 2. Lint de integridad
 
-Instalá `<config>/scripts/lint-glosario/lint-glosario.js` (Node, sin deps ni red): chequea **links de detalle** (resuelven), **páginas huérfanas** (toda `<slug>.md` está referenciada desde la tabla) y **colisiones de alias** (un mismo alias no cuelga de dos conceptos). El contenido exacto está en la plantilla de la versión Claude Code — `skills/inicializar-glosario/PLANTILLA.md` §Script. Corré `node <config>/scripts/lint-glosario/lint-glosario.js` al cerrar tareas que tocaron el glosario.
+Instalá `<config>/glosario/lint-glosario/lint-glosario.js` (Node, sin deps ni red): chequea **links de detalle** (resuelven), **páginas huérfanas** (toda `<slug>.md` está referenciada desde la tabla) y **colisiones de alias** (un mismo alias no cuelga de dos conceptos). El contenido exacto está en la plantilla de la versión Claude Code — `skills/inicializar-glosario/PLANTILLA.md` §Script. Corré `node <config>/glosario/lint-glosario/lint-glosario.js` al cerrar tareas que tocaron el glosario.
 
 ## 3. Convención como memoria
 

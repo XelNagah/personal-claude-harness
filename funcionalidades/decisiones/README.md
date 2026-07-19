@@ -17,12 +17,11 @@ Solo decisiones **estructurales al propósito del repo**: las que definen cómo 
 ├── CLAUDE.md                              # sección "Decisiones del proyecto"
 ├── decisiones/
 │   ├── INDICE.md                      # tabla: N° | Decisión | Fecha | Estado | Detalle
-│   └── NNNN-slug.md                       # página de detalle, solo decisiones complejas
-├── memoria/
-│   └── feedback_decisiones.md             # la convención, como memoria (+ índice)
-└── scripts/
-    └── lint-decisiones/
-        └── lint-decisiones.js             # lint mecánico (sin LLM, sin red)
+│   ├── NNNN-slug.md                       # página de detalle, solo decisiones complejas
+│   └── lint-decisiones/
+│       └── lint-decisiones.js             # lint mecánico (sin LLM, sin red)
+└── memoria/
+    └── feedback_decisiones.md             # la convención, como memoria (+ índice)
 ```
 
 ## Idea

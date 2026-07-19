@@ -55,7 +55,7 @@ Las decisiones **estructurales al propósito del repo** se asientan en `.claude/
 1. **Qué registrar:** decisiones que definen cómo es / qué hace el repo en lo esencial, o que eligen un camino que condiciona el trabajo futuro. **No** las triviales o efímeras ("busqué en internet", "usé tal comando").
 2. **Al planificar o analizar**, consultar las decisiones previas: no re-abrir lo cerrado ni contradecirlo. Reemplazar, no borrar: agregar la nueva y marcar la vieja `reemplazada por NNNN`.
 3. **Simple** → una fila, Detalle en `—`. **Compleja** (contexto, alternativas, consecuencias) → fila + página `NNNN-slug.md`.
-4. **Al cerrar** una tarea que registró decisiones, correr el lint: `node .claude/scripts/lint-decisiones/lint-decisiones.js` (numeración, links de detalle, huérfanos, superseded).
+4. **Al cerrar** una tarea que registró decisiones, correr el lint: `node .claude/decisiones/lint-decisiones/lint-decisiones.js` (numeración, links de detalle, huérfanos, superseded).
 
 Relacionado: [[flujo-planes]] (consultar/registrar decisiones al cerrar planes).
 ```
@@ -68,13 +68,13 @@ Relacionado: [[flujo-planes]] (consultar/registrar decisiones al cerrar planes).
 Las decisiones **estructurales al propósito del repo** (no las operativas triviales) se asientan en [`decisiones/INDICE.md`](decisiones/INDICE.md): una tabla donde cada fila es una decisión (N°, qué + por qué, fecha, estado, y link a detalle si requiere conceptualización mayor). Misma estructura que el glosario. **Consultarlas al planificar y analizar** para no re-decidir ni contradecir. Al cerrar una tarea que registró decisiones, correr el lint **desde la raíz del repo**:
 
 ​```bash
-node .claude/scripts/lint-decisiones/lint-decisiones.js
+node .claude/decisiones/lint-decisiones/lint-decisiones.js
 ​```
 
 Detalle de la convención en la memoria [`feedback_decisiones.md`](memoria/feedback_decisiones.md).
 ```
 
-## §Script — `.claude/scripts/lint-decisiones/lint-decisiones.js`
+## §Script — `.claude/decisiones/lint-decisiones/lint-decisiones.js`
 
 Contenido exacto (Node, sin dependencias, sin red):
 

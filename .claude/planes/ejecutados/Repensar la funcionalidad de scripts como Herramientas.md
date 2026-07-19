@@ -1,6 +1,6 @@
 # Repensar la funcionalidad de `scripts` como Herramientas (Tools)
 
-**Estado: En curso · Creado 26-07-19.** Analizado por `planificar` el 26-07-19 → acuerdo cerrado, decisiones 0007/0008 registradas, glosario actualizado. Falta la ejecución del rename físico + propagación.
+**Estado: Ejecutado · Creado 26-07-19 · Cerrado 26-07-19.** Analizado por `planificar` → acuerdo cerrado, decisiones 0007/0008, glosario actualizado, rename físico + propagación al harness completos.
 
 ## Qué se acordó (diseño)
 
@@ -42,19 +42,19 @@
 - Todas las rutas de lint re-ruteadas en CLAUDE.md, los 8 README y las memorias vivas.
 - **Descubierto y arreglado:** los lints **recursivos** (`lint-memoria`, `lint-conocimiento`) levantaban su propio `lint-<sub>/README.md` como contenido → `walk()` ahora saltea dirs `lint-*`. Los no-recursivos (glosario, decisiones, planes, preferencias) no lo necesitan. **Este fix debe ir a 2b** (las versiones de esos dos lints en `funcionalidades/`).
 
-## Falta (Fase 2b — harness: funcionalidades + orquestador)
+## Fase 2b — harness (HECHA, 26-07-19)
 
-Radio original: **126 ocurrencias de `.claude/scripts/` en 41 archivos** (2a cubrió las de `.claude/`). Históricos (`planes/ejecutados/*`) **no se tocan**.
+- Funcionalidad `funcionalidades/scripts/`→`herramientas/` re-autorada al modelo nuevo (plugin.json, README, prompt, skill `inicializar-scripts`→`inicializar-herramientas` + PLANTILLA). Autorada por mí; §Script byte-exacto verificado.
+- Los 6 instaladores restantes co-ubican su lint (`.claude/<sub>/lint-<sub>/`) en sus 3 formatos; walk-guard propagado a los §Script de memoria y conocimiento; hook de planes re-ruteado en `gestion-de-planes`.
+- Orquestador `setup-completo` sincronizado verbatim; `marketplace.json` + `REGISTRO.md` actualizados; junction `inicializar-scripts`→`inicializar-herramientas` recreado.
+- Propagación delegada a subagente fresco (memoria de propagación); byte-exactness verificada por mí.
 
-**Delegar a subagente fresco, verificar byte-exactness (memoria de propagación):**
-6. `funcionalidades/scripts/` → `funcionalidades/herramientas/` (plugin.json, README, prompt.md, skill `inicializar-scripts`→`inicializar-herramientas` + PLANTILLA). Reescribir al modelo nuevo (registro Herramientas + Tipo; el lint del subsistema va co-ubicado).
-7. **Cada** funcionalidad instala su lint en su propio dir, no en `scripts/` — actualizar los 7 instaladores (prompt+SKILL+PLANTILLA) y sus rutas de lint.
-8. Orquestador `setup-completo` (prompt + PLANTILLA verbatim): rutas de lint + paso `herramientas`.
-9. `marketplace.json`, `REGISTRO.md`, junction `inicializar-scripts`→`inicializar-herramientas`.
+## Notas de implementación
 
-**Gate final:** `lint-planes`, `lint-glosario`, `lint-decisiones`, `lint-harness`, `claude plugin validate .` — todos verdes.
-
-## Notas de riesgo
-- El hook de `settings.json` es la trampa silenciosa: verificar que corre tras el rename.
-- No reescribir históricos (`ejecutados/`, memorias narrativas).
-- Cambio grande; ejecutar metódico, no sweep ciego.
+- **Resultado:** `scripts`→`herramientas` completo (repo + harness). Herramientas = tools del Propósito (script/skill local/MCP); los lints pasaron a ser infra co-ubicada del Patrón de cada subsistema (0008), no Herramientas.
+- **Decisiones:** 0007 (rename+realcance) y 0008 (lints co-ubicados). Glosario: concepto **Herramienta**. Descripción coloquial "herramientas para agentes" barrida de 0001/CLAUDE.md/README.
+- **Bug encontrado:** los lints recursivos (`lint-memoria`, `lint-conocimiento`) levantaban su propio `lint-<sub>/README.md` como contenido → `walk()` saltea dirs `lint-*`. Propagado a repo + funcionalidades + orquestador.
+- **Commits:** 2a repo-local `97dbea4`; 2b harness (este cierre).
+- **Gate final verde:** los 8 lints, `lint-harness` (0 hallazgos, incl. verbatim entre plantillas), `claude plugin validate .` (passed), byte-check de 20 bloques js embebidos (0 divergentes), grep de control sin refs vivas a `scripts`.
+- **Trampa del hook** (`settings.json`) verificada: apunta a `.claude/planes/lint-planes/`.
+- Históricos (`ejecutados/`, memorias narrativas) no reescritos.

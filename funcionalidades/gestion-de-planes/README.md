@@ -13,13 +13,12 @@ Instala el ciclo de planes del usuario: **carpetas = ciclo de vida grueso** (`pe
 ├── memoria/
 │   ├── feedback_flujo_planes.md     # el ciclo completo, como memoria
 │   └── feedback_artefacto_estado.md # estado vivo de exploraciones multi-variable
-├── planes/
-│   ├── ESTADOS.md     # estados: Estado | Sentido | Carpeta | Terminal (fuente de verdad, la lee el lint)
-│   ├── PLANES.md      # registro: Plan | Estado | Creado | Cerrado | Origen | Notas
-│   ├── pendientes/
-│   ├── ejecutados/
-│   └── descartados/
-└── scripts/
+└── planes/
+    ├── ESTADOS.md     # estados: Estado | Sentido | Carpeta | Terminal (fuente de verdad, la lee el lint)
+    ├── PLANES.md      # registro: Plan | Estado | Creado | Cerrado | Origen | Notas
+    ├── pendientes/
+    ├── ejecutados/
+    ├── descartados/
     └── lint-planes/   # lint del ciclo, data-driven desde ESTADOS.md (js + README)
 ```
 
