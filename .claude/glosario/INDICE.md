@@ -28,4 +28,5 @@ Solo términos **propios del dominio** (no conceptos generales de programación)
 | Skill | Flujo empaquetado que el agente invoca por nombre (artefacto de Claude Code, `SKILL.md`); uno de los tipos de Herramienta. | habilidad | — |
 | Skill de Subsistema | Skill operativa que trabaja sobre un subsistema concreto; viaja en el plugin de la funcionalidad de ese subsistema. | — | — |
 | Skill del Agente Multipropósito | Skill transversal sin subsistema dueño (hoy: `planificar`); se empaqueta como funcionalidad propia. | — | — |
+| Texto plano | Texto corriente en lenguaje natural dentro de los `.md`, por oposición a código (cercas, backticks, identificadores, rutas y nombres de archivo). | — | — |
 | Chequeo semántico | Detección de contradicciones, incompatibilidades, duplicación o staleness que requiere entender el significado (LLM). | — | — |

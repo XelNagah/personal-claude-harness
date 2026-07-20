@@ -12,5 +12,8 @@ Registro de las **Herramientas** del repo: las *tools* que el **Propósito** del
 
 | Herramienta | Tipo | Qué hace | Cómo se invoca | Estado |
 |-------------|------|----------|----------------|--------|
+| [control-cierre](control-cierre/) | script | Corre todos los chequeos del repo de una pasada (lints de subsistema descubiertos dinámicamente + `claude plugin validate`) y resume verde/hallazgos | `node .claude/herramientas/control-cierre/control-cierre.js` | vigente |
 | [lint-harness](lint-harness/) | script | Lint de coherencia del harness: disco↔marketplace↔REGISTRO, junctions, verbatim divergente entre plantillas | `node .claude/herramientas/lint-harness/lint-harness.js` | vigente |
 | [lint-herramientas](lint-herramientas/) | script | Lint de este registro: README por herramienta local, herramienta en índice, filas colgadas, refs por ruta de lint en settings | `node .claude/herramientas/lint-herramientas/lint-herramientas.js` | vigente |
+| [propagar-harness](../skills/propagar-harness/) | skill | Propaga un cambio textual a funcionalidades + orquestador: subagente fresco para la copia, verificación carácter a carácter de los embebidos, bump de versiones | skill `propagar-harness` (el agente la dispara al tocar textos que viajan) | vigente |
+| [agregar-funcionalidad](../skills/agregar-funcionalidad/) | skill | Alta completa de una funcionalidad/plugin: carpeta + marketplace + junction + REGISTRO + orquestador si aplica, con validación final | skill `agregar-funcionalidad` | vigente |

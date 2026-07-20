@@ -1,6 +1,6 @@
 {
   "name": "memoria-local",
-  "description": "Sistema de memoria local persistida: memoria/ + índice MEMORIA.md + memorias tipadas. Infraestructura base.",
-  "version": "0.1.0",
+  "description": "Sistema de memoria local persistida: memoria/ + índice MEMORIA.md + memorias tipadas. Incluye la skill operativa registrar-memoria. Infraestructura base.",
+  "version": "0.2.0",
   "author": { "name": "jllarens", "email": "jllarens@gmail.com" }
 }

@@ -66,6 +66,19 @@ Nombres ratificados con el patrón del usuario: **"registrar-X" para dar de alta
 | herramientas | `registrar-herramienta` | Fila + README si es script + advertencia de refs por ruta | Baja | no se construye (instrucción alcanza) |
 | estilo-commits | — | — | — | ninguna (regla simple ≠ skill, 0009) |
 
-**Pendiente de terminología (a ratificar):** "slug" (propuesta: "nombre estable" — ya usado arriba; sumado al insumo del plan de veto) y "prosa" (propuesta de entrada de glosario: texto corriente de los `.md`, por oposición a código).
+**Terminología resuelta 26-07-19:** "slug" → "nombre estable (sin fecha)", sin entrada de glosario (los planes no tienen id: el nombre del archivo es la identidad); "prosa" → **Texto plano** (entrada de glosario). Ambos términos viejos anotados para Vetados en el plan de veto.
 
-**Pendiente de ejecución:** construir la tanda 1 (con doble formato + orquestador donde aplique), las tres Herramientas de autoría (`control-cierre`, `propagar-harness`, `agregar-funcionalidad`), y bump de versiones de los plugins tocados.
+## Ejecución 26-07-19 — autoría + tanda 1 construidas
+
+- **Autoría (Herramientas de este repo, registradas en `herramientas/INDICE.md`):**
+  - `control-cierre` (script, `.claude/herramientas/control-cierre/`): descubre todos los `lint-*` dinámicamente + `claude plugin validate`, resume verde/hallazgos. Probado: TODO VERDE.
+  - `propagar-harness` (skill, `.claude/skills/propagar-harness/`): flujo de la memoria de propagación (subagente fresco, verificación carácter a carácter, bump de versiones).
+  - `agregar-funcionalidad` (skill, `.claude/skills/agregar-funcionalidad/`): alta completa según REGISTRO.md.
+- **Tanda 1 (Skills de Subsistema, doble formato SKILL.md + `prompt-<skill>.md`):**
+  - `registrar-memoria` en `funcionalidades/memoria-local/` (v0.2.0)
+  - `ciclo-de-plan` en `funcionalidades/gestion-de-planes/` (v0.2.0)
+  - `converger-terminologia` en `funcionalidades/glosario/` (v0.2.0; de paso se corrigió la descripción del plugin: "sinónimos a evitar" → "alias registrados")
+- **Cableado:** junctions creadas para las 3; REGISTRO.md actualizado (filas + tabla Plugin/Skill + nota de skills operativas). Sin impacto en el orquestador: las skills operativas no instalan nada, viajan con el plugin.
+- **Verificación:** control-cierre TODO VERDE (9 chequeos, incluye plugin validate).
+
+**Queda pendiente (el plan sigue En curso):** tanda 2 (`buscar-conocimiento`, `registrar-decision`, `registrar-preferencia`); mencionar las skills operativas en los README de las 3 funcionalidades tocadas; al ejecutar el plan de veto, el barrido va a tocar también los textos de estas skills si algún término cae vetado.

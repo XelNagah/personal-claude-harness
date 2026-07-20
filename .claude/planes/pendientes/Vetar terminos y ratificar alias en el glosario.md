@@ -87,7 +87,8 @@ Barrido real del repo (`.md`, prosa + textos duplicados) hecho al detectar que e
 | `harness` | **175 usos en 55 archivos**, incluido el identificador del marketplace (`xelnagah-harness`) | **Harness** (ratificado como canónico; alias "setup estándar") | **Ratificado 26-07-19**, ya en glosario |
 | `skill` vs "habilidad" | ambos en uso por el usuario | **Skill** (canónico; alias "habilidad") | **Ratificado 26-07-19**, ya en glosario |
 
-| `slug` | CLAUDE.md §Planes, `PLANES.md`, memoria del flujo de planes, funcionalidades | propuesta: "nombre estable" | Pendiente de ratificación (detectado 26-07-19 en la sesión de skills) |
+| `slug` | CLAUDE.md §Planes, `PLANES.md`, memoria del flujo de planes, funcionalidades | "nombre estable (sin fecha)" — sin entrada de glosario: los planes no tienen id, el nombre del archivo es la identidad | **Ratificado 26-07-19**; `slug` queda para Vetados |
+| `prosa` | plan de veto (baldes del barrido), sesión de skills | **Texto plano** | **Ratificado 26-07-19**, ya en glosario; `prosa` queda para Vetados (los baldes de este plan pasan a "texto plano" / "código" al ejecutarlo) |
 
 Nota: la Base de preferencias usa "gate" para enunciar la regla que prohíbe términos como "gate" — al ejecutar este plan, reescribirla implica **Base v3 + propagación textual**.
 
