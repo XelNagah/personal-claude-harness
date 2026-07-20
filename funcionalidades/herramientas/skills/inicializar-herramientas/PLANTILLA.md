@@ -93,9 +93,11 @@ const root = path.resolve(process.argv[2] || '.claude/herramientas');
 const idxPath = path.join(root, 'INDICE.md');
 const idx = fs.existsSync(idxPath) ? fs.readFileSync(idxPath, 'utf8') : '';
 
-// subdirectorios = herramientas tipo script/tool que viven aca (skill/MCP viven en su casa nativa)
+// subdirectorios = herramientas tipo script/tool que viven aca (skill/MCP viven en su casa nativa).
+// El lint co-ubicado del propio subsistema (lint-<sub>, decision 0008) NO es una Herramienta: se excluye.
+const selfLint = 'lint-' + path.basename(root);
 const tools = fs.existsSync(root)
-  ? fs.readdirSync(root, { withFileTypes: true }).filter(e => e.isDirectory()).map(e => e.name)
+  ? fs.readdirSync(root, { withFileTypes: true }).filter(e => e.isDirectory() && e.name !== selfLint).map(e => e.name)
   : [];
 
 // [1] README por herramienta con carpeta local
@@ -106,7 +108,7 @@ const fueraIndice = tools.filter(t => !idx.includes(t));
 
 // [3] filas del indice cuyo link apunta a un subdir LOCAL inexistente
 //     (se saltan links externos: ../skills/, .mcp.json, etc. — esos no viven bajo herramientas/)
-const toolSet = new Set(tools), colgadas = [];
+const colgadas = [];
 for (const line of idx.split('\n')) {
   const t = line.trim();
   if (!t.startsWith('|')) continue;
@@ -120,7 +122,7 @@ for (const line of idx.split('\n')) {
   const target = m[1].trim();
   if (target.startsWith('..') || target.includes('.json') || /^\w+:/.test(target)) continue; // externo
   const name = target.replace(/\/$/, '').replace(/[`]/g, '').trim();
-  if (name && !toolSet.has(name)) colgadas.push(name);
+  if (name && !fs.existsSync(path.join(root, name))) colgadas.push(name);
 }
 
 // [4] refs por ruta a lints en settings que no resuelven (cualquier .claude/**/*.js|sh|...)
@@ -132,7 +134,9 @@ for (const sf of ['.claude/settings.local.json', '.claude/settings.json']) {
   const abs = path.join(repoRoot, sf);
   if (!fs.existsSync(abs)) continue;
   const txt = fs.readFileSync(abs, 'utf8');
-  const re = /([.\w/-]*\.claude\/[\w./-]+?\.(?:js|sh|py|mjs|cjs|ts))/g;
+  // rama 1: ruta absoluta de Windows con espacios (X:\...\.claude\...); rama 2: relativa como antes.
+  // extension anclada con (?![\w]) para que `settings.json` no matchee como `settings.js` (cuantificador no-greedy).
+  const re = /([A-Za-z]:[\\/][^"'\n]*?\.claude[\\/][^"'\n]+?\.(?:mjs|cjs|js|sh|py|ts)(?![\w])|[.\w/-]*\.claude\/[\w./-]+?\.(?:mjs|cjs|js|sh|py|ts)(?![\w]))/g;
   let m;
   while ((m = re.exec(txt))) {
     const p = m[1], cand = path.isAbsolute(p) ? p : path.join(repoRoot, p);
