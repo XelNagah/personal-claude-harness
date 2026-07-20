@@ -1,6 +1,6 @@
 {
   "name": "decisiones",
   "description": "Registro de decisiones del repo en .claude/decisiones/ (propósito general, no solo software) + lint de integridad. Incluye la skill operativa registrar-decision. Consultar al planificar/analizar. Depende de memoria-local.",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "author": { "name": "jllarens", "email": "jllarens@gmail.com" }
 }

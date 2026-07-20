@@ -1,6 +1,6 @@
 # Preferencias
 
-Instala el sistema de preferencias del usuario: `preferencias/PREFERENCIAS.md` con dos secciones — **Base** (del harness, versionada: el leveleo la actualiza cuando detecta versión vieja) y **Adaptaciones de este repo** (del user; el leveleo nunca la toca) — **importado siempre al contexto** vía `@` desde el archivo de instrucciones. Las preferencias son reglas de conducta: tienen que estar inline, no disponibles-a-pedido (nada dispara "ir a buscar" una regla que se está por violar).
+Instala el sistema de preferencias del usuario: `preferencias/PREFERENCIAS.md` con dos secciones — **Base** (del harness, versionada: el nivelado la actualiza cuando detecta versión vieja) y **Adaptaciones de este repo** (del user; el nivelado nunca la toca) — **importado siempre al contexto** vía `@` desde el archivo de instrucciones. Las preferencias son reglas de conducta: tienen que estar inline, no disponibles-a-pedido (nada dispara "ir a buscar" una regla que se está por violar).
 
 Por qué por-repo y no global de máquina: el user trabaja en varias computadoras y sincroniza por git — el repo es su unidad de sincronización. La duplicación entre repos es deliberada; el versionado de la Base la vuelve actualizable sin pisar adaptaciones locales.
 
@@ -18,7 +18,7 @@ Por qué por-repo y no global de máquina: el user trabaja en varias computadora
 Si el punto de entrada no existe, crea `AGENTS.md` arrancando con una **Descripción del proyecto** inferida del repo + el adaptador `CLAUDE.md` (`@AGENTS.md`); si hay un `CLAUDE.md` con contenido (esquema viejo), lo migra a `AGENTS.md`. Migra los bloques inline viejos ("Preferencias de comunicación" / "Principios de trabajo"): iguales a una Base conocida → los reemplaza por el import; editados → las diferencias van a Adaptaciones.
 
 - **Lint** — estructural: chequea que `PREFERENCIAS.md` tenga las secciones `## Base` y `## Adaptaciones` y no esté vacío, y que el punto de entrada (`AGENTS.md`, o `CLAUDE.md` legacy) lo importe (para que quede siempre en contexto). Mecánico y gratis; **no** detecta contradicciones semánticas (eso es la capa semántica, a pedido).
-- **Regla de terminología** (en la Base) — no acuñar términos del dominio por cuenta propia; preferir las palabras del usuario. **Español corriente en todo** (nada de palabras inventadas o raras, ni en prosa ni en diagramas — no solo en los registros). **Gate duro en registros canónicos** (glosario, decisiones): ningún término acuñado por el agente se asienta sin ratificación. En prosa/diagramas se puede usar, marcado como propuesto.
+- **Regla de terminología** (en la Base) — no acuñar términos del dominio por cuenta propia; preferir las palabras del usuario. **Español corriente en todo** (nada de palabras inventadas o raras, ni en texto plano ni en diagramas — no solo en los registros). **Control duro en registros canónicos** (glosario, decisiones): ningún término acuñado por el agente se asienta sin ratificación. En texto plano/diagramas se puede usar, marcado como propuesto.
 
 ## Dependencias
 

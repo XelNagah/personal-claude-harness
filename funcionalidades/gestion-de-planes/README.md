@@ -1,6 +1,6 @@
 # Gestión de planes
 
-Instala el ciclo de planes del usuario: **carpetas = ciclo de vida grueso** (`pendientes/` para los vivos, `ejecutados/` y `descartados/` como registro), **registro `PLANES.md` = lo fino** (estado, fechas de creación y cierre, origen) y **`ESTADOS.md` = juego de estados configurable** (máquina de un solo eje: `Nuevo · En curso · Diferido · Ejecutado · Descartado`, con su carpeta y si son terminales; el lint lo lee). Nombres de plan = slug estable sin fecha. Con `lint-planes` + hook de inicio de sesión como trigger mecánico — sin él, mover planes depende de acordarse y no se sostiene.
+Instala el ciclo de planes del usuario: **carpetas = ciclo de vida grueso** (`pendientes/` para los vivos, `ejecutados/` y `descartados/` como registro), **registro `PLANES.md` = lo fino** (estado, fechas de creación y cierre, origen) y **`ESTADOS.md` = juego de estados configurable** (máquina de un solo eje: `Nuevo · En curso · Diferido · Ejecutado · Descartado`, con su carpeta y si son terminales; el lint lo lee). Nombres de plan = nombre estable sin fecha. Con `lint-planes` + hook de inicio de sesión como trigger mecánico — sin él, mover planes depende de acordarse y no se sostiene.
 
 > **Subsistema de acumulación** — sigue el patrón índice + entradas + lint del harness ([cómo aprende](../../README.md#cómo-aprende)). Acá el índice es `PLANES.md` y las entradas son los planes en `pendientes/ejecutados/descartados/`.
 

@@ -21,14 +21,14 @@ Instala la convención de **base de conocimiento**: una carpeta única `.claude/
 
 ## Reconciliación (idempotencia)
 
-Segura de re-correr: sirve para **"levelear"** repos que ya tienen partes. Reglas para **todo** paso que escribe:
+Segura de re-correr: sirve para **"nivelar"** repos que ya tienen partes. Reglas para **todo** paso que escribe:
 
 - **Inspeccionar antes de escribir.** Leer primero el destino. Nunca reescribir de cuajo un archivo existente.
 - **Crear solo lo ausente.** No existe → crear. Existe → agregar únicamente lo que falte, preservando el resto.
 - **Detectar equivalentes.** Una carpeta/sección puede estar con otro nombre. Buscar por tema, no solo por nombre exacto. Igual → no tocar. Distinto → reportar y decidir.
-- **Reportar al final** en tres baldes: `agregado` (faltaba), `ya estaba` (ok), `divergente` (existe distinto o requiere decisión).
+- **Reportar al final** en tres grupos: `agregado` (faltaba), `ya estaba` (ok), `divergente` (existe distinto o requiere decisión).
 
-## Workflow
+## Flujo de trabajo
 
 1. **Carpeta de conocimiento.** Asegurar `.claude/conocimiento/` con un `INDICE.md` raíz (encabezado + una línea por página/sección; solo punteros, nunca contenido). Si no existe, crear.
 2. **Tool de lint.** Instalar `.claude/conocimiento/lint-conocimiento/lint-conocimiento.js` con el contenido EXACTO de [PLANTILLA.md](PLANTILLA.md) §Script. Va en **su propia carpeta** co-ubicado con el subsistema (`.claude/conocimiento/lint-conocimiento/`), nunca suelto.
@@ -54,7 +54,7 @@ Segura de re-correr: sirve para **"levelear"** repos que ya tienen partes. Regla
    - **Mover por defecto** (es el objetivo). Si es ambiguo qué es conocimiento vs. contenido incidental (código, assets, config de build), listar y **preguntar antes de mover**.
    - ⚠️ **Material sensible — chequear en los dos sentidos.**
 
-     **(i) Lo que YA está gitignoreado:** si un archivo a mover está ignorado por su ruta (típico: `memoria/*-token.md`, credenciales), **moverlo rompe el match del ignore y el secreto termina commiteado**. NO moverlo, o mover y **actualizar el `.gitignore` a la ruta nueva en el mismo paso**. Verificar con `git status` que no aparezca.
+     **(i) Lo que YA está gitignoreado:** si un archivo a mover está ignorado por su ruta (típico: `memoria/*-token.md`, credenciales), **moverlo rompe el match del ignore y el secreto termina en el commit**. NO moverlo, o mover y **actualizar el `.gitignore` a la ruta nueva en el mismo paso**. Verificar con `git status` que no aparezca.
 
      **(ii) Lo que NO está gitignoreado y debería estarlo — más importante todavía, porque el riesgo ya existe antes de migrar.** Revisar el material del repo y **sugerirle al user** ignorar lo que sea riesgo de seguridad o privacidad:
      - **Credenciales:** tokens, API keys, `.env`, `*.key`/`*.pem`, archivos con `token`/`secret`/`credential`/`password` en el nombre o con claves embebidas en el contenido.
@@ -70,4 +70,4 @@ Segura de re-correr: sirve para **"levelear"** repos que ya tienen partes. Regla
    Si ya está todo bajo `conocimiento/`, no-op.
 
    **Recomendación fuerte:** si el repo no tiene git, hacer `git init` + commit inicial **ANTES** de mover nada. Un commit inicial tomado *después* de la migración no sirve como rollback.
-6. **Reportar** en los tres baldes + estructura final. Si hubo `divergente`, listarlo aparte. **No hacer commit** salvo pedido explícito.
+6. **Reportar** en los tres grupos + estructura final. Si hubo `divergente`, listarlo aparte. **No hacer commit** salvo pedido explícito.

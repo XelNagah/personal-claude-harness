@@ -1,6 +1,6 @@
 # Plantilla — memoria local
 
-Textos verbatim que la skill instala en el repo destino.
+textos literales que la skill instala en el repo destino.
 
 ## §Script — `.claude/memoria/lint-memoria/lint-memoria.js`
 

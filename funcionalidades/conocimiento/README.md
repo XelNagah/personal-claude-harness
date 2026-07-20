@@ -19,7 +19,7 @@ Instala la convención de **base de conocimiento** del usuario: una carpeta úni
 
 - **`conocimiento/`** — ubicación única y fija de todo el conocimiento del agente (documentos, estudios, temas, notas de dominio). Determinística: el lint y cualquier consulta saben dónde mirar sin heurística. La raíz del repo queda limpia.
 - **Tooling** — los scripts/tools del repo los gestiona la funcionalidad `herramientas` (cada uno en `herramientas/<tool>/`, nunca suelto); la migración de conocimiento reapunta los que muevan datos.
-- **Lint** — chequea refs rotas, índice incompleto y huérfanos. Mecánico y gratis; se corre al cerrar tareas que escribieron conocimiento. El semántico (contradicciones, duplicación, staleness) queda a pedido.
+- **Lint** — chequea refs rotas, índice incompleto y huérfanos. Mecánico y gratis; se corre al cerrar tareas que escribieron conocimiento. El semántico (contradicciones, duplicación, desactualización) queda a pedido.
 - **Migración idempotente** — si el repo ya tiene conocimiento disperso, la init lo **mueve** adentro y repara referencias. Busca en tres lugares: la **raíz** del repo, **dentro de `memoria/`** (el caso más común: la memoria se desborda y termina siendo la base de conocimiento — se detecta por documentos sin frontmatter, largos, o un `README.md` haciendo de índice), y distingue las **fuentes crudas** (lo que el agente *lee*: escaneos, PDFs, exports) que **no** se mueven. Contempla secretos gitignoreados, índices parciales que heredan huérfanos, y el acople de scripts (`__dirname` / cwd).
 
 ## Dependencias

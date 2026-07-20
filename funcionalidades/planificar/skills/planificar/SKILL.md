@@ -11,7 +11,7 @@ Interrogá el plan o la idea a fondo, sin pausa, hasta llegar a un **entendimien
 
 Si existen, leer:
 
-- **`.claude/glosario/INDICE.md`** — la terminología canónica del dominio (y las páginas de detalle que linkee).
+- **`.claude/glosario/INDICE.md`** — la terminología canónica del dominio (y las páginas de detalle que enlace).
 - **`.claude/decisiones/INDICE.md`** — las decisiones estructurales ya tomadas (y su detalle).
 - **`.claude/conocimiento/INDICE.md`** — lo que el agente sabe del dominio.
 

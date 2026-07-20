@@ -17,7 +17,7 @@ Instala el sistema de **memoria local persistida** del usuario: un directorio `m
 
 - **`MEMORIA.md`** — índice cargado al inicio de cada sesión. Encabezado fijo + una línea por memoria (`- [Título](archivo.md) — resumen`).
 - **Formato de memoria** — un `.md` por hecho con frontmatter `name` / `description` / `metadata.type` (`user` · `feedback` · `project` · `reference`). Para `feedback`/`project`, líneas `**Why:**` y `**How to apply:**`. Fechas siempre absolutas; antes de crear, deduplicar.
-- **Lint** — chequea refs `.md`/wikilinks rotos, `MEMORIA.md` incompleto, huérfanos y frontmatter inválido. Mecánico y gratis; se corre al cerrar tareas que tocaron la memoria. El semántico (contradicción, duplicación, staleness) queda a pedido.
+- **Lint** — chequea refs `.md`/wikilinks rotos, `MEMORIA.md` incompleto, huérfanos y frontmatter inválido. Mecánico y gratis; se corre al cerrar tareas que tocaron la memoria. El semántico (contradicción, duplicación, desactualización) queda a pedido.
 
 ## Dependencias
 

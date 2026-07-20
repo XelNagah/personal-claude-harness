@@ -1,6 +1,6 @@
 # Glosario del dominio
 
-Instala un **glosario del dominio** del repo: una tabla de conceptos (nombre canónico, definición, alias registrados) donde los conceptos complejos linkean a una página de detalle propia. Se consulta al planificar y analizar para mantener **coherencia semántica** a lo largo de la vida del repo.
+Instala un **glosario del dominio** del repo: una tabla de conceptos (nombre canónico, definición, alias registrados) donde los conceptos complejos apuntan a una página de detalle propia. Se consulta al planificar y analizar para mantener **coherencia semántica** a lo largo de la vida del repo.
 
 > **Subsistema de acumulación** — sigue el patrón índice + entradas + lint del harness ([cómo aprende](../../README.md#cómo-aprende)). Acá el índice es `glosario/INDICE.md`.
 
@@ -20,7 +20,7 @@ Instala un **glosario del dominio** del repo: una tabla de conceptos (nombre can
 
 ## Idea
 
-El `INDICE.md` **es** el glosario: una tabla donde cada fila es un concepto. Lo simple se define en la fila; lo complejo linkea a su propia página.
+El `INDICE.md` **es** el glosario: una tabla donde cada fila es un concepto. Lo simple se define en la fila; lo complejo apunta a su propia página.
 
 | Concepto | Definición | Alias | Detalle |
 |----------|------------|-------|---------|
@@ -29,7 +29,7 @@ El `INDICE.md` **es** el glosario: una tabla donde cada fila es un concepto. Lo 
 
 - **Alias registrados, no prohibidos.** Los alias quedan *identificados* (todos válidos), para mapear "birra/chela = cerveza" — no para vetar cómo se nombra algo. El lint solo caza que un mismo alias no cuelgue de dos conceptos distintos.
 - **Toda entrada nueva pasa por el usuario.** El agente puede *proponer* términos (marcados como propuestos), pero no se asientan como canónicos sin ratificación. Preferir las palabras del usuario a acuñar nuevas — gobernanza del glosario como registro canónico.
-- **Detalle bajo demanda.** Concepto simple → fila con Detalle en `—`. Concepto complejo (fórmulas, ejemplos, contraejemplos, como una FECE) → página `<slug>.md` propia, linkeada.
+- **Detalle bajo demanda.** Concepto simple → fila con Detalle en `—`. Concepto complejo (fórmulas, ejemplos, contraejemplos, como una FECE) → página `<slug>.md` propia, enlazada.
 - **Lint** — links de detalle resuelven, páginas sin huérfanos, alias sin colisión. Mecánico y gratis; al cerrar tareas que tocaron el glosario.
 
 ## Dependencias

@@ -1,8 +1,8 @@
 # Plantilla del glosario
 
-Textos verbatim que la skill escribe. (El formato general de una memoria lo define la funcionalidad `memoria-local`.)
+textos literales que la skill escribe. (El formato general de una memoria lo define la funcionalidad `memoria-local`.)
 
-## §Glosario — semilla de `.claude/glosario/INDICE.md`
+## §Glosario — contenido inicial de `.claude/glosario/INDICE.md`
 
 Si el archivo no existe, crearlo con este contenido (la tabla arranca vacía — sin filas de ejemplo, para que el lint no las tome como conceptos reales):
 
@@ -41,7 +41,7 @@ La terminología del dominio vive en `.claude/glosario/INDICE.md`: una tabla don
 **How to apply:**
 
 1. **Al planificar o analizar**, consultar el glosario. Si aparece un término, ver si ya es alias de un concepto registrado; si es nuevo, agregar el concepto (o el alias) en el momento.
-2. Concepto **simple** → una fila, columna Detalle en `—`. Concepto **complejo** → fila + página de detalle linkeada.
+2. Concepto **simple** → una fila, columna Detalle en `—`. Concepto **complejo** → fila + página de detalle enlazada.
 3. **Alias:** registrarlos en la columna Alias (no vetarlos). Un mismo alias no puede estar bajo dos conceptos distintos (el lint lo caza).
 4. **Al cerrar** una tarea que tocó el glosario, correr el lint: `node .claude/glosario/lint-glosario/lint-glosario.js` (links de detalle resuelven, páginas sin huérfanos, alias sin colisión).
 

@@ -39,7 +39,7 @@ El glosario deja de tener "conceptos con alias" y pasa a tener, por concepto, un
 ```
 
 ```markdown
-| **Plantel** | Conjunto de jugadores del club. | nómina | lista de jugadores | roster, squad | — |
+| **Textual** | Copia idéntica carácter a carácter entre la fuente y sus duplicados. | literal | idéntico | verbatim, byte-exact | — |
 | **Control** | Chequeo que frena el avance si no se cumple. | validación | — | gate | — |
 ```
 

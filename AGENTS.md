@@ -28,7 +28,7 @@ El repo es a la vez un **marketplace de plugins de Claude Code** (estilo Matt Po
 │   ├── decisiones/                            # decisiones estructurales (INDICE.md) + lint-decisiones/
 │   └── herramientas/                          # tools del Propósito (INDICE.md, columna Tipo); los lints de subsistema viven con su subsistema, no acá
 │       ├── lint-herramientas/                 # lint del registro de Herramientas
-│       └── lint-harness/                      # lint de coherencia del harness (disco↔marketplace↔REGISTRO, junctions, verbatim)
+│       └── lint-harness/                      # lint de coherencia del harness (disco↔marketplace↔REGISTRO, junctions, textual)
 ├── .claude-plugin/marketplace.json            # catálogo del marketplace (10 plugins)
 └── funcionalidades/                           # cada subcarpeta = un plugin
     ├── memoria-local/                         # infra: memoria/ + MEMORIA.md + Mapa del repo (@imports)
@@ -43,7 +43,7 @@ El repo es a la vez un **marketplace de plugins de Claude Code** (estilo Matt Po
     └── planificar/                            # skill de análisis (operacional, no instala; skill planificar)
 ```
 
-Cada **funcionalidad/plugin** = `funcionalidades/<nombre>/` con `.claude-plugin/plugin.json` + `README.md` + `skills/<nombre-skill>/SKILL.md` (formato estándar Agent Skills, **fuente única** del flujo, rutas `.claude/` literales) y `PLANTILLA.md` cuando lleva textos verbatim. Catálogo, dependencias, nombres de plugin/skill en `REGISTRO.md`.
+Cada **funcionalidad/plugin** = `funcionalidades/<nombre>/` con `.claude-plugin/plugin.json` + `README.md` + `skills/<nombre-skill>/SKILL.md` (formato estándar Agent Skills, **fuente única** del flujo, rutas `.claude/` literales) y `PLANTILLA.md` cuando lleva textos literales. Catálogo, dependencias, nombres de plugin/skill en `REGISTRO.md`.
 
 ## Distribución: marketplace de plugins
 
@@ -66,11 +66,11 @@ node .claude/herramientas/instalar-junctions/instalar-junctions.js
 
 ## Mantenimiento
 
-- **`SKILL.md` es la fuente única de cada flujo** (no hay más `prompt.md` por funcionalidad). Cambia una preferencia o un texto que viaja → actualizar el `SKILL.md`/`PLANTILLA.md` de la funcionalidad afectada **y** el orquestador `setup-completo` (su `SKILL.md` y `PLANTILLA.md` duplican los textos verbatim, porque tanto el junction como el cache de plugins aíslan la carpeta del skill — no pueden leer las piezas en runtime). Usar la skill `propagar-harness`.
+- **`SKILL.md` es la fuente única de cada flujo** (no hay más `prompt.md` por funcionalidad). Cambia una preferencia o un texto que viaja → actualizar el `SKILL.md`/`PLANTILLA.md` de la funcionalidad afectada **y** el orquestador `setup-completo` (su `SKILL.md` y `PLANTILLA.md` duplican los textos literales, porque tanto el junction como el cache de plugins aíslan la carpeta del skill — no pueden leer las piezas en ejecución). Usar la skill `propagar-harness`.
 - **Agregar una funcionalidad nueva** → skill `agregar-funcionalidad`: crear `funcionalidades/<nombre>/` (plugin.json + README + skills/<skill>/), sumarla a `marketplace.json`, junctions dobles si se edita en vivo, registrarla en `REGISTRO.md`, y sumarla al orquestador si es parte del setup base. Validar con `claude plugin validate .`. Procedimiento en `REGISTRO.md`.
 - **Dependencias actuales:** `gestion-de-planes` y `estilo-commits` dependen de `memoria-local` (guardan memorias en `memoria/`). El orquestador respeta el orden: preferencias-trabajo → memoria-local → gestion-de-planes → estilo-commits.
-- **Idempotencia / nivelar:** todo skill lleva una sección "Reconciliación (idempotencia)" — son seguros de re-correr y sirven para llevar al día repos a medio configurar. Reglas: inspeccionar antes de escribir, crear solo lo ausente, detectar equivalentes por tema (no pisar lo divergente, preguntar), reportar al final en tres baldes (`agregado` / `ya estaba` / `divergente`). Al tocar un workflow, conservar esa propiedad: nada de "Crear X" a secas sobre archivos compartidos (`AGENTS.md`, `MEMORIA.md`).
-- **Versionado de plugins:** cada `plugin.json` tiene `version`. Con `version` fijo, los usuarios solo reciben update al bumpearlo; si se omite, cada commit cuenta como versión nueva. Bumpear al publicar cambios, o quitar `version` para auto-versionar por commit.
+- **Idempotencia / nivelar:** todo skill lleva una sección "Reconciliación (idempotencia)" — son seguros de re-correr y sirven para llevar al día repos a medio configurar. Reglas: inspeccionar antes de escribir, crear solo lo ausente, detectar equivalentes por tema (no pisar lo divergente, preguntar), reportar al final en tres grupos (`agregado` / `ya estaba` / `divergente`). Al tocar un flujo de trabajo, conservar esa propiedad: nada de "Crear X" a secas sobre archivos compartidos (`AGENTS.md`, `MEMORIA.md`).
+- **Versionado de plugins:** cada `plugin.json` tiene `version`. Con `version` fijo, los usuarios solo reciben la actualización al subirle la versión; si se omite, cada commit cuenta como versión nueva. Subir la versión al publicar cambios, o quitar `version` para auto-versionar por commit.
 
 ## Preferencias (siempre cargadas)
 
@@ -101,7 +101,7 @@ Chequea refs/wikilinks rotos, `MEMORIA.md` incompleto, huérfanos y frontmatter 
 
 ## Planes del proyecto
 
-Los planes se persisten en [`planes/`](.claude/planes/): `pendientes/` (planes vivos: `Nuevo`, `En curso`, `Diferido`), `ejecutados/` y `descartados/` (registro, con motivo). Nombre = slug estable sin fecha; estado y fechas viven en el registro [`planes/PLANES.md`](.claude/planes/PLANES.md), y los estados disponibles (con su carpeta y si son terminales) en [`planes/ESTADOS.md`](.claude/planes/ESTADOS.md) — configurable, que el lint lee. Ciclo completo en la memoria [`feedback_flujo_planes.md`](.claude/memoria/feedback_flujo_planes.md). Al cerrar una tarea que tocó planes, correr el lint **desde la raíz del repo**:
+Los planes se persisten en [`planes/`](.claude/planes/): `pendientes/` (planes vivos: `Nuevo`, `En curso`, `Diferido`), `ejecutados/` y `descartados/` (registro, con motivo). Nombre = nombre estable sin fecha; estado y fechas viven en el registro [`planes/PLANES.md`](.claude/planes/PLANES.md), y los estados disponibles (con su carpeta y si son terminales) en [`planes/ESTADOS.md`](.claude/planes/ESTADOS.md) — configurable, que el lint lee. Ciclo completo en la memoria [`feedback_flujo_planes.md`](.claude/memoria/feedback_flujo_planes.md). Al cerrar una tarea que tocó planes, correr el lint **desde la raíz del repo**:
 
 ```bash
 node .claude/planes/lint-planes/lint-planes.js

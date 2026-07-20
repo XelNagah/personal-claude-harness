@@ -1,19 +1,19 @@
 # Plantilla del setup completo
 
-Textos verbatim que el orquestador escribe. (Réplica de los textos de las piezas individuales; mantener sincronizado al cambiar una preferencia.)
+textos literales que el orquestador escribe. (Réplica de los textos de las piezas individuales; mantener sincronizado al cambiar una preferencia.)
 
 ## §Preferencias — `.claude/preferencias/PREFERENCIAS.md` + sección de AGENTS.md
 
-Sistema versionado: **Base** (del harness; el leveleo la actualiza por versión) + **Adaptaciones de este repo** (nunca se toca). Importado siempre al contexto — las preferencias son reglas de conducta: inline, no índice+fetch. Al editar la Base acá, **incrementar la versión**.
+Sistema versionado: **Base** (del harness; el nivelado la actualiza por versión) + **Adaptaciones de este repo** (nunca se toca). Importado siempre al contexto — las preferencias son reglas de conducta: inline, no índice+fetch. Al editar la Base acá, **incrementar la versión**.
 
-Semilla de `.claude/preferencias/PREFERENCIAS.md`:
+Contenido inicial de `.claude/preferencias/PREFERENCIAS.md`:
 
 ```markdown
 # Preferencias
 
-Reglas de conducta del agente en este repo. Siempre en contexto (importado desde AGENTS.md). La sección **Base** viene del harness y se actualiza al levelear (no editarla acá: los ajustes de este repo van en **Adaptaciones**, que el leveleo nunca toca).
+Reglas de conducta del agente en este repo. Siempre en contexto (importado desde AGENTS.md). La sección **Base** viene del harness y se actualiza al nivelar (no editarla acá: los ajustes de este repo van en **Adaptaciones**, que el nivelado nunca toca).
 
-## Base (harness v2)
+## Base (harness v3)
 
 **Comunicación:**
 
@@ -27,7 +27,7 @@ Reglas de conducta del agente en este repo. Siempre en contexto (importado desde
 - Iterar de alto a bajo nivel: interfaces y contratos antes que implementación.
 - Nomenclatura en español para el dominio; inglés solo para infraestructura técnica.
 - Cero invención de datos: lo que no salga de una fuente verificada se marca como faltante o como interpretación propia.
-- Terminología: no acuñar términos del dominio por cuenta propia; preferir las palabras del usuario. **Español corriente en todo**: nada de palabras inventadas o raras (aunque suenen técnicas), ni en prosa ni en diagramas — no solo en los registros. **Gate duro en registros canónicos** (glosario, decisiones): ningún término acuñado por el agente se asienta sin ratificación del usuario. En prosa/diagramas se puede usar, marcado como propuesto.
+- Terminología: no acuñar términos del dominio por cuenta propia; preferir las palabras del usuario. **Español corriente en todo**: nada de palabras inventadas o raras (aunque suenen técnicas), ni en texto plano ni en diagramas — no solo en los registros. **Control duro en registros canónicos** (glosario, decisiones): ningún término acuñado por el agente se asienta sin ratificación del usuario. En texto plano/diagramas se puede usar, marcado como propuesto.
 
 ## Adaptaciones de este repo
 
@@ -52,7 +52,7 @@ node .claude/preferencias/lint-preferencias/lint-preferencias.js
 
 (El lint `lint-preferencias.js` está más abajo, en §Script — lint-preferencias; y `lint-memoria.js` en §Script — lint-memoria.)
 
-**Bases anteriores** (para la reconciliación): la v0 eran dos secciones inline en CLAUDE.md — "Preferencias de comunicación" (el primer bullet de Comunicación, como cita) y "Principios de trabajo" (los cuatro bullets). Verbatim iguales → migrar sin preguntar (borrar de CLAUDE.md, dejar el import); con diferencias → las diferencias van a Adaptaciones y se reporta.
+**Bases anteriores** (para la reconciliación): la v0 eran dos secciones inline en CLAUDE.md — "Preferencias de comunicación" (el primer bullet de Comunicación, como cita) y "Principios de trabajo" (los cuatro bullets). Textualmente iguales → migrar sin preguntar (borrar de CLAUDE.md, dejar el import); con diferencias → las diferencias van a Adaptaciones y se reporta. La **v2** difiere de la v3 solo en el bullet de Terminología (decía "**Gate duro** en registros canónicos" y "ni en prosa ni en diagramas", donde la v3 dice "**Control duro**" y "ni en texto plano ni en diagramas") y en el encabezado ("al levelear / el leveleo" → "al nivelar / el nivelado"): reemplazar la Base entera por la v3 sin preguntar.
 
 ## §Mapa — bloque de imports en `AGENTS.md`
 
@@ -73,7 +73,7 @@ Lo crea `memoria-local`; cada funcionalidad con índice agrega su línea al inst
 
 ```markdown
 ---
-name: <slug-kebab-case>
+name: <nombre-estable-kebab-case>
 description: <resumen de una línea — se usa para decidir relevancia>
 metadata:
   type: user | feedback | project | reference
@@ -84,14 +84,14 @@ metadata:
 
 Tipos: `user` (quién es el usuario), `feedback` (correcciones y enfoques confirmados, con el porqué), `project` (objetivos/restricciones no derivables del código), `reference` (punteros externos). Antes de crear una nueva, revisar si una existente ya la cubre. Fechas siempre absolutas.
 
-## Memorias verbatim
+## Memorias textuales
 
 ### `feedback_flujo_planes.md`
 
 ```markdown
 ---
 name: flujo-planes
-description: "Cómo gestionar planes — .claude/planes/ (pendientes/ejecutados/descartados), registro PLANES.md, estados en ESTADOS.md (máquina de un eje), slug estable, lint al cerrar"
+description: "Cómo gestionar planes — .claude/planes/ (pendientes/ejecutados/descartados), registro PLANES.md, estados en ESTADOS.md (máquina de un eje), nombre estable, lint al cerrar"
 metadata:
   type: feedback
 ---
@@ -108,7 +108,7 @@ Persistir y gestionar planes bajo `.claude/planes/` con tres subcarpetas: `pendi
 2. **Cada actualización al plan** se replica en la versión persistida — es la fuente de verdad, no el archivo del plans-folder del harness. Los cambios de estado se reflejan en `PLANES.md`, y el archivo se mueve a la carpeta que el estado indica.
 3. **Al detectar evidencia de implementación** (commit, mensaje del user, código verificado, otro agente): pasar a `Ejecutado` y mover a `ejecutados/` **sin renombrar**, completar `Cerrado` en el registro y agregar sección **`## Notas de implementación`** (cómo se implementó vs planificado, hash de commit, cosas notables).
 4. **Descartar es un cierre válido:** `Descartado`, mover a `descartados/`, completar `Cerrado` y una línea de motivo en Notas (p. ej. "superseded por <plan>").
-5. **Reparar referencias entrantes** si las hubiera (el slug estable minimiza esto; preferir linkear planes vía `PLANES.md`).
+5. **Reparar referencias entrantes** si las hubiera (el nombre estable minimiza esto; preferir enlazar planes vía `PLANES.md`).
 6. **Al cerrar** una tarea que tocó planes, correr el lint: `node .claude/planes/lint-planes/lint-planes.js`.
 
 Importante: borrar el archivo de `pendientes/` al moverlo — no duplicar. Un plan puede persistirse antes de arrancar la ejecución (p. ej. para cortar una sesión larga de diseño): Estado `Nuevo` o `Diferido` en el registro y bloque al tope con los pendientes para retomar.
@@ -175,7 +175,7 @@ El conocimiento persistido del agente (documentos, estudios, temas, notas de dom
 1. Todo md de conocimiento nuevo va bajo `.claude/conocimiento/` (subcarpetas por tema; cada una con su `INDICE.md` si crece). Nunca en la raíz del repo.
 2. Mantener `.claude/conocimiento/INDICE.md` como índice raíz (una línea por página/sección; solo punteros).
 3. **Al cerrar** una tarea que escribió conocimiento, correr el lint mecánico: `node .claude/conocimiento/lint-conocimiento/lint-conocimiento.js`. Chequea refs rotas, índice incompleto y huérfanos (sin LLM, sin red). Resolver los hallazgos.
-4. El **chequeo semántico** (contradicciones entre páginas, duplicación, staleness) se corre a pedido tras una incorporación grande, no en cada cierre.
+4. El **chequeo semántico** (contradicciones entre páginas, duplicación, desactualización) se corre a pedido tras una incorporación grande, no en cada cierre.
 5. **Migración:** un script de datos acoplado por `__dirname` (lee/escribe relativo a sí mismo) que se mueva a `.claude/herramientas/<tool>/` debe reapuntar sus paths a la carpeta de datos en `conocimiento/` (`__dirname + '/../../conocimiento/<subdir>/...'`), o se rompe.
 ```
 
@@ -285,7 +285,7 @@ if (!orphans.length) console.log('    (ninguno)');
 
 ## §Planes — `.claude/planes/`
 
-Semilla de `.claude/planes/ESTADOS.md` (fuente de verdad de los estados; la lee el lint):
+Contenido inicial de `.claude/planes/ESTADOS.md` (fuente de verdad de los estados; la lee el lint):
 
 ```markdown
 # Estados de planes
@@ -334,7 +334,7 @@ Editar la tabla de arriba (agregar/quitar filas o renombrar un estado). Reglas q
 - El valor de la columna `Estado` en `PLANES.md` debe coincidir exactamente con un `Estado` de esta tabla.
 ```
 
-Semilla de `.claude/planes/PLANES.md`:
+Contenido inicial de `.claude/planes/PLANES.md`:
 
 ```markdown
 # Registro de planes
@@ -358,7 +358,7 @@ Sección de `AGENTS.md` — "Planes del proyecto":
 ```markdown
 ## Planes del proyecto
 
-Los planes se persisten en [`planes/`](.claude/planes/): `pendientes/` (planes vivos: `Nuevo`, `En curso`, `Diferido`), `ejecutados/` y `descartados/` (registro, con motivo). Nombre = slug estable sin fecha; estado y fechas viven en el registro [`planes/PLANES.md`](.claude/planes/PLANES.md), y los estados disponibles (con su carpeta y si son terminales) en [`planes/ESTADOS.md`](.claude/planes/ESTADOS.md) — configurable, que el lint lee. Ciclo completo en la memoria [`feedback_flujo_planes.md`](.claude/memoria/feedback_flujo_planes.md). Al cerrar una tarea que tocó planes, correr el lint **desde la raíz del repo**:
+Los planes se persisten en [`planes/`](.claude/planes/): `pendientes/` (planes vivos: `Nuevo`, `En curso`, `Diferido`), `ejecutados/` y `descartados/` (registro, con motivo). Nombre = nombre estable sin fecha; estado y fechas viven en el registro [`planes/PLANES.md`](.claude/planes/PLANES.md), y los estados disponibles (con su carpeta y si son terminales) en [`planes/ESTADOS.md`](.claude/planes/ESTADOS.md) — configurable, que el lint lee. Ciclo completo en la memoria [`feedback_flujo_planes.md`](.claude/memoria/feedback_flujo_planes.md). Al cerrar una tarea que tocó planes, correr el lint **desde la raíz del repo**:
 
 ​```bash
 node .claude/planes/lint-planes/lint-planes.js
@@ -561,7 +561,7 @@ for (const [titulo, items] of secciones) {
 
 ## §Glosario — `.claude/glosario/`
 
-Semilla de `.claude/glosario/INDICE.md` (tabla vacía — sin filas de ejemplo, para que el lint no las tome como conceptos reales):
+Contenido inicial de `.claude/glosario/INDICE.md` (tabla vacía — sin filas de ejemplo, para que el lint no las tome como conceptos reales):
 
 ```markdown
 # Glosario del proyecto
@@ -598,7 +598,7 @@ La terminología del dominio vive en `.claude/glosario/INDICE.md`: una tabla don
 **How to apply:**
 
 1. **Al planificar o analizar**, consultar el glosario. Si aparece un término, ver si ya es alias de un concepto registrado; si es nuevo, agregar el concepto (o el alias) en el momento.
-2. Concepto **simple** → una fila, columna Detalle en `—`. Concepto **complejo** → fila + página de detalle linkeada.
+2. Concepto **simple** → una fila, columna Detalle en `—`. Concepto **complejo** → fila + página de detalle enlazada.
 3. **Alias:** registrarlos en la columna Alias (no vetarlos). Un mismo alias no puede estar bajo dos conceptos distintos (el lint lo caza).
 4. **Al cerrar** una tarea que tocó el glosario, correr el lint: `node .claude/glosario/lint-glosario/lint-glosario.js` (links de detalle resuelven, páginas sin huérfanos, alias sin colisión).
 
@@ -695,7 +695,7 @@ if (!colisiones.length) console.log('    (ninguna)');
 
 ## §Decisiones — `.claude/decisiones/`
 
-Semilla de `.claude/decisiones/INDICE.md` (tabla vacía — sin filas de ejemplo):
+Contenido inicial de `.claude/decisiones/INDICE.md` (tabla vacía — sin filas de ejemplo):
 
 ```markdown
 # Decisiones del proyecto
@@ -845,12 +845,12 @@ if (!supRotas.length) console.log('    (ninguna)');
 
 ## §Herramientas — `.claude/herramientas/`
 
-Semilla de `.claude/herramientas/INDICE.md` (tabla vacía — sin filas de ejemplo):
+Contenido inicial de `.claude/herramientas/INDICE.md` (tabla vacía — sin filas de ejemplo):
 
 ```markdown
 # Herramientas del proyecto
 
-Registro de las **Herramientas** del repo: las *tools* que el **Propósito** del repo requiere y el agente invoca para tareas repetibles. Tipos: `script`, `skill` local del repo, `MCP` local. Una fila por Herramienta. Ordena el "cementerio de tools": qué es cada una, cómo se invoca, si sigue vigente.
+Registro de las **Herramientas** del repo: las *tools* que el **Propósito** del repo requiere y el agente invoca para tareas repetibles. Tipos: `script`, `skill` local del repo, `MCP` local. Una fila por Herramienta. Ordena las herramientas desordenadas: qué es cada una, cómo se invoca, si sigue vigente.
 
 > Los **lints de subsistema** (lint-memoria, lint-glosario, …) **no** van acá: son infra del Patrón de cada subsistema y viven con su subsistema (`.claude/<sub>/lint-<sub>/`). Acá solo van tools de dominio.
 
@@ -873,7 +873,7 @@ Plantilla de la ficha `.claude/herramientas/<tool>/README.md` (tipo script):
 **Cómo se invoca:** `<comando>` <args si los hay>.
 **Estado:** vigente | experimental | obsoleto.
 **Referenciado por:** <settings.local.json / .gitignore / hook / otro script / nadie> — quién lo invoca por ruta.
-**Dependencias:** <runtime, libs, credenciales que necesita>.
+**Dependencias:** <entorno de ejecución, libs, credenciales que necesita>.
 **Origen (opcional):** <qué necesidad, plan o decisión lo generó — solo si aporta>.
 **Notas (opcional):** <lo que haga falta>.
 ```
@@ -888,15 +888,15 @@ metadata:
   type: feedback
 ---
 
-Las **Herramientas** del repo son las *tools* que el **Propósito** del repo requiere y el agente invoca para tareas repetibles. Tipos: `script`, `skill` local del repo, `MCP` local. Viven catalogadas en `.claude/herramientas/INDICE.md` — tabla (Herramienta | Tipo | Qué hace | Cómo se invoca | Estado). Cada fila linkea a donde vive la tool: un `script` en su carpeta `<tool>/` bajo herramientas, una `skill` en `.claude/skills/<skill>/`, un `MCP` en `.mcp.json`.
+Las **Herramientas** del repo son las *tools* que el **Propósito** del repo requiere y el agente invoca para tareas repetibles. Tipos: `script`, `skill` local del repo, `MCP` local. Viven catalogadas en `.claude/herramientas/INDICE.md` — tabla (Herramienta | Tipo | Qué hace | Cómo se invoca | Estado). Cada fila apunta a donde vive la tool: un `script` en su carpeta `<tool>/` bajo herramientas, una `skill` en `.claude/skills/<skill>/`, un `MCP` en `.mcp.json`.
 
 **Los lints de subsistema NO son Herramientas:** son infra del Patrón de cada subsistema (índice + entradas + lint) y viven con su subsistema (`.claude/<sub>/lint-<sub>/`). Acá solo van tools de dominio.
 
-**Why:** que la colección de tools del Propósito no se vuelva un cementerio de archivos sin saber qué son, de dónde salieron ni cómo se usan. Ubicación determinística + registro escaneable + ficha por tool.
+**Why:** que la colección de tools del Propósito no se vuelva un conjunto de herramientas desordenadas sin saber qué son, de dónde salieron ni cómo se usan. Ubicación determinística + registro escaneable + ficha por tool.
 
 **How to apply:**
 
-1. Toda Herramienta nueva va al registro `.claude/herramientas/INDICE.md` (una fila) con su `Tipo`. Un `script` vive en `.claude/herramientas/<tool>/` con su `README.md` (nunca suelto); una `skill`/`MCP` se linkea donde vive.
+1. Toda Herramienta nueva va al registro `.claude/herramientas/INDICE.md` (una fila) con su `Tipo`. Un `script` vive en `.claude/herramientas/<tool>/` con su `README.md` (nunca suelto); una `skill`/`MCP` se apunta a donde vive.
 2. Marcar `Estado`; los `obsoleto` se pueden depurar.
 3. ⚠️ **Refs por ruta:** una tool referenciada por ruta en `settings.local.json`/`settings.json` (regla de permiso), en `.gitignore` o en un hook NO se mueve/renombra alegremente — rompe el match por prefijo exacto y se pierde la pre-autorización (en headless, denegación directa). Antes de mover, grep su ruta; si aparece, actualizar la referencia en el mismo paso.
 4. **Al cerrar** una tarea que tocó Herramientas, correr el lint: `node .claude/herramientas/lint-herramientas/lint-herramientas.js` (README por herramienta local, registro completo, filas colgadas, refs por ruta de lint en settings).

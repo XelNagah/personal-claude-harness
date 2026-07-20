@@ -65,7 +65,7 @@ flowchart TD
     LINT -.->|valida: refs · huérfanos · índice · colisiones| IDX
 ```
 
-Los subsistemas **nacen vacíos** y se van llenando con lo aprendido. La integridad tiene dos capas: la **mecánica** (los lints, obligatoria para todo subsistema que persiste estado) y la **semántica** (contradicciones, duplicación, staleness — requiere entender el significado; hoy informal).
+Los subsistemas **nacen vacíos** y se van llenando con lo aprendido. La integridad tiene dos capas: la **mecánica** (los lints, obligatoria para todo subsistema que persiste estado) y la **semántica** (contradicciones, duplicación, desactualización — requiere entender el significado; hoy informal).
 
 ## Cómo se usa
 

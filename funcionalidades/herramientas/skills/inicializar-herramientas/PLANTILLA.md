@@ -1,15 +1,15 @@
 # Plantilla de la gestión de Herramientas
 
-Textos verbatim que la skill escribe. (El formato general de una memoria lo define la funcionalidad `memoria-local`.) Mismo patrón que glosario/decisiones: un registro-tabla + una ficha (el README) por tool tipo script.
+textos literales que la skill escribe. (El formato general de una memoria lo define la funcionalidad `memoria-local`.) Mismo patrón que glosario/decisiones: un registro-tabla + una ficha (el README) por tool tipo script.
 
-## §Índice — semilla de `.claude/herramientas/INDICE.md`
+## §Índice — contenido inicial de `.claude/herramientas/INDICE.md`
 
 Si el archivo no existe, crearlo con este contenido (tabla vacía — sin filas de ejemplo, para que el lint no las tome como tools reales):
 
 ```markdown
 # Herramientas del proyecto
 
-Registro de las **Herramientas** del repo: las *tools* que el **Propósito** del repo requiere y el agente invoca para tareas repetibles. Tipos: `script`, `skill` local del repo, `MCP` local. Una fila por Herramienta. Ordena el "cementerio de tools": qué es cada una, cómo se invoca, si sigue vigente.
+Registro de las **Herramientas** del repo: las *tools* que el **Propósito** del repo requiere y el agente invoca para tareas repetibles. Tipos: `script`, `skill` local del repo, `MCP` local. Una fila por Herramienta. Ordena las herramientas desordenadas: qué es cada una, cómo se invoca, si sigue vigente.
 
 > Los **lints de subsistema** (lint-memoria, lint-glosario, …) **no** van acá: son infra del Patrón de cada subsistema y viven con su subsistema (`.claude/<sub>/lint-<sub>/`). Acá solo van tools de dominio.
 
@@ -32,7 +32,7 @@ Registro de las **Herramientas** del repo: las *tools* que el **Propósito** del
 **Cómo se invoca:** `<comando>` <args si los hay>.
 **Estado:** vigente | experimental | obsoleto.
 **Referenciado por:** <settings.local.json / .gitignore / hook / otro script / nadie> — quién lo invoca por ruta.
-**Dependencias:** <runtime, libs, credenciales que necesita>.
+**Dependencias:** <entorno de ejecución, libs, credenciales que necesita>.
 **Origen (opcional):** <qué necesidad, plan o decisión lo generó — solo si aporta>.
 **Notas (opcional):** <lo que haga falta>.
 ```
@@ -47,15 +47,15 @@ metadata:
   type: feedback
 ---
 
-Las **Herramientas** del repo son las *tools* que el **Propósito** del repo requiere y el agente invoca para tareas repetibles. Tipos: `script`, `skill` local del repo, `MCP` local. Viven catalogadas en `.claude/herramientas/INDICE.md` — tabla (Herramienta | Tipo | Qué hace | Cómo se invoca | Estado). Cada fila linkea a donde vive la tool: un `script` en su carpeta `<tool>/` bajo herramientas, una `skill` en `.claude/skills/<skill>/`, un `MCP` en `.mcp.json`.
+Las **Herramientas** del repo son las *tools* que el **Propósito** del repo requiere y el agente invoca para tareas repetibles. Tipos: `script`, `skill` local del repo, `MCP` local. Viven catalogadas en `.claude/herramientas/INDICE.md` — tabla (Herramienta | Tipo | Qué hace | Cómo se invoca | Estado). Cada fila apunta a donde vive la tool: un `script` en su carpeta `<tool>/` bajo herramientas, una `skill` en `.claude/skills/<skill>/`, un `MCP` en `.mcp.json`.
 
 **Los lints de subsistema NO son Herramientas:** son infra del Patrón de cada subsistema (índice + entradas + lint) y viven con su subsistema (`.claude/<sub>/lint-<sub>/`). Acá solo van tools de dominio.
 
-**Why:** que la colección de tools del Propósito no se vuelva un cementerio de archivos sin saber qué son, de dónde salieron ni cómo se usan. Ubicación determinística + registro escaneable + ficha por tool.
+**Why:** que la colección de tools del Propósito no se vuelva un conjunto de herramientas desordenadas sin saber qué son, de dónde salieron ni cómo se usan. Ubicación determinística + registro escaneable + ficha por tool.
 
 **How to apply:**
 
-1. Toda Herramienta nueva va al registro `.claude/herramientas/INDICE.md` (una fila) con su `Tipo`. Un `script` vive en `.claude/herramientas/<tool>/` con su `README.md` (nunca suelto); una `skill`/`MCP` se linkea donde vive.
+1. Toda Herramienta nueva va al registro `.claude/herramientas/INDICE.md` (una fila) con su `Tipo`. Un `script` vive en `.claude/herramientas/<tool>/` con su `README.md` (nunca suelto); una `skill`/`MCP` se apunta a donde vive.
 2. Marcar `Estado`; los `obsoleto` se pueden depurar.
 3. ⚠️ **Refs por ruta:** una tool referenciada por ruta en `settings.local.json`/`settings.json` (regla de permiso), en `.gitignore` o en un hook NO se mueve/renombra alegremente — rompe el match por prefijo exacto y se pierde la pre-autorización (en headless, denegación directa). Antes de mover, grep su ruta; si aparece, actualizar la referencia en el mismo paso.
 4. **Al cerrar** una tarea que tocó Herramientas, correr el lint: `node .claude/herramientas/lint-herramientas/lint-herramientas.js` (README por herramienta local, registro completo, filas colgadas, refs por ruta de lint en settings).

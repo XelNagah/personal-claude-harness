@@ -22,9 +22,9 @@ Alta completa de una funcionalidad nueva (= un plugin del marketplace). El proce
 5. **Registrar en `REGISTRO.md`**: fila en la tabla de funcionalidades + fila en la tabla Plugin/Skill.
 6. **Orquestador** (solo si es de convención): sumarla a `setup-completo` — paso en su SKILL + textos duplicados en su `PLANTILLA.md`. Respetar el orden de dependencias.
 7. **Verificar**: `node .claude/herramientas/control-cierre/control-cierre.js` — todo verde (incluye `claude plugin validate .` y la coherencia disco↔marketplace↔REGISTRO de lint-harness).
-8. **Reportar** en tres baldes (`agregado` / `ya estaba` / `divergente`) si se corrió sobre algo preexistente.
+8. **Reportar** en tres grupos (`agregado` / `ya estaba` / `divergente`) si se corrió sobre algo preexistente.
 
 ## Ojo
 
 - Nombre de skill ≠ nombre de plugin: la skill suele ser `inicializar-<X>` (convención) o un verbo de uso (operativa, p. ej. `registrar-memoria`).
-- Un plugin puede llevar **varias** skills: si la funcionalidad ya existe y solo se agrega una skill operativa, no crear plugin nuevo — sumar `skills/<skill>/` a la existente y bumpear su `version`.
+- Un plugin puede llevar **varias** skills: si la funcionalidad ya existe y solo se agrega una skill operativa, no crear plugin nuevo — sumar `skills/<skill>/` a la existente y subir su `version`.

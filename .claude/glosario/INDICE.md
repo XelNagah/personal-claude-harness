@@ -5,7 +5,7 @@ Terminología del dominio de este repo. Una fila por concepto en la tabla de aba
 - **Concepto** — nombre canónico.
 - **Definición** — una o dos frases: qué ES el concepto (no qué hace).
 - **Alias** — otras formas de llamarlo, todas válidas, **registradas para mapear (no se prohíben)**; separadas por coma. `—` si no hay.
-- **Detalle** — link a una página propia `<slug>.md` **solo si el concepto es complejo** (fórmulas, ejemplos, contraejemplos). `—` si es simple.
+- **Detalle** — link a una página propia `<nombre>.md` **solo si el concepto es complejo** (fórmulas, ejemplos, contraejemplos). `—` si es simple.
 
 Solo términos **propios del dominio** (no conceptos generales de programación). Consultar al planificar y analizar. Ejemplo completo en el README de la funcionalidad `glosario`.
 
@@ -30,4 +30,4 @@ Solo términos **propios del dominio** (no conceptos generales de programación)
 | Skill de Subsistema | Skill operativa que trabaja sobre un subsistema concreto; viaja en el plugin de la funcionalidad de ese subsistema. | — | — |
 | Skill del Agente Multipropósito | Skill transversal sin subsistema dueño (hoy: `planificar`); se empaqueta como funcionalidad propia. | — | — |
 | Texto plano | Texto corriente en lenguaje natural dentro de los `.md`, por oposición a código (cercas, backticks, identificadores, rutas y nombres de archivo). | — | — |
-| Chequeo semántico | Detección de contradicciones, incompatibilidades, duplicación o staleness que requiere entender el significado (LLM). | — | — |
+| Chequeo semántico | Detección de contradicciones, incompatibilidades, duplicación o desactualización que requiere entender el significado (LLM). | — | — |

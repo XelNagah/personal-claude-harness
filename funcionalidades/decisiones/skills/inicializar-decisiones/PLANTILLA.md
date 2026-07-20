@@ -1,8 +1,8 @@
 # Plantilla del registro de decisiones
 
-Textos verbatim que la skill escribe. (El formato general de una memoria lo define la funcionalidad `memoria-local`.) Misma estructura que el glosario: una tabla-índice + páginas de detalle para lo complejo.
+textos literales que la skill escribe. (El formato general de una memoria lo define la funcionalidad `memoria-local`.) Misma estructura que el glosario: una tabla-índice + páginas de detalle para lo complejo.
 
-## §Decisiones — semilla de `.claude/decisiones/INDICE.md`
+## §Decisiones — contenido inicial de `.claude/decisiones/INDICE.md`
 
 Si el archivo no existe, crearlo con este contenido (tabla vacía — sin filas de ejemplo, para que el lint no las tome como decisiones reales):
 

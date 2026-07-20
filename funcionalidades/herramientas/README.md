@@ -1,8 +1,8 @@
 # Gestión de Herramientas
 
-Instala la convención de **Herramientas** del repo: las *tools* que el propósito del repo requiere y el agente invoca para tareas repetibles — tipos `script`, `skill` local, `MCP` local — listadas en un registro-tabla con un lint. Ordena el **cementerio de tools** — esa carpeta llena de archivos sueltos sin saber qué son, de dónde salieron ni cómo se usan. Mismo patrón que glosario/decisiones.
+Instala la convención de **Herramientas** del repo: las *tools* que el propósito del repo requiere y el agente invoca para tareas repetibles — tipos `script`, `skill` local, `MCP` local — listadas en un registro-tabla con un lint. Ordena las **herramientas desordenadas** — esa carpeta llena de archivos sueltos sin saber qué son, de dónde salieron ni cómo se usan. Mismo patrón que glosario/decisiones.
 
-> **Subsistema de acumulación** — sigue el patrón índice + entradas + lint del harness ([cómo aprende](../../README.md#cómo-aprende)). Acá el índice es `herramientas/INDICE.md` y cada entrada es una tool (un `script` abre su carpeta `<tool>/`; una `skill`/`MCP` se linkea donde vive).
+> **Subsistema de acumulación** — sigue el patrón índice + entradas + lint del harness ([cómo aprende](../../README.md#cómo-aprende)). Acá el índice es `herramientas/INDICE.md` y cada entrada es una tool (un `script` abre su carpeta `<tool>/`; una `skill`/`MCP` se apunta a donde vive).
 >
 > **Ojo — los lints de subsistema NO son Herramientas.** Son infra del Patrón de cada subsistema y viven con su subsistema (`<repo>/<sub>/lint-<sub>/`). Este subsistema cataloga solo las tools de dominio que sirven al propósito.
 

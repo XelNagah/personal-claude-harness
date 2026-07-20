@@ -1,6 +1,6 @@
 # Registro de decisiones
 
-Instala un **registro de decisiones** del repo, con la misma estructura que el glosario: una tabla donde lo simple vive en la fila y lo complejo linkea a una página de detalle propia. Se consulta al planificar y analizar para mantener **coherencia decisional** — no re-decidir ni contradecir lo ya resuelto.
+Instala un **registro de decisiones** del repo, con la misma estructura que el glosario: una tabla donde lo simple vive en la fila y lo complejo apunta a una página de detalle propia. Se consulta al planificar y analizar para mantener **coherencia decisional** — no re-decidir ni contradecir lo ya resuelto.
 
 > **Subsistema de acumulación** — sigue el patrón índice + entradas + lint del harness ([cómo aprende](../../README.md#cómo-aprende)). Acá el índice es `decisiones/INDICE.md`.
 
@@ -26,14 +26,14 @@ Solo decisiones **estructurales al propósito del repo**: las que definen cómo 
 
 ## Idea
 
-El `INDICE.md` **es** el registro: una tabla donde cada fila es una decisión. Lo simple se asienta en la fila; lo complejo (contexto, alternativas, consecuencias) linkea a su propia página.
+El `INDICE.md` **es** el registro: una tabla donde cada fila es una decisión. Lo simple se asienta en la fila; lo complejo (contexto, alternativas, consecuencias) apunta a su propia página.
 
 | N° | Decisión | Fecha | Estado | Detalle |
 |----|----------|-------|--------|---------|
 | 0001 | Node para los lints: cero deps, corre en cualquier lado | 2026-07-18 | vigente | — |
 | 0002 | Modelar el costo con una FECE en vez de tabla fija | 2026-07-18 | vigente | [ver](0002-fece.md) |
 
-- **Detalle bajo demanda** (como el glosario): decisión simple → fila con Detalle en `—`; decisión compleja → página `NNNN-slug.md` propia, linkeada.
+- **Detalle bajo demanda** (como el glosario): decisión simple → fila con Detalle en `—`; decisión compleja → página `NNNN-slug.md` propia, enlazada.
 - **Reemplazar, no borrar:** revertir = agregar una nueva y marcar la vieja `reemplazada por NNNN`.
 - **Lint** — numeración sin huecos, links de detalle resuelven, páginas sin huérfanos, refs superseded resuelven. Al cerrar tareas que registraron decisiones.
 

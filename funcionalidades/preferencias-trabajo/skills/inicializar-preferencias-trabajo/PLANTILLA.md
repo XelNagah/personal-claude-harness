@@ -1,15 +1,15 @@
 # Plantilla de preferencias
 
-## §Semilla — `.claude/preferencias/PREFERENCIAS.md`
+## §Contenido inicial — `.claude/preferencias/PREFERENCIAS.md`
 
-La sección **Base** es verbatim y versionada: el leveleo la actualiza cuando su versión es vieja. **Adaptaciones** es del repo: nunca se toca. Al editar la Base acá, **incrementar la versión** — es lo que permite a la reconciliación distinguir "base desactualizada" (actualizar) de "adaptación deliberada" (respetar).
+La sección **Base** es textual y versionada: el nivelado la actualiza cuando su versión es vieja. **Adaptaciones** es del repo: nunca se toca. Al editar la Base acá, **incrementar la versión** — es lo que permite a la reconciliación distinguir "base desactualizada" (actualizar) de "adaptación deliberada" (respetar).
 
 ```markdown
 # Preferencias
 
-Reglas de conducta del agente en este repo. Siempre en contexto (importado desde AGENTS.md). La sección **Base** viene del harness y se actualiza al levelear (no editarla acá: los ajustes de este repo van en **Adaptaciones**, que el leveleo nunca toca).
+Reglas de conducta del agente en este repo. Siempre en contexto (importado desde AGENTS.md). La sección **Base** viene del harness y se actualiza al nivelar (no editarla acá: los ajustes de este repo van en **Adaptaciones**, que el nivelado nunca toca).
 
-## Base (harness v2)
+## Base (harness v3)
 
 **Comunicación:**
 
@@ -23,7 +23,7 @@ Reglas de conducta del agente en este repo. Siempre en contexto (importado desde
 - Iterar de alto a bajo nivel: interfaces y contratos antes que implementación.
 - Nomenclatura en español para el dominio; inglés solo para infraestructura técnica.
 - Cero invención de datos: lo que no salga de una fuente verificada se marca como faltante o como interpretación propia.
-- Terminología: no acuñar términos del dominio por cuenta propia; preferir las palabras del usuario. **Español corriente en todo**: nada de palabras inventadas o raras (aunque suenen técnicas), ni en prosa ni en diagramas — no solo en los registros. **Gate duro en registros canónicos** (glosario, decisiones): ningún término acuñado por el agente se asienta sin ratificación del usuario. En prosa/diagramas se puede usar, marcado como propuesto.
+- Terminología: no acuñar términos del dominio por cuenta propia; preferir las palabras del usuario. **Español corriente en todo**: nada de palabras inventadas o raras (aunque suenen técnicas), ni en texto plano ni en diagramas — no solo en los registros. **Control duro en registros canónicos** (glosario, decisiones): ningún término acuñado por el agente se asienta sin ratificación del usuario. En texto plano/diagramas se puede usar, marcado como propuesto.
 
 ## Adaptaciones de este repo
 
@@ -48,7 +48,7 @@ node .claude/preferencias/lint-preferencias/lint-preferencias.js
 
 ## §Bases anteriores (para detectar "versión vieja" en la reconciliación)
 
-Bloques que versiones previas del harness escribían inline en CLAUDE.md. Si el repo tiene estos textos **verbatim**, son base desactualizada (migrar sin preguntar); si difieren, hay adaptación del user (migrar el diff a Adaptaciones y reportar).
+Bloques que versiones previas del harness escribían inline en CLAUDE.md. Si el repo tiene estos textos **textuales**, son base desactualizada (migrar sin preguntar); si difieren, hay adaptación del user (migrar el diff a Adaptaciones y reportar).
 
 **v0 — sección "Preferencias de comunicación":**
 
@@ -60,6 +60,12 @@ Bloques que versiones previas del harness escribían inline en CLAUDE.md. Si el 
 - Iterar de alto a bajo nivel: interfaces y contratos antes que implementación.
 - Nomenclatura en español para el dominio; inglés solo para infraestructura técnica.
 - Cero invención de datos: lo que no salga de una fuente verificada se marca como faltante o como interpretación propia.
+
+**v2 — difiere de la v3 solo en el bullet de Terminología** (el resto de la Base es idéntico). Si el repo trae este texto, es base desactualizada: reemplazar la Base entera por la v3 sin preguntar.
+
+> - Terminología: no acuñar términos del dominio por cuenta propia; preferir las palabras del usuario. **Español corriente en todo**: nada de palabras inventadas o raras (aunque suenen técnicas), ni en prosa ni en diagramas — no solo en los registros. **Gate duro en registros canónicos** (glosario, decisiones): ningún término acuñado por el agente se asienta sin ratificación del usuario. En prosa/diagramas se puede usar, marcado como propuesto.
+
+Además, la v2 abría el archivo con "se actualiza al levelear (…) que el leveleo nunca toca"; la v3 dice "al nivelar (…) que el nivelado nunca toca".
 
 ## §Script — `.claude/preferencias/lint-preferencias/lint-preferencias.js`
 

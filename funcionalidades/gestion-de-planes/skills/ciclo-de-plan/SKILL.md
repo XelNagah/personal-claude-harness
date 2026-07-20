@@ -23,7 +23,7 @@ Opera el ciclo de planes (`.claude/planes/`) sin dejar el registro y el disco de
    - **Ejecutado**: completar Cerrado + agregar al documento la sección `## Notas de implementación` (cómo se implementó vs. lo planificado, hash de commit, cosas notables).
    - **Descartado**: completar Cerrado + motivo **obligatorio** en Notas (p. ej. "superseded por <plan>").
 4. **Actualizar el encabezado** del documento (`**Estado: ...**`) para que no contradiga al registro.
-5. **Reparar referencias entrantes** si las hubiera (el nombre estable minimiza esto; preferir linkear planes vía `PLANES.md`).
+5. **Reparar referencias entrantes** si las hubiera (el nombre estable minimiza esto; preferir enlazar planes vía `PLANES.md`).
 
 ## Detección pasiva
 
