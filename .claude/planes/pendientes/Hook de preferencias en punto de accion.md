@@ -8,6 +8,8 @@ Diagnóstico acordado con Javier: las preferencias cargadas por `@import` están
 
 Evidencia de qué sí funciona: el modo caveman de esa sesión no se violó ni una vez — porque un hook lo **re-inyecta en cada prompt**. Repetición en el punto de acción >> carga única al inicio.
 
+**Segundo incidente (2026-07-19, este repo, sesión de skills operativas):** el agente abrió una decisión estructural con `AskUserQuestion` de opciones cortas sin la mecánica de cada postura — misma preferencia, violada de nuevo con contexto fresco. Corrección de Javier en el momento: *"prefiero no usar las multiple choice porque no le dan contexto para decidir"* — preguntó además si eso estaba en la memoria (no estaba). La sesión siguió en prosa con ejemplos y funcionó bien. **Regla candidata que deja este incidente** (para asentar al ejecutar este plan, en la Base o como parte del texto del hook): las decisiones se preguntan en prosa con ejemplos concretos de cada postura; multiple choice solo si cada opción lleva el contexto completo para decidir.
+
 ## Propuesta (iterar de menor a mayor)
 
 1. **Hook `PreToolUse` sobre `AskUserQuestion`** — el punto exacto de la falla observada. Inyecta antes de cada pregunta al usuario: "las opciones deben llevar contexto y ejemplos concretos de cada postura (cómo es ahora vs. cómo quedaría, encadenando consecuencias)". Costo de contexto casi nulo, quirúrgico.
