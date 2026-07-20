@@ -7,6 +7,7 @@ Cargar al inicio de cada sesión y respetar.
 - [Estilo de commits](feedback_estilo_commits.md) — commits en español, sin co-autoría de IA.
 - [Base de conocimiento](feedback_base_conocimiento.md) — todo lo que el agente sabe vive en `.claude/conocimiento/`; lint de integridad al cerrar.
 - [Glosario](feedback_glosario.md) — terminología del dominio en `.claude/glosario/`; tabla + alias registrados + detalle para lo complejo; consultar al planificar/analizar.
+- [Terminología canónica](feedback_terminologia_canonica.md) — una regla escrita con el vocabulario que prohíbe se auto-refuerza; ratificar no cambia nada hasta bajarlo al texto. Barrer canónicos primero; enunciar contra la lista aprobada, no contra prohibidos.
 - [Decisiones](feedback_decisiones.md) — decisiones estructurales en `.claude/decisiones/` (no ADR); tabla + detalle; consultar para no re-decidir ni contradecir.
 - [Herramientas](feedback_herramientas.md) — tools del Propósito (script/skill local/MCP) en `.claude/herramientas/` con registro (columna Tipo); los lints de subsistema **no** son herramientas (viven con su subsistema, dec. 0008); cuidado con refs por ruta.
 - [Propagación al harness](feedback_propagacion_harness.md) — propagar cambios textuales a funcionalidades + orquestador: delegar a subagente fresco (no fork), verificar la exactitud textual de los embebidos uno mismo.

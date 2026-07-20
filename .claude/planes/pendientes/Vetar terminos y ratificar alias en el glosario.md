@@ -1,6 +1,8 @@
 # Vetar términos y ratificar alias en el glosario
 
-**Estado: Nuevo · Creado 26-07-19.** Extiende el plan ejecutado [Propagar gobernanza de terminología al harness](../ejecutados/Propagar%20gobernanza%20de%20terminologia%20al%20harness.md) (26-07-18, commit `4ff41ee`), que llevó la [decisión 0004](../../decisiones/INDICE.md) a las funcionalidades. Aquel plan puso el gate sobre **conceptos**; este lo extiende a **alias** y agrega lo que 0004 no contempla: **prohibir**, no solo registrar.
+**Estado: En curso · Creado 26-07-19.** Extiende el plan ejecutado [Propagar gobernanza de terminología al harness](../ejecutados/Propagar%20gobernanza%20de%20terminologia%20al%20harness.md) (26-07-18, commit `4ff41ee`), que llevó la [decisión 0004](../../decisiones/INDICE.md) a las funcionalidades. Aquel plan puso el control sobre **conceptos**; este lo extiende a **alias** y agrega lo que 0004 no contempla: **prohibir**, no solo registrar.
+
+> **Mitad ejecutada el 26-07-20** (commit `edb0bd6`): el **barrido de texto** está hecho — ~250 reemplazos en 56 archivos, canónicos incluidos, Base v2→v3 propagada. Falta la **parte estructural**: columna `Vetados`, cambios al `lint-glosario` y la decisión nueva. Detalle abajo en "Estado de ejecución".
 
 ## El problema
 
@@ -90,7 +92,45 @@ Barrido real del repo (`.md`, prosa + textos duplicados) hecho al detectar que e
 | `slug` | CLAUDE.md §Planes, `PLANES.md`, memoria del flujo de planes, funcionalidades | "nombre estable (sin fecha)" — sin entrada de glosario: los planes no tienen id, el nombre del archivo es la identidad | **Ratificado 26-07-19**; `slug` queda para Vetados |
 | `prosa` | plan de veto (baldes del barrido), sesión de skills | **Texto plano** | **Ratificado 26-07-19**, ya en glosario; `prosa` queda para Vetados (los baldes de este plan pasan a "texto plano" / "código" al ejecutarlo) |
 
-Nota: la Base de preferencias usa "gate" para enunciar la regla que prohíbe términos como "gate" — al ejecutar este plan, reescribirla implica **Base v3 + propagación textual**.
+Nota: la Base de preferencias usa "gate" para enunciar la regla que prohíbe términos como "gate" — al ejecutar este plan, reescribirla implica **Base v3 + propagación textual**. *(Hecho el 26-07-20.)*
+
+## Insumo: ratificaciones del 2026-07-20
+
+Barrido nuevo (87 `.md` + 10 `.js`) al detectar que los términos del 26-07-19 seguían circulando sin bajar al texto. Ratificados en sesión:
+
+| Término | Usos medidos | Canónico | Nota |
+|---|---|---|---|
+| `baldes` | 33 | **grupos** | calco de "buckets"; estaba en `AGENTS.md` |
+| `linkea` / `linkear` | 31 | **apunta a**, **enlaza** | estaba en la decisión 0007 |
+| `semilla` | 23 | **contenido inicial** | calco de "seed" |
+| `stale` / `staleness` | 21 | **desactualizado** / **desactualización** | estaba en glosario y decisión 0003 |
+| `bump` / `bumpear` | 15 | **subir la versión** | estaba en `AGENTS.md` |
+| `cementerio de tools` | 14 | **herramientas desordenadas** | el texto ya lo glosaba al lado ⇒ la metáfora no trabajaba |
+| `Workflow` (encabezado) | 10 | **Flujo de trabajo** | única sección con título en inglés |
+| `reconcile-on-use` | 6 | **se ponen al día cuando se usan** | acuñado en inglés, sin glosar |
+| `sigilo` | 2 | **símbolo** | falso amigo: traducía *sigil*, no *disimulo* |
+| `plomería` | 1 | **infraestructura interna** | metáfora |
+
+**Aceptados en inglés** (decisión del usuario, van a Alias no a Vetados): `parsear`, `pushear`, `refactor`, `legacy`, `flag`, `idempotente`, más la infraestructura ya asentada (`hook`, `commit`, `lint`, `plugin`, `junction`, `marketplace`, `harness`, `skill`).
+
+**Sin resolver:** `artefacto` (19 usos) → propuesto **archivo de estado**; implica renombrar la memoria `feedback_artefacto_estado.md` y arreglar referencias entrantes. Esperando definición.
+
+**Regla de fondo acordada:** el veto no se enuncia como lista de prohibidos (infinita) sino contra la **lista aprobada** — si el término del dominio no está en el glosario, no se usa como establecido. Ver la memoria [terminología canónica](../../memoria/feedback_terminologia_canonica.md).
+
+## Estado de ejecución
+
+**Hecho (26-07-20, commit `edb0bd6`):**
+
+- Barrido de texto completo: canónicos (`PREFERENCIAS.md`, `AGENTS.md`, glosario, decisiones), memorias, planes vivos, las 10 funcionalidades y el orquestador.
+- Base v2 → v3, verificada con el mismo md5 en los tres lugares; v2 registrada en `§Bases anteriores` para que la reconciliación distinga base desactualizada de base editada a mano.
+- Plugins 0.3.0 → 0.4.0.
+
+**Falta (la parte estructural de este plan):**
+
+- Columna `Vetados` en el glosario + las tres preguntas abiertas de abajo.
+- Cambios al `lint-glosario` ([3], [4], [5] de la sección de lint).
+- Decisión nueva en el registro.
+- **Hueco detectado el 26-07-20:** `lint-harness` **no compara la Base** entre `PREFERENCIAS.md` y las dos `PLANTILLA.md` — no tiene ninguna referencia a preferencias. La divergencia de hoy no la habría cazado nadie; se verificó a mano. Sumar ese chequeo entra naturalmente acá, que ya toca lints.
 
 ## Preguntas abiertas
 

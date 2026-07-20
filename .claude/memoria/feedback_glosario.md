@@ -5,7 +5,7 @@ metadata:
   type: feedback
 ---
 
-La terminología del dominio vive en `.claude/glosario/INDICE.md`: una tabla donde cada fila es un concepto (nombre canónico, definición corta, alias, y link a página de detalle si el concepto es complejo). Los conceptos complejos tienen su propia página `.claude/glosario/<slug>.md` (fórmulas, ejemplos, contraejemplos).
+La terminología del dominio vive en `.claude/glosario/INDICE.md`: una tabla donde cada fila es un concepto (nombre canónico, definición corta, alias, y link a página de detalle si el concepto es complejo). Los conceptos complejos tienen su propia página `.claude/glosario/<nombre>.md` (fórmulas, ejemplos, contraejemplos).
 
 **Why:** coherencia semántica a lo largo de la vida del repo. Los alias **se registran, no se prohíben**: saber que "birra/chela" son la misma cerveza evita confusión, sin vetar cómo se la nombra.
 
