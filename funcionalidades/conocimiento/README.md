@@ -28,7 +28,13 @@ Instala la convención de **base de conocimiento** del usuario: una carpeta úni
 
 ## Formatos
 
+## Skill operativa
+
+**`buscar-conocimiento`** — de uso, no de instalación: recorre el repo buscando saber no asentado (docs sueltos, gotchas enterrados, lo aprendido en la sesión) y propone páginas — distingue conocimiento de agente de documentación del proyecto; nada se migra sin el usuario. Viaja en este plugin junto a la de instalación.
+
 | Formato | Archivo |
 |---------|---------|
-| Skill (Claude Code) | [`skills/inicializar-conocimiento/SKILL.md`](skills/inicializar-conocimiento/SKILL.md) |
-| Prompt agnóstico | [`prompt.md`](prompt.md) |
+| Skill de instalación (Claude Code) | [`skills/inicializar-conocimiento/SKILL.md`](skills/inicializar-conocimiento/SKILL.md) |
+| Prompt agnóstico (instalación) | [`prompt.md`](prompt.md) |
+| Skill operativa (Claude Code) | [`skills/buscar-conocimiento/SKILL.md`](skills/buscar-conocimiento/SKILL.md) |
+| Prompt agnóstico (operativa) | [`prompt-buscar-conocimiento.md`](prompt-buscar-conocimiento.md) |

@@ -41,9 +41,15 @@ El `INDICE.md` **es** el registro: una tabla donde cada fila es una decisión. L
 
 `memoria-local` (la convención se persiste como una memoria tipada e indexada).
 
+## Skill operativa
+
+**`registrar-decision`** — de uso, no de instalación: juzga si la decisión es estructural (las triviales no van), chequea que no re-decida ni contradiga lo asentado (contradicción → reemplaza, nunca borra), numera y redacta la fila, confirma con el usuario y corre el lint. Con detección pasiva: ofrece registrar decisiones que se cristalizan en la conversación. Viaja en este plugin junto a la de instalación.
+
 ## Formatos
 
 | Formato | Archivo |
 |---------|---------|
-| Skill (Claude Code) | [`skills/inicializar-decisiones/SKILL.md`](skills/inicializar-decisiones/SKILL.md) + [`PLANTILLA.md`](skills/inicializar-decisiones/PLANTILLA.md) |
-| Prompt agnóstico | [`prompt.md`](prompt.md) |
+| Skill de instalación (Claude Code) | [`skills/inicializar-decisiones/SKILL.md`](skills/inicializar-decisiones/SKILL.md) + [`PLANTILLA.md`](skills/inicializar-decisiones/PLANTILLA.md) |
+| Prompt agnóstico (instalación) | [`prompt.md`](prompt.md) |
+| Skill operativa (Claude Code) | [`skills/registrar-decision/SKILL.md`](skills/registrar-decision/SKILL.md) |
+| Prompt agnóstico (operativa) | [`prompt-registrar-decision.md`](prompt-registrar-decision.md) |

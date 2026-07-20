@@ -24,9 +24,15 @@ Si el `CLAUDE.md` no existe, lo crea arrancando con una **Descripción del proye
 
 Ninguna.
 
+## Skill operativa
+
+**`registrar-preferencia`** — de uso, no de instalación: detecta feedback recurrente del usuario (misma corrección por segunda vez) y propone registrarlo como regla en Adaptaciones — o llevarla a la Base del harness si vale para todos los repos. Chequea primero si una regla existente ya lo cubre (problema de cumplimiento ≠ falta de regla). Viaja en este plugin junto a la de instalación.
+
 ## Formatos
 
 | Formato | Archivo |
 |---------|---------|
-| Skill (Claude Code) | [`skills/inicializar-preferencias-trabajo/SKILL.md`](skills/inicializar-preferencias-trabajo/SKILL.md) + [`PLANTILLA.md`](skills/inicializar-preferencias-trabajo/PLANTILLA.md) |
-| Prompt agnóstico | [`prompt.md`](prompt.md) |
+| Skill de instalación (Claude Code) | [`skills/inicializar-preferencias-trabajo/SKILL.md`](skills/inicializar-preferencias-trabajo/SKILL.md) + [`PLANTILLA.md`](skills/inicializar-preferencias-trabajo/PLANTILLA.md) |
+| Prompt agnóstico (instalación) | [`prompt.md`](prompt.md) |
+| Skill operativa (Claude Code) | [`skills/registrar-preferencia/SKILL.md`](skills/registrar-preferencia/SKILL.md) |
+| Prompt agnóstico (operativa) | [`prompt-registrar-preferencia.md`](prompt-registrar-preferencia.md) |

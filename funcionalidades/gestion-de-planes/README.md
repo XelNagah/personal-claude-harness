@@ -31,9 +31,15 @@ Instala el ciclo de planes del usuario: **carpetas = ciclo de vida grueso** (`pe
 
 **`memoria-local`** — las memorias del flujo se guardan en `memoria/`. Si no está instalada, instalarla primero.
 
+## Skill operativa
+
+**`ciclo-de-plan`** — de uso, no de instalación: abre un plan (nombre estable + fila en `PLANES.md`) y lo transiciona (estado, carpeta, fechas, notas, lint) manteniendo sincronizados archivo, registro y encabezado. Lee los estados de `ESTADOS.md`, no los asume. Viaja en este plugin junto a la de instalación.
+
 ## Formatos
 
 | Formato | Archivo |
 |---------|---------|
-| Skill (Claude Code) | [`skills/inicializar-gestion-planes/SKILL.md`](skills/inicializar-gestion-planes/SKILL.md) + [`PLANTILLA.md`](skills/inicializar-gestion-planes/PLANTILLA.md) |
-| Prompt agnóstico | [`prompt.md`](prompt.md) |
+| Skill de instalación (Claude Code) | [`skills/inicializar-gestion-planes/SKILL.md`](skills/inicializar-gestion-planes/SKILL.md) + [`PLANTILLA.md`](skills/inicializar-gestion-planes/PLANTILLA.md) |
+| Prompt agnóstico (instalación) | [`prompt.md`](prompt.md) |
+| Skill operativa (Claude Code) | [`skills/ciclo-de-plan/SKILL.md`](skills/ciclo-de-plan/SKILL.md) |
+| Prompt agnóstico (operativa) | [`prompt-ciclo-de-plan.md`](prompt-ciclo-de-plan.md) |

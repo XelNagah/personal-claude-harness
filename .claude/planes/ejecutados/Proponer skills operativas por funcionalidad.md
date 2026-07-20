@@ -1,6 +1,6 @@
 # Proponer skills operativas por funcionalidad
 
-**Estado: En curso · Creado 26-07-19.** Hoy casi toda funcionalidad tiene **una** skill: la de instalación (`inicializar-<X>`). La única con skill **operativa** (de uso, no de setup) es `planificar`. El objetivo de cada subsistema no se cumple solo instalándolo — se cumple **usándolo bien sesión a sesión**. Faltan skills que ayuden a operarlo.
+**Estado: Ejecutado · Creado 26-07-19 · Cerrado 26-07-19.** Hoy casi toda funcionalidad tiene **una** skill: la de instalación (`inicializar-<X>`). La única con skill **operativa** (de uso, no de setup) es `planificar`. El objetivo de cada subsistema no se cumple solo instalándolo — se cumple **usándolo bien sesión a sesión**. Faltan skills que ayuden a operarlo.
 
 ## Planteo
 
@@ -82,3 +82,13 @@ Nombres ratificados con el patrón del usuario: **"registrar-X" para dar de alta
 - **Verificación:** control-cierre TODO VERDE (9 chequeos, incluye plugin validate).
 
 **Queda pendiente (el plan sigue En curso):** tanda 2 (`buscar-conocimiento`, `registrar-decision`, `registrar-preferencia`); mencionar las skills operativas en los README de las 3 funcionalidades tocadas; al ejecutar el plan de veto, el barrido va a tocar también los textos de estas skills si algún término cae vetado.
+
+## Notas de implementación
+
+Ejecutado completo el 26-07-19, en dos tandas dentro de la misma sesión de `planificar` (commits `1c5013e` terminología, `8e4e974` autoría + tanda 1, y el commit de cierre con tanda 2):
+
+- **Autoría (3):** `control-cierre` (script agregador, 9 chequeos, descubrimiento dinámico de lints), `propagar-harness` y `agregar-funcionalidad` (skills locales en `.claude/skills/`). Registradas en `herramientas/INDICE.md` — primeras filas tipo `skill` del registro.
+- **Skills de Subsistema (6):** tanda 1 `registrar-memoria` / `ciclo-de-plan` / `converger-terminologia` + tanda 2 `buscar-conocimiento` / `registrar-decision` / `registrar-preferencia`. Cada una: SKILL.md + `prompt-<skill>.md` agnóstico + junction + plugin bumpeado a 0.2.0 + fila en REGISTRO.md + sección "Skill operativa" en el README de su funcionalidad. Sin impacto en el orquestador (las operativas no instalan nada).
+- **No construidas (por decisión):** `registrar-herramienta` (instrucción alcanza), skill de estilo-commits (regla simple ≠ skill, 0009).
+- **Vs. lo planificado:** sin desvíos de fondo. La tanda 2 se adelantó (era "segunda tanda" sin fecha). De paso se corrigieron las descripciones de plugins con residuos del modelo viejo (glosario: "sinónimos a evitar").
+- **Deriva a otros planes:** el barrido físico de términos vetados → plan "Vetar términos y ratificar alias" (con insumo cargado). Los diferidos "Capa semántica" y "Poblar subsistemas" quedan parcialmente materializados por `converger-terminologia` y `buscar-conocimiento` — siguen Diferidos para lo transversal que no cubren (contradicciones entre subsistemas; poblar glosario/decisiones desde repo existente).

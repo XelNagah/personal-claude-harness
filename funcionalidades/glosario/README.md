@@ -36,9 +36,15 @@ El `INDICE.md` **es** el glosario: una tabla donde cada fila es un concepto. Lo 
 
 `memoria-local` (la convención se persiste como una memoria tipada e indexada).
 
+## Skill operativa
+
+**`converger-terminologia`** — de uso, no de instalación: recorre el texto del repo contra el glosario, detecta sinónimos no registrados y anglicismos que compiten con los canónicos, y propone ratificar alias, vetar o reescribir — nada se asienta sin el usuario. Separa texto plano (se reescribe) de código (solo se informa: refactor). Viaja en este plugin junto a la de instalación.
+
 ## Formatos
 
 | Formato | Archivo |
 |---------|---------|
-| Skill (Claude Code) | [`skills/inicializar-glosario/SKILL.md`](skills/inicializar-glosario/SKILL.md) + [`PLANTILLA.md`](skills/inicializar-glosario/PLANTILLA.md) |
-| Prompt agnóstico | [`prompt.md`](prompt.md) |
+| Skill de instalación (Claude Code) | [`skills/inicializar-glosario/SKILL.md`](skills/inicializar-glosario/SKILL.md) + [`PLANTILLA.md`](skills/inicializar-glosario/PLANTILLA.md) |
+| Prompt agnóstico (instalación) | [`prompt.md`](prompt.md) |
+| Skill operativa (Claude Code) | [`skills/converger-terminologia/SKILL.md`](skills/converger-terminologia/SKILL.md) |
+| Prompt agnóstico (operativa) | [`prompt-converger-terminologia.md`](prompt-converger-terminologia.md) |

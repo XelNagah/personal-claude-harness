@@ -23,9 +23,15 @@ Instala el sistema de **memoria local persistida** del usuario: un directorio `m
 
 Ninguna. Es la base de la que dependen `gestion-de-planes` y `estilo-commits`.
 
+## Skill operativa
+
+**`registrar-memoria`** — de uso, no de instalación: captura un hecho como memoria tipada sin duplicar (elige el tipo, detecta si una existente ya lo cubre y la actualiza en vez de duplicar, indexa, corre el lint). Viaja en este plugin junto a la de instalación.
+
 ## Formatos
 
 | Formato | Archivo |
 |---------|---------|
-| Skill (Claude Code) | [`skills/inicializar-memoria-local/SKILL.md`](skills/inicializar-memoria-local/SKILL.md) |
-| Prompt agnóstico | [`prompt.md`](prompt.md) |
+| Skill de instalación (Claude Code) | [`skills/inicializar-memoria-local/SKILL.md`](skills/inicializar-memoria-local/SKILL.md) |
+| Prompt agnóstico (instalación) | [`prompt.md`](prompt.md) |
+| Skill operativa (Claude Code) | [`skills/registrar-memoria/SKILL.md`](skills/registrar-memoria/SKILL.md) |
+| Prompt agnóstico (operativa) | [`prompt-registrar-memoria.md`](prompt-registrar-memoria.md) |
