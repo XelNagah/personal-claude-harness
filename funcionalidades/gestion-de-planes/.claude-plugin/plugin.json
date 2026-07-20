@@ -1,6 +1,6 @@
 {
   "name": "gestion-de-planes",
   "description": "Ciclo de planes pendientes→ejecutados: carpetas planes/ + memoria del flujo. Incluye la skill operativa ciclo-de-plan. Depende de memoria-local.",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "author": { "name": "jllarens", "email": "jllarens@gmail.com" }
 }

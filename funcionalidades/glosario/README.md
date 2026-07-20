@@ -45,6 +45,4 @@ El `INDICE.md` **es** el glosario: una tabla donde cada fila es un concepto. Lo 
 | Formato | Archivo |
 |---------|---------|
 | Skill de instalación (Claude Code) | [`skills/inicializar-glosario/SKILL.md`](skills/inicializar-glosario/SKILL.md) + [`PLANTILLA.md`](skills/inicializar-glosario/PLANTILLA.md) |
-| Prompt agnóstico (instalación) | [`prompt.md`](prompt.md) |
 | Skill operativa (Claude Code) | [`skills/converger-terminologia/SKILL.md`](skills/converger-terminologia/SKILL.md) |
-| Prompt agnóstico (operativa) | [`prompt-converger-terminologia.md`](prompt-converger-terminologia.md) |

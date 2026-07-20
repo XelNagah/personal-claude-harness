@@ -33,6 +33,4 @@ Ninguna.
 | Formato | Archivo |
 |---------|---------|
 | Skill de instalación (Claude Code) | [`skills/inicializar-preferencias-trabajo/SKILL.md`](skills/inicializar-preferencias-trabajo/SKILL.md) + [`PLANTILLA.md`](skills/inicializar-preferencias-trabajo/PLANTILLA.md) |
-| Prompt agnóstico (instalación) | [`prompt.md`](prompt.md) |
 | Skill operativa (Claude Code) | [`skills/registrar-preferencia/SKILL.md`](skills/registrar-preferencia/SKILL.md) |
-| Prompt agnóstico (operativa) | [`prompt-registrar-preferencia.md`](prompt-registrar-preferencia.md) |

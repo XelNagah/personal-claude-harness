@@ -24,4 +24,3 @@ Ninguna dura (degrada si faltan las carpetas). En uso, aprovecha `glosario`, `de
 | Formato | Archivo |
 |---------|---------|
 | Skill (Claude Code) | [`skills/planificar/SKILL.md`](skills/planificar/SKILL.md) |
-| Prompt agnóstico | [`prompt.md`](prompt.md) |

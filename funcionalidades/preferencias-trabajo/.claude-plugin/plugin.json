@@ -1,6 +1,6 @@
 {
   "name": "preferencias-trabajo",
   "description": "Preferencias de comunicación + principios de trabajo, como secciones del CLAUDE.md. Incluye la skill operativa registrar-preferencia.",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "author": { "name": "jllarens", "email": "jllarens@gmail.com" }
 }

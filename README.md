@@ -88,18 +88,19 @@ A partir de ahí, trabajás normal: el agente lee sus índices al arrancar y esc
 
 ```
 ├── README.md                  # este archivo
+├── AGENTS.md                  # instrucciones para agentes (fuente única)
+├── CLAUDE.md                  # adaptador Claude Code: @AGENTS.md
 ├── REGISTRO.md                # catálogo de funcionalidades
 ├── .claude/                   # el propio setup, aplicado a este repo
-│   ├── CLAUDE.md              # instrucciones internas
-│   ├── memoria/ preferencias/ planes/ conocimiento/ glosario/ decisiones/ scripts/
+│   ├── memoria/ preferencias/ planes/ conocimiento/ glosario/ decisiones/ herramientas/
 │   └── ...                    # cada subsistema con su índice + lint
 ├── .claude-plugin/
 │   └── marketplace.json       # catálogo del marketplace (10 plugins)
 └── funcionalidades/           # cada subcarpeta = un plugin
-    └── <nombre>/              # plugin.json + README + prompt.md + skills/<skill>/
+    └── <nombre>/              # plugin.json + README + skills/<skill>/
 ```
 
-El detalle de cada funcionalidad vive en su `funcionalidades/<nombre>/README.md`; el de la mecánica interna, en [`.claude/CLAUDE.md`](.claude/CLAUDE.md) y [REGISTRO.md](REGISTRO.md).
+El detalle de cada funcionalidad vive en su `funcionalidades/<nombre>/README.md`; el de la mecánica interna, en [`AGENTS.md`](AGENTS.md) y [REGISTRO.md](REGISTRO.md).
 
 ---
 
@@ -107,23 +108,21 @@ _Las dos secciones que siguen son de uso avanzado — saltalas si solo querés i
 
 ## Con otro agente (no Claude Code)
 
-Cada funcionalidad existe en **dos formatos** intercambiables:
+El harness es **multiagente**:
 
-- **Skill / plugin** — para Claude Code, instalable por marketplace e invocable por nombre.
-- **Prompt agnóstico** — el `funcionalidades/<nombre>/prompt.md`: texto para pegar a cualquier agente (Codex, Cursor, Copilot, Gemini CLI…), que arma el equivalente en su propio harness.
+- **Instrucciones** — `AGENTS.md` en la raíz de cada repo instalado: lo leen nativo Codex CLI, Cursor, Gemini CLI y Copilot (estándar de la Linux Foundation). Claude Code entra por el adaptador `CLAUDE.md` (`@AGENTS.md`).
+- **Skills** — `SKILL.md` usa el estándar abierto [Agent Skills](https://agentskills.io/), que esos mismos agentes leen desde `~/.agents/skills/`. En una máquina nueva: clonar este repo y correr `node .claude/herramientas/instalar-junctions/instalar-junctions.js` (crea las dos tandas de junctions: `~/.claude/skills` y `~/.agents/skills`).
 
-Para usar el harness con otro agente, pegá el `prompt.md` de la funcionalidad que quieras.
+Un agente futuro que adopte cualquiera de los dos estándares queda soportado sin tocar el repo.
 
 ## Uso avanzado
 
-- **Piezas sueltas** — cada funcionalidad se instala sola: `/plugin install gestion-de-planes@xelnagah-harness`, o su skill `inicializar-<nombre>`, o su `prompt.md`.
-- **Desarrollo local (junctions / symlinks)** — en esta máquina los 10 skills están enlazados por **junction** (NTFS) desde `~/.claude/skills/` hacia cada `funcionalidades/<n>/skills/<skill>` — fuente única para editar en vivo sin pasar por el cache de plugins. En Linux/macOS el equivalente es `ln -s`. No mezclar enlace + plugin del mismo skill en una máquina (colisionan por nombre).
+- **Piezas sueltas** — cada funcionalidad se instala sola: `/plugin install gestion-de-planes@xelnagah-harness`, o su skill `inicializar-<nombre>`.
+- **Desarrollo local (junctions / symlinks)** — en esta máquina los skills están enlazados por **junction** (NTFS) en dos tandas (`~/.claude/skills/` y `~/.agents/skills/`) hacia cada `funcionalidades/<n>/skills/<skill>` — fuente única para editar en vivo sin pasar por el cache de plugins. En Linux/macOS el equivalente es `ln -s`. No mezclar enlace + plugin del mismo skill en una máquina (colisionan por nombre). Crear/reparar todo:
 
-  ```powershell
-  New-Item -ItemType Junction `
-    -Path   "$env:USERPROFILE\.claude\skills\inicializar-custom" `
-    -Target "<ruta-repo>\funcionalidades\setup-completo\skills\inicializar-custom"
+  ```bash
+  node .claude/herramientas/instalar-junctions/instalar-junctions.js
   ```
 
 - **Repo privado / auto-update** — el install es un `git clone` por debajo; alcanza con git autenticado (`gh auth login` o SSH). Para auto-update en background, exportar `GITHUB_TOKEN` con scope `repo`.
-- **Mantenimiento** — cómo agregar una funcionalidad, propagar un cambio a los dos formatos y validar el marketplace: en [REGISTRO.md](REGISTRO.md) y [`.claude/CLAUDE.md`](.claude/CLAUDE.md).
+- **Mantenimiento** — cómo agregar una funcionalidad, propagar un cambio y validar el marketplace: en [REGISTRO.md](REGISTRO.md) y [`AGENTS.md`](AGENTS.md).

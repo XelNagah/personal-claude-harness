@@ -5,7 +5,7 @@ description: Propaga un cambio textual de este repo (lint, preferencia, convenci
 
 # Propagar al harness
 
-Un cambio en una pieza de este repo (un lint, un texto de la Base de preferencias, una línea de convención) tiene **copias textuales** que mantener: la funcionalidad (`funcionalidades/<X>/prompt.md` + `skills/<skill>/SKILL.md` + `PLANTILLA.md`) **y** el orquestador `setup-completo` (que duplica todo en su `PLANTILLA.md` y `prompt.md`, porque en runtime no puede leer las otras carpetas). El código de un lint va embebido en `PLANTILLA.md` bajo `## §Script`, dentro de un fence ```js.
+Un cambio en una pieza de este repo (un lint, un texto de la Base de preferencias, una línea de convención) tiene **copias textuales** que mantener: la funcionalidad (`funcionalidades/<X>/skills/<skill>/SKILL.md` + `PLANTILLA.md`) **y** el orquestador `setup-completo` (que duplica todo en su `SKILL.md` y `PLANTILLA.md`, porque en runtime no puede leer las otras carpetas). El código de un lint va embebido en `PLANTILLA.md` bajo `## §Script`, dentro de un fence ```js.
 
 Esta skill encapsula el flujo probado (memoria `feedback_propagacion_harness.md`). Sus dos reglas duras salen de fallas reales:
 
@@ -14,7 +14,7 @@ Esta skill encapsula el flujo probado (memoria `feedback_propagacion_harness.md`
 
 ## Flujo
 
-1. **Identificar qué cambió y dónde vive cada copia.** Fuente de verdad = el archivo del repo local (`.claude/<sub>/...`). Armar la lista de destinos: funcionalidad afectada (prompt/SKILL/PLANTILLA) + orquestador (PLANTILLA + prompt). Confirmar el alcance con `git diff`/`git log` si hace falta.
+1. **Identificar qué cambió y dónde vive cada copia.** Fuente de verdad = el archivo del repo local (`.claude/<sub>/...`). Armar la lista de destinos: funcionalidad afectada (SKILL/PLANTILLA) + orquestador (SKILL + PLANTILLA). Confirmar el alcance con `git diff`/`git log` si hace falta.
 2. **Delegar la copia a un subagente fresco** (general-purpose, sin contexto heredado) con brief explícito:
    - "Esto NO está hecho; al terminar, `git status --short` debe mostrar ediciones."
    - Rutas exactas de fuente y destinos, para que **copie** (cat/read + paste), no reescriba de memoria.
@@ -27,5 +27,5 @@ Esta skill encapsula el flujo probado (memoria `feedback_propagacion_harness.md`
 
 ## Ojo
 
-- Divergentes en forma, no en contenido: prompt (agnóstico, `<config>`) y SKILL (`.claude/` literal) redactan distinto el mismo contenido — "textual" aplica a los bloques embebidos (código, semillas, Base), no a la prosa adaptada de cada formato.
+- `SKILL.md` es la **fuente única** de cada flujo (estándar Agent Skills, decisión 0010) — "textual" aplica a los bloques embebidos que se duplican en el orquestador (código, semillas, Base), no a la prosa que los rodea.
 - Los paréntesis en nombres de archivo rompen links markdown — nombres sin `()`.

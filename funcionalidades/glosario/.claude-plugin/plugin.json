@@ -1,6 +1,6 @@
 {
   "name": "glosario",
   "description": "Glosario del dominio en .claude/glosario/ — término canónico + alias registrados, para coherencia semántica al planificar/analizar. Incluye la skill operativa converger-terminologia. Depende de memoria-local.",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "author": { "name": "jllarens", "email": "jllarens@gmail.com" }
 }

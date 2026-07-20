@@ -1,6 +1,6 @@
 # Registro de funcionalidades
 
-Catálogo de las funcionalidades que este repo instala para armar un agente de **propósito general** — el usuario define el propósito del repo y los subsistemas se llenan con lo aprendido para lograrlo. Cada funcionalidad vive en `funcionalidades/<nombre>/`, **es un plugin de Claude Code** (listado en `.claude-plugin/marketplace.json`) y además trae un **prompt agnóstico** (`prompt.md`). Cada una se instala/comparte por separado. Ver el README de cada una para el detalle.
+Catálogo de las funcionalidades que este repo instala para armar un agente de **propósito general** — el usuario define el propósito del repo y los subsistemas se llenan con lo aprendido para lograrlo. Cada funcionalidad vive en `funcionalidades/<nombre>/`, **es un plugin de Claude Code** (listado en `.claude-plugin/marketplace.json`) y sus skills usan el **estándar abierto Agent Skills** (`SKILL.md`), legible también por Codex CLI, Cursor, Gemini CLI y Copilot (decisión 0010). Cada una se instala/comparte por separado. Ver el README de cada una para el detalle.
 
 | Funcionalidad | Qué hace | Depende de | Carpeta |
 |---------------|----------|-----------|---------|
@@ -32,8 +32,8 @@ Catálogo de las funcionalidades que este repo instala para armar un agente de *
 
 > **Instalar en otra PC:** `/plugin marketplace add <owner>/<repo>` y después `/plugin install <plugin>@xelnagah-harness` (ver [README](README.md#instalación-en-otra-pc-marketplace-de-plugins)).
 > **En esta máquina** los skills están enlazados por junction (autoría/edición en vivo). No mezclar junction + plugin del mismo skill en una misma máquina.
-> Las **skills operativas** (`registrar-memoria`, `ciclo-de-plan`, `converger-terminologia`, `buscar-conocimiento`, `registrar-decision`, `registrar-preferencia`) viajan en el plugin de su funcionalidad junto a la de instalación — un plugin puede llevar varias skills. Su versión agnóstica es `prompt-<skill>.md` en la carpeta de la funcionalidad.
-> Las piezas siempre se pueden usar vía su `prompt.md` sin instalar nada.
+> Las **skills operativas** (`registrar-memoria`, `ciclo-de-plan`, `converger-terminologia`, `buscar-conocimiento`, `registrar-decision`, `registrar-preferencia`) viajan en el plugin de su funcionalidad junto a la de instalación — un plugin puede llevar varias skills.
+> **Agentes no-Claude** (Codex/Cursor/Gemini): las skills se leen desde `~/.agents/skills/` — clonar el repo y correr `node .claude/herramientas/instalar-junctions/instalar-junctions.js`; no necesitan marketplace.
 > **Nota:** `planificar` es la única funcionalidad **operacional** (no instala nada en el repo destino; se invoca y opera). Las otras nueve instalan convención. Por eso `planificar` no entra al orquestador.
 
 ## Cómo agregar una funcionalidad nueva
@@ -41,10 +41,9 @@ Catálogo de las funcionalidades que este repo instala para armar un agente de *
 1. Crear `funcionalidades/<nombre>/` con:
    - `.claude-plugin/plugin.json` — manifiesto (`name`, `description`, `version`, `author`).
    - `README.md` — qué hace, qué agrega al repo destino, dependencias.
-   - `skills/<nombre-skill>/SKILL.md` (+ `PLANTILLA.md` si lleva textos verbatim) — versión Claude Code.
-   - `prompt.md` — versión agnóstica (placeholder `<config>` para el directorio del harness).
+   - `skills/<nombre-skill>/SKILL.md` (+ `PLANTILLA.md` si lleva textos verbatim) — **fuente única** del flujo, en el estándar Agent Skills.
 2. Agregar el plugin a `.claude-plugin/marketplace.json` (`name` + `source: "./funcionalidades/<nombre>"`).
-3. Crear su junction local si se quiere editar en vivo. Validar con `claude plugin validate .`.
+3. Crear sus junctions locales (dos tandas) con `node .claude/herramientas/instalar-junctions/instalar-junctions.js` si se quiere editar en vivo. Validar con `claude plugin validate .`.
 4. Registrarla en la tabla de arriba (y en el orquestador `setup-completo` si forma parte del setup base).
 
-> **Invariante:** skill y prompt de una misma funcionalidad son divergentes en forma, no en contenido. Un cambio de preferencia se replica en ambos formatos **y** en el orquestador (que duplica los textos verbatim, porque tanto el junction como el cache de plugins aíslan la carpeta del skill).
+> **Invariante:** `SKILL.md` es la fuente única de cada flujo. Un cambio se replica solo en el orquestador `setup-completo` (que duplica los textos verbatim en su `SKILL.md`/`PLANTILLA.md`, porque tanto el junction como el cache de plugins aíslan la carpeta del skill) — usar la skill `propagar-harness`.

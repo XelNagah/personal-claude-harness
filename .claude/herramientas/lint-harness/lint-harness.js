@@ -1,6 +1,7 @@
 #!/usr/bin/env node
-// Lint de coherencia del harness: funcionalidades vs marketplace vs REGISTRO, archivos clave por
-// funcionalidad, junctions de skills, y divergencia de bloques verbatim entre PLANTILLAs. Sin LLM, sin red.
+// Lint de coherencia del harness: punto de entrada (AGENTS.md + adaptador CLAUDE.md, decision 0010),
+// funcionalidades vs marketplace vs REGISTRO, archivos clave por funcionalidad, junctions de skills
+// (dos tandas: ~/.claude/skills y ~/.agents/skills), y divergencia de bloques verbatim entre PLANTILLAs. Sin LLM, sin red.
 // Uso: node lint-harness.js [--quiet]   (correr desde la raiz del repo del harness)
 const fs = require('fs'), path = require('path'), os = require('os'), crypto = require('crypto');
 const quiet = process.argv.includes('--quiet');
@@ -38,16 +39,17 @@ for (const f of enDisco) {
   for (const req of ['README.md', '.claude-plugin/plugin.json']) {
     if (!fs.existsSync(path.join(base, req))) faltan.push(req);
   }
-  // prompt.md es requerido salvo funcionalidades operacionales (sin instalacion)
-  if (!fs.existsSync(path.join(base, 'prompt.md')) && f !== 'planificar') faltan.push('prompt.md');
   const skillsDir = path.join(base, 'skills');
   const skills = fs.existsSync(skillsDir) ? fs.readdirSync(skillsDir).filter(s => fs.existsSync(path.join(skillsDir, s, 'SKILL.md'))) : [];
   if (!skills.length) faltan.push('skills/<skill>/SKILL.md');
   if (faltan.length) incompletas.push(`${f}/  [faltan: ${faltan.join(', ')}]`);
 }
 
-// -- [3] junctions/symlinks de skills ------------------------------------
-const skillsHome = path.join(os.homedir(), '.claude', 'skills');
+// -- [3] junctions/symlinks de skills (dos tandas, decision 0010) --------
+const tandas = [
+  path.join(os.homedir(), '.claude', 'skills'),   // la ve Claude Code
+  path.join(os.homedir(), '.agents', 'skills'),   // la ven Codex/Cursor/Gemini (estandar Agent Skills)
+];
 const sinJunction = [], junctionAjeno = [];
 for (const f of enDisco) {
   const skillsDir = path.join(funcDir, f, 'skills');
@@ -55,14 +57,26 @@ for (const f of enDisco) {
   for (const s of fs.readdirSync(skillsDir)) {
     const target = path.join(skillsDir, s);
     if (!fs.existsSync(path.join(target, 'SKILL.md'))) continue;
-    const link = path.join(skillsHome, s);
-    if (!fs.existsSync(link)) { sinJunction.push(`${s}  (crear junction -> ${path.relative(repo, target)})`); continue; }
-    try {
-      const real = fs.realpathSync(link);
-      if (path.resolve(real) !== path.resolve(target)) junctionAjeno.push(`${s}  apunta a ${real}`);
-    } catch (e) { junctionAjeno.push(`${s}  [irresoluble: ${e.code || e.message}]`); }
+    for (const tanda of tandas) {
+      const link = path.join(tanda, s);
+      const donde = path.basename(path.dirname(tanda)); // .claude | .agents
+      if (!fs.existsSync(link)) { sinJunction.push(`${s} [~/${donde}/skills]  (instalar-junctions -> ${path.relative(repo, target)})`); continue; }
+      try {
+        const real = fs.realpathSync(link);
+        if (path.resolve(real) !== path.resolve(target)) junctionAjeno.push(`${s} [~/${donde}/skills]  apunta a ${real}`);
+      } catch (e) { junctionAjeno.push(`${s} [~/${donde}/skills]  [irresoluble: ${e.code || e.message}]`); }
+    }
   }
 }
+
+// -- [5] punto de entrada (AGENTS.md fuente + CLAUDE.md adaptador) -------
+const entrada = [];
+const agentsMd = path.join(repo, 'AGENTS.md');
+const claudeMdRoot = path.join(repo, 'CLAUDE.md');
+if (!fs.existsSync(agentsMd)) entrada.push('falta AGENTS.md en la raiz (fuente unica de instrucciones)');
+if (!fs.existsSync(claudeMdRoot)) entrada.push('falta CLAUDE.md en la raiz (adaptador para Claude Code)');
+else if (!/@AGENTS\.md/.test(fs.readFileSync(claudeMdRoot, 'utf8'))) entrada.push('CLAUDE.md no importa @AGENTS.md (adaptador roto)');
+if (fs.existsSync(path.join(repo, '.claude', 'CLAUDE.md'))) entrada.push('.claude/CLAUDE.md residual (el contenido vive en AGENTS.md; genera doble carga)');
 
 // -- [4] divergencia de bloques verbatim entre PLANTILLAs ----------------
 // Compara los bloques ```markdown que definen una memoria (---\nname: X) entre las PLANTILLA.md
@@ -96,11 +110,12 @@ for (const [name, arr] of bloques) {
 
 // -- salida --------------------------------------------------------------
 const secciones = [
+  ['PUNTO DE ENTRADA (AGENTS.md + adaptador CLAUDE.md)', entrada],
   ['FUNCIONALIDADES SIN CABLEAR (disco vs marketplace/REGISTRO)', soloDisco],
   ['FANTASMAS (catalogadas pero sin carpeta)', fantasmas],
   ['SOURCES DEL MARKETPLACE QUE NO RESUELVEN', srcRotos],
   ['FUNCIONALIDADES INCOMPLETAS (archivos clave)', incompletas],
-  ['SKILLS SIN JUNCTION EN ~/.claude/skills', sinJunction],
+  ['SKILLS SIN JUNCTION (tandas ~/.claude/skills y ~/.agents/skills)', sinJunction],
   ['JUNCTIONS QUE APUNTAN A OTRO LADO', junctionAjeno],
   ['BLOQUES VERBATIM DIVERGENTES ENTRE PLANTILLAS', divergentes],
 ];

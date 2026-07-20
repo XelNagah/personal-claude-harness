@@ -21,4 +21,3 @@ La memoria pisa la instrucción default del harness de agregar un trailer `Co-Au
 | Formato | Archivo |
 |---------|---------|
 | Skill (Claude Code) | [`skills/inicializar-estilo-commits/SKILL.md`](skills/inicializar-estilo-commits/SKILL.md) + [`PLANTILLA.md`](skills/inicializar-estilo-commits/PLANTILLA.md) |
-| Prompt agnóstico | [`prompt.md`](prompt.md) |

@@ -40,6 +40,4 @@ Instala el ciclo de planes del usuario: **carpetas = ciclo de vida grueso** (`pe
 | Formato | Archivo |
 |---------|---------|
 | Skill de instalación (Claude Code) | [`skills/inicializar-gestion-planes/SKILL.md`](skills/inicializar-gestion-planes/SKILL.md) + [`PLANTILLA.md`](skills/inicializar-gestion-planes/PLANTILLA.md) |
-| Prompt agnóstico (instalación) | [`prompt.md`](prompt.md) |
 | Skill operativa (Claude Code) | [`skills/ciclo-de-plan/SKILL.md`](skills/ciclo-de-plan/SKILL.md) |
-| Prompt agnóstico (operativa) | [`prompt-ciclo-de-plan.md`](prompt-ciclo-de-plan.md) |

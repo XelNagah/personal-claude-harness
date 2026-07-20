@@ -50,6 +50,4 @@ El `INDICE.md` **es** el registro: una tabla donde cada fila es una decisión. L
 | Formato | Archivo |
 |---------|---------|
 | Skill de instalación (Claude Code) | [`skills/inicializar-decisiones/SKILL.md`](skills/inicializar-decisiones/SKILL.md) + [`PLANTILLA.md`](skills/inicializar-decisiones/PLANTILLA.md) |
-| Prompt agnóstico (instalación) | [`prompt.md`](prompt.md) |
 | Skill operativa (Claude Code) | [`skills/registrar-decision/SKILL.md`](skills/registrar-decision/SKILL.md) |
-| Prompt agnóstico (operativa) | [`prompt-registrar-decision.md`](prompt-registrar-decision.md) |

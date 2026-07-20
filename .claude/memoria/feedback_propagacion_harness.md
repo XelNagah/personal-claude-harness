@@ -5,7 +5,7 @@ metadata:
   type: feedback
 ---
 
-Al propagar un cambio verbatim al harness (un lint nuevo, un texto de preferencia, una línea de convención) hay que replicarlo en la funcionalidad (`prompt.md` + `skills/<s>/SKILL.md` + `PLANTILLA.md`) **y** en el orquestador `setup-completo` (que duplica todo, porque en runtime no puede leer las otras carpetas). El código de un lint va embebido verbatim en `PLANTILLA.md` bajo `## §Script`, dentro de un fence ```js.
+Al propagar un cambio verbatim al harness (un lint nuevo, un texto de preferencia, una línea de convención) hay que replicarlo en la funcionalidad (`skills/<s>/SKILL.md` + `PLANTILLA.md`) **y** en el orquestador `setup-completo` (que duplica todo en su `SKILL.md`/`PLANTILLA.md`, porque en runtime no puede leer las otras carpetas). El código de un lint va embebido verbatim en `PLANTILLA.md` bajo `## §Script`, dentro de un fence ```js.
 
 **Why:** es voluminoso y con muchas copias (un lint de ~110 líneas termina en 3+ sitios). Un **fork** que hereda el contexto de la sesión puede creer que el trabajo ya está hecho y terminar con **0 ediciones** (pasó: `git status` limpio). `lint-harness` **solo compara bloques de memoria** (```markdown que empiezan con `---\nname:`) entre PLANTILLAs — NO compara el código de los lints ni los textos de preferencias/glosario, así que su verde no garantiza que los embebidos sean correctos.
 

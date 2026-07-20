@@ -32,6 +32,4 @@ Ninguna. Es la base de la que dependen `gestion-de-planes` y `estilo-commits`.
 | Formato | Archivo |
 |---------|---------|
 | Skill de instalación (Claude Code) | [`skills/inicializar-memoria-local/SKILL.md`](skills/inicializar-memoria-local/SKILL.md) |
-| Prompt agnóstico (instalación) | [`prompt.md`](prompt.md) |
 | Skill operativa (Claude Code) | [`skills/registrar-memoria/SKILL.md`](skills/registrar-memoria/SKILL.md) |
-| Prompt agnóstico (operativa) | [`prompt-registrar-memoria.md`](prompt-registrar-memoria.md) |

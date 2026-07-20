@@ -35,6 +35,4 @@ Instala la convención de **base de conocimiento** del usuario: una carpeta úni
 | Formato | Archivo |
 |---------|---------|
 | Skill de instalación (Claude Code) | [`skills/inicializar-conocimiento/SKILL.md`](skills/inicializar-conocimiento/SKILL.md) |
-| Prompt agnóstico (instalación) | [`prompt.md`](prompt.md) |
 | Skill operativa (Claude Code) | [`skills/buscar-conocimiento/SKILL.md`](skills/buscar-conocimiento/SKILL.md) |
-| Prompt agnóstico (operativa) | [`prompt-buscar-conocimiento.md`](prompt-buscar-conocimiento.md) |

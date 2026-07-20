@@ -49,4 +49,3 @@ Otras memorias, planes o conocimiento referencian estas tools por su ruta explic
 | Formato | Archivo |
 |---------|---------|
 | Skill (Claude Code) | [`skills/inicializar-herramientas/SKILL.md`](skills/inicializar-herramientas/SKILL.md) + [`PLANTILLA.md`](skills/inicializar-herramientas/PLANTILLA.md) |
-| Prompt agnóstico | [`prompt.md`](prompt.md) |
