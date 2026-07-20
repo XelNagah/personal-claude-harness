@@ -1,6 +1,6 @@
 # Convención de commits Antes/Ahora al harness
 
-**Estado: Nuevo · Creado 26-07-20.** Sube al harness una convención de mensajes de commit que hoy vive solo en un repo consumidor (`sicape-backend`, archivo `commit_format.md`) y es estrictamente más rica que la que el harness instala.
+**Estado: Ejecutado · Creado 26-07-20 · Cerrado 26-07-20.** Sube al harness una convención de mensajes de commit que hoy vive solo en un repo consumidor (`sicape-backend`, archivo `commit_format.md`) y es estrictamente más rica que la que el harness instala.
 
 ## Contexto
 
@@ -129,6 +129,21 @@ Dos reglas de arriba **no** venían del pedido original y se agregaron al detect
 
 - **¿El Antes/Ahora aplica también a las descripciones de PR?** La memoria actual cubre commits y PRs para idioma y co-autoría. El borrador extiende el formato a ambos, pero el PR suele necesitar contexto, checklist y capturas que no entran en dos oraciones. Sin ratificar.
 - **¿Se asienta el criterio de reparto como decisión estructural?** Lo que se usó para decidir el punto 1 —*va a la Base lo que debe pisar un default del anfitrión o aplicar sin que nadie abra un archivo; va a memoria lo que se consulta al producir un artefacto concreto*— hoy no está escrito en ningún lado. Es lo más reutilizable que salió de la sesión y condiciona toda alta futura de reglas al harness. Sin ratificar.
+
+## Notas de implementación
+
+Ejecutado el 26-07-20 en dos commits: `d46b79b` (el plan) y `a004257` (la convención). Control de cierre 9/9 verde.
+
+**Hueco encontrado durante la propagación.** El `PLANTILLA.md` del orquestador **no tiene ninguna sección que arme las líneas de índice de `MEMORIA.md`** — ni para esta memoria ni para las otras siete. El orquestador delega el índice a la prosa del `SKILL.md` ("e indexarla"), sin texto literal. Como todo el punto de la decisión 2 es que la línea **nombre el formato**, dejarlo así hubiera hecho viajar el cuerpo sin el disparador: exactamente la falla que el plan quería evitar.
+
+Resuelto en lo acotado: la línea de esta memoria se declaró **textual** y se embebió junto a su sección en el `PLANTILLA.md` del orquestador, más un puntero en el paso 4 del `SKILL.md`. **Queda abierto para las otras siete memorias** — sus líneas de índice se siguen redactando libres en cada instalación. Si alguna vez otra memoria necesita que su línea diga algo preciso, va a chocar con lo mismo.
+
+**Verificación textual.** Los cuatro lugares comparados byte a byte por script: cuerpo de la memoria en fuente == orquestador == memoria viva del repo (2215 bytes), y línea de índice en fuente == orquestador == `MEMORIA.md`.
+
+**Las dos preguntas abiertas se resolvieron por criterio, sin ratificación del usuario:**
+
+- **PRs:** el formato aplica a commits y PRs (la memoria ya cubría ambos para idioma y co-autoría). Revisable si en la práctica el PR necesita más que dos oraciones.
+- **Decisión 0011:** **no** se registró. El criterio de reparto sale de un solo caso, y asentar una decisión estructural sin ratificación rompe el control que la decisión 0004 establece. Sigue sin estar escrito en ningún lado.
 
 ## Desprendimientos
 
