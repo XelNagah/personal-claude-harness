@@ -1,4 +1,4 @@
-**Estado: En curso · Creado 26-07-19.**
+**Estado: Ejecutado · Creado 26-07-19 · Cerrado 26-07-20.**
 
 # Migración a harness multiagente — AGENTS.md fuente única
 
@@ -94,3 +94,13 @@ Cada fase deja el repo consistente por sí sola; el orden minimiza el riesgo (pr
 | `setup-completo` + `inicializar-*` | instalan AGENTS.md + adaptador; verbatim re-sincronizados |
 | `marketplace.json` / plugins | se mantienen; bump 0.3.0 |
 | Glosario y decisiones | ya actualizados en esta sesión (Skill redefinida, Punto de entrada, decisión 0010) |
+
+## Notas de implementación
+
+Ejecutado 2026-07-20, en la misma sesión del diseño. Las 7 fases salieron como estaban planificadas, con estos detalles:
+
+- **Commits del harness:** e4e8933 (F1 punto de entrada), 7ec508e (F2 instalar-junctions + tanda `~/.agents/skills`, 16 junctions nuevas), cac6921 (F3 retiro de 16 prompt*.md, −1.594 líneas; plugins 0.3.0), 68e3e70 (F4 hook doble, `.codex/hooks.json` verificado contra la doc oficial de hooks de Codex), 59d4d4f (F5 instaladores + orquestador).
+- **F5 (orquestador):** re-sincronización delegada a subagente fresco según `feedback_propagacion_harness`; verificación propia: 29 bloques fenced de las PLANTILLAs fuente byte-exactos en la del orquestador, lint-preferencias embebido idéntico al real, 0 refs a prompt.md.
+- **F6 (consumidores):** 9 repos migrados con script idempotente (AGENTS.md desde CLAUDE.md, adaptador, `.codex/hooks.json` donde había hook de planes). Commits: Agente-Coordinador f1b1500, Alertas-Push f19aeef, local-wispflow 3f5ac59, Analisis Whatsapp a982167, Contabilidad-Personal-IA 0d98281, analisis-particion-sucesion-melody d867c11, gnucash-mcp 751a31f, bs-overlay 5e82555; "Infraestructura IT Freire" migrado en disco (sin git). `analisis` sin punto de entrada — queda para `inicializar-custom`.
+- **F7:** control-cierre TODO VERDE (8 lints + plugin validate). **Pendiente real:** prueba de humo con Codex CLI — no está instalado en esta máquina; al instalarlo: abrir un repo migrado, confirmar que lee AGENTS.md, que `/skills` lista las del harness (junctions `~/.agents/skills` ya creadas) y que el hook SessionStart corre (requiere repo trusted + `features.hooks`).
+- El lint-harness ahora vigila el esquema nuevo (AGENTS.md + adaptador + `.claude/CLAUDE.md` residual + junctions dobles), así que una regresión al esquema viejo se detecta sola.

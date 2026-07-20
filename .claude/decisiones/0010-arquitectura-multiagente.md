@@ -30,4 +30,4 @@ La investigación de estándares (2026-07-19, fuentes primarias) cambió el tabl
 - `REGISTRO.md`, `lint-harness`, `propagar-harness`, `agregar-funcionalidad` y el orquestador se simplifican (un formato menos que sincronizar).
 - Glosario actualizado: `Skill` redefinida al estándar Agent Skills; alta de `Punto de entrada`.
 - **Riesgo aceptado:** en Codex las preferencias se cargan por instrucción textual (sin `@import` automático) — garantía más débil; mitigación futura: hook `SessionStart` de Codex que inyecte `PREFERENCIAS.md` (converge con el plan `Hook de preferencias en punto de accion`).
-- Migración en 7 fases en el plan [Migracion a harness multiagente - AGENTS.md fuente unica](../planes/pendientes/Migracion%20a%20harness%20multiagente%20-%20AGENTS.md%20fuente%20unica.md).
+- Migración en 7 fases en el plan [Migracion a harness multiagente - AGENTS.md fuente unica](../planes/ejecutados/Migracion%20a%20harness%20multiagente%20-%20AGENTS.md%20fuente%20unica.md) (ejecutado 2026-07-20).
