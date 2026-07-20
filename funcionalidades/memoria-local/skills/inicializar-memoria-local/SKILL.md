@@ -10,12 +10,13 @@ Instala el sistema de memoria local persistida en el proyecto actual. Es infraes
 ## Estructura objetivo
 
 ```
-.claude/
-├── CLAUDE.md          # secciones "Mapa del repo (siempre cargado)" y "Memoria del proyecto"
-└── memoria/
-    ├── MEMORIA.md      # índice (solo punteros, nunca contenido)
-    └── lint-memoria/
-        └── lint-memoria.js   # lint mecánico de la memoria (sin LLM, sin red)
+├── AGENTS.md          # punto de entrada: secciones "Mapa del repo (siempre cargado)" y "Memoria del proyecto"
+├── CLAUDE.md          # adaptador para Claude Code: @AGENTS.md
+└── .claude/
+    └── memoria/
+        ├── MEMORIA.md      # índice (solo punteros, nunca contenido)
+        └── lint-memoria/
+            └── lint-memoria.js   # lint mecánico de la memoria (sin LLM, sin red)
 ```
 
 ## Índices siempre cargados vs. reglas inline
@@ -51,16 +52,16 @@ Segura de re-correr: sirve para **"levelear"** repos que ya tienen algunas parte
    ```
 
    Tipos: `user` (quién es el usuario), `feedback` (correcciones y enfoques confirmados, con el porqué), `project` (objetivos/restricciones no derivables del código), `reference` (punteros externos). Antes de crear una memoria nueva, revisar si una existente ya la cubre — actualizar en vez de duplicar. Fechas siempre absolutas.
-3. **En `.claude/CLAUDE.md`** asegurar la sección **"Mapa del repo (siempre cargado)"** con el import del índice:
+3. **En `AGENTS.md`** (punto de entrada en la raíz, decisión 0010; si no existe, crearlo junto al adaptador `CLAUDE.md` = `@AGENTS.md` — y si hay un CLAUDE.md con contenido, migrarlo primero como indica `inicializar-preferencias-trabajo`) asegurar la sección **"Mapa del repo (siempre cargado)"** con el import del índice:
 
    ```markdown
    ## Mapa del repo (siempre cargado)
 
-   @memoria/MEMORIA.md
+   @.claude/memoria/MEMORIA.md
    ```
 
-   (Ruta relativa al CLAUDE.md: si está en la raíz del repo en vez de `.claude/`, usar `@.claude/memoria/MEMORIA.md`.) Las demás funcionalidades agregan acá sus propios índices al instalarse (`@planes/PLANES.md`, `@conocimiento/INDICE.md`, `@herramientas/INDICE.md`). Si el CLAUDE.md ya carga la memoria por instrucción textual ("leer al inicio"), **reemplazar** esa instrucción por el import — es la misma convención con mecanismo en vez de obediencia (reportar el reemplazo, no preguntar).
+   (La ruta del `@import` es relativa al archivo que importa — `AGENTS.md` está en la raíz, por eso el prefijo `.claude/`. En un agente sin soporte de imports, la línea funciona igual como instrucción de lectura.) Las demás funcionalidades agregan acá sus propios índices al instalarse (`@.claude/planes/PLANES.md`, `@.claude/conocimiento/INDICE.md`, `@.claude/herramientas/INDICE.md`). Si el punto de entrada ya carga la memoria por instrucción textual ("leer al inicio"), **reemplazar** esa instrucción por el import — es la misma convención con mecanismo en vez de obediencia (reportar el reemplazo, no preguntar).
 4. **Instalar el lint de la memoria** `.claude/memoria/lint-memoria/lint-memoria.js` con el contenido EXACTO de [PLANTILLA.md](PLANTILLA.md) §Script. Va en **su propia carpeta** co-ubicado con el subsistema (`.claude/memoria/lint-memoria/`), nunca suelto. Es un script Node sin dependencias ni red que chequea, sobre `.claude/memoria/`: **refs `.md` rotas** y wikilinks `[[name]]` sin memoria, **`MEMORIA.md` incompleto** (memorias no listadas), **huérfanos** y **frontmatter inválido** (`name`/`description`/`metadata.type` ∈ `user`·`feedback`·`project`·`reference`).
-5. **Asegurar también la sección "Memoria del proyecto"** con link a `memoria/MEMORIA.md`, el criterio de uso (respetar lo cargado; antes de crear una memoria, revisar si una existente la cubre) y el **paso de lint al cerrar**: al cerrar una tarea que tocó la memoria, correr **desde la raíz del repo** `node .claude/memoria/lint-memoria/lint-memoria.js`. Si existe una sección equivalente, no duplicar; si le falta el paso de lint, agregarlo.
+5. **Asegurar también en `AGENTS.md` la sección "Memoria del proyecto"** con link a `.claude/memoria/MEMORIA.md`, el criterio de uso (respetar lo cargado; antes de crear una memoria, revisar si una existente la cubre) y el **paso de lint al cerrar**: al cerrar una tarea que tocó la memoria, correr **desde la raíz del repo** `node .claude/memoria/lint-memoria/lint-memoria.js`. Si existe una sección equivalente, no duplicar; si le falta el paso de lint, agregarlo.
 6. **Memorias que ya hayan surgido** en la conversación (preferencias, objetivos del proyecto) → persistirlas con el frontmatter de arriba y registrarlas en el índice, salvo que ya exista una que cubra el hecho.
 7. **Reportar** en los tres baldes (`agregado` / `ya estaba` / `divergente`). Correr el lint (`node .claude/memoria/lint-memoria/lint-memoria.js`) → debe dar limpio. **No hacer commit** salvo pedido explícito.

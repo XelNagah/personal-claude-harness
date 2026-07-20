@@ -7,13 +7,13 @@ Instala la convención de **base de conocimiento** del usuario: una carpeta úni
 ## Qué agrega al repo destino
 
 ```
-<config>/
-├── CLAUDE.md                              # sección "Base de conocimiento del proyecto"
-├── conocimiento/
+<repo>/
+├── AGENTS.md                              # sección "Base de conocimiento del proyecto" (CLAUDE.md = adaptador)
+├── .claude/conocimiento/
 │   ├── INDICE.md                          # índice raíz de la base (solo punteros)
 │   └── lint-conocimiento/
 │       └── lint-conocimiento.js           # lint mecánico (sin LLM, sin red)
-└── memoria/
+└── .claude/memoria/
     └── feedback_base_conocimiento.md      # la convención, como memoria (+ índice)
 ```
 

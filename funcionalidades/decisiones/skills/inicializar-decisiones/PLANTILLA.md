@@ -60,18 +60,18 @@ Las decisiones **estructurales al propósito del repo** se asientan en `.claude/
 Relacionado: [[flujo-planes]] (consultar/registrar decisiones al cerrar planes).
 ```
 
-## §Sección CLAUDE.md — "Decisiones del proyecto"
+## §Sección de `AGENTS.md` — "Decisiones del proyecto"
 
 ```markdown
 ## Decisiones del proyecto
 
-Las decisiones **estructurales al propósito del repo** (no las operativas triviales) se asientan en [`decisiones/INDICE.md`](decisiones/INDICE.md): una tabla donde cada fila es una decisión (N°, qué + por qué, fecha, estado, y link a detalle si requiere conceptualización mayor). Misma estructura que el glosario. **Consultarlas al planificar y analizar** para no re-decidir ni contradecir. Al cerrar una tarea que registró decisiones, correr el lint **desde la raíz del repo**:
+Las decisiones **estructurales al propósito del repo** (no las operativas triviales) se asientan en [`decisiones/INDICE.md`](.claude/decisiones/INDICE.md): una tabla donde cada fila es una decisión (N°, qué + por qué, fecha, estado, y link a detalle si requiere conceptualización mayor). Misma estructura que el glosario. **Consultarlas al planificar y analizar** para no re-decidir ni contradecir. Al cerrar una tarea que registró decisiones, correr el lint **desde la raíz del repo**:
 
 ​```bash
 node .claude/decisiones/lint-decisiones/lint-decisiones.js
 ​```
 
-Detalle de la convención en la memoria [`feedback_decisiones.md`](memoria/feedback_decisiones.md).
+Detalle de la convención en la memoria [`feedback_decisiones.md`](.claude/memoria/feedback_decisiones.md).
 ```
 
 ## §Script — `.claude/decisiones/lint-decisiones/lint-decisiones.js`

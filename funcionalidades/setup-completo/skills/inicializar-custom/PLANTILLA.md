@@ -2,7 +2,7 @@
 
 Textos verbatim que el orquestador escribe. (Réplica de los textos de las piezas individuales; mantener sincronizado al cambiar una preferencia.)
 
-## §Preferencias — `.claude/preferencias/PREFERENCIAS.md` + sección de CLAUDE.md
+## §Preferencias — `.claude/preferencias/PREFERENCIAS.md` + sección de AGENTS.md
 
 Sistema versionado: **Base** (del harness; el leveleo la actualiza por versión) + **Adaptaciones de este repo** (nunca se toca). Importado siempre al contexto — las preferencias son reglas de conducta: inline, no índice+fetch. Al editar la Base acá, **incrementar la versión**.
 
@@ -11,7 +11,7 @@ Semilla de `.claude/preferencias/PREFERENCIAS.md`:
 ```markdown
 # Preferencias
 
-Reglas de conducta del agente en este repo. Siempre en contexto (importado desde CLAUDE.md). La sección **Base** viene del harness y se actualiza al levelear (no editarla acá: los ajustes de este repo van en **Adaptaciones**, que el leveleo nunca toca).
+Reglas de conducta del agente en este repo. Siempre en contexto (importado desde AGENTS.md). La sección **Base** viene del harness y se actualiza al levelear (no editarla acá: los ajustes de este repo van en **Adaptaciones**, que el leveleo nunca toca).
 
 ## Base (harness v2)
 
@@ -34,12 +34,12 @@ Reglas de conducta del agente en este repo. Siempre en contexto (importado desde
 (ninguna todavía — agregar acá lo específico de este proyecto)
 ```
 
-Sección de `.claude/CLAUDE.md`:
+Sección de `AGENTS.md`:
 
 ```markdown
 ## Preferencias (siempre cargadas)
 
-@preferencias/PREFERENCIAS.md
+@.claude/preferencias/PREFERENCIAS.md
 
 Al tocar las preferencias, correr el lint estructural **desde la raíz del repo** (chequea secciones Base/Adaptaciones + el `@import`):
 
@@ -48,24 +48,26 @@ node .claude/preferencias/lint-preferencias/lint-preferencias.js
 ​```
 ```
 
+(El prefijo `.claude/` es porque `AGENTS.md` vive en la raíz — la ruta del `@import` es relativa al archivo que importa. Layout legacy con `CLAUDE.md` dentro de `.claude/`: `@preferencias/PREFERENCIAS.md`.)
+
 (El lint `lint-preferencias.js` está más abajo, en §Script — lint-preferencias; y `lint-memoria.js` en §Script — lint-memoria.)
 
 **Bases anteriores** (para la reconciliación): la v0 eran dos secciones inline en CLAUDE.md — "Preferencias de comunicación" (el primer bullet de Comunicación, como cita) y "Principios de trabajo" (los cuatro bullets). Verbatim iguales → migrar sin preguntar (borrar de CLAUDE.md, dejar el import); con diferencias → las diferencias van a Adaptaciones y se reporta.
 
-## §Mapa — bloque de imports en `.claude/CLAUDE.md`
+## §Mapa — bloque de imports en `AGENTS.md`
 
 Lo crea `memoria-local`; cada funcionalidad con índice agrega su línea al instalarse:
 
 ```markdown
 ## Mapa del repo (siempre cargado)
 
-@memoria/MEMORIA.md
-@planes/PLANES.md
-@conocimiento/INDICE.md
-@herramientas/INDICE.md
+@.claude/memoria/MEMORIA.md
+@.claude/planes/PLANES.md
+@.claude/conocimiento/INDICE.md
+@.claude/herramientas/INDICE.md
 ```
 
-(Solo las líneas de lo instalado; rutas relativas al CLAUDE.md. **Datos** van por índice+fetch — las descriptions del índice se escriben como ganchos que carguen el dato clave. **Reglas de conducta** no: van inline vía §Preferencias.)
+(Solo las líneas de lo instalado; la ruta del `@import` es relativa al archivo que importa — `AGENTS.md` está en la raíz, por eso el prefijo `.claude/`. **Datos** van por índice+fetch — las descriptions del índice se escriben como ganchos que carguen el dato clave. **Reglas de conducta** no: van inline vía §Preferencias.)
 
 ## §Formato — frontmatter de una memoria
 
@@ -166,7 +168,7 @@ metadata:
 
 El conocimiento persistido del agente (documentos, estudios, temas, notas de dominio) vive en una carpeta única: `.claude/conocimiento/`, con un `INDICE.md` en su raíz. (La convención de dónde viven las herramientas la define la memoria [[herramientas]].)
 
-**Why:** ubicación determinística → el lint y cualquier consulta saben dónde mirar sin heurística; separa lo que el agente CONOCE (`conocimiento/`) de su config (`memoria/`, `CLAUDE.md`) y su tooling (`herramientas/`); mantiene la raíz del repo limpia.
+**Why:** ubicación determinística → el lint y cualquier consulta saben dónde mirar sin heurística; separa lo que el agente CONOCE (`conocimiento/`) de su config (`memoria/`, `AGENTS.md`) y su tooling (`herramientas/`); mantiene la raíz del repo limpia.
 
 **How to apply:**
 
@@ -351,19 +353,21 @@ Los **estados** y su semántica (a qué carpeta mapea cada uno, cuáles son term
 |------|--------|--------|---------|--------|-------|
 ```
 
-Sección de `.claude/CLAUDE.md` — "Planes del proyecto":
+Sección de `AGENTS.md` — "Planes del proyecto":
 
 ```markdown
 ## Planes del proyecto
 
-Los planes se persisten en [`planes/`](planes/): `pendientes/` (planes vivos: `Nuevo`, `En curso`, `Diferido`), `ejecutados/` y `descartados/` (registro, con motivo). Nombre = slug estable sin fecha; estado y fechas viven en el registro [`planes/PLANES.md`](planes/PLANES.md), y los estados disponibles (con su carpeta y si son terminales) en [`planes/ESTADOS.md`](planes/ESTADOS.md) — configurable, que el lint lee. Ciclo completo en la memoria [`feedback_flujo_planes.md`](memoria/feedback_flujo_planes.md). Al cerrar una tarea que tocó planes, correr el lint **desde la raíz del repo**:
+Los planes se persisten en [`planes/`](.claude/planes/): `pendientes/` (planes vivos: `Nuevo`, `En curso`, `Diferido`), `ejecutados/` y `descartados/` (registro, con motivo). Nombre = slug estable sin fecha; estado y fechas viven en el registro [`planes/PLANES.md`](.claude/planes/PLANES.md), y los estados disponibles (con su carpeta y si son terminales) en [`planes/ESTADOS.md`](.claude/planes/ESTADOS.md) — configurable, que el lint lee. Ciclo completo en la memoria [`feedback_flujo_planes.md`](.claude/memoria/feedback_flujo_planes.md). Al cerrar una tarea que tocó planes, correr el lint **desde la raíz del repo**:
 
 ​```bash
 node .claude/planes/lint-planes/lint-planes.js
 ​```
 ```
 
-Hook (merge sin pisar hooks existentes en `.claude/settings.json`; con `--quiet` solo imprime si hay hallazgos — es el trigger mecánico del ciclo):
+Hook — **registro doble** (decisión 0010): el mismo script se registra en los dos formatos — Claude Code y Codex CLI ejecutan idéntico chequeo al abrir sesión. Con `--quiet` el lint solo imprime cuando hay hallazgos: sesión limpia = hook silencioso. Es el trigger mecánico del ciclo — sin él, mover planes vuelve a depender de acordarse.
+
+**Claude Code** — merge (sin pisar hooks existentes) en `.claude/settings.json` del repo:
 
 ```json
 {
@@ -382,6 +386,28 @@ Hook (merge sin pisar hooks existentes en `.claude/settings.json`; con `--quiet`
 }
 ```
 
+**Codex CLI** — merge (sin pisar hooks existentes) en `.codex/hooks.json` del repo:
+
+```json
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node .claude/planes/lint-planes/lint-planes.js --quiet",
+            "statusMessage": "Chequeando el ciclo de planes"
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+> Codex carga hooks de proyecto solo si la capa `.codex/` del repo está **trusted** (revisar con `/hooks`), y con `features.hooks` habilitado en su config. Avisarle al usuario al instalar.
+
 `.claude/planes/lint-planes/README.md`:
 
 ```markdown
@@ -392,7 +418,7 @@ Hook (merge sin pisar hooks existentes en `.claude/settings.json`; con `--quiet`
 **Estado:** vigente.
 **Referenciado por:** hook `SessionStart` en `.claude/settings.json` — actualizar el hook si se mueve.
 **Dependencias:** Node.js (sin libs externas).
-**Origen (opcional):** funcionalidad `gestion-de-planes` del harness.
+**Origen (opcional):** funcionalidad `gestion-de-planes` del harness (análisis de uso 2026-07: los ciclos manuales de planes no se sostenían solos).
 ```
 
 ## §Script — `.claude/planes/lint-planes/lint-planes.js`
@@ -579,18 +605,18 @@ La terminología del dominio vive en `.claude/glosario/INDICE.md`: una tabla don
 Relacionado: [[flujo-planes]] (consultar el glosario al planificar/analizar).
 ```
 
-Sección de `.claude/CLAUDE.md` — "Glosario del proyecto":
+Sección de `AGENTS.md` — "Glosario del proyecto":
 
 ```markdown
 ## Glosario del proyecto
 
-La terminología del dominio vive en [`glosario/INDICE.md`](glosario/INDICE.md): una tabla de conceptos (nombre canónico, definición, alias registrados, y link a página de detalle si el concepto es complejo). Los alias se **registran, no se prohíben**. **Consultarlo al planificar y analizar.** Al cerrar una tarea que tocó el glosario, correr el lint **desde la raíz del repo**:
+La terminología del dominio vive en [`glosario/INDICE.md`](.claude/glosario/INDICE.md): una tabla de conceptos (nombre canónico, definición, alias registrados, y link a página de detalle si el concepto es complejo). Los alias se **registran, no se prohíben**. **Consultarlo al planificar y analizar.** Al cerrar una tarea que tocó el glosario, correr el lint **desde la raíz del repo**:
 
 ​```bash
 node .claude/glosario/lint-glosario/lint-glosario.js
 ​```
 
-Detalle de la convención en la memoria [`feedback_glosario.md`](memoria/feedback_glosario.md).
+Detalle de la convención en la memoria [`feedback_glosario.md`](.claude/memoria/feedback_glosario.md).
 ```
 
 Lint `.claude/glosario/lint-glosario/lint-glosario.js` (Node, sin dependencias, sin red):
@@ -725,18 +751,18 @@ Las decisiones **estructurales al propósito del repo** se asientan en `.claude/
 Relacionado: [[flujo-planes]] (consultar/registrar decisiones al cerrar planes).
 ```
 
-Sección de `.claude/CLAUDE.md` — "Decisiones del proyecto":
+Sección de `AGENTS.md` — "Decisiones del proyecto":
 
 ```markdown
 ## Decisiones del proyecto
 
-Las decisiones **estructurales al propósito del repo** (no las operativas triviales) se asientan en [`decisiones/INDICE.md`](decisiones/INDICE.md): una tabla donde cada fila es una decisión (N°, qué + por qué, fecha, estado, y link a detalle si requiere conceptualización mayor). Misma estructura que el glosario. **Consultarlas al planificar y analizar** para no re-decidir ni contradecir. Al cerrar una tarea que registró decisiones, correr el lint **desde la raíz del repo**:
+Las decisiones **estructurales al propósito del repo** (no las operativas triviales) se asientan en [`decisiones/INDICE.md`](.claude/decisiones/INDICE.md): una tabla donde cada fila es una decisión (N°, qué + por qué, fecha, estado, y link a detalle si requiere conceptualización mayor). Misma estructura que el glosario. **Consultarlas al planificar y analizar** para no re-decidir ni contradecir. Al cerrar una tarea que registró decisiones, correr el lint **desde la raíz del repo**:
 
 ​```bash
 node .claude/decisiones/lint-decisiones/lint-decisiones.js
 ​```
 
-Detalle de la convención en la memoria [`feedback_decisiones.md`](memoria/feedback_decisiones.md).
+Detalle de la convención en la memoria [`feedback_decisiones.md`](.claude/memoria/feedback_decisiones.md).
 ```
 
 Lint `.claude/decisiones/lint-decisiones/lint-decisiones.js` (Node, sin dependencias, sin red):
@@ -880,18 +906,18 @@ Otras memorias, planes o conocimiento pueden referenciar una tool por su ruta ex
 Relacionado: [[flujo-planes]], [[base-conocimiento]].
 ```
 
-Sección de `.claude/CLAUDE.md` — "Herramientas del proyecto":
+Sección de `AGENTS.md` — "Herramientas del proyecto":
 
 ```markdown
 ## Herramientas del proyecto
 
-Las **Herramientas** del repo — las *tools* que el Propósito requiere (tipos `script`, `skill` local, `MCP` local) — viven en [`herramientas/`](herramientas/), listadas en el registro [`herramientas/INDICE.md`](herramientas/INDICE.md) (tabla Herramienta | Tipo | Qué hace | Cómo se invoca | Estado). Los **lints de subsistema no son Herramientas**: son infra del Patrón y viven con su subsistema (`.claude/<sub>/lint-<sub>/`). ⚠️ Una tool referenciada por ruta en `settings`, `.gitignore` o un hook no se mueve sin actualizar esa referencia (rompe el match por prefijo). Al cerrar una tarea que tocó Herramientas, correr el lint **desde la raíz del repo**:
+Las **Herramientas** del repo — las *tools* que el Propósito requiere (tipos `script`, `skill` local, `MCP` local) — viven en [`herramientas/`](.claude/herramientas/), listadas en el registro [`herramientas/INDICE.md`](.claude/herramientas/INDICE.md) (tabla Herramienta | Tipo | Qué hace | Cómo se invoca | Estado). Los **lints de subsistema no son Herramientas**: son infra del Patrón y viven con su subsistema (`.claude/<sub>/lint-<sub>/`, decisión 0008). ⚠️ Una tool referenciada por ruta en `settings`, `.gitignore` o un hook no se mueve sin actualizar esa referencia (rompe el match por prefijo). Al cerrar una tarea que tocó Herramientas, correr el lint **desde la raíz del repo**:
 
 ​```bash
 node .claude/herramientas/lint-herramientas/lint-herramientas.js
 ​```
 
-Detalle de la convención en la memoria [`feedback_herramientas.md`](memoria/feedback_herramientas.md).
+Detalle de la convención en la memoria [`feedback_herramientas.md`](.claude/memoria/feedback_herramientas.md).
 ```
 
 Lint `.claude/herramientas/lint-herramientas/lint-herramientas.js` (Node, sin dependencias, sin red):
@@ -1095,7 +1121,7 @@ Contenido exacto (Node, sin dependencias, sin red):
 
 ```js
 #!/usr/bin/env node
-// Lint estructural de preferencias: PREFERENCIAS.md con Base/Adaptaciones + @import en CLAUDE.md. Sin LLM, sin red.
+// Lint estructural de preferencias: PREFERENCIAS.md con Base/Adaptaciones + @import en el punto de entrada (AGENTS.md/CLAUDE.md). Sin LLM, sin red.
 // NO detecta contradicciones semanticas (eso es la capa semantica, a pedido).
 // Uso: node lint-preferencias.js [<carpeta .claude>]   (default: .claude)
 const fs = require('fs'), path = require('path');
@@ -1112,18 +1138,19 @@ if (!fs.existsSync(prefFile)) {
   if (txt.trim().length < 50) problems.push('PREFERENCIAS.md casi vacio (sin contenido util)');
 }
 
-// @import en CLAUDE.md (las preferencias tienen que estar siempre en contexto).
-// CLAUDE.md puede vivir dentro de <config>/ (layout del harness) o en la raiz del repo (layout estandar de Claude Code).
-let claudeMd = path.join(claudeDir, 'CLAUDE.md');
-if (!fs.existsSync(claudeMd)) claudeMd = path.join(path.dirname(claudeDir), 'CLAUDE.md');
-if (fs.existsSync(claudeMd)) {
-  const c = fs.readFileSync(claudeMd, 'utf8');
-  // el import lleva el prefijo del <config> segun donde viva el CLAUDE.md: @preferencias/... o @.claude/preferencias/...
-  if (!/@[\w./-]*preferencias\/PREFERENCIAS\.md/.test(c)) {
-    problems.push('CLAUDE.md no importa @preferencias/PREFERENCIAS.md (no queda en contexto)');
+// @import en el punto de entrada (las preferencias tienen que estar siempre en contexto).
+// Fuente: AGENTS.md en la raiz (decision 0010); layouts legacy: CLAUDE.md en la raiz o dentro de <config>/.
+const root = path.dirname(claudeDir);
+const entradas = [path.join(root, 'AGENTS.md'), path.join(root, 'CLAUDE.md'), path.join(claudeDir, 'CLAUDE.md')]
+  .filter(f => fs.existsSync(f));
+if (entradas.length) {
+  // el import lleva el prefijo segun donde viva el punto de entrada: @preferencias/... o @.claude/preferencias/...
+  const importa = entradas.some(f => /@[\w./-]*preferencias\/PREFERENCIAS\.md/.test(fs.readFileSync(f, 'utf8')));
+  if (!importa) {
+    problems.push('ningun punto de entrada (AGENTS.md/CLAUDE.md) importa @preferencias/PREFERENCIAS.md (no queda en contexto)');
   }
 } else {
-  problems.push('no existe CLAUDE.md (no se pudo verificar el @import)');
+  problems.push('no existe punto de entrada (AGENTS.md o CLAUDE.md; no se pudo verificar el @import)');
 }
 
 console.log(`== LINT PREFERENCIAS: ${prefFile} ==`);

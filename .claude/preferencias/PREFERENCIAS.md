@@ -1,6 +1,6 @@
 # Preferencias
 
-Reglas de conducta del agente en este repo. Siempre en contexto (importado desde CLAUDE.md). La sección **Base** viene del harness y se actualiza al levelear (no editarla acá: los ajustes de este repo van en **Adaptaciones**, que el leveleo nunca toca).
+Reglas de conducta del agente en este repo. Siempre en contexto (importado desde AGENTS.md). La sección **Base** viene del harness y se actualiza al levelear (no editarla acá: los ajustes de este repo van en **Adaptaciones**, que el leveleo nunca toca).
 
 ## Base (harness v2)
 

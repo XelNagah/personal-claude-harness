@@ -7,7 +7,7 @@ La sección **Base** es verbatim y versionada: el leveleo la actualiza cuando su
 ```markdown
 # Preferencias
 
-Reglas de conducta del agente en este repo. Siempre en contexto (importado desde CLAUDE.md). La sección **Base** viene del harness y se actualiza al levelear (no editarla acá: los ajustes de este repo van en **Adaptaciones**, que el leveleo nunca toca).
+Reglas de conducta del agente en este repo. Siempre en contexto (importado desde AGENTS.md). La sección **Base** viene del harness y se actualiza al levelear (no editarla acá: los ajustes de este repo van en **Adaptaciones**, que el leveleo nunca toca).
 
 ## Base (harness v2)
 
@@ -30,12 +30,12 @@ Reglas de conducta del agente en este repo. Siempre en contexto (importado desde
 (ninguna todavía — agregar acá lo específico de este proyecto)
 ```
 
-## §Sección de `.claude/CLAUDE.md` — "Preferencias (siempre cargadas)"
+## §Sección de `AGENTS.md` — "Preferencias (siempre cargadas)"
 
 ```markdown
 ## Preferencias (siempre cargadas)
 
-@preferencias/PREFERENCIAS.md
+@.claude/preferencias/PREFERENCIAS.md
 
 Al tocar las preferencias, correr el lint estructural **desde la raíz del repo** (chequea secciones Base/Adaptaciones + el `@import`):
 
@@ -44,7 +44,7 @@ node .claude/preferencias/lint-preferencias/lint-preferencias.js
 ​```
 ```
 
-(Ruta relativa al CLAUDE.md: si está en la raíz del repo, `@.claude/preferencias/PREFERENCIAS.md`.)
+(El prefijo `.claude/` es porque `AGENTS.md` vive en la raíz — la ruta del `@import` es relativa al archivo que importa. Layout legacy con `CLAUDE.md` dentro de `.claude/`: `@preferencias/PREFERENCIAS.md`.)
 
 ## §Bases anteriores (para detectar "versión vieja" en la reconciliación)
 
@@ -67,7 +67,7 @@ Contenido exacto (Node, sin dependencias, sin red):
 
 ```js
 #!/usr/bin/env node
-// Lint estructural de preferencias: PREFERENCIAS.md con Base/Adaptaciones + @import en CLAUDE.md. Sin LLM, sin red.
+// Lint estructural de preferencias: PREFERENCIAS.md con Base/Adaptaciones + @import en el punto de entrada (AGENTS.md/CLAUDE.md). Sin LLM, sin red.
 // NO detecta contradicciones semanticas (eso es la capa semantica, a pedido).
 // Uso: node lint-preferencias.js [<carpeta .claude>]   (default: .claude)
 const fs = require('fs'), path = require('path');
@@ -84,18 +84,19 @@ if (!fs.existsSync(prefFile)) {
   if (txt.trim().length < 50) problems.push('PREFERENCIAS.md casi vacio (sin contenido util)');
 }
 
-// @import en CLAUDE.md (las preferencias tienen que estar siempre en contexto).
-// CLAUDE.md puede vivir dentro de <config>/ (layout del harness) o en la raiz del repo (layout estandar de Claude Code).
-let claudeMd = path.join(claudeDir, 'CLAUDE.md');
-if (!fs.existsSync(claudeMd)) claudeMd = path.join(path.dirname(claudeDir), 'CLAUDE.md');
-if (fs.existsSync(claudeMd)) {
-  const c = fs.readFileSync(claudeMd, 'utf8');
-  // el import lleva el prefijo del <config> segun donde viva el CLAUDE.md: @preferencias/... o @.claude/preferencias/...
-  if (!/@[\w./-]*preferencias\/PREFERENCIAS\.md/.test(c)) {
-    problems.push('CLAUDE.md no importa @preferencias/PREFERENCIAS.md (no queda en contexto)');
+// @import en el punto de entrada (las preferencias tienen que estar siempre en contexto).
+// Fuente: AGENTS.md en la raiz (decision 0010); layouts legacy: CLAUDE.md en la raiz o dentro de <config>/.
+const root = path.dirname(claudeDir);
+const entradas = [path.join(root, 'AGENTS.md'), path.join(root, 'CLAUDE.md'), path.join(claudeDir, 'CLAUDE.md')]
+  .filter(f => fs.existsSync(f));
+if (entradas.length) {
+  // el import lleva el prefijo segun donde viva el punto de entrada: @preferencias/... o @.claude/preferencias/...
+  const importa = entradas.some(f => /@[\w./-]*preferencias\/PREFERENCIAS\.md/.test(fs.readFileSync(f, 'utf8')));
+  if (!importa) {
+    problems.push('ningun punto de entrada (AGENTS.md/CLAUDE.md) importa @preferencias/PREFERENCIAS.md (no queda en contexto)');
   }
 } else {
-  problems.push('no existe CLAUDE.md (no se pudo verificar el @import)');
+  problems.push('no existe punto de entrada (AGENTS.md o CLAUDE.md; no se pudo verificar el @import)');
 }
 
 console.log(`== LINT PREFERENCIAS: ${prefFile} ==`);

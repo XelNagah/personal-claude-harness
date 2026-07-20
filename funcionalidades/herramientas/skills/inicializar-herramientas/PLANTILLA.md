@@ -65,18 +65,18 @@ Otras memorias, planes o conocimiento pueden referenciar una tool por su ruta ex
 Relacionado: [[flujo-planes]], [[base-conocimiento]].
 ```
 
-## §Sección CLAUDE.md — "Herramientas del proyecto"
+## §Sección de `AGENTS.md` — "Herramientas del proyecto"
 
 ```markdown
 ## Herramientas del proyecto
 
-Las **Herramientas** del repo — las *tools* que el Propósito requiere (tipos `script`, `skill` local, `MCP` local) — viven en [`herramientas/`](herramientas/), listadas en el registro [`herramientas/INDICE.md`](herramientas/INDICE.md) (tabla Herramienta | Tipo | Qué hace | Cómo se invoca | Estado). Los **lints de subsistema no son Herramientas**: son infra del Patrón y viven con su subsistema (`.claude/<sub>/lint-<sub>/`). ⚠️ Una tool referenciada por ruta en `settings`, `.gitignore` o un hook no se mueve sin actualizar esa referencia (rompe el match por prefijo). Al cerrar una tarea que tocó Herramientas, correr el lint **desde la raíz del repo**:
+Las **Herramientas** del repo — las *tools* que el Propósito requiere (tipos `script`, `skill` local, `MCP` local) — viven en [`herramientas/`](.claude/herramientas/), listadas en el registro [`herramientas/INDICE.md`](.claude/herramientas/INDICE.md) (tabla Herramienta | Tipo | Qué hace | Cómo se invoca | Estado). Los **lints de subsistema no son Herramientas**: son infra del Patrón y viven con su subsistema (`.claude/<sub>/lint-<sub>/`, decisión 0008). ⚠️ Una tool referenciada por ruta en `settings`, `.gitignore` o un hook no se mueve sin actualizar esa referencia (rompe el match por prefijo). Al cerrar una tarea que tocó Herramientas, correr el lint **desde la raíz del repo**:
 
 ​```bash
 node .claude/herramientas/lint-herramientas/lint-herramientas.js
 ​```
 
-Detalle de la convención en la memoria [`feedback_herramientas.md`](memoria/feedback_herramientas.md).
+Detalle de la convención en la memoria [`feedback_herramientas.md`](.claude/memoria/feedback_herramientas.md).
 ```
 
 ## §Script — `.claude/herramientas/lint-herramientas/lint-herramientas.js`

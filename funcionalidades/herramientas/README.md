@@ -4,14 +4,14 @@ Instala la convención de **Herramientas** del repo: las *tools* que el propósi
 
 > **Subsistema de acumulación** — sigue el patrón índice + entradas + lint del harness ([cómo aprende](../../README.md#cómo-aprende)). Acá el índice es `herramientas/INDICE.md` y cada entrada es una tool (un `script` abre su carpeta `<tool>/`; una `skill`/`MCP` se linkea donde vive).
 >
-> **Ojo — los lints de subsistema NO son Herramientas.** Son infra del Patrón de cada subsistema y viven con su subsistema (`<config>/<sub>/lint-<sub>/`). Este subsistema cataloga solo las tools de dominio que sirven al propósito.
+> **Ojo — los lints de subsistema NO son Herramientas.** Son infra del Patrón de cada subsistema y viven con su subsistema (`<repo>/<sub>/lint-<sub>/`). Este subsistema cataloga solo las tools de dominio que sirven al propósito.
 
 ## Qué agrega al repo destino
 
 ```
-<config>/
-├── CLAUDE.md                          # sección "Herramientas del proyecto"
-├── herramientas/
+<repo>/
+├── AGENTS.md                          # sección "Herramientas del proyecto" (CLAUDE.md = adaptador)
+├── .claude/herramientas/
 │   ├── INDICE.md                      # tabla: Herramienta | Tipo | Qué hace | Cómo se invoca | Estado
 │   ├── <tool>/                        # una tool tipo script
 │   │   ├── README.md                  # ficha del tool
@@ -19,13 +19,13 @@ Instala la convención de **Herramientas** del repo: las *tools* que el propósi
 │   └── lint-herramientas/
 │       ├── README.md
 │       └── lint-herramientas.js       # lint mecánico (sin LLM, sin red)
-└── memoria/
+└── .claude/memoria/
     └── feedback_herramientas.md       # la convención, como memoria (+ índice)
 ```
 
 ## Idea
 
-Cada tool en el registro con su **Tipo**. Un `script` vive en su carpeta `<tool>/` con README; una `skill` en `<config>/skills/`; un `MCP` en `.mcp.json`. El `INDICE.md` es la tabla escaneable que los ordena a todos.
+Cada tool en el registro con su **Tipo**. Un `script` vive en su carpeta `<tool>/` con README; una `skill` en `<repo>/skills/`; un `MCP` en `.mcp.json`. El `INDICE.md` es la tabla escaneable que los ordena a todos.
 
 | Herramienta | Tipo | Qué hace | Cómo se invoca | Estado |
 |-------------|------|----------|----------------|--------|

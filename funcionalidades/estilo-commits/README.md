@@ -5,8 +5,8 @@ Instala como **memoria de feedback** la preferencia del usuario sobre mensajes d
 ## Qué agrega al repo destino
 
 ```
-<config>/
-└── memoria/
+<repo>/
+└── .claude/memoria/
     └── feedback_estilo_commits.md
 ```
 

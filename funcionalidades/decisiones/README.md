@@ -13,14 +13,14 @@ Solo decisiones **estructurales al propósito del repo**: las que definen cómo 
 ## Qué agrega al repo destino
 
 ```
-<config>/
-├── CLAUDE.md                              # sección "Decisiones del proyecto"
-├── decisiones/
+<repo>/
+├── AGENTS.md                              # sección "Decisiones del proyecto" (CLAUDE.md = adaptador)
+├── .claude/decisiones/
 │   ├── INDICE.md                      # tabla: N° | Decisión | Fecha | Estado | Detalle
 │   ├── NNNN-slug.md                       # página de detalle, solo decisiones complejas
 │   └── lint-decisiones/
 │       └── lint-decisiones.js             # lint mecánico (sin LLM, sin red)
-└── memoria/
+└── .claude/memoria/
     └── feedback_decisiones.md             # la convención, como memoria (+ índice)
 ```
 

@@ -1,6 +1,6 @@
 ---
 name: inicializar-herramientas
-description: Instala la gestión de Herramientas del usuario en el repo actual (.claude/herramientas/ con registro tabla INDICE.md de columnas Herramienta|Tipo|Qué hace|Cómo se invoca|Estado + lint + memoria + sección CLAUDE.md). Las Herramientas son las tools del Propósito (script/skill local/MCP local); los lints de subsistema NO son herramientas. Ordena el cementerio de tools. Depende de memoria-local. Use when el usuario dice "inicializar herramientas", "gestión de herramientas", "registro de herramientas", "ordená los scripts", "inicializar scripts".
+description: Instala la gestión de Herramientas del usuario en el repo actual (.claude/herramientas/ con registro tabla INDICE.md de columnas Herramienta|Tipo|Qué hace|Cómo se invoca|Estado + lint + memoria + sección en AGENTS.md). Las Herramientas son las tools del Propósito (script/skill local/MCP local); los lints de subsistema NO son herramientas. Ordena el cementerio de tools. Depende de memoria-local. Use when el usuario dice "inicializar herramientas", "gestión de herramientas", "registro de herramientas", "ordená los scripts", "inicializar scripts".
 ---
 
 # Inicializar gestión de Herramientas
@@ -14,9 +14,8 @@ Instala la convención de **Herramientas** del repo: las *tools* que el propósi
 ## Estructura objetivo
 
 ```
-.claude/
-├── CLAUDE.md               # se le asegura la sección "Herramientas del proyecto"
-├── herramientas/
+├── AGENTS.md               # (raíz) se le asegura la sección "Herramientas del proyecto"; CLAUDE.md = adaptador
+├── .claude/herramientas/
 │   ├── INDICE.md           # tabla: Herramienta | Tipo | Qué hace | Cómo se invoca | Estado
 │   ├── <tool>/             # una tool tipo script
 │   │   ├── README.md       # ficha del tool
@@ -59,5 +58,5 @@ Si el repo ya tiene una carpeta de scripts desordenada (archivos sueltos, sin do
 3. **Instalar el lint** `.claude/herramientas/lint-herramientas/lint-herramientas.js` (contenido EXACTO de PLANTILLA.md §Script) con su propio `README.md`.
 4. **Migrar** scripts sueltos existentes a `<tool>/` con README y fila en el registro (ver Migración). Grep de refs por ruta antes de mover.
 5. **Asegurar la memoria `feedback_herramientas.md`** (verbatim de PLANTILLA.md §Memoria) y su línea en `memoria/MEMORIA.md`.
-6. **En `.claude/CLAUDE.md`** asegurar la sección **"Herramientas del proyecto"** (PLANTILLA.md §Sección). No reescribir el archivo entero. Si existe el bloque **"Mapa del repo (siempre cargado)"** (de `memoria-local`), asegurar la línea `@herramientas/INDICE.md` en él.
+6. **En `AGENTS.md`** (punto de entrada en la raíz, decisión 0010) asegurar la sección **"Herramientas del proyecto"** (PLANTILLA.md §Sección). No reescribir el archivo entero. Si existe el bloque **"Mapa del repo (siempre cargado)"** (de `memoria-local`), asegurar la línea `@.claude/herramientas/INDICE.md` en él.
 7. **Reportar** en los tres baldes. Correr el lint (`node .claude/herramientas/lint-herramientas/lint-herramientas.js`). **No hacer commit** salvo pedido explícito.

@@ -1,6 +1,6 @@
 ---
 name: inicializar-decisiones
-description: Instala el registro de decisiones del usuario en el repo actual (.claude/decisiones/INDICE.md tabla + páginas de detalle + lint + memoria + sección CLAUDE.md). Decisiones estructurales al propósito del repo (NO "ADR"). Depende de memoria-local. Use when el usuario dice "inicializar decisiones", "registro de decisiones", "armá las decisiones".
+description: Instala el registro de decisiones del usuario en el repo actual (.claude/decisiones/INDICE.md tabla + páginas de detalle + lint + memoria + sección en AGENTS.md). Decisiones estructurales al propósito del repo (NO "ADR"). Depende de memoria-local. Use when el usuario dice "inicializar decisiones", "registro de decisiones", "armá las decisiones".
 ---
 
 # Inicializar registro de decisiones
@@ -14,9 +14,8 @@ Instala un registro de las decisiones **estructurales al propósito del repo**. 
 ## Estructura objetivo
 
 ```
-.claude/
-├── CLAUDE.md          # se le asegura la sección "Decisiones del proyecto"
-├── decisiones/
+├── AGENTS.md          # (raíz) se le asegura la sección "Decisiones del proyecto"; CLAUDE.md = adaptador
+├── .claude/decisiones/
 │   ├── INDICE.md  # tabla: N° | Decisión | Fecha | Estado | Detalle
 │   ├── NNNN-slug.md   # página de detalle, solo para decisiones complejas
 │   └── lint-decisiones/
@@ -46,5 +45,5 @@ Segura de re-correr: sirve para **"levelear"** repos que ya tienen algunas parte
 2. **Asegurar `.claude/decisiones/INDICE.md`** con la semilla de [PLANTILLA.md](PLANTILLA.md) §Decisiones (encabezado + tabla vacía). Formato de página de detalle en §Detalle. Si ya existe un registro equivalente (ej. `docs/adr/`), no duplicar: reportar `divergente` y preguntar si migrar.
 3. **Instalar el lint** `.claude/decisiones/lint-decisiones/lint-decisiones.js` con el contenido EXACTO de PLANTILLA.md §Script.
 4. **Asegurar la memoria `feedback_decisiones.md`** (verbatim de PLANTILLA.md §Memoria) y su línea en `memoria/MEMORIA.md`. Equivalente presente → no duplicar; difiere → reportar.
-5. **En `.claude/CLAUDE.md`** asegurar la sección **"Decisiones del proyecto"** (PLANTILLA.md §Sección). Equivalente presente → no duplicar. No reescribir el archivo entero.
+5. **En `AGENTS.md`** (punto de entrada en la raíz, decisión 0010; si falta, crearlo con el adaptador `CLAUDE.md` = `@AGENTS.md` como indica `inicializar-preferencias-trabajo`) asegurar la sección **"Decisiones del proyecto"** (PLANTILLA.md §Sección). Equivalente presente → no duplicar. No reescribir el archivo entero.
 6. **Reportar** en los tres baldes. Correr el lint (`node .claude/decisiones/lint-decisiones/lint-decisiones.js`) → debe dar limpio sobre el registro vacío. **No hacer commit** salvo pedido explícito.

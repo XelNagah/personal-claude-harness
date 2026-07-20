@@ -48,18 +48,18 @@ La terminología del dominio vive en `.claude/glosario/INDICE.md`: una tabla don
 Relacionado: [[flujo-planes]] (consultar el glosario al planificar/analizar).
 ```
 
-## §Sección CLAUDE.md — "Glosario del proyecto"
+## §Sección de `AGENTS.md` — "Glosario del proyecto"
 
 ```markdown
 ## Glosario del proyecto
 
-La terminología del dominio vive en [`glosario/INDICE.md`](glosario/INDICE.md): una tabla de conceptos (nombre canónico, definición, alias registrados, y link a página de detalle si el concepto es complejo). Los alias se **registran, no se prohíben**. **Consultarlo al planificar y analizar.** Al cerrar una tarea que tocó el glosario, correr el lint **desde la raíz del repo**:
+La terminología del dominio vive en [`glosario/INDICE.md`](.claude/glosario/INDICE.md): una tabla de conceptos (nombre canónico, definición, alias registrados, y link a página de detalle si el concepto es complejo). Los alias se **registran, no se prohíben**. **Consultarlo al planificar y analizar.** Al cerrar una tarea que tocó el glosario, correr el lint **desde la raíz del repo**:
 
 ​```bash
 node .claude/glosario/lint-glosario/lint-glosario.js
 ​```
 
-Detalle de la convención en la memoria [`feedback_glosario.md`](memoria/feedback_glosario.md).
+Detalle de la convención en la memoria [`feedback_glosario.md`](.claude/memoria/feedback_glosario.md).
 ```
 
 ## §Script — `.claude/glosario/lint-glosario/lint-glosario.js`

@@ -7,14 +7,14 @@ Instala un **glosario del dominio** del repo: una tabla de conceptos (nombre can
 ## Qué agrega al repo destino
 
 ```
-<config>/
-├── CLAUDE.md                          # sección "Glosario del proyecto"
-├── glosario/
+<repo>/
+├── AGENTS.md                          # sección "Glosario del proyecto" (CLAUDE.md = adaptador)
+├── .claude/glosario/
 │   ├── INDICE.md                    # tabla: Concepto | Definición | Alias | Detalle
 │   ├── <slug>.md                      # página de detalle, solo para conceptos complejos
 │   └── lint-glosario/
 │       └── lint-glosario.js           # lint mecánico (sin LLM, sin red)
-└── memoria/
+└── .claude/memoria/
     └── feedback_glosario.md           # la convención, como memoria (+ índice)
 ```
 

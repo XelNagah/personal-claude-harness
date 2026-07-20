@@ -7,9 +7,9 @@ Instala el sistema de **memoria local persistida** del usuario: un directorio `m
 ## Qué agrega al repo destino
 
 ```
-<config>/
-├── CLAUDE.md          # se le asegura la sección "Memoria del proyecto"
-└── memoria/
+<repo>/
+├── AGENTS.md          # se le aseguran las secciones "Mapa del repo" y "Memoria del proyecto" (CLAUDE.md = adaptador)
+└── .claude/memoria/
     ├── MEMORIA.md      # índice (solo punteros, nunca contenido)
     └── lint-memoria/
         └── lint-memoria.js   # lint mecánico (sin LLM, sin red)

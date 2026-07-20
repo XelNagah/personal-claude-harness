@@ -7,13 +7,13 @@ Instala el ciclo de planes del usuario: **carpetas = ciclo de vida grueso** (`pe
 ## Qué agrega al repo destino
 
 ```
-<config>/
-├── CLAUDE.md          # sección "Planes del proyecto" + @planes/PLANES.md en el Mapa del repo
-├── settings.json      # hook SessionStart → lint-planes --quiet (+ .codex/hooks.json, registro doble)
-├── memoria/
+<repo>/
+├── AGENTS.md          # sección "Planes del proyecto" + @.claude/planes/PLANES.md en el Mapa del repo (CLAUDE.md = adaptador)
+├── .claude/settings.json      # hook SessionStart → lint-planes --quiet (+ .codex/hooks.json, registro doble)
+├── .claude/memoria/
 │   ├── feedback_flujo_planes.md     # el ciclo completo, como memoria
 │   └── feedback_artefacto_estado.md # estado vivo de exploraciones multi-variable
-└── planes/
+└── .claude/planes/
     ├── ESTADOS.md     # estados: Estado | Sentido | Carpeta | Terminal (fuente de verdad, la lee el lint)
     ├── PLANES.md      # registro: Plan | Estado | Creado | Cerrado | Origen | Notas
     ├── pendientes/
