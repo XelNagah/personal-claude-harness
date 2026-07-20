@@ -12,6 +12,7 @@ Registro de las **Herramientas** del repo: las *tools* que el **Propósito** del
 
 | Herramienta | Tipo | Qué hace | Cómo se invoca | Estado |
 |-------------|------|----------|----------------|--------|
+| [instalar-junctions](instalar-junctions/) | script | Crea/repara las dos tandas de junctions de skills (`~/.claude/skills` para Claude Code + `~/.agents/skills` para Codex/Cursor/Gemini) apuntando a `funcionalidades/*/skills/`; idempotente, no pisa lo divergente | `node .claude/herramientas/instalar-junctions/instalar-junctions.js` | vigente |
 | [control-cierre](control-cierre/) | script | Corre todos los chequeos del repo de una pasada (lints de subsistema descubiertos dinámicamente + `claude plugin validate`) y resume verde/hallazgos | `node .claude/herramientas/control-cierre/control-cierre.js` | vigente |
 | [lint-harness](lint-harness/) | script | Lint de coherencia del harness: disco↔marketplace↔REGISTRO, junctions, verbatim divergente entre plantillas | `node .claude/herramientas/lint-harness/lint-harness.js` | vigente |
 | [lint-herramientas](lint-herramientas/) | script | Lint de este registro: README por herramienta local, herramienta en índice, filas colgadas, refs por ruta de lint en settings | `node .claude/herramientas/lint-herramientas/lint-herramientas.js` | vigente |
