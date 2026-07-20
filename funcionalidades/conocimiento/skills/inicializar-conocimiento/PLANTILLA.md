@@ -53,6 +53,22 @@ const mdLink = /\]\(([^)]+?\.md)\)/g;
 const codePath = /`([^`]+?\/[^`]+?\.md)`/g;
 const wiki = /\[\[([^\]]+?)\]\]/g;
 
+// Un wikilink ACTIVO (que el harness resuelve) va crudo; uno CITADO va en backticks
+// para mostrar el simbolo. Mapear code-spans inline (y fences) para saltar citas.
+function codeSpans(txt) {
+  const runs = []; let m; const re = /`+/g;
+  while ((m = re.exec(txt))) runs.push([m.index, m[0].length]);
+  const spans = [];
+  for (let i = 0; i < runs.length; ) {
+    const [open, len] = runs[i]; let j = i + 1;
+    while (j < runs.length && runs[j][1] !== len) j++;
+    if (j < runs.length) { spans.push([open, runs[j][0] + runs[j][1]]); i = j + 1; }
+    else i++;
+  }
+  return spans;
+}
+const enCodeSpan = (spans, idx) => spans.some(([s, e]) => idx >= s && idx < e);
+
 const broken = [], referenced = new Set();
 for (const f of domain) {
   const txt = read(f), fdir = path.dirname(f);
@@ -62,14 +78,16 @@ for (const f of domain) {
       let t = m[1].trim();
       if (/^https?:\/\//.test(t)) continue;
       // saltar placeholders/taquigrafia: elipsis, plantillas de nombre, angulos
-      if (t.includes('...') || t.includes('<') || /A{3,}|AA-MM|MM-DD/.test(t)) continue;
+      if (t.includes('...') || t.includes('<') || t.includes('*') || /A{3,}|AA-MM|MM-DD/.test(t)) continue;
       const hit = resolverRef(t, fdir);
       if (hit) { if (inRoot(hit)) referenced.add(rel(hit)); }
       else broken.push([rel(f), t, 'ref .md no existe']);
     }
   }
+  const spans = codeSpans(txt);
   let m; wiki.lastIndex = 0;
   while ((m = wiki.exec(txt))) {
+    if (enCodeSpan(spans, m.index)) continue;  // wikilink citado en backticks, no activo
     const name = m[1].split('|')[0].trim();
     const hit = domain.some(p => rel(p).endsWith('/' + name + '.md') || rel(p) === name + '.md');
     if (!hit) broken.push([rel(f), `[[${name}]]`, 'wikilink sin archivo']);
