@@ -9,7 +9,7 @@ Instala el ciclo de planes del usuario: **carpetas = ciclo de vida grueso** (`pe
 ```
 <config>/
 ├── CLAUDE.md          # sección "Planes del proyecto" + @planes/PLANES.md en el Mapa del repo
-├── settings.json      # hook SessionStart → lint-planes --quiet
+├── settings.json      # hook SessionStart → lint-planes --quiet (+ .codex/hooks.json, registro doble)
 ├── memoria/
 │   ├── feedback_flujo_planes.md     # el ciclo completo, como memoria
 │   └── feedback_artefacto_estado.md # estado vivo de exploraciones multi-variable

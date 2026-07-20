@@ -1,0 +1,15 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node .claude/planes/lint-planes/lint-planes.js --quiet",
+            "statusMessage": "Chequeando el ciclo de planes"
+          }
+        ]
+      }
+    ]
+  }
+}

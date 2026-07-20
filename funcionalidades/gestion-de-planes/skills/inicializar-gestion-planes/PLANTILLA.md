@@ -135,9 +135,11 @@ node .claude/planes/lint-planes/lint-planes.js
 ​```
 ```
 
-## §Hook — chequeo al abrir sesión
+## §Hook — chequeo al abrir sesión (registro doble, decisión 0010)
 
-Merge (sin pisar hooks existentes) en `.claude/settings.json` del repo:
+El mismo script se registra en los dos formatos — Claude Code y Codex CLI ejecutan idéntico chequeo al abrir sesión.
+
+**Claude Code** — merge (sin pisar hooks existentes) en `.claude/settings.json` del repo:
 
 ```json
 {
@@ -155,6 +157,28 @@ Merge (sin pisar hooks existentes) en `.claude/settings.json` del repo:
   }
 }
 ```
+
+**Codex CLI** — merge (sin pisar hooks existentes) en `.codex/hooks.json` del repo:
+
+```json
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node .claude/planes/lint-planes/lint-planes.js --quiet",
+            "statusMessage": "Chequeando el ciclo de planes"
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+> Codex carga hooks de proyecto solo si la capa `.codex/` del repo está **trusted** (revisar con `/hooks`), y con `features.hooks` habilitado en su config. Avisarle al usuario al instalar.
 
 Con `--quiet` el lint solo imprime cuando hay hallazgos: sesión limpia = hook silencioso. Es el trigger mecánico del ciclo — sin él, mover planes vuelve a depender de acordarse.
 
