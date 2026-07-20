@@ -75,6 +75,22 @@ Nuevos:
 
 Sin `process.exit(1)`, coherente con la familia de lints (decisión 0003, capa mecánica).
 
+## Insumo: barrido del 2026-07-19 (sesión de skills operativas)
+
+Barrido real del repo (`.md`, prosa + textos duplicados) hecho al detectar que el agente seguía propagando términos en inglés. Estado de cada término al 2026-07-19:
+
+| Término en circulación | Alcance medido | Canónico | Estado |
+|---|---|---|---|
+| `levelear` / `leveleo` / `leveling` | ~30 usos (todos los SKILL.md/prompt.md, Base de preferencias) | **Nivelar** (alias: poner al día) | **Ratificado 26-07-19**, ya en glosario; los tres términos quedan para la columna Vetados |
+| `verbatim` / `byte-exact` / `byte-check` | 63 usos en 36 archivos (memorias, planes, lint-harness) | **Textual** (alias: literal, carácter a carácter) | **Ratificado 26-07-19**, ya en glosario; los tres quedan para Vetados |
+| `gate` / "Gate duro" | ~25 usos — incluida la **Base de preferencias** (la propia regla de terminología) y la decisión 0004, con 6+ copias en funcionalidades | **Control** | **Ratificado 26-07-19**, ya en glosario; `gate` queda para Vetados |
+| `harness` | **175 usos en 55 archivos**, incluido el identificador del marketplace (`xelnagah-harness`) | **Harness** (ratificado como canónico; alias "setup estándar") | **Ratificado 26-07-19**, ya en glosario |
+| `skill` vs "habilidad" | ambos en uso por el usuario | **Skill** (canónico; alias "habilidad") | **Ratificado 26-07-19**, ya en glosario |
+
+| `slug` | CLAUDE.md §Planes, `PLANES.md`, memoria del flujo de planes, funcionalidades | propuesta: "nombre estable" | Pendiente de ratificación (detectado 26-07-19 en la sesión de skills) |
+
+Nota: la Base de preferencias usa "gate" para enunciar la regla que prohíbe términos como "gate" — al ejecutar este plan, reescribirla implica **Base v3 + propagación textual**.
+
 ## Preguntas abiertas
 
 1. **¿Columna `Propuestos` propia, o marca inline en `Alias`?** Columna: 6 columnas, más ancha, pero el lint la lee sin parsear sigilos y el pendiente se ve de un vistazo. Inline (`nómina, ?lista de jugadores`): tabla angosta, pero introduce un sigilo críptico — roza el "español corriente en todo" de la Base v2. **Recomendación: columna propia.**

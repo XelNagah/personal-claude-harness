@@ -1,6 +1,6 @@
 # Proponer skills operativas por funcionalidad
 
-**Estado: Nuevo · Creado 26-07-19.** Hoy casi toda funcionalidad tiene **una** skill: la de instalación (`inicializar-<X>`). La única con skill **operativa** (de uso, no de setup) es `planificar`. El objetivo de cada subsistema no se cumple solo instalándolo — se cumple **usándolo bien sesión a sesión**. Faltan skills que ayuden a operarlo.
+**Estado: En curso · Creado 26-07-19.** Hoy casi toda funcionalidad tiene **una** skill: la de instalación (`inicializar-<X>`). La única con skill **operativa** (de uso, no de setup) es `planificar`. El objetivo de cada subsistema no se cumple solo instalándolo — se cumple **usándolo bien sesión a sesión**. Faltan skills que ayuden a operarlo.
 
 ## Planteo
 
@@ -36,3 +36,36 @@ Una tabla: funcionalidad × skill operativa propuesta × qué problema resuelve 
 
 ## Correr por
 `planificar` — es análisis de diseño transversal. Puede generar decisiones estructurales (qué es skill y qué no).
+
+## Avance de la sesión 26-07-19 (planificar)
+
+Lo ya ratificado por el usuario:
+
+1. **Taxonomía por ámbito → decisión 0009.** *Skill de Subsistema* (opera sobre un subsistema concreto, viaja en el plugin de su funcionalidad) y *Skill del Agente Multipropósito* (transversal, funcionalidad propia — hoy `planificar`). Las de autoría del harness quedan **fuera** de la taxonomía: son Herramientas del Propósito de este repo (0007), locales, no distribuibles. Reemplaza la partición provisional "familia A/B" de la sesión.
+2. **Criterio skill vs script (en 0009).** Mecánico determinista → script/lint; requiere juicio o significado → skill (puede llevar scripts auxiliares). Resuelve el eje "Skill vs. lint vs. CLAUDE.md" del planteo.
+3. **Distribución confirmada.** Un plugin puede llevar varias skills; las operativas se agregan en `funcionalidades/<X>/skills/` junto a la de instalación y viajan con el plugin (en consumidores viven en el cache del plugin, no en `.claude/`).
+4. **Autoría de este repo: tres Herramientas ratificadas** (a construir, primeras filas tipo `skill` del registro):
+   - `control-cierre` — **script**: corre los 11 chequeos (8 lints de subsistema + lint-herramientas + lint-harness + `claude plugin validate .`) y resume en un reporte. En `.claude/herramientas/control-cierre/`.
+   - `propagar-harness` — **skill** local: flujo de la memoria `feedback_propagacion_harness.md` (subagente fresco, verificación textual de embebidos, reporte de divergencias). En `.claude/skills/propagar-harness/`.
+   - `agregar-funcionalidad` — **skill** local: los 5 pasos de REGISTRO.md (plugin.json, marketplace, junction, REGISTRO, orquestador) + validate. En `.claude/skills/agregar-funcionalidad/`.
+5. **Terminología convergida** (glosario actualizado, insumo asentado en el plan de veto): control (no "gate"), harness (canónico), nivelar (no "levelear"), textual (no "verbatim"/"byte-exact"), skill (alias habilidad), más las dos clases de la taxonomía.
+6. **Planes diferidos vinculados como origen de Skills de Subsistema:** "Capa semántica de coherencia" → skill de glosario (desviaciones/sinónimos sobre el repo); "Habilidad para poblar subsistemas desde un repo existente" → skill de conocimiento (recorrer el repo y proponer páginas).
+
+## Entregable: tabla de Skills de Subsistema (ratificada 26-07-19)
+
+Nombres ratificados con el patrón del usuario: **"registrar-X" para dar de alta**. Corte ratificado: primero las tres altas; las medias en segunda tanda; lo demás no se construye.
+
+| Funcionalidad | Skill | Qué hace | Prioridad | Tanda |
+|---|---|---|---|---|
+| memoria-local | `registrar-memoria` | Captura una memoria tipada: elige tipo, detecta si una existente ya cubre el hecho (actualizar vs duplicar), indexa, lint | Alta | **1 — construir** |
+| gestion-de-planes | `ciclo-de-plan` | Abrir (nombre estable, archivo, fila en registro) y cerrar/mover (estado, fechas, notas, carpeta, lint) | Alta | **1 — construir** |
+| glosario | `converger-terminologia` | Recorre el texto del repo, detecta desviaciones/sinónimos del glosario, propone ratificar o vetar (control 0004). Materializa el plan diferido "Capa semántica" | Alta | **1 — construir** |
+| conocimiento | `buscar-conocimiento` | Recorre el repo buscando saber no asentado y propone páginas. Materializa el plan diferido "Poblar subsistemas" | Media | 2 |
+| decisiones | `registrar-decision` | Numera, redacta qué+por qué, detalle si compleja, lint; juzga si es estructural | Media | 2 |
+| preferencias-trabajo | `registrar-preferencia` | Detecta feedback recurrente del usuario y propone subirlo a Adaptaciones/Base (la "nivelación de preferencias" nunca resuelta) | Media | 2 |
+| herramientas | `registrar-herramienta` | Fila + README si es script + advertencia de refs por ruta | Baja | no se construye (instrucción alcanza) |
+| estilo-commits | — | — | — | ninguna (regla simple ≠ skill, 0009) |
+
+**Pendiente de terminología (a ratificar):** "slug" (propuesta: "nombre estable" — ya usado arriba; sumado al insumo del plan de veto) y "prosa" (propuesta de entrada de glosario: texto corriente de los `.md`, por oposición a código).
+
+**Pendiente de ejecución:** construir la tanda 1 (con doble formato + orquestador donde aplique), las tres Herramientas de autoría (`control-cierre`, `propagar-harness`, `agregar-funcionalidad`), y bump de versiones de los plugins tocados.

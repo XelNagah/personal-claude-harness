@@ -21,4 +21,11 @@ Solo términos **propios del dominio** (no conceptos generales de programación)
 | Documento | El `.md` que una entrada referencia (opcional en glosario/decisiones, siempre en memoria/planes). | Document | — |
 | Carpeta | Referencia de una entrada que es un directorio con su propio índice → recursión del patrón. | Folder, directorio | — |
 | Lint mecánico | Chequeo de integridad estructural sin LLM: refs rotas, huérfanos, índice incompleto, colisiones de alias. | lint | — |
+| Nivelar | Re-correr la instalación sobre un repo que ya tiene partes del setup para llevarlo al día: crear solo lo ausente, respetar lo divergente. | poner al día | — |
+| Textual | Copia que debe mantenerse idéntica carácter a carácter entre la fuente y sus duplicados (los textos de funcionalidades embebidos en el orquestador). | literal, carácter a carácter | — |
+| Control | Chequeo que frena el avance si no se cumple (ratificación del usuario antes de asentar un término, verificación completa antes de cerrar un plan). | — | — |
+| Harness | El setup estándar multipropósito que este repo autora y distribuye: los subsistemas, sus funcionalidades/plugins y el marketplace. | setup estándar | — |
+| Skill | Flujo empaquetado que el agente invoca por nombre (artefacto de Claude Code, `SKILL.md`); uno de los tipos de Herramienta. | habilidad | — |
+| Skill de Subsistema | Skill operativa que trabaja sobre un subsistema concreto; viaja en el plugin de la funcionalidad de ese subsistema. | — | — |
+| Skill del Agente Multipropósito | Skill transversal sin subsistema dueño (hoy: `planificar`); se empaqueta como funcionalidad propia. | — | — |
 | Chequeo semántico | Detección de contradicciones, incompatibilidades, duplicación o staleness que requiere entender el significado (LLM). | — | — |
