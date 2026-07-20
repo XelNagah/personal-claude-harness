@@ -203,6 +203,27 @@ function walk(dir, acc) {
 const rel = p => path.relative(root, p).replace(/\\/g, '/');
 const domain = walk(root, []);
 const read = f => fs.readFileSync(f, 'utf8');
+const inRoot = p => path.resolve(p).startsWith(path.resolve(root) + path.sep);
+
+// La raiz del repo se deduce de la ubicacion del propio lint: .claude/<sub>/lint-<sub>/ -> 3 arriba.
+// La profundidad la fija el instalador (decision 0008); no depende de desde donde se invoque.
+const repoRoot = path.resolve(__dirname, '..', '..', '..');
+const dentroDelRepo = p => {
+  const r = path.resolve(p);
+  return r === repoRoot || r.startsWith(repoRoot + path.sep);
+};
+// Un archivo de un subsistema puede linkear a otros (planes/, conocimiento/, docs/, ...): la ref se
+// resuelve relativa al archivo, a la raiz del subsistema, a .claude/, a la raiz del repo y al cwd.
+// Solo se acepta el candidato que caiga DENTRO del repo: una ref rota no resuelve contra afuera.
+function resolverRef(t, fdir) {
+  return [
+    path.join(fdir, t),
+    path.join(root, t),
+    path.join(root, '..', t),
+    path.join(repoRoot, t),
+    path.resolve(t),
+  ].map(p => path.normalize(p)).find(p => dentroDelRepo(p) && fs.existsSync(p)) || null;
+}
 
 const mdLink = /\]\(([^)]+?\.md)\)/g;
 // exige barra: `subtema/pagina.md` es una ref, `MEMORIA.md` suelto es prosa nombrando un archivo
@@ -219,10 +240,8 @@ for (const f of domain) {
       if (/^https?:\/\//.test(t)) continue;
       // saltar placeholders/taquigrafia: elipsis, plantillas de nombre, angulos
       if (t.includes('...') || t.includes('<') || /A{3,}|AA-MM|MM-DD/.test(t)) continue;
-      const c1 = path.normalize(path.join(fdir, t));
-      const c2 = path.normalize(path.join(root, t));
-      if (fs.existsSync(c1)) referenced.add(rel(c1));
-      else if (fs.existsSync(c2)) referenced.add(rel(c2));
+      const hit = resolverRef(t, fdir);
+      if (hit) { if (inRoot(hit)) referenced.add(rel(hit)); }
       else broken.push([rel(f), t, 'ref .md no existe']);
     }
   }
@@ -630,6 +649,26 @@ const root = path.resolve(process.argv[2] || '.claude/glosario');
 const glosPath = path.join(root, 'INDICE.md');
 const txt = fs.existsSync(glosPath) ? fs.readFileSync(glosPath, 'utf8') : '';
 
+// La raiz del repo se deduce de la ubicacion del propio lint: .claude/<sub>/lint-<sub>/ -> 3 arriba.
+// La profundidad la fija el instalador (decision 0008); no depende de desde donde se invoque.
+const repoRoot = path.resolve(__dirname, '..', '..', '..');
+const dentroDelRepo = p => {
+  const r = path.resolve(p);
+  return r === repoRoot || r.startsWith(repoRoot + path.sep);
+};
+// Un archivo de un subsistema puede linkear a otros (planes/, conocimiento/, docs/, ...): la ref se
+// resuelve relativa al archivo, a la raiz del subsistema, a .claude/, a la raiz del repo y al cwd.
+// Solo se acepta el candidato que caiga DENTRO del repo: una ref rota no resuelve contra afuera.
+function resolverRef(t, fdir) {
+  return [
+    path.join(fdir, t),
+    path.join(root, t),
+    path.join(root, '..', t),
+    path.join(repoRoot, t),
+    path.resolve(t),
+  ].map(p => path.normalize(p)).find(p => dentroDelRepo(p) && fs.existsSync(p)) || null;
+}
+
 // parsear filas de la tabla: | Concepto | Definicion | Alias | Detalle |
 const rows = [];
 for (const line of txt.split('\n')) {
@@ -651,8 +690,8 @@ for (const r of rows) {
   const m = linkRe.exec(r.detalle);
   if (!m) continue;
   const target = m[1].trim();
-  const abs = path.normalize(path.join(root, target));
-  if (fs.existsSync(abs)) referenced.add(path.basename(abs));
+  const abs = resolverRef(target, root);
+  if (abs) referenced.add(path.basename(abs));
   else refsRotas.push([r.concepto, target]);
 }
 
@@ -777,6 +816,26 @@ const mainPath = path.join(root, 'INDICE.md');
 const txt = fs.existsSync(mainPath) ? fs.readFileSync(mainPath, 'utf8') : '';
 const pad = n => String(n).padStart(4, '0');
 
+// La raiz del repo se deduce de la ubicacion del propio lint: .claude/<sub>/lint-<sub>/ -> 3 arriba.
+// La profundidad la fija el instalador (decision 0008); no depende de desde donde se invoque.
+const repoRoot = path.resolve(__dirname, '..', '..', '..');
+const dentroDelRepo = p => {
+  const r = path.resolve(p);
+  return r === repoRoot || r.startsWith(repoRoot + path.sep);
+};
+// Un archivo de un subsistema puede linkear a otros (planes/, conocimiento/, docs/, ...): la ref se
+// resuelve relativa al archivo, a la raiz del subsistema, a .claude/, a la raiz del repo y al cwd.
+// Solo se acepta el candidato que caiga DENTRO del repo: una ref rota no resuelve contra afuera.
+function resolverRef(t, fdir) {
+  return [
+    path.join(fdir, t),
+    path.join(root, t),
+    path.join(root, '..', t),
+    path.join(repoRoot, t),
+    path.resolve(t),
+  ].map(p => path.normalize(p)).find(p => dentroDelRepo(p) && fs.existsSync(p)) || null;
+}
+
 // parsear filas de la tabla: | N° | Decisión | Fecha | Estado | Detalle |
 const rows = [];
 for (const line of txt.split('\n')) {
@@ -804,8 +863,8 @@ const referenced = new Set(), refsRotas = [];
 for (const r of rows) {
   const m = linkRe.exec(r.detalle);
   if (!m) continue;
-  const target = m[1].trim(), abs = path.normalize(path.join(root, target));
-  if (fs.existsSync(abs)) referenced.add(path.basename(abs));
+  const target = m[1].trim(), abs = resolverRef(target, root);
+  if (abs) referenced.add(path.basename(abs));
   else refsRotas.push([pad(r.n), target]);
 }
 
@@ -963,7 +1022,9 @@ for (const line of idx.split('\n')) {
 }
 
 // [4] refs por ruta a lints en settings que no resuelven (cualquier .claude/**/*.js|sh|...)
-const repoRoot = path.resolve(root, '..', '..');   // .claude/herramientas -> raiz del repo
+// La raiz del repo se deduce de la ubicacion del propio lint: .claude/<sub>/lint-<sub>/ -> 3 arriba.
+// La profundidad la fija el instalador (decision 0008); no depende de desde donde se invoque.
+const repoRoot = path.resolve(__dirname, '..', '..', '..');
 const refsRotas = [];
 for (const sf of ['.claude/settings.local.json', '.claude/settings.json']) {
   const abs = path.join(repoRoot, sf);
@@ -1019,6 +1080,26 @@ const rel = p => path.relative(root, p).replace(/\\/g, '/');
 const read = f => fs.readFileSync(f, 'utf8');
 const inRoot = p => path.resolve(p).startsWith(path.resolve(root) + path.sep);
 
+// La raiz del repo se deduce de la ubicacion del propio lint: .claude/<sub>/lint-<sub>/ -> 3 arriba.
+// La profundidad la fija el instalador (decision 0008); no depende de desde donde se invoque.
+const repoRoot = path.resolve(__dirname, '..', '..', '..');
+const dentroDelRepo = p => {
+  const r = path.resolve(p);
+  return r === repoRoot || r.startsWith(repoRoot + path.sep);
+};
+// Un archivo de un subsistema puede linkear a otros (planes/, conocimiento/, docs/, ...): la ref se
+// resuelve relativa al archivo, a la raiz del subsistema, a .claude/, a la raiz del repo y al cwd.
+// Solo se acepta el candidato que caiga DENTRO del repo: una ref rota no resuelve contra afuera.
+function resolverRef(t, fdir) {
+  return [
+    path.join(fdir, t),
+    path.join(root, t),
+    path.join(root, '..', t),
+    path.join(repoRoot, t),
+    path.resolve(t),
+  ].map(p => path.normalize(p)).find(p => dentroDelRepo(p) && fs.existsSync(p)) || null;
+}
+
 const all = walk(root, []);
 const indexFile = path.join(root, 'MEMORIA.md');
 const hasIndex = fs.existsSync(indexFile);
@@ -1038,8 +1119,6 @@ const codePath = /`([^`]+?\/[^`]+?\.md)`/g;
 const wiki = /\[\[([^\]]+?)\]\]/g;
 
 // [1] refs rotas: links a .md inexistentes + wikilinks sin memoria.
-// Una memoria puede linkear a otros subsistemas (planes/, conocimiento/, ...): se resuelve
-// tambien relativo a .claude/, a la raiz del repo y al cwd, no solo dentro de memoria/.
 const broken = [], referenced = new Set();
 for (const f of all) {
   const txt = read(f), fdir = path.dirname(f);
@@ -1049,14 +1128,7 @@ for (const f of all) {
       let t = m[1].trim();
       if (/^https?:\/\//.test(t)) continue;
       if (t.includes('...') || t.includes('<')) continue;
-      const cands = [
-        path.join(fdir, t),
-        path.join(root, t),
-        path.join(root, '..', t),
-        path.join(root, '..', '..', t),
-        path.resolve(t),
-      ].map(p => path.normalize(p));
-      const hit = cands.find(fs.existsSync);
+      const hit = resolverRef(t, fdir);
       if (hit) { if (inRoot(hit)) referenced.add(rel(hit)); }
       else broken.push([rel(f), t, 'ref .md no existe']);
     }

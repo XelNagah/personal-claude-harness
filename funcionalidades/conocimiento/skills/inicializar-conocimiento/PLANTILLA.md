@@ -26,6 +26,27 @@ function walk(dir, acc) {
 const rel = p => path.relative(root, p).replace(/\\/g, '/');
 const domain = walk(root, []);
 const read = f => fs.readFileSync(f, 'utf8');
+const inRoot = p => path.resolve(p).startsWith(path.resolve(root) + path.sep);
+
+// La raiz del repo se deduce de la ubicacion del propio lint: .claude/<sub>/lint-<sub>/ -> 3 arriba.
+// La profundidad la fija el instalador (decision 0008); no depende de desde donde se invoque.
+const repoRoot = path.resolve(__dirname, '..', '..', '..');
+const dentroDelRepo = p => {
+  const r = path.resolve(p);
+  return r === repoRoot || r.startsWith(repoRoot + path.sep);
+};
+// Un archivo de un subsistema puede linkear a otros (planes/, conocimiento/, docs/, ...): la ref se
+// resuelve relativa al archivo, a la raiz del subsistema, a .claude/, a la raiz del repo y al cwd.
+// Solo se acepta el candidato que caiga DENTRO del repo: una ref rota no resuelve contra afuera.
+function resolverRef(t, fdir) {
+  return [
+    path.join(fdir, t),
+    path.join(root, t),
+    path.join(root, '..', t),
+    path.join(repoRoot, t),
+    path.resolve(t),
+  ].map(p => path.normalize(p)).find(p => dentroDelRepo(p) && fs.existsSync(p)) || null;
+}
 
 const mdLink = /\]\(([^)]+?\.md)\)/g;
 // exige barra: `subtema/pagina.md` es una ref, `MEMORIA.md` suelto es prosa nombrando un archivo
@@ -42,10 +63,8 @@ for (const f of domain) {
       if (/^https?:\/\//.test(t)) continue;
       // saltar placeholders/taquigrafia: elipsis, plantillas de nombre, angulos
       if (t.includes('...') || t.includes('<') || /A{3,}|AA-MM|MM-DD/.test(t)) continue;
-      const c1 = path.normalize(path.join(fdir, t));
-      const c2 = path.normalize(path.join(root, t));
-      if (fs.existsSync(c1)) referenced.add(rel(c1));
-      else if (fs.existsSync(c2)) referenced.add(rel(c2));
+      const hit = resolverRef(t, fdir);
+      if (hit) { if (inRoot(hit)) referenced.add(rel(hit)); }
       else broken.push([rel(f), t, 'ref .md no existe']);
     }
   }

@@ -81,17 +81,36 @@ if (fs.existsSync(path.join(repo, '.claude', 'CLAUDE.md'))) entrada.push('.claud
 // -- [4] divergencia de bloques verbatim entre PLANTILLAs ----------------
 // Compara los bloques ```markdown que definen una memoria (---\nname: X) entre las PLANTILLA.md
 // de cada funcionalidad y la del orquestador setup-completo (ambas usan .claude literal).
+// Ademas de las memorias, se comparan los FRAGMENTOS de codigo que deben viajar identicos en
+// todos los lints (no el lint entero: cada subsistema tiene el suyo, pero comparten piezas).
+// Se identifican por su comentario ancla. Los fragmentos NO se normalizan como las memorias:
+// deben coincidir caracter a caracter (solo se unifica el fin de linea).
+// Son dos piezas con alcance distinto: la raiz del repo la usan los 5 lints; la resolucion de
+// refs solo los 4 que validan links .md (lint-herramientas valida rutas en settings, no refs).
+const FRAGMENTOS = [
+  { nombre: 'raiz del repo', re: /\/\/ La raiz del repo se deduce[\s\S]*?const repoRoot = path\.resolve\(__dirname, '\.\.', '\.\.', '\.\.'\);/g },
+  { nombre: 'resolucion de refs', re: /const dentroDelRepo = p => \{[\s\S]*?\n\}\n/g },
+];
+
 const bloques = new Map(); // name -> [{archivo, hash}]
+function registrar(name, archivo, cuerpo) {
+  const hash = crypto.createHash('sha1').update(cuerpo).digest('hex').slice(0, 10);
+  const arr = bloques.get(name) || [];
+  arr.push({ archivo: path.relative(repo, archivo).replace(/\\/g, '/'), hash });
+  bloques.set(name, arr);
+}
 function extraer(archivo) {
   const txt = fs.readFileSync(archivo, 'utf8');
   const re = /```markdown\n(---\nname: ([\w-]+)[\s\S]*?)\n```/g;
   let m;
   while ((m = re.exec(txt))) {
-    const cuerpo = m[1].replace(/\s+/g, ' ').trim();
-    const hash = crypto.createHash('sha1').update(cuerpo).digest('hex').slice(0, 10);
-    const arr = bloques.get(m[2]) || [];
-    arr.push({ archivo: path.relative(repo, archivo).replace(/\\/g, '/'), hash });
-    bloques.set(m[2], arr);
+    registrar(m[2], archivo, m[1].replace(/\s+/g, ' ').trim());
+  }
+  for (const frag of FRAGMENTOS) {
+    let f; frag.re.lastIndex = 0;
+    while ((f = frag.re.exec(txt))) {
+      registrar('codigo: ' + frag.nombre, archivo, f[0].replace(/\r\n/g, '\n'));
+    }
   }
 }
 for (const f of enDisco) {
@@ -102,10 +121,27 @@ for (const f of enDisco) {
     if (fs.existsSync(p)) extraer(p);
   }
 }
+// Los lints vivos de este repo entran a la misma comparacion: la deriva mas probable no es entre
+// dos plantillas sino entre el lint que corre aca y la plantilla que lo distribuye.
+function buscarLints(dir, out) {
+  if (!fs.existsSync(dir)) return out;
+  for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
+    if (!e.isDirectory() || e.name === '.git' || e.name === 'node_modules') continue;
+    const full = path.join(dir, e.name);
+    if (/^lint-/.test(e.name)) {
+      const js = path.join(full, e.name + '.js');
+      if (fs.existsSync(js)) out.push(js);
+      continue;
+    }
+    buscarLints(full, out);
+  }
+  return out;
+}
+for (const js of buscarLints(path.join(repo, '.claude'), [])) extraer(js);
 const divergentes = [];
 for (const [name, arr] of bloques) {
   const hashes = new Set(arr.map(a => a.hash));
-  if (hashes.size > 1) divergentes.push(`memoria "${name}": ${arr.map(a => `${a.archivo} (${a.hash})`).join('  vs  ')}`);
+  if (hashes.size > 1) divergentes.push(`"${name}": ${arr.map(a => `${a.archivo} (${a.hash})`).join('  vs  ')}`);
 }
 
 // -- salida --------------------------------------------------------------

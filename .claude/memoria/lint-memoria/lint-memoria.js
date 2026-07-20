@@ -19,6 +19,26 @@ const rel = p => path.relative(root, p).replace(/\\/g, '/');
 const read = f => fs.readFileSync(f, 'utf8');
 const inRoot = p => path.resolve(p).startsWith(path.resolve(root) + path.sep);
 
+// La raiz del repo se deduce de la ubicacion del propio lint: .claude/<sub>/lint-<sub>/ -> 3 arriba.
+// La profundidad la fija el instalador (decision 0008); no depende de desde donde se invoque.
+const repoRoot = path.resolve(__dirname, '..', '..', '..');
+const dentroDelRepo = p => {
+  const r = path.resolve(p);
+  return r === repoRoot || r.startsWith(repoRoot + path.sep);
+};
+// Un archivo de un subsistema puede linkear a otros (planes/, conocimiento/, docs/, ...): la ref se
+// resuelve relativa al archivo, a la raiz del subsistema, a .claude/, a la raiz del repo y al cwd.
+// Solo se acepta el candidato que caiga DENTRO del repo: una ref rota no resuelve contra afuera.
+function resolverRef(t, fdir) {
+  return [
+    path.join(fdir, t),
+    path.join(root, t),
+    path.join(root, '..', t),
+    path.join(repoRoot, t),
+    path.resolve(t),
+  ].map(p => path.normalize(p)).find(p => dentroDelRepo(p) && fs.existsSync(p)) || null;
+}
+
 const all = walk(root, []);
 const indexFile = path.join(root, 'MEMORIA.md');
 const hasIndex = fs.existsSync(indexFile);
@@ -38,8 +58,6 @@ const codePath = /`([^`]+?\/[^`]+?\.md)`/g;
 const wiki = /\[\[([^\]]+?)\]\]/g;
 
 // [1] refs rotas: links a .md inexistentes + wikilinks sin memoria.
-// Una memoria puede linkear a otros subsistemas (planes/, conocimiento/, ...): se resuelve
-// tambien relativo a .claude/, a la raiz del repo y al cwd, no solo dentro de memoria/.
 const broken = [], referenced = new Set();
 for (const f of all) {
   const txt = read(f), fdir = path.dirname(f);
@@ -49,14 +67,7 @@ for (const f of all) {
       let t = m[1].trim();
       if (/^https?:\/\//.test(t)) continue;
       if (t.includes('...') || t.includes('<')) continue;
-      const cands = [
-        path.join(fdir, t),
-        path.join(root, t),
-        path.join(root, '..', t),
-        path.join(root, '..', '..', t),
-        path.resolve(t),
-      ].map(p => path.normalize(p));
-      const hit = cands.find(fs.existsSync);
+      const hit = resolverRef(t, fdir);
       if (hit) { if (inRoot(hit)) referenced.add(rel(hit)); }
       else broken.push([rel(f), t, 'ref .md no existe']);
     }

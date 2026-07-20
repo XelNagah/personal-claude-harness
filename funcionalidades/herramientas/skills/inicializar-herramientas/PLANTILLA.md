@@ -124,7 +124,9 @@ for (const line of idx.split('\n')) {
 }
 
 // [4] refs por ruta a lints en settings que no resuelven (cualquier .claude/**/*.js|sh|...)
-const repoRoot = path.resolve(root, '..', '..');   // .claude/herramientas -> raiz del repo
+// La raiz del repo se deduce de la ubicacion del propio lint: .claude/<sub>/lint-<sub>/ -> 3 arriba.
+// La profundidad la fija el instalador (decision 0008); no depende de desde donde se invoque.
+const repoRoot = path.resolve(__dirname, '..', '..', '..');
 const refsRotas = [];
 for (const sf of ['.claude/settings.local.json', '.claude/settings.json']) {
   const abs = path.join(repoRoot, sf);

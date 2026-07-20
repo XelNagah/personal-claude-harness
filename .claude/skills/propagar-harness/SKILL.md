@@ -10,7 +10,7 @@ Un cambio en una pieza de este repo (un lint, un texto de la Base de preferencia
 Esta skill encapsula el flujo probado (memoria `feedback_propagacion_harness.md`). Sus dos reglas duras salen de fallas reales:
 
 1. **Delegar a un subagente FRESCO, nunca a un fork.** Un fork hereda el contexto de la sesión y puede creer que el trabajo ya está hecho — pasó: terminó con 0 ediciones y `git status` limpio.
-2. **Verificar uno mismo, sin fiarse del auto-reporte.** `lint-harness` solo compara bloques de memoria entre PLANTILLAs — NO compara código de lints ni textos de preferencias/glosario: su verde no garantiza los embebidos.
+2. **Verificar uno mismo, sin fiarse del auto-reporte.** `lint-harness` compara bloques de memoria entre PLANTILLAs y los **fragmentos de código compartidos entre lints** (la resolución de refs, identificada por su comentario ancla; también contra los lints vivos de `.claude/`). Lo que **NO** cubre: el lint entero embebido en una PLANTILLA, ni los textos de preferencias/glosario. Su verde no garantiza esos embebidos — el chequeo de inclusión del paso 3 sigue siendo obligatorio.
 
 ## Flujo
 
