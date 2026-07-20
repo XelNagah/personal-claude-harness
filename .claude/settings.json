@@ -6,6 +6,10 @@
           {
             "type": "command",
             "command": "node .claude/planes/lint-planes/lint-planes.js --quiet"
+          },
+          {
+            "type": "command",
+            "command": "node .claude/herramientas/pantalla-bienvenida/pantalla-bienvenida.js"
           }
         ]
       }

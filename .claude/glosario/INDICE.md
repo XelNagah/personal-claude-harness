@@ -31,3 +31,5 @@ Solo términos **propios del dominio** (no conceptos generales de programación)
 | Skill del Agente Multipropósito | Skill transversal sin subsistema dueño (hoy: `planificar`); se empaqueta como funcionalidad propia. | — | — |
 | Texto plano | Texto corriente en lenguaje natural dentro de los `.md`, por oposición a código (cercas, backticks, identificadores, rutas y nombres de archivo). | — | — |
 | Chequeo semántico | Detección de contradicciones, incompatibilidades, duplicación o desactualización que requiere entender el significado (LLM). | — | — |
+| Pantalla de bienvenida | Bloque de estado que el Agente Multipropósito emite al arrancar la sesión (vía SessionStart hook): Título + Propósito del repo + métricas de cada subsistema + estado de lint. Es un bloque de texto en el transcript, no un banner propio del CLI. | — | — |
+| Identidad del Agente | Título + Propósito del repo persistidos como dato legible por máquina (propuesto en `.claude/identidad.md`), tolerante a indefinido hasta que el usuario o el agente lo definan. | — | — |
