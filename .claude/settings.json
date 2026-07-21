@@ -9,7 +9,7 @@
           },
           {
             "type": "command",
-            "command": "node .claude/herramientas/pantalla-bienvenida/pantalla-bienvenida.js"
+            "command": "node .claude/herramientas/pantalla-bienvenida/pantalla-bienvenida.js --hook"
           }
         ]
       }

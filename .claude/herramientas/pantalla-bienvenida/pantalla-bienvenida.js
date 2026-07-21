@@ -9,9 +9,15 @@
 // Sumar un subsistema con su lint lo hace aparecer solo, sin editar este script.
 //
 // Uso:
-//   node .claude/herramientas/pantalla-bienvenida/pantalla-bienvenida.js            (a mano)
+//   node .claude/herramientas/pantalla-bienvenida/pantalla-bienvenida.js            (a mano / skill /info: caja en cerca de código)
 //   node .claude/herramientas/pantalla-bienvenida/pantalla-bienvenida.js --sin-lint (rápido, sin correr lints)
+//   node .claude/herramientas/pantalla-bienvenida/pantalla-bienvenida.js --hook     (para el SessionStart hook: emite JSON {"systemMessage": <caja>} → visible al usuario)
 // Pensado también para un hook SessionStart. Sin process.exit(1): informa, no falla.
+//
+// Por qué --hook: el stdout crudo de un SessionStart hook va a `additionalContext` (lo ve
+// el modelo, NO el usuario). El único campo que se pinta en la terminal del usuario es
+// `systemMessage`. Con --hook se emite ese JSON, sin cerca de código (los backticks saldrían
+// literales). Sin --hook, la caja va con cerca ``` para conservar monospace en el transcript.
 
 const fs = require('fs');
 const path = require('path');
@@ -20,6 +26,7 @@ const { spawnSync } = require('child_process');
 const REPO = path.resolve(__dirname, '..', '..', '..');
 const CLAUDE_DIR = path.join(REPO, '.claude');
 const SIN_LINT = process.argv.slice(2).includes('--sin-lint');
+const HOOK = process.argv.slice(2).includes('--hook');
 
 // Sustantivo cosmético por subsistema conocido; los desconocidos caen a "entradas".
 // (Solo afecta la etiqueta, no el conteo: el descubrimiento sigue siendo dinámico.)
@@ -66,18 +73,39 @@ function contarEntradas(txt) {
 }
 
 // --- enriquecimientos baratos por subsistema conocido ---
-function detallePlanes(txt) {
-  const vivos = {};
+// Planes: agrupa por CARPETA (pendientes/ejecutados/descartados), no por estado suelto.
+// La agrupación sale de ESTADOS.md (fuente de verdad configurable, decisión 0005): cada
+// estado mapea a una carpeta, y los tres estados vivos caen todos en `pendientes`. Así el
+// juego de estados se puede reconfigurar por repo sin tocar este script. La suma de las
+// carpetas = total de planes (Pendientes + Ejecutados + Descartados = Total).
+function detallePlanes(txt, estadosTxt) {
+  // Estado → carpeta desde ESTADOS.md (col. Estado | Sentido | Carpeta | Terminal).
+  const estadoCarpeta = {};   // 'nuevo' → 'pendientes'
+  const orden = [];           // orden de aparición de carpetas: pendientes, ejecutados, descartados
+  for (const l of (estadosTxt || '').split(/\r?\n/)) {
+    if (!l.trim().startsWith('|')) continue;
+    const c = l.split('|').slice(1, -1).map(x => x.trim());
+    if (c.length < 3) continue;
+    const est = c[0];
+    const carpeta = c[2].replace(/`/g, '').replace(/\/+\s*$/, '').trim();
+    if (/^-{2,}$/.test(est) || /^estado$/i.test(est) || !carpeta || /^carpeta$/i.test(carpeta)) continue;
+    estadoCarpeta[est.toLowerCase()] = carpeta;
+    if (!orden.includes(carpeta)) orden.push(carpeta);
+  }
+  // Contar filas de PLANES.md, tallando por carpeta del estado.
+  const cont = {};
   for (const l of txt.split(/\r?\n/)) {
     if (!l.trim().startsWith('|')) continue;
     const c = l.split('|').slice(1, -1).map(x => x.trim());
     if (c.length < 2) continue;
     const est = c[1];
     if (/^-{2,}$/.test(est) || /^estado$/i.test(est)) continue;
-    if (/^(nuevo|en curso|diferido)$/i.test(est)) vivos[est] = (vivos[est] || 0) + 1;
+    const carp = estadoCarpeta[est.toLowerCase()];
+    if (carp) cont[carp] = (cont[carp] || 0) + 1;
   }
-  const partes = Object.entries(vivos).map(([e, n]) => `${n} ${e.toLowerCase()}`);
-  return partes.length ? `(${partes.join(' · ')})` : '';
+  if (!orden.length) return ''; // sin ESTADOS.md legible: degradar sin romper
+  const partes = orden.map(carp => `${cont[carp] || 0} ${carp}`);
+  return `(${partes.join(' · ')})`;
 }
 function detallePreferencias(txt) {
   const v = (txt.match(/harness\s+v(\d+)/i) || [])[1];
@@ -126,7 +154,7 @@ for (const s of subs) {
   const txt = idx ? leer(idx) : '';
   let cuenta = idx ? contarEntradas(txt) : 0;
   let extra = '';
-  if (s.nombre === 'planes') extra = detallePlanes(txt);
+  if (s.nombre === 'planes') extra = detallePlanes(txt, leer(path.join(s.dir, 'ESTADOS.md')));
   if (s.nombre === 'preferencias') { extra = detallePreferencias(txt); cuenta = null; }
   let lint = { estado: 'n/d', hallazgos: null };
   if (!SIN_LINT) {
@@ -135,7 +163,10 @@ for (const s of subs) {
     if (lint.estado === 'error') lintPeor = 'error';
     else if (lint.estado === 'hallazgos' && lintPeor !== 'error') lintPeor = 'hallazgos';
   }
-  filas.push({ nombre: s.nombre, cuenta, extra, sustantivo: SUSTANTIVO[s.nombre] || 'entradas', lint });
+  // En planes el `extra` ya trae los sustantivos (pendientes/ejecutados/descartados):
+  // el sustantivo "planes" sería redundante y desborda el marco → se omite (queda "34 (…)").
+  const sustantivo = s.nombre === 'planes' ? '' : (SUSTANTIVO[s.nombre] || 'entradas');
+  filas.push({ nombre: s.nombre, cuenta, extra, sustantivo, lint });
 }
 
 // --- render ---
@@ -145,16 +176,14 @@ const lintGlobal = SIN_LINT ? '(sin correr)'
   : hallazgosTotal === 0 ? '✔ 0 hallazgos'
   : `⚠ ${hallazgosTotal} hallazgo${hallazgosTotal === 1 ? '' : 's'}`;
 
-// Caja de ancho fijo con envoltura: las líneas largas (Propósito) pasan a varios
-// renglones sin desbordar el marco. Envuelto en cerca de código (```) para que
-// sobreviva monospace en el transcript de un cliente que no es terminal.
-const W = 70;                                   // ancho interno (chars entre los bordes)
+// Caja de ANCHO AUTOMÁTICO: se dimensiona sola al renglón más largo, así nunca se
+// desarma cuando una métrica gana dígitos (planes 9 → 99 → 999). Las líneas largas
+// (Propósito) se envuelven a un techo `WRAP`; el ancho final = el renglón más largo,
+// con un piso `MIN` para que no quede angosta. Envuelta en cerca de código (```) para
+// el transcript de un cliente no-terminal (skill /info); en --hook va como systemMessage.
+const WRAP = 82;                                // techo de envoltura para texto largo
+const MIN = 74;                                 // piso de ancho interno
 const nfc = s => (s || '').normalize('NFC');    // acentos precompuestos → .length correcto
-const regla = (l, mid, r) => l + mid.repeat(W + 2) + r;
-const caja = s => {
-  const t = nfc(s);
-  return '║ ' + t + ' '.repeat(Math.max(0, W - t.length)) + ' ║';
-};
 function envolver(texto, ancho, cont) {
   const palabras = nfc(texto).split(/\s+/).filter(Boolean);
   const out = [];
@@ -170,21 +199,36 @@ function envolver(texto, ancho, cont) {
 
 const cuerpo = [];
 cuerpo.push('Agente Multipropósito');
-cuerpo.push(...envolver(titulo, W, '  '));
-cuerpo.push(...envolver('Propósito: ' + proposito, W, '   '));
+cuerpo.push(...envolver(titulo, WRAP, '  '));
+cuerpo.push(...envolver('Propósito: ' + proposito, WRAP, '   '));
 cuerpo.push('__SEP__');
 cuerpo.push(`Subsistemas: ${subs.length}      Lint: ${lintGlobal}`);
 const anchoNom = Math.max(...filas.map(f => f.nombre.length), 0);
 for (const f of filas) {
   const marca = (f.lint.estado === 'ok' || f.lint.estado === 'n/d') ? ' ' : '⚠';
-  const val = f.cuenta === null ? f.extra : `${f.cuenta} ${f.sustantivo}${f.extra ? ' ' + f.extra : ''}`;
+  const val = f.cuenta === null ? f.extra : `${f.cuenta}${f.sustantivo ? ' ' + f.sustantivo : ''}${f.extra ? ' ' + f.extra : ''}`;
   cuerpo.push(`${marca} · ${f.nombre.padEnd(anchoNom)}   ${val}`);
 }
 
-const L = ['```'];
-L.push(regla('╔', '═', '╗'));
-for (const linea of cuerpo) L.push(linea === '__SEP__' ? regla('╟', '─', '╢') : caja(linea));
-L.push(regla('╚', '═', '╝'));
-L.push('```');
+// Ancho interno = el renglón más largo (piso MIN). Cada línea se rellena a ese ancho.
+const W = Math.max(MIN, ...cuerpo.filter(l => l !== '__SEP__').map(l => nfc(l).length));
+const regla = (l, mid, r) => l + mid.repeat(W + 2) + r;
+const caja = s => {
+  const t = nfc(s);
+  return '║ ' + t + ' '.repeat(Math.max(0, W - t.length)) + ' ║';
+};
 
-process.stdout.write(L.join('\n') + '\n');
+const boxLines = [regla('╔', '═', '╗')];
+for (const linea of cuerpo) boxLines.push(linea === '__SEP__' ? regla('╟', '─', '╢') : caja(linea));
+boxLines.push(regla('╚', '═', '╝'));
+const box = boxLines.join('\n');
+
+// --hook: emitir JSON {"systemMessage": <caja>} → único campo que la terminal del usuario
+// pinta en SessionStart (sin cerca ```: los backticks saldrían literales). Sin --hook:
+// caja envuelta en cerca de código para el transcript (skill /info + corridas a mano).
+if (HOOK) {
+  // Salto inicial: separa la caja del prefijo "SessionStart:… says:" que antepone el CLI.
+  process.stdout.write(JSON.stringify({ systemMessage: '\n' + box }));
+} else {
+  process.stdout.write('```\n' + box + '\n```\n');
+}
