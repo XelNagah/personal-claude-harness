@@ -43,7 +43,7 @@ const all = walk(root, []);
 const indexFile = path.join(root, 'MEMORIA.md');
 const hasIndex = fs.existsSync(indexFile);
 const idxText = hasIndex ? read(indexFile) : '';
-const memos = all.filter(p => path.basename(p) !== 'MEMORIA.md');
+const memos = all.filter(p => path.basename(p) !== 'MEMORIA.md' && path.basename(p) !== 'MANIFIESTO.md');  // MANIFIESTO.md: infra del subsistema (dec. 0017), no es memoria
 
 // nombres validos para wikilinks: `name:` del frontmatter + stem del archivo
 const nameSet = new Set();

@@ -17,13 +17,21 @@
 - **decisiones: candidato a lo mismo** (segundo más pesado, ~11k) — evaluar al ejecutar.
 - **memoria, conocimiento, glosario, herramientas:** índices livianos (≤5k) → probablemente `@INDICE.md` = sí. Caso por caso.
 
+### Ejecutado repo-local (26-07-21)
+
+Aplicado al `.claude/` de **este** repo + `AGENTS.md`. Control de cierre 9/9 verde.
+
+- **6 `MANIFIESTO.md` creados** (memoria, planes, conocimiento, glosario, decisiones, herramientas) con la prosa que estaba en las `## <subsistema>` de `AGENTS.md`.
+- **`AGENTS.md` reescrito:** las 6 secciones de prosa + el bloque "Mapa del repo" (@índices) → una sola sección "## Subsistemas" con `@.claude/<sub>/MANIFIESTO.md ×6`. Cada manifiesto declara su `@INDICE.md` o no.
+- **Política aplicada:** cargan índice **memoria, conocimiento, herramientas**; NO cargan (se consultan a demanda) **planes, glosario, decisiones** (planes = el cambio buscado; glosario/decisiones ya estaban a demanda, se preservó).
+- **5 lints de subsistema** ahora excluyen `MANIFIESTO.md` como infra conocida (igual que ya ignoran la carpeta `lint-<sub>/`): memoria, conocimiento, glosario, decisiones, planes. Herramientas no lo necesitó.
+
 ### Qué queda para ejecutar
 
-1. Crear `MANIFIESTO.md` por subsistema (mudando la prosa de cada `## <subsistema>` de `AGENTS.md` + consolidando las 4 fuentes por subsistema).
-2. Reescribir el bloque de imports de `AGENTS.md`: `@.../MANIFIESTO.md ×N` en lugar de los `@INDICE.md` directos del "Mapa del repo".
-3. Lint que vigile el **tamaño** del manifiesto (que no engorde y anule el ahorro).
-4. Propagar al orquestador y a las funcionalidades: cada manifiesto viaja en el plugin de su subsistema.
-5. **Publicación en inglés (nuevo, 26-07-21):** el nombre ya traduce 1:1 (`MANIFIESTO.md` ↔ `MANIFEST.md`); coordinar con la migración de idioma del repo, no renombrar suelto.
+1. **Verificar el import anidado hop3 en sesión fresca:** confirmar que memoria/conocimiento/herramientas SÍ cargan su índice vía manifiesto, y planes NO. (hop2 ya probado; hop3 documentado ≤4, sin verificar en vivo.)
+2. **Lint que vigile el tamaño** del manifiesto (que no engorde y anule el ahorro).
+3. **Propagar a las funcionalidades + orquestador:** cada manifiesto viaja en el plugin de su subsistema, y la exclusión de `MANIFIESTO.md` en los lints tiene que ir a las copias distribuidas (`propagar-harness`). Falta también el nivelado de consumidores.
+4. **Publicación en inglés:** el nombre ya traduce 1:1 (`MANIFIESTO.md` ↔ `MANIFEST.md`); coordinar con la migración de idioma, no renombrar suelto.
 
 ## Qué se pide
 

@@ -63,7 +63,7 @@ for (const c of CARPETAS) {
 
 const sueltos = fs.existsSync(root)
   ? fs.readdirSync(root, { withFileTypes: true })
-      .filter(e => e.isFile() && e.name.endsWith('.md') && !['PLANES.md', 'ESTADOS.md'].includes(e.name)).map(e => e.name)
+      .filter(e => e.isFile() && e.name.endsWith('.md') && !['PLANES.md', 'ESTADOS.md', 'MANIFIESTO.md'].includes(e.name)).map(e => e.name)
   : [];
 
 const norm = r => r.replace(/\\/g, '/').replace(/^\.\//, '');

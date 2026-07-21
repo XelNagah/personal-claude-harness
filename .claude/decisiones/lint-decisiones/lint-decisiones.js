@@ -63,7 +63,7 @@ for (const r of rows) {
 const huerfanos = [];
 if (fs.existsSync(root)) {
   for (const f of fs.readdirSync(root)) {
-    if (!f.endsWith('.md') || f === 'INDICE.md') continue;
+    if (!f.endsWith('.md') || f === 'INDICE.md' || f === 'MANIFIESTO.md') continue;  // MANIFIESTO.md: infra del subsistema (dec. 0017)
     if (!referenced.has(f)) huerfanos.push(f);
   }
 }

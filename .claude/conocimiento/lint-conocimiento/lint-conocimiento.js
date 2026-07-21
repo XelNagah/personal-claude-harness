@@ -10,7 +10,7 @@ function walk(dir, acc) {
     if (EXCLUDE.has(e.name)) continue;
     const full = path.join(dir, e.name);
     if (e.isDirectory()) { if (e.name.startsWith('lint-')) continue; walk(full, acc); }  // el lint co-ubicado del subsistema no es contenido
-    else if (e.name.endsWith('.md')) acc.push(full);
+    else if (e.name.endsWith('.md') && e.name !== 'MANIFIESTO.md') acc.push(full);  // MANIFIESTO.md: infra del subsistema (dec. 0017), no es pagina
   }
   return acc;
 }
