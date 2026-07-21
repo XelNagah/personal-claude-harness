@@ -198,8 +198,11 @@ function envolver(texto, ancho, cont) {
 }
 
 const cuerpo = [];
+// Renglón de marca: va sin etiqueta a propósito. Es la identidad del harness, constante
+// en todo repo; ponerle prefijo lo degradaría a un campo más entre los de abajo.
 cuerpo.push('Agente Multipropósito');
-cuerpo.push(...envolver(titulo, WRAP, '  '));
+cuerpo.push('');  // aire: despega la identidad de los campos del repo
+cuerpo.push(...envolver('Título: ' + titulo, WRAP, '   '));
 cuerpo.push(...envolver('Propósito: ' + proposito, WRAP, '   '));
 cuerpo.push('__SEP__');
 cuerpo.push(`Subsistemas: ${subs.length}      Lint: ${lintGlobal}`);
