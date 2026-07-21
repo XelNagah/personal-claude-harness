@@ -82,7 +82,7 @@ Alcance **opción A** (acordada 21/07/2026): solo `.claude/`, no la raíz del re
 
 `conocimiento` estaba en **0 páginas** con lint verde. Se arregló con tres patas —skill `registrar-conocimiento`, línea de escritura en `planificar`, disparador en `AGENTS.md`— más propagación verificada por hash. Quedó en 1 página.
 
-**Es el experimento controlado del frente C, con n=1 y costo cero:** si el número sube solo en las próximas semanas, arreglar el mecanismo cambia la conducta y vale la pena construir B y C completos. Si sigue en 1, la tesis está mal y hay que saberlo antes de gastar. El instrumento de medición ya corre en cada arranque (`/info`).
+**Es el experimento controlado del frente C, con n=1 y costo cero:** si el número sube solo en las próximas semanas, arreglar el mecanismo cambia la conducta y vale la pena construir B y C completos. Si sigue en 1, la tesis está mal y hay que saberlo antes de gastar. El instrumento de medición ya corre en cada arranque (`/amp-info`).
 
 El molde que dejó se aplica a los otros seis subsistemas en [Revisar cada subsistema](Revisar%20cada%20subsistema%20-%20sentido,%20disparador%20y%20skill%20de%20operacion.md).
 

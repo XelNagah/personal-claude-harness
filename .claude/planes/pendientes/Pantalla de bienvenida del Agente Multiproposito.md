@@ -38,7 +38,7 @@ La pasada A emitía el bloque por `additionalContext` → solo lo veía el model
 
 - **Mecanismo correcto: `systemMessage`.** Único campo del JSON de un SessionStart hook que se pinta en la terminal del **usuario**. Decisión 0012.
 - **Cross-agente:** Claude Code (CLI, no VS Code), Codex y Gemini soportan `systemMessage` al arrancar. **Cursor no** (solo `additional_context`, va al modelo) → degrada sin caja. En Claude Code el stdout crudo del hook se veía hasta v2.1.15 y lo mandaron a contexto en v2.1.37+ (regresión #24425).
-- **Herramienta:** `pantalla-bienvenida.js` ganó el flag **`--hook`** (emite `{"systemMessage": "\n" + caja}`, sin cerca ``` porque los backticks saldrían literales; con salto inicial para separarse del prefijo `SessionStart:… says:` que antepone el CLI). Sin flag sigue emitiendo la caja con cerca ``` para `/info` y corridas a mano. `settings.json` pasa `--hook`.
+- **Herramienta:** `pantalla-bienvenida.js` ganó el flag **`--hook`** (emite `{"systemMessage": "\n" + caja}`, sin cerca ``` porque los backticks saldrían literales; con salto inicial para separarse del prefijo `SessionStart:… says:` que antepone el CLI). Sin flag sigue emitiendo la caja con cerca ``` para `/amp-info` y corridas a mano. `settings.json` pasa `--hook`.
 - **Caja de ancho automático:** se dimensiona al renglón más largo (piso 74, techo de envoltura 82) → no se desarma cuando una métrica gana dígitos.
 - **Métrica de planes por carpeta:** `N (P pendientes · E ejecutados · D descartados)`, derivada de `ESTADOS.md` (no hardcodea estados → respeta 0005); la suma = total. Glosario: concepto *Pendiente*.
 

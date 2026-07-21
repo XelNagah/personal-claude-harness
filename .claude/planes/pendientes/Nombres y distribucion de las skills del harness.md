@@ -1,6 +1,8 @@
-# Namespacing de skills del harness bajo prefijo AMP/MPA
+# Nombres y distribución de las skills del harness
 
-**Estado:** Analizado con `planificar` (26-07-21) — listo para ejecutar. Eje 1 (nombre) → decisión **0014**; eje 2 (segmentación de skills) → decisión **0013**.
+**Estado:** Analizado con `planificar` (26-07-21) — listo para ejecutar. Eje 1 (nombre) → decisión **0014**; eje 2 (segmentación de skills) → decisión **0013**. **Parte ejecutada (26-07-21):** rename de la skill local `info`→`amp-info` (ver "Skills locales de autoría" abajo).
+
+> Antes se llamaba *"Namespacing de skills del harness bajo prefijo AMP/MPA"*. Renombrado: "Namespacing" es anglicismo (0004) y el título no decía qué hace el plan.
 
 ## Idea cruda del usuario
 
@@ -21,7 +23,18 @@ Dos ejes entremezclados:
 1. **Limpiar nombres de plugin** para que el prefijo sea el subsistema pelado: `memoria-local`→`memoria`, `gestion-de-planes`→`planes`, `preferencias-trabajo`→`preferencias`, `estilo-commits`→`commits` (glosario/decisiones/conocimiento/herramientas ya están). Toca cada `plugin.json` (`name`) + `marketplace.json` (verificar si duplica el name) + `REGISTRO.md` + `lint-harness`.
 2. **Máquina de autoría: pasar de junction a instalación por plugin** (marketplace local) para ver la segmentación. Retirar los junctions de skills de Claude de esta máquina (colisionan con el plugin). **Costo aceptado:** se pierde la edición en vivo (el plugin copia a cache) — definir el flujo de refresco de autoría.
 3. **Auditar las `description`** de cada skill: corto, "qué hace + cuándo se llama" (dispara el auto-invoke y explica cuándo aplica).
-4. (Opcional, barato) **Catálogo agrupado por subsistema** en `/info` / `AGENTS.md`.
+4. (Opcional, barato) **Catálogo agrupado por subsistema** en `/amp-info` / `AGENTS.md`.
+
+## Skills locales de autoría (prefijo `amp-`)
+
+El prefijo `plugin:skill` de 0013 **solo aplica a skills que son plugin**. Las skills **locales de autoría** de este repo (`info`, `propagar-harness`, `agregar-funcionalidad`, en `.claude/skills/`, sin plugin, no distribuibles) se invocan por **nombre pelado** ⇒ no tienen `plugin:` disponible ⇒ colisionan con skills homónimas del cliente (caso real: `/info` se pisa con una skill local de Claude Code para VS Code). 0013 no las contempló: es su hueco.
+
+**Política:** las skills locales de autoría llevan prefijo **`amp-`** (la marca del harness, decisión 0014). Es la vía de segmentación equivalente a `plugin:skill`, para el caso sin plugin.
+
+- **Candidato a decisión** al ejecutar: formalizar la política como extensión de 0013 a las skills locales. Ratificar el patrón `amp-<nombre>` (0016).
+- **Tensión con 0015** (verbo+objeto): `info` es nominal (ya lo era); `amp-info` sigue siéndolo. Definir si `amp-` convive con verbo+objeto (`amp-propagar-harness`) o si el prefijo es solo para las nominales tipo comando. Sin resolver.
+
+**Ejecutado (26-07-21):** `info`→`amp-info` (colisión real). Renombrada la carpeta `.claude/skills/info`→`amp-info`, `SKILL.md` (`name` + título + descripción), registro `herramientas/INDICE.md`, comentarios de `mostrar-pantalla-bienvenida.js`, y las menciones `/info` en los planes vivos. `propagar-harness`/`agregar-funcionalidad` **sin tocar** (no colisionan hoy; el prefijo se les aplica cuando se resuelva la tensión con 0015).
 
 ## Fuera de alcance / diferido
 

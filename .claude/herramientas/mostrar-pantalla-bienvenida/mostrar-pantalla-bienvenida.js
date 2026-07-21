@@ -9,7 +9,7 @@
 // Sumar un subsistema con su lint lo hace aparecer solo, sin editar este script.
 //
 // Uso:
-//   node .claude/herramientas/mostrar-pantalla-bienvenida/mostrar-pantalla-bienvenida.js            (a mano / skill /info: caja en cerca de código)
+//   node .claude/herramientas/mostrar-pantalla-bienvenida/mostrar-pantalla-bienvenida.js            (a mano / skill /amp-info: caja en cerca de código)
 //   node .claude/herramientas/mostrar-pantalla-bienvenida/mostrar-pantalla-bienvenida.js --sin-lint (rápido, sin correr lints)
 //   node .claude/herramientas/mostrar-pantalla-bienvenida/mostrar-pantalla-bienvenida.js --hook     (para el SessionStart hook: emite JSON {"systemMessage": <caja>} → visible al usuario)
 // Pensado también para un hook SessionStart. Sin process.exit(1): informa, no falla.
@@ -180,7 +180,7 @@ const lintGlobal = SIN_LINT ? '(sin correr)'
 // desarma cuando una métrica gana dígitos (planes 9 → 99 → 999). Las líneas largas
 // (Propósito) se envuelven a un techo `WRAP`; el ancho final = el renglón más largo,
 // con un piso `MIN` para que no quede angosta. Envuelta en cerca de código (```) para
-// el transcript de un cliente no-terminal (skill /info); en --hook va como systemMessage.
+// el transcript de un cliente no-terminal (skill /amp-info); en --hook va como systemMessage.
 const WRAP = 82;                                // techo de envoltura para texto largo
 const MIN = 74;                                 // piso de ancho interno
 const nfc = s => (s || '').normalize('NFC');    // acentos precompuestos → .length correcto
@@ -228,7 +228,7 @@ const box = boxLines.join('\n');
 
 // --hook: emitir JSON {"systemMessage": <caja>} → único campo que la terminal del usuario
 // pinta en SessionStart (sin cerca ```: los backticks saldrían literales). Sin --hook:
-// caja envuelta en cerca de código para el transcript (skill /info + corridas a mano).
+// caja envuelta en cerca de código para el transcript (skill /amp-info + corridas a mano).
 if (HOOK) {
   // Salto inicial: separa la caja del prefijo "SessionStart:… says:" que antepone el CLI.
   process.stdout.write(JSON.stringify({ systemMessage: '\n' + box }));
