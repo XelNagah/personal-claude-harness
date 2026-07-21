@@ -8,4 +8,5 @@ Convención completa en la memoria [feedback base conocimiento](../memoria/feedb
 
 ## Páginas
 
-_(vacío — todavía no hay conocimiento incorporado)_
+- [Modos de falla ante reglas escritas](modos-de-falla-ante-reglas-escritas.md) — cinco formas distintas en que un agente incumple una regla que tiene cargada (recita sin obedecer, negocia, deja las cosas afuera, pide permiso para escribir pero no para ubicar, se inventa reglas); el texto de arranque gobierna la conversación, no la acción.
+- [grep y acentos en Windows](grep-y-acentos-en-windows.md) — `grep -i` con patrones acentuados devuelve 0 resultados en silencio en Git Bash; enumerar variantes sin `-i`.
