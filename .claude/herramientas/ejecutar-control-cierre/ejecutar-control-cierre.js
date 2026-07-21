@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// control-cierre.js — corre de una pasada todos los chequeos del repo:
+// ejecutar-control-cierre.js — corre de una pasada todos los chequeos del repo:
 // cada lint-*.js de los subsistemas (descubiertos, no hardcodeados) + `claude plugin validate .`.
 // Reporta por chequeo (OK / N hallazgos / ERROR) y muestra la salida completa solo de lo que no está verde.
 // Sin process.exit(1): reporta, no falla (decision 0003, capa mecanica).

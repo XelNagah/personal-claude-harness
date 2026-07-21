@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// pantalla-bienvenida.js — Pantalla de bienvenida del Agente Multipropósito (glosario).
+// mostrar-pantalla-bienvenida.js — Pantalla de bienvenida del Agente Multipropósito (glosario).
 // Emite al arrancar un bloque de estado: Título + Propósito (de la Identidad) + métricas
 // de cada subsistema (entradas) + estado de lint. Bloque de texto para el transcript
 // (no un banner del CLI: SessionStart no tiene punto de extensión para eso).
@@ -9,9 +9,9 @@
 // Sumar un subsistema con su lint lo hace aparecer solo, sin editar este script.
 //
 // Uso:
-//   node .claude/herramientas/pantalla-bienvenida/pantalla-bienvenida.js            (a mano / skill /info: caja en cerca de código)
-//   node .claude/herramientas/pantalla-bienvenida/pantalla-bienvenida.js --sin-lint (rápido, sin correr lints)
-//   node .claude/herramientas/pantalla-bienvenida/pantalla-bienvenida.js --hook     (para el SessionStart hook: emite JSON {"systemMessage": <caja>} → visible al usuario)
+//   node .claude/herramientas/mostrar-pantalla-bienvenida/mostrar-pantalla-bienvenida.js            (a mano / skill /info: caja en cerca de código)
+//   node .claude/herramientas/mostrar-pantalla-bienvenida/mostrar-pantalla-bienvenida.js --sin-lint (rápido, sin correr lints)
+//   node .claude/herramientas/mostrar-pantalla-bienvenida/mostrar-pantalla-bienvenida.js --hook     (para el SessionStart hook: emite JSON {"systemMessage": <caja>} → visible al usuario)
 // Pensado también para un hook SessionStart. Sin process.exit(1): informa, no falla.
 //
 // Por qué --hook: el stdout crudo de un SessionStart hook va a `additionalContext` (lo ve
@@ -115,7 +115,7 @@ function detallePreferencias(txt) {
   return `Base${v ? ' v' + v : ''} · ${adapt} adaptaci${adapt === 1 ? 'ón' : 'ones'}`;
 }
 
-// --- correr el lint del subsistema y contar hallazgos (misma heurística que control-cierre) ---
+// --- correr el lint del subsistema y contar hallazgos (misma heurística que ejecutar-control-cierre) ---
 function contarHallazgos(salida) {
   let t = 0;
   for (const l of salida.split(/\r?\n/)) {
@@ -126,7 +126,7 @@ function contarHallazgos(salida) {
 }
 function correrLint(lintPath) {
   // Sin --quiet: el flag da exit ≠ 0 en algunos lints artesanales (bug de divergencia).
-  // Igual que control-cierre: leer los totales `(N)` de la salida, no confiar en el exit.
+  // Igual que ejecutar-control-cierre: leer los totales `(N)` de la salida, no confiar en el exit.
   const r = spawnSync('node', [lintPath], { cwd: REPO, encoding: 'utf8', timeout: 15000 });
   if (r.error || r.status === null) return { estado: 'n/d', hallazgos: null };
   const salida = (r.stdout || '') + (r.stderr || '');

@@ -11,7 +11,7 @@
 // de "harness mal puesto" necesita los criterios del frente A. Barrer `.claude/` sí es decidible
 // hoy sin ruido: ahí solo deben vivir los subsistemas + infra.
 //
-// Un subsistema se reconoce igual que en pantalla-bienvenida: carpeta hija de `.claude/` con su
+// Un subsistema se reconoce igual que en mostrar-pantalla-bienvenida: carpeta hija de `.claude/` con su
 // lint co-ubicado `.claude/<D>/lint-<D>/lint-<D>.js` (decisión 0008). Mismo criterio, una fuente.
 //
 // Uso:

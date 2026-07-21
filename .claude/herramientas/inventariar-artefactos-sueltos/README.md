@@ -18,12 +18,12 @@ Opción acordada el 21/07/2026. La raíz del repo **no se toca**: en un repo con
 
 Cada hijo directo de `.claude/` cae en una de tres:
 
-1. **Subsistema reconocido** — carpeta con su lint co-ubicado `.claude/<D>/lint-<D>/lint-<D>.js` (decisión 0008). Mismo criterio que `pantalla-bienvenida`, una sola fuente. Una carpeta con nombre de subsistema pero **sin** su lint cae como suelta (señal de subsistema roto o a medio instalar).
+1. **Subsistema reconocido** — carpeta con su lint co-ubicado `.claude/<D>/lint-<D>/lint-<D>.js` (decisión 0008). Mismo criterio que `mostrar-pantalla-bienvenida`, una sola fuente. Una carpeta con nombre de subsistema pero **sin** su lint cae como suelta (señal de subsistema roto o a medio instalar).
 2. **Infra conocida** — lista corta y estable: config de Claude Code (`settings.json`, `settings.local.json`), sus carpetas estándar (`skills`, `commands`, `agents`, `hooks`) y la Identidad del Agente (`identidad.md`). De más esconde lo mal puesto; de menos, cría falsos positivos.
 3. **Artefacto suelto** — todo lo demás. Es lo que el chequeo reporta.
 
 ## Salida
 
-Formato `[SECCIÓN] (N)` como el resto de la familia de lints (así `control-cierre` lo contaría bien si algún día se lo cablea — hoy corre suelto, a propósito: cablearlo ya sería emitir un veredicto, no inventariar). Con `--quiet` calla si no hay artefactos sueltos.
+Formato `[SECCIÓN] (N)` como el resto de la familia de lints (así `ejecutar-control-cierre` lo contaría bien si algún día se lo cablea — hoy corre suelto, a propósito: cablearlo ya sería emitir un veredicto, no inventariar). Con `--quiet` calla si no hay artefactos sueltos.
 
 Sin `process.exit(1)`: reporta, no frena (decisión 0003, capa mecánica).

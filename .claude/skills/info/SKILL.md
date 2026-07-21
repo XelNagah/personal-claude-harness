@@ -12,7 +12,7 @@ Renderiza la **Pantalla de bienvenida** (glosario): el bloque de estado del repo
 1. Correr la Herramienta:
 
    ```bash
-   node .claude/herramientas/pantalla-bienvenida/pantalla-bienvenida.js
+   node .claude/herramientas/mostrar-pantalla-bienvenida/mostrar-pantalla-bienvenida.js
    ```
 
 2. Mostrar su salida **tal cual** (ya viene envuelta en una cerca de código para conservar monospace). No reformatear, no resumir: es un bloque de ancho fijo que se rompe si se toca.
@@ -23,4 +23,4 @@ Renderiza la **Pantalla de bienvenida** (glosario): el bloque de estado del repo
 
 - La Herramienta descubre los subsistemas dinámicamente; no hay lista que mantener acá.
 - Título y Propósito salen de `.claude/identidad.md` (Identidad del Agente). Si no existe, muestra `<sin definir>`.
-- Detalle de diseño y límites en el README de la Herramienta: `.claude/herramientas/pantalla-bienvenida/README.md`.
+- Detalle de diseño y límites en el README de la Herramienta: `.claude/herramientas/mostrar-pantalla-bienvenida/README.md`.

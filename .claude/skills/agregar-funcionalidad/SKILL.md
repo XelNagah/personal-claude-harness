@@ -21,7 +21,7 @@ Alta completa de una funcionalidad nueva (= un plugin del marketplace). El proce
    ```
 5. **Registrar en `REGISTRO.md`**: fila en la tabla de funcionalidades + fila en la tabla Plugin/Skill.
 6. **Orquestador** (solo si es de convención): sumarla a `setup-completo` — paso en su SKILL + textos duplicados en su `PLANTILLA.md`. Respetar el orden de dependencias.
-7. **Verificar**: `node .claude/herramientas/control-cierre/control-cierre.js` — todo verde (incluye `claude plugin validate .` y la coherencia disco↔marketplace↔REGISTRO de lint-harness).
+7. **Verificar**: `node .claude/herramientas/ejecutar-control-cierre/ejecutar-control-cierre.js` — todo verde (incluye `claude plugin validate .` y la coherencia disco↔marketplace↔REGISTRO de lint-harness).
 8. **Reportar** en tres grupos (`agregado` / `ya estaba` / `divergente`) si se corrió sobre algo preexistente.
 
 ## Ojo

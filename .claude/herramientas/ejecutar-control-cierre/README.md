@@ -1,9 +1,9 @@
-# control-cierre
+# ejecutar-control-cierre
 
 Corre **todos los chequeos del repo de una pasada** y resume el resultado. Es el control que se pasa antes de cerrar una tarea o publicar: reemplaza correr ~10 comandos a mano.
 
 ```bash
-node .claude/herramientas/control-cierre/control-cierre.js
+node .claude/herramientas/ejecutar-control-cierre/ejecutar-control-cierre.js
 ```
 
 ## Qué corre

@@ -21,7 +21,7 @@ Esta skill encapsula el flujo probado (memoria `feedback_propagacion_harness.md`
 3. **Verificar uno mismo:**
    - `git status --short` — hubo ediciones y son los archivos esperados.
    - Carácter a carácter cada embebido: chequeo de inclusión — `node -e "const fs=require('fs'); console.log(fs.readFileSync('<destino>','utf8').includes(fs.readFileSync('<fuente>','utf8').trim()))"` debe dar `true` por cada copia.
-   - `node .claude/herramientas/control-cierre/control-cierre.js` — todo verde (incluye lint-harness y plugin validate).
+   - `node .claude/herramientas/ejecutar-control-cierre/ejecutar-control-cierre.js` — todo verde (incluye lint-harness y plugin validate).
 4. **Subir la `version`** en el `plugin.json` de cada plugin tocado (los consumidores solo reciben updates al subir la versión).
 5. **Reportar**: qué se propagó, a cuántos destinos, resultado de la verificación, divergencias encontradas.
 
