@@ -1,6 +1,6 @@
 {
   "name": "planificar",
   "description": "Skill de análisis: interroga un plan contra la sabiduría del repo (glosario + decisiones + conocimiento) hasta llegar a un acuerdo, y lo critica (problemas, faltantes, oportunidades, sobreingeniería). Reemplaza grill-with-docs. Operacional, no se instala por-repo.",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "author": { "name": "jllarens", "email": "jllarens@gmail.com" }
 }

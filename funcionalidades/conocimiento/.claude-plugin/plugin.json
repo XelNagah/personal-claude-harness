@@ -1,6 +1,6 @@
 {
   "name": "conocimiento",
-  "description": "Base de conocimiento del agente: carpeta única .claude/conocimiento/ para todo lo que el agente sabe + lint de integridad (índice→páginas→refs). Incluye la skill operativa buscar-conocimiento. Depende de memoria-local.",
-  "version": "0.4.2",
+  "description": "Base de conocimiento del agente: carpeta única .claude/conocimiento/ para todo lo que el agente sabe + lint de integridad (índice→páginas→refs). Incluye las skills operativas registrar-conocimiento (asienta un hallazgo en el momento) y buscar-conocimiento (barrido del repo). Depende de memoria-local.",
+  "version": "0.5.0",
   "author": { "name": "jllarens", "email": "jllarens@gmail.com" }
 }

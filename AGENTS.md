@@ -111,6 +111,8 @@ node .claude/planes/lint-planes/lint-planes.js
 
 Todo lo que el agente **sabe** vive en una ubicación única: [`conocimiento/`](.claude/conocimiento/), indexado por [`INDICE.md`](.claude/conocimiento/INDICE.md). Nunca en la raíz del repo. Los `.md` de la raíz (README y REGISTRO) son **documentación del proyecto**, no conocimiento de agente: se quedan donde están.
 
+**Cuándo asentar (no solo dónde vive):** al averiguar algo del dominio que costó descubrir y que va a hacer falta de nuevo — cómo funciona un sistema externo, un formato, una restricción real. La prueba que lo separa de la memoria: **¿seguiría siendo cierto si este repo no existiera?** Sí → conocimiento; no → memoria o decisión. Usar la skill `registrar-conocimiento`, que hace el flujo y el lint. Un hallazgo que se explica en la conversación y no se asienta se vuelve a averiguar en la sesión siguiente.
+
 Al cerrar una tarea que escribió conocimiento, correr el lint mecánico **desde la raíz del repo** (la ruta es relativa al cwd, no a este archivo):
 
 ```bash
