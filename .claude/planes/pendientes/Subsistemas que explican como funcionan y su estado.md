@@ -2,6 +2,29 @@
 
 **Estado: Nuevo · Creado 26-07-20.** Pedido de Javier el 26-07-20: *"quiero poder preguntar por la memoria, por el conocimiento, las herramientas… preguntarle al agente qué hace y cómo funciona y que explique mecanismos y dominio."*
 
+**Diseño decidido 26-07-21 (`planificar`).** El plan se cruzó con una pregunta de carga de contexto ("¿por qué se cargan todos los planes siempre?") y de ahí salió el artefacto que lo materializa: el **Manifiesto de subsistema**. Ver sección abajo. Decisión **0017**.
+
+## Diseño decidido (26-07-21): Manifiesto de subsistema
+
+- **Qué se carga siempre = un Manifiesto de subsistema** (glosario, EN *Manifest*), no su índice. Archivo breve `MANIFIESTO.md` por subsistema: qué es, cómo se usa, cuándo consultarlo. **Consolida la descripción que hoy está desparramada en 4 lugares** → resuelve la pregunta abierta #3 de este plan.
+- **Mecanismo = import anidado (M1).** `AGENTS.md` importa cada `MANIFIESTO.md` (siempre, liviano); cada manifiesto **incluye o no** la línea `@INDICE.md` de su subsistema. La presencia de la línea **es** la declaración de si el índice se carga — no hay import condicional en Claude Code (verificado); anidamiento hop ≤3, bajo el límite de 4. Se descartaron M2 (flag documental + lint que lo vigile) y M3 (hook que ensambla en runtime).
+- **Reemplaza** la cláusula "el índice va siempre en contexto" de la decisión 0002.
+- **Cross-agente:** Claude expande la cadena de imports; Codex/Cursor/Gemini degradan a "leé estos archivos al inicio" (igual que 0010).
+
+### Aplicación por subsistema (política — caso por caso al ejecutar)
+
+- **planes: descripción sola, sin índice** *(decidido — era el disparador)*. `planes/MANIFIESTO.md` **sin** `@PLANES.md`; el registro se lee a demanda. Descarga el índice más pesado del repo (~21k chars, casi la mitad del contexto siempre cargado, mitad de sus filas terminales). El agente sabe que los planes existen + la Pantalla de bienvenida da el conteo; lee `PLANES.md` cuando un plan se vuelve relevante.
+- **decisiones: candidato a lo mismo** (segundo más pesado, ~11k) — evaluar al ejecutar.
+- **memoria, conocimiento, glosario, herramientas:** índices livianos (≤5k) → probablemente `@INDICE.md` = sí. Caso por caso.
+
+### Qué queda para ejecutar
+
+1. Crear `MANIFIESTO.md` por subsistema (mudando la prosa de cada `## <subsistema>` de `AGENTS.md` + consolidando las 4 fuentes por subsistema).
+2. Reescribir el bloque de imports de `AGENTS.md`: `@.../MANIFIESTO.md ×N` en lugar de los `@INDICE.md` directos del "Mapa del repo".
+3. Lint que vigile el **tamaño** del manifiesto (que no engorde y anule el ahorro).
+4. Propagar al orquestador y a las funcionalidades: cada manifiesto viaja en el plugin de su subsistema.
+5. **Publicación en inglés (nuevo, 26-07-21):** el nombre ya traduce 1:1 (`MANIFIESTO.md` ↔ `MANIFEST.md`); coordinar con la migración de idioma del repo, no renombrar suelto.
+
 ## Qué se pide
 
 Que el agente multipropósito **y cada subsistema por separado** puedan explicarse de forma consistente. Dos preguntas distintas, con respuestas de naturaleza distinta:
