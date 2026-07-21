@@ -1,4 +1,4 @@
-# Agentes Multipropósito
+# Diseño de Agentes Multipropósito
 
 Propósito: Diseñar un Agente Multipropósito basado en subsistemas de aprendizaje estructurado.
 
