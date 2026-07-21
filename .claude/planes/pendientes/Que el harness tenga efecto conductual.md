@@ -70,6 +70,14 @@ Ambas cifras son ruido. **La decisión no es económica**: lo que se paga caro s
 
 **C — El mecanismo en el punto de acción.** Re-inyección por turno en vez de texto cargado al arranque. Es lo caro y lo que puede meter ruido; **la decisión de si hace falta la contesta la medición del piloto**, no una discusión.
 
+### Ya ejecutado (21/07/2026): B mínimo — inventario sin rutear
+
+Primera pieza del frente B. Herramienta `inventariar-artefactos-sueltos` (`.claude/herramientas/inventariar-artefactos-sueltos/`): barre `.claude/` y lista los artefactos (archivos y carpetas) que no son subsistema (por el criterio de lint co-ubicado de `pantalla-bienvenida`, decisión 0008) ni infra conocida. **Inventaría, no juzga.** Corre suelta (no cableada a `control-cierre`: eso ya sería veredicto) y acepta una ruta para apuntarla a un consumidor a mano.
+
+Alcance **opción A** (acordada 21/07/2026): solo `.claude/`, no la raíz del repo. Motivo: barrer la raíz sin los criterios del frente A marca todo el Propósito real como sospechoso; `.claude/` sí es decidible hoy. Probada en verde acá (0 sin rutear) y contra un repo sucio de juguete (caza carpetas/archivos mal puestos, incluida una carpeta con nombre de subsistema pero sin su lint). Control de cierre 9/9.
+
+**De B todavía falta:** (1) extender el barrido a la **raíz** del repo — espera criterios del frente A; (2) que el **nivelador liste de verdad** (hoy pregunta por los archivos que espera, no lista la carpeta); (3) que los **`SKILL.md`** entren al alcance del lint de terminología (un término vetado sobrevivió ahí); (4) **distribuir** el inventario a los 15 consumidores (hoy es instrumento de diagnóstico manual).
+
 ### Ya ejecutado (21/07/2026): el piloto de `conocimiento`
 
 `conocimiento` estaba en **0 páginas** con lint verde. Se arregló con tres patas —skill `registrar-conocimiento`, línea de escritura en `planificar`, disparador en `AGENTS.md`— más propagación verificada por hash. Quedó en 1 página.
