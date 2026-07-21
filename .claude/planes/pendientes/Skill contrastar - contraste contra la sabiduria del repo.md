@@ -12,6 +12,10 @@ Una skill que toma una entrada (una idea, una afirmación, un texto, un plan) y 
 
 Salida: **no** un plan, sino el **resultado del contraste** (coincidencias, choques, huecos) + la incorporación de lo nuevo válido al subsistema que corresponda, con ratificación donde el subsistema la exige (glosario/decisiones, decisiones 0004/0016).
 
+### Dos direcciones de entrada (requisito de 26-07-21)
+
+`/contrastar` no solo mira **hacia adelante** (lo que se *solicita*, antes de hacerlo). Debe aceptar también material **hacia atrás**: **lo ejecutado o la conversación** de una tarea ya hecha, para verificar que su aprendizaje quedó asentado. Es el mismo contraste con la sabiduría del repo, con otra fuente. Esta dirección la consume el plan [Verificar que el aprendizaje quede asentado en los subsistemas](Verificar%20que%20el%20aprendizaje%20quede%20asentado%20en%20los%20subsistemas.md): al cerrar un plan (transición a Ejecutado) se invoca `/contrastar` contra lo ejecutado / la conversación, y **`/contrastar` es el que persiste**. Diseñar la entrada del skill para las dos direcciones desde el arranque.
+
 ## Se distingue de / se cruza con
 
 - **`planificar`:** ya lee las tres bases y las escribe sobre la marcha, pero su objetivo es **descubrir qué hacer** y producir un plan criticado. `contrastar` es más acotado: el contraste **es** el producto, no un paso hacia un plan. Riesgo de solape alto → definir el límite (¿`contrastar` es un pedazo de `planificar` extraído como skill propia? ¿o un modo de `planificar`?).
