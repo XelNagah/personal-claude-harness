@@ -53,7 +53,7 @@ Sacar la convención de scripts de: `funcionalidades/conocimiento/skills/.../PLA
 
 ## Notas de implementación
 
-- **26-07-18, commit `7db0666`** — construidas y aplicadas glosario, decisiones y scripts (funcionalidades + lints probados + orquestador + REGISTRO/README/CLAUDE + junctions + dogfooding sobre este repo). `claude plugin validate .` verde con 9 plugins; los 4 lints corren limpios sobre este repo.
+- **26-07-18, commit `7db0666`** — construidas y aplicadas glosario, decisiones y scripts (funcionalidades + lints probados + orquestador + REGISTRO/README/CLAUDE + junctions + aplicado a este repo). `claude plugin validate .` verde con 9 plugins; los 4 lints corren limpios sobre este repo.
 - **Divergencias vs lo planificado:**
   - Glosario/decisiones: formato revisado a **tabla + detalle opcional** (no "canónico simple") y **alias registrados, no prohibidos** (pedido del user).
   - Decisiones: criterio acotado a lo **estructural al propósito** (no solo "elige entre varias").

@@ -32,7 +32,7 @@ Estructural: headers `## Base` y `## Adaptaciones` presentes, `@import` de `PREF
 - Orquestador `setup-completo`: sumar ambos lints (textos verbatim) donde corresponda.
 - `REGISTRO.md`: reflejar que `memoria-local` y `preferencias-trabajo` ahora traen lint.
 - `.claude/scripts/INDICE.md`: +2 filas (`lint-memoria`, `lint-preferencias`).
-- Aplicar a este repo (dogfooding): crear ambos lints en `.claude/scripts/`, correrlos.
+- Aplicar a este repo: crear ambos lints en `.claude/scripts/`, correrlos.
 - Junctions si hiciera falta (los lints van dentro de skills ya enlazados).
 
 ## Decisiones que aplica
