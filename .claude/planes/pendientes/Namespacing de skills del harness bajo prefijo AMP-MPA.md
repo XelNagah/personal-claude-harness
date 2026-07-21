@@ -1,6 +1,6 @@
 # Namespacing de skills del harness bajo prefijo AMP/MPA
 
-**Estado:** Nuevo — para analizar con `planificar` más adelante. Se abre desde la sesión de la pantalla de bienvenida (26-07-20), como segundo eje que el usuario pidió stashear antes de arrancar el primero.
+**Estado:** Analizado con `planificar` (26-07-21) — listo para ejecutar. Eje 1 (nombre) → decisión **0014**; eje 2 (segmentación de skills) → decisión **0013**.
 
 ## Idea cruda del usuario
 
@@ -8,18 +8,28 @@ Al converger el nombre del repo hacia **Agente Multipropósito (AMP)** / **Multi
 
 Dos ejes entremezclados:
 
-1. **Convergencia de nombre del repo** hacia AMP/MPA (marca/título). Toca también la pantalla de bienvenida (#1 de esa sesión): el título del splash mostraría ese nombre. Choca con el glosario: hoy el término canónico es **Multipropósito** (una palabra); el usuario propone **Multi Propósito** (dos) + sigla. Candidato a decisión de terminología (0004 pide ratificación) y a alias en el glosario.
-2. **Namespacing / agrupación de las skills** bajo ese prefijo.
+1. ~~**Convergencia de nombre del repo** hacia AMP/MPA (marca/título).~~ **Eje cerrado el 21/07/2026 → decisión 0014.** Queda **`Agentes Multipropósito` (AMP) / `Multipurpose Agents` (MPA)**, en una sola palabra; se descartó la variante en dos (`Multi Propósito`), que había quedado anotada como decidida el 20/07 pero obligaba a sostener dos formas y por eso la discusión reaparecía en cada sesión. El glosario lleva una fila única con las siglas como alias. La pantalla de bienvenida ya muestra ese nombre. **Sigue pendiente de este plan:** el nombre del marketplace (`xelnagah-harness`), que rompe a los consumidores ya instalados.
+2. ~~**Namespacing / agrupación de las skills** bajo ese prefijo.~~ **Eje cerrado el 21/07/2026 → decisión 0013.** La segmentación se hace por el **prefijo nativo `plugin:skill`** de Claude Code (cada subsistema ya es un plugin → `memoria:registrar-memoria`, `glosario:converger-terminologia`). Se descartó el `/mpa/…` con barras (no existe) y el prefijo único `amp:` (exige un mega-plugin que esconde el subsistema y rompe la modularidad 0009). Foco Claude Code; Codex/Cursor/Gemini **diferidos** (sin mecanismo de prefijo).
 
-## A analizar (no resolver ahora)
+## Diseño acordado (decisión 0013)
 
-- **¿Existe el namespacing `/mpa/sub/skill` como mecanismo real?** Las skills de Claude Code se invocan por `name` (`/<name>`) o vía tool Skill; no hay jerarquía de barras nativa conocida. Lo que SÍ namespacea hoy es el **prefijo de plugin del marketplace** (`caveman:caveman`, `mattpocock-skills:diagnose`). La agrupación pedida probablemente se materializa por prefijo de plugin/marketplace, no por rutas con barra. Verificar qué soporta el CLI antes de diseñar.
-- **Colisión con junctions dobles:** hoy las skills viven enlazadas en `~/.claude/skills/<skill>` y `~/.agents/skills/<skill>` (nombres planos). Un prefijo cambia esos nombres → toca `instalar-junctions`, el marketplace y potencialmente la migración de consumidores.
-- **Codex/Cursor/Gemini no tienen marketplace** (clone + junctions): ¿cómo se namespacea ahí? Paridad Claude↔Codex (dec. 0010).
-- **Alcance:** ¿todas las skills del harness bajo el prefijo, o solo las de setup? ¿Las Skills de Subsistema vs la del Agente Multipropósito (`planificar`) reciben el mismo trato?
-- Relación con `Restaurar la portabilidad copiar y pegar del orquestador` y con la nomenclatura de subsistemas (`Revisar la nomenclatura de los subsistemas`).
+- **Mecanismo = prefijo de plugin** `plugin:skill`. La estructura multi-plugin **es** lo que produce la segmentación → no se toca.
+- **NO** se renombran las skills. **NO** hay prefijo único `amp:`.
+
+## Qué hay que hacer
+
+1. **Limpiar nombres de plugin** para que el prefijo sea el subsistema pelado: `memoria-local`→`memoria`, `gestion-de-planes`→`planes`, `preferencias-trabajo`→`preferencias`, `estilo-commits`→`commits` (glosario/decisiones/conocimiento/herramientas ya están). Toca cada `plugin.json` (`name`) + `marketplace.json` (verificar si duplica el name) + `REGISTRO.md` + `lint-harness`.
+2. **Máquina de autoría: pasar de junction a instalación por plugin** (marketplace local) para ver la segmentación. Retirar los junctions de skills de Claude de esta máquina (colisionan con el plugin). **Costo aceptado:** se pierde la edición en vivo (el plugin copia a cache) — definir el flujo de refresco de autoría.
+3. **Auditar las `description`** de cada skill: corto, "qué hace + cuándo se llama" (dispara el auto-invoke y explica cuándo aplica).
+4. (Opcional, barato) **Catálogo agrupado por subsistema** en `/info` / `AGENTS.md`.
+
+## Fuera de alcance / diferido
+
+- **Codex/Cursor/Gemini:** instalan por junction (Agent Skills), sin mecanismo de prefijo ⇒ nombres pelados. La segmentación es hoy Claude-Code-only y rompe la paridad 0010 a propósito.
+- **Renombre del marketplace** `xelnagah-harness` (eje 1, pendiente): ruptura para consumidores ya instalados.
+- Relación con `Restaurar la portabilidad copiar y pegar del orquestador` y con `Revisar la nomenclatura de los subsistemas`.
 
 ## Notas
 
-- Depende de decidir el nombre AMP/MPA primero (eje 1) — el prefijo sale de ahí.
-- No bloquea la pantalla de bienvenida; sí comparte el eje de nombre.
+- `instalar-junctions` sigue siendo la Herramienta para los agentes no-Claude (diferidos); en esta máquina se deja de usar para las skills de Claude.
+- No bloquea la pantalla de bienvenida.

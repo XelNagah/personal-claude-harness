@@ -47,7 +47,7 @@ La pasada A emitía el bloque por `additionalContext` → solo lo veía el model
 ## Relación con otros planes
 
 - **Materializa la mitad "estado dinámico" de `Subsistemas que explican cómo funcionan y su estado`** (índice + lint). La **Postura 3** (auto-reporte por manifiesto) de la agregación es la evolución natural en B y **es** ese plan pendiente — no es deuda, es escalón futuro.
-- **Marca "AMP":** el prefijo de marca del harness está gated por el plan #2 (renombre a Agentes Multi Propósito). Pasada 1 muestra Título + Propósito del repo; la marca se suma cuando caiga el renombre.
+- **Marca "AMP":** el prefijo de marca del harness está gated por el plan #2 (renombre a Agentes Multipropósito). Pasada 1 muestra Título + Propósito del repo; la marca se suma cuando caiga el renombre.
 - **Depende de** `Identidad del Agente` para el título (pero arranca sin ella, mostrando `<sin definir>`).
 
 ## Abierto (para la ejecución)
