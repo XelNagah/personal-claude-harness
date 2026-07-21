@@ -20,4 +20,5 @@ Reglas de conducta del agente en este repo. Siempre en contexto (importado desde
 
 ## Adaptaciones de este repo
 
+- **Fechas en formato argentino** al hablar con el usuario: `DD/MM/AAAA` (`21/07/2026`) o en palabras (`21 de julio de 2026`). Nunca `MM/DD` ni ISO en la conversación. ⚠️ Esto es **solo la conversación**: los formatos de los registros no se tocan — `AA-MM-DD` en `PLANES.md` y `AAAA-MM-DD` en `decisiones/INDICE.md` son datos con lint.
 - Ejemplos y analogías: usar el dominio del repo o casos neutros. **Nada de analogías deportivas** (fútbol, jugadores, plantel). Si un ejemplo necesita un dominio inventado, preferir uno ya presente en el repo o un caso real ya decidido.
