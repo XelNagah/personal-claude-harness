@@ -22,6 +22,7 @@ Todos los nombres que el harness le impone al usuario:
 - **Recién acuñados (26-07-20):** `Textual`, `Control`. Ratificados hace días; conviene pasarlos por el mismo examen antes de que se asienten.
 - **Archivos:** `INDICE.md`, `PLANES.md`, `ESTADOS.md`, `MEMORIA.md`, `REGISTRO.md` — ¿se distingue `REGISTRO.md` (catálogo de funcionalidades) de `PLANES.md` (registro de planes) por el nombre?
 - **Estados de planes:** `Nuevo`, `En curso`, `Diferido`, `Ejecutado`, `Descartado`. Estos parecen sanos; sirven de contraste de qué es un buen nombre acá.
+- **Nombres de skills** (categoría nueva, 21/07/2026). Segundo caso confirmado del mismo síntoma, otra vez con el autor delante del archivo: sobre `ciclo-de-plan`, Javier dijo *"lo leo y no sé qué es eso, qué hace, ¿ciclo? ¿cuántos pasos tiene? wtf"*, y propuso el arreglo: *"si fuera lo que efectivamente dice, sería `crear-plan`, `guardar-plan`"*. O sea **verbo + objeto**, que es justo el patrón que ya usan las que sí se entienden (`registrar-memoria`, `registrar-decision`, `buscar-conocimiento`). Los sospechosos son los que se apartan de ese patrón: `ciclo-de-plan`, `converger-terminologia`, `inicializar-custom` (¿custom qué?), `propagar-harness`. Cruza con el plan de skills por subsistema: si de ahí sale una skill nueva por subsistema, conviene fijar el patrón de nombre **antes** de crearlas, no después.
 
 ## Criterio propuesto
 
