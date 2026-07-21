@@ -28,7 +28,7 @@ El repo es a la vez un **marketplace de plugins de Claude Code** (estilo Matt Po
 │   ├── decisiones/                            # decisiones estructurales (INDICE.md) + MANIFIESTO.md + lint-decisiones/
 │   └── herramientas/                          # tools del Propósito (INDICE.md, columna Tipo) + MANIFIESTO.md; los lints de subsistema viven con su subsistema, no acá
 │       ├── lint-herramientas/                 # lint del registro de Herramientas
-│       └── lint-harness/                      # lint de coherencia del harness (disco↔marketplace↔REGISTRO, junctions, textual)
+│       └── lint-harness/                      # lint de coherencia del harness (disco↔marketplace↔REGISTRO, junctions, textual, tamaño de manifiestos)
 ├── .claude-plugin/marketplace.json            # catálogo del marketplace (10 plugins)
 └── funcionalidades/                           # cada subcarpeta = un plugin
     ├── memoria-local/                         # infra: memoria/ + MEMORIA.md + Mapa del repo (@imports)

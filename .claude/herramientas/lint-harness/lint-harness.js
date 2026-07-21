@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 // Lint de coherencia del harness: punto de entrada (AGENTS.md + adaptador CLAUDE.md, decision 0010),
 // funcionalidades vs marketplace vs REGISTRO, archivos clave por funcionalidad, junctions de skills
-// (dos tandas: ~/.claude/skills y ~/.agents/skills), y divergencia de bloques verbatim entre PLANTILLAs. Sin LLM, sin red.
+// (dos tandas: ~/.claude/skills y ~/.agents/skills), divergencia de bloques verbatim entre PLANTILLAs,
+// y tamaño de los MANIFIESTO.md de subsistema (dec. 0017: breves, van siempre en contexto). Sin LLM, sin red.
 // Uso: node lint-harness.js [--quiet]   (correr desde la raiz del repo del harness)
 const fs = require('fs'), path = require('path'), os = require('os'), crypto = require('crypto');
 const quiet = process.argv.includes('--quiet');
@@ -144,6 +145,23 @@ for (const [name, arr] of bloques) {
   if (hashes.size > 1) divergentes.push(`"${name}": ${arr.map(a => `${a.archivo} (${a.hash})`).join('  vs  ')}`);
 }
 
+// -- [6] tamaño de los manifiestos de subsistema (dec. 0017) -------------
+// El MANIFIESTO.md de cada subsistema va SIEMPRE en el contexto de arranque (via @import
+// desde AGENTS.md); si engorda, infla cada sesion. La regla es "breve". Chequeo preventivo
+// por palabras (mas estable que lineas/bytes): hoy el mayor ronda 160; el limite da aire.
+const LIMITE_MANIFIESTO = 220;
+const manifiestosLargos = [];
+const claudeDir = path.join(repo, '.claude');
+if (fs.existsSync(claudeDir)) {
+  for (const sub of fs.readdirSync(claudeDir, { withFileTypes: true })) {
+    if (!sub.isDirectory()) continue;
+    const mani = path.join(claudeDir, sub.name, 'MANIFIESTO.md');
+    if (!fs.existsSync(mani)) continue;
+    const palabras = (fs.readFileSync(mani, 'utf8').match(/\S+/g) || []).length;
+    if (palabras > LIMITE_MANIFIESTO) manifiestosLargos.push(`${sub.name}/MANIFIESTO.md  [${palabras} palabras > ${LIMITE_MANIFIESTO}]`);
+  }
+}
+
 // -- salida --------------------------------------------------------------
 const secciones = [
   ['PUNTO DE ENTRADA (AGENTS.md + adaptador CLAUDE.md)', entrada],
@@ -154,6 +172,7 @@ const secciones = [
   ['SKILLS SIN JUNCTION (tandas ~/.claude/skills y ~/.agents/skills)', sinJunction],
   ['JUNCTIONS QUE APUNTAN A OTRO LADO', junctionAjeno],
   ['BLOQUES VERBATIM DIVERGENTES ENTRE PLANTILLAS', divergentes],
+  [`MANIFIESTOS QUE ENGORDARON (> ${LIMITE_MANIFIESTO} palabras)`, manifiestosLargos],
 ];
 const total = secciones.reduce((n, [, items]) => n + items.length, 0);
 if (quiet && total === 0) process.exit(0);

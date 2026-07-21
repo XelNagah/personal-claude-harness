@@ -26,12 +26,15 @@ Aplicado al `.claude/` de **este** repo + `AGENTS.md`. Control de cierre 9/9 ver
 - **Política aplicada:** cargan índice **memoria, conocimiento, herramientas**; NO cargan (se consultan a demanda) **planes, glosario, decisiones** (planes = el cambio buscado; glosario/decisiones ya estaban a demanda, se preservó).
 - **5 lints de subsistema** ahora excluyen `MANIFIESTO.md` como infra conocida (igual que ya ignoran la carpeta `lint-<sub>/`): memoria, conocimiento, glosario, decisiones, planes. Herramientas no lo necesitó.
 
+### Verificado en sesión fresca (26-07-21)
+
+- **hop3 confirmado.** Sesión fresca (contexto de arranque, sin leer archivos): cargaron los índices de **memoria** (`MEMORIA.md`), **conocimiento** y **herramientas** (`INDICE.md`) vía `MANIFIESTO.md → @INDICE`; NO cargaron **planes/glosario/decisiones**; los 6 manifiestos presentes. Cadena `CLAUDE.md → @AGENTS.md → @MANIFIESTO.md → @INDICE.md` (hop3, límite 4) resuelta sin regresión. No hizo falta el fallback (devolver `@INDICE` directo al `AGENTS.md`).
+- **Lint de tamaño del manifiesto:** vive en **`lint-harness`** (transversal al concepto Manifiesto, dec. 0017 — no es lint *de un subsistema*, no aplica dec. 0008). Sección `MANIFIESTOS QUE ENGORDARON`, umbral **220 palabras** por archivo (mayor hoy: conocimiento 159 → ~40% de aire). Probado en positivo (con umbral 100 saltan 4) y negativo (con 220, cero). Ventaja: `lint-harness` no viaja → el chequeo queda fuera de la propagación. README + INDICE + AGENTS actualizados. Control de cierre 9/9.
+
 ### Qué queda para ejecutar
 
-1. **Verificar el import anidado hop3 en sesión fresca:** confirmar que memoria/conocimiento/herramientas SÍ cargan su índice vía manifiesto, y planes NO. (hop2 ya probado; hop3 documentado ≤4, sin verificar en vivo.)
-2. **Lint que vigile el tamaño** del manifiesto (que no engorde y anule el ahorro).
-3. **Propagar a las funcionalidades + orquestador:** cada manifiesto viaja en el plugin de su subsistema, y la exclusión de `MANIFIESTO.md` en los lints tiene que ir a las copias distribuidas (`propagar-harness`). Falta también el nivelado de consumidores.
-4. **Publicación en inglés:** el nombre ya traduce 1:1 (`MANIFIESTO.md` ↔ `MANIFEST.md`); coordinar con la migración de idioma, no renombrar suelto.
+1. **Propagar a las funcionalidades + orquestador:** cada manifiesto viaja en el plugin de su subsistema, y la exclusión de `MANIFIESTO.md` en los lints tiene que ir a las copias distribuidas (`propagar-harness`). Falta también el nivelado de consumidores. *(El lint de tamaño NO entra acá: vive en `lint-harness`, que no se distribuye.)*
+2. **Publicación en inglés:** el nombre ya traduce 1:1 (`MANIFIESTO.md` ↔ `MANIFEST.md`); coordinar con la migración de idioma, no renombrar suelto.
 
 ## Qué se pide
 
