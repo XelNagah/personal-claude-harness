@@ -4,7 +4,7 @@
 
 ## Qué es
 
-La **Identidad del Agente** (glosario) = **Título + Propósito** del repo, persistidos como **dato legible por máquina**. Hoy el Propósito solo vive como prosa en `AGENTS.md` / decisión 0001 — nada lo expone como dato. Sin esto, la Pantalla de bienvenida no tiene de dónde sacar el título.
+La **Identidad del Agente** (glosario) = **Título + Propósito** del repo, persistidos como **dato legible por máquina**. Hoy el Propósito solo vive como texto plano en `AGENTS.md` / decisión 0001 — nada lo expone como dato. Sin esto, la Pantalla de bienvenida no tiene de dónde sacar el título.
 
 ## Diseño (tentativo, acordado a grandes rasgos)
 

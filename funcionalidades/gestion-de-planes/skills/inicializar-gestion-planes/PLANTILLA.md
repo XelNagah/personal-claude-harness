@@ -29,14 +29,14 @@ Persistir y gestionar planes bajo `.claude/planes/` con tres subcarpetas: `pendi
 
 Importante: borrar el archivo de `pendientes/` al moverlo — no duplicar. Un plan puede persistirse antes de arrancar la ejecución (p. ej. para cortar una sesión larga de diseño): Estado `Nuevo` o `Diferido` en el registro y bloque al tope con los pendientes para retomar.
 
-Relacionado: [[artefacto-estado]] (estado vivo de una exploración dentro del plan).
+Relacionado: [[archivo-de-estado]] (estado vivo de una exploración dentro del plan).
 ```
 
-## §Memoria — `.claude/memoria/feedback_artefacto_estado.md`
+## §Memoria — `.claude/memoria/feedback_archivo_de_estado.md`
 
 ```markdown
 ---
-name: artefacto-estado
+name: archivo-de-estado
 description: En tareas exploratorias multi-variable, mantener UN archivo de estado (tabla dimensión×resultado) actualizado antes de reportar en el chat; leerlo al retomar.
 metadata:
   type: feedback

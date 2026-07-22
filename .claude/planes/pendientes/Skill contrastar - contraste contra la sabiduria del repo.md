@@ -21,7 +21,7 @@ Salida: **no** un plan, sino el **resultado del contraste** (coincidencias, choq
 - **`planificar`:** ya lee las tres bases y las escribe sobre la marcha, pero su objetivo es **descubrir qué hacer** y producir un plan criticado. `contrastar` es más acotado: el contraste **es** el producto, no un paso hacia un plan. Riesgo de solape alto → definir el límite (¿`contrastar` es un pedazo de `planificar` extraído como skill propia? ¿o un modo de `planificar`?).
 - **`converger-terminologia`:** ya contrasta texto contra el glosario. `contrastar` generaliza a las tres bases. ¿`converger-terminologia` queda como caso particular suyo?
 - **Plan [Capa semántica de coherencia](Capa%20semantica%20de%20coherencia%20-%20contradicciones%20e%20incompatibilidades.md)** (Diferido) y **[Chequear el plan escrito contra la sabiduría del repo](Chequear%20el%20plan%20escrito%20contra%20la%20sabiduria%20del%20repo.md)** (Nuevo): `contrastar` es una materialización de esa capa semántica, **on-demand sobre una entrada dada**. Coordinar — no construir tres mecanismos distintos para lo mismo.
-- **Decisión 0003:** la capa semántica está *"hoy informal, pendiente de formalizar"*; esta skill la aterriza para un momento/artefacto concreto.
+- **Decisión 0003:** la capa semántica está *"hoy informal, pendiente de formalizar"*; esta skill la aterriza para un momento y una pieza concretos.
 
 ## Preguntas abiertas (para diseñar con `planificar`)
 

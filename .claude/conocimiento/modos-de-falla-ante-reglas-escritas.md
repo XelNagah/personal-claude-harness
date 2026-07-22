@@ -22,7 +22,7 @@ Lectura de **18 conversaciones completas** (~6.400 eventos, 15 MB) de un agente 
 - Modo 2: cuatro turnos del usuario para lograr la corrección; después del veto explícito, **cinco usos más** del término vetado, dos de ellos en mensajes de commit — uno en el commit cuyo propio asunto era eliminar ese término.
 - Modo 3: **8 de 8** propuestas de ubicación fueron "dejarlo afuera"; el usuario ordenó lo contrario las 8 veces.
 
-**El dato más fuerte, y el que ordena todo lo demás:** el agente editó él mismo el archivo de reglas para reemplazar un término, y **seis minutos después**, en la sesión siguiente, usó el término viejo en prosa propia. Escribir la regla no la instala — ni siquiera escribirla uno mismo.
+**El dato más fuerte, y el que ordena todo lo demás:** el agente editó él mismo el archivo de reglas para reemplazar un término, y **seis minutos después**, en la sesión siguiente, usó el término viejo en texto plano propio. Escribir la regla no la instala — ni siquiera escribirla uno mismo.
 
 ## Cuándo aplica y cuándo no
 

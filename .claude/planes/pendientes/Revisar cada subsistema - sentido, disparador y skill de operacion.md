@@ -9,7 +9,7 @@
 **La regla que salió de mirar los siete juntos:** un subsistema se puebla si tiene **al menos una** de estas dos cosas.
 
 1. **Un disparo proactivo** en la `description` de su skill — *"al cerrar una tarea que dejó aprendizajes"*, *"al detectar en la conversación una decisión que se está por perder"*, *"cuando el usuario corrige lo mismo por segunda vez"*.
-2. **Un artefacto físico cuya ausencia el lint detecta.** `herramientas` no tiene skill y aun así tiene 8 entradas: cuando creás un script queda una carpeta en el disco y `lint-herramientas` grita si no tiene fila. El disco delata la omisión.
+2. **Un componente físico cuya ausencia el lint detecta.** `herramientas` no tiene skill y aun así tiene 8 entradas: cuando creás un script queda una carpeta en el disco y `lint-herramientas` grita si no tiene fila. El disco delata la omisión.
 
 `conocimiento` no tenía ninguna de las dos, y **no puede tener la segunda**: el conocimiento que nunca se escribió no deja rastro, y un índice vacío es perfectamente coherente para cualquier lint. Es el único subsistema mecánicamente ciego a su propia ausencia — por eso era el único en cero.
 

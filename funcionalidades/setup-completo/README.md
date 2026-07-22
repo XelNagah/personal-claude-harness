@@ -20,7 +20,7 @@ Es la forma cómoda de arrancar un repo nuevo. Cada funcionalidad también se pu
     ├── memoria/
     │   ├── MEMORIA.md
     │   ├── feedback_flujo_planes.md
-    │   ├── feedback_artefacto_estado.md
+    │   ├── feedback_archivo_de_estado.md
     │   ├── feedback_estilo_commits.md
     │   ├── feedback_base_conocimiento.md
     │   ├── feedback_glosario.md

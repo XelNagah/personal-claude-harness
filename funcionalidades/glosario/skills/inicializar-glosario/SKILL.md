@@ -1,11 +1,11 @@
 ---
 name: inicializar-glosario
-description: Instala el glosario del dominio del usuario en el repo actual (.claude/glosario/INDICE.md tabla + páginas de detalle + lint + memoria + sección en AGENTS.md). Conceptos con alias registrados; detalle propio para lo complejo. Depende de memoria-local. Use when el usuario dice "inicializar glosario", "armá el glosario", "glosario del dominio".
+description: Instala el glosario del dominio del usuario en el repo actual (.claude/glosario/INDICE.md tabla + páginas de detalle + lint + memoria + sección en AGENTS.md). Conceptos con términos por estado (alias, propuestos, vetados); el agente solo propone, el usuario ratifica y veta; detalle propio para lo complejo. Depende de memoria-local. Use when el usuario dice "inicializar glosario", "armá el glosario", "glosario del dominio".
 ---
 
 # Inicializar glosario del dominio
 
-Instala un glosario del dominio: una **tabla** de conceptos (nombre canónico, definición, alias registrados) donde los conceptos complejos apuntan a una **página de detalle** propia. Se consulta al planificar/analizar para mantener coherencia semántica. Si parte ya existe, **extender sin pisar**.
+Instala un glosario del dominio: una **tabla** de conceptos (nombre canónico, definición, y sus **términos por estado**: alias, propuestos, vetados) donde los conceptos complejos apuntan a una **página de detalle** propia. Se consulta al planificar/analizar para mantener coherencia semántica. Si parte ya existe, **extender sin pisar**.
 
 **Depende de `memoria-local`**: la convención se guarda como memoria. Si `.claude/memoria/MEMORIA.md` no existe, ejecutar primero la skill `inicializar-memoria-local`.
 
@@ -14,8 +14,8 @@ Instala un glosario del dominio: una **tabla** de conceptos (nombre canónico, d
 ```
 ├── AGENTS.md          # (raíz) se le asegura la sección "Glosario del proyecto"; CLAUDE.md = adaptador
 ├── .claude/glosario/
-│   ├── INDICE.md    # tabla: Concepto | Definición | Alias | Detalle
-│   ├── <slug>.md      # página de detalle, solo para conceptos complejos
+│   ├── INDICE.md    # tabla: Concepto | Definición | Alias | Propuestos | Vetados | Detalle
+│   ├── <nombre>.md    # página de detalle, solo para conceptos complejos
 │   └── lint-glosario/
 │       └── lint-glosario.js
 └── memoria/
@@ -33,9 +33,9 @@ Segura de re-correr: sirve para **"nivelar"** repos que ya tienen algunas partes
 
 ## Concepto de la funcionalidad
 
-- **Alias registrados, no prohibidos.** Un concepto tiene un nombre canónico y sus alias quedan *identificados* en la columna Alias (todos válidos). El objetivo es mapear ("birra/chela = cerveza"), no vetar. El lint solo caza que un mismo alias no esté bajo dos conceptos distintos.
-- **Toda entrada nueva pasa por el usuario.** El agente puede *proponer* términos (marcados como propuestos), pero no se asientan como canónicos sin ratificación. Preferir las palabras del usuario a acuñar nuevas — el glosario es un registro canónico y tiene control duro (ver preferencia de terminología).
-- **Detalle bajo demanda.** Concepto simple → una fila, columna Detalle en `—`. Concepto complejo (fórmulas, ejemplos, contraejemplos) → su fila apunta a una página `<slug>.md` en la misma carpeta.
+- **Términos por estado (un solo eje).** Cada concepto tiene un nombre canónico y sus términos repartidos en tres columnas: `Alias` (formas válidas, ratificadas, para mapear "birra/chela = cerveza"), `Propuestos` (sugeridos por el agente, sin usar hasta ratificar) y `Vetados` (prohibidos; el reemplazo es el canónico de la propia fila). Los alias válidos se **registran**; los términos confusos o ajenos se **vetan**. El lint caza colisiones de alias, contradicciones (alias en una fila y vetado en otra) y apariciones de vetados en el texto vivo.
+- **El agente propone; el usuario ratifica y veta (decisión 0004).** El agente **nunca** escribe en `Alias` ni en `Vetados`: solo *propone* en `Propuestos`. Ratificar y vetar son potestad del usuario. El agente **nunca usa** un término que esté en `Propuestos` o en `Vetados`, ni en texto plano, memorias, planes o código. Preferir las palabras del usuario a acuñar nuevas — el glosario es un registro canónico y tiene control duro (ver preferencia de terminología).
+- **Detalle bajo demanda.** Concepto simple → una fila, columna Detalle en `—`. Concepto complejo (fórmulas, ejemplos, contraejemplos, o el mapa de reemplazos de un vetado) → su fila apunta a una página `<nombre>.md` en la misma carpeta.
 
 ## Flujo de trabajo
 

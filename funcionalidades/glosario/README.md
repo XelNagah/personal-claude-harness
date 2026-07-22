@@ -1,6 +1,6 @@
 # Glosario del dominio
 
-Instala un **glosario del dominio** del repo: una tabla de conceptos (nombre canónico, definición, alias registrados) donde los conceptos complejos apuntan a una página de detalle propia. Se consulta al planificar y analizar para mantener **coherencia semántica** a lo largo de la vida del repo.
+Instala un **glosario del dominio** del repo: una tabla de conceptos (nombre canónico, definición, y sus **términos por estado**: alias, propuestos, vetados) donde los conceptos complejos apuntan a una página de detalle propia. Se consulta al planificar y analizar para mantener **coherencia semántica** a lo largo de la vida del repo.
 
 > **Subsistema de acumulación** — sigue el patrón índice + entradas + lint del harness ([cómo aprende](../../README.md#cómo-aprende)). Acá el índice es `glosario/INDICE.md`.
 
@@ -10,8 +10,8 @@ Instala un **glosario del dominio** del repo: una tabla de conceptos (nombre can
 <repo>/
 ├── AGENTS.md                          # sección "Glosario del proyecto" (CLAUDE.md = adaptador)
 ├── .claude/glosario/
-│   ├── INDICE.md                    # tabla: Concepto | Definición | Alias | Detalle
-│   ├── <slug>.md                      # página de detalle, solo para conceptos complejos
+│   ├── INDICE.md                    # tabla: Concepto | Definición | Alias | Propuestos | Vetados | Detalle
+│   ├── <nombre>.md                    # página de detalle, solo para conceptos complejos
 │   └── lint-glosario/
 │       └── lint-glosario.js           # lint mecánico (sin LLM, sin red)
 └── .claude/memoria/
@@ -22,15 +22,15 @@ Instala un **glosario del dominio** del repo: una tabla de conceptos (nombre can
 
 El `INDICE.md` **es** el glosario: una tabla donde cada fila es un concepto. Lo simple se define en la fila; lo complejo apunta a su propia página.
 
-| Concepto | Definición | Alias | Detalle |
-|----------|------------|-------|---------|
-| **FECE** | Función de Evaluación de Costo Económico. | función de costo | [ver](FECE.md) |
-| **Cerveza** | Bebida fermentada de malta. | birra, chela, fresca | — |
+| Concepto | Definición | Alias | Propuestos | Vetados | Detalle |
+|----------|------------|-------|------------|---------|---------|
+| **FECE** | Función de Evaluación de Costo Económico. | función de costo | — | — | [ver](FECE.md) |
+| **Cerveza** | Bebida fermentada de malta. | birra, chela, fresca | rubia | escabio | — |
 
-- **Alias registrados, no prohibidos.** Los alias quedan *identificados* (todos válidos), para mapear "birra/chela = cerveza" — no para vetar cómo se nombra algo. El lint solo caza que un mismo alias no cuelgue de dos conceptos distintos.
-- **Toda entrada nueva pasa por el usuario.** El agente puede *proponer* términos (marcados como propuestos), pero no se asientan como canónicos sin ratificación. Preferir las palabras del usuario a acuñar nuevas — gobernanza del glosario como registro canónico.
-- **Detalle bajo demanda.** Concepto simple → fila con Detalle en `—`. Concepto complejo (fórmulas, ejemplos, contraejemplos, como una FECE) → página `<slug>.md` propia, enlazada.
-- **Lint** — links de detalle resuelven, páginas sin huérfanos, alias sin colisión. Mecánico y gratis; al cerrar tareas que tocaron el glosario.
+- **Términos por estado (un solo eje).** Cada concepto reparte sus términos en tres columnas: `Alias` (formas válidas, ratificadas, para mapear "birra/chela = cerveza"), `Propuestos` (los que el agente *sugiere* pero no usa hasta que el usuario los mueve a Alias o Vetados) y `Vetados` (prohibidos; el reemplazo es el canónico de la propia fila, y se barren del texto vivo). El lint caza colisiones de alias, contradicciones (alias en una fila y vetado en otra) y apariciones de vetados en el repo.
+- **El agente propone; el usuario ratifica y veta.** El agente **nunca** escribe en `Alias` ni en `Vetados`: solo *propone* en `Propuestos`. Ratificar y vetar son potestad del usuario. El agente **nunca usa** un término que esté en `Propuestos` o en `Vetados`. Preferir las palabras del usuario a acuñar nuevas — gobernanza del glosario como registro canónico (decisión 0004).
+- **Detalle bajo demanda.** Concepto simple → fila con Detalle en `—`. Concepto complejo (fórmulas, ejemplos, contraejemplos, o el mapa de reemplazos de un vetado, como una FECE) → página `<nombre>.md` propia, enlazada.
+- **Lint** — links de detalle resuelven, páginas sin huérfanos, colisiones de términos, propuestos pendientes y apariciones de vetados en el repo. Mecánico y gratis; al cerrar tareas que tocaron el glosario.
 
 ## Dependencias
 

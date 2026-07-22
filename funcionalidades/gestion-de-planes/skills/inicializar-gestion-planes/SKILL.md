@@ -17,7 +17,7 @@ AGENTS.md              # (raíz del repo) sección "Planes del proyecto" + impor
 ├── settings.json      # hook SessionStart → lint-planes --quiet
 ├── memoria/
 │   ├── feedback_flujo_planes.md
-│   └── feedback_artefacto_estado.md
+│   └── feedback_archivo_de_estado.md
 └── planes/
     ├── ESTADOS.md     # estados: Estado | Sentido | Carpeta | Terminal (fuente de verdad, la lee el lint)
     ├── PLANES.md      # registro: Plan | Estado | Creado | Cerrado | Origen | Notas
@@ -59,7 +59,7 @@ En cualquier caso, la memoria `feedback_flujo_planes.md` vieja se **reemplaza** 
 1. **Verificar `memoria-local`.** Si `.claude/memoria/` no existe, instalarla primero.
 2. **Migración** (sección anterior) si aplica.
 3. **Asegurar `planes/pendientes/`, `planes/ejecutados/`, `planes/descartados/`** (con `.gitkeep` si el repo usa git), **`planes/ESTADOS.md`** (textual de PLANTILLA §Estados) y **`planes/PLANES.md`** (contenido inicial de PLANTILLA §Contenido inicial). Si hay planes sin fila, agregarlas (ver migración).
-4. **Asegurar las memorias** `feedback_flujo_planes.md` y `feedback_artefacto_estado.md` (textual de PLANTILLA) + sus líneas en `memoria/MEMORIA.md`.
+4. **Asegurar las memorias** `feedback_flujo_planes.md` y `feedback_archivo_de_estado.md` (textual de PLANTILLA) + sus líneas en `memoria/MEMORIA.md`.
 5. **Instalar el lint**: `planes/lint-planes/lint-planes.js` + `README.md` (textual de PLANTILLA §Script), co-ubicado con el subsistema en `.claude/planes/lint-planes/`. Es infra del Patrón, **no** una Herramienta: no se registra en `herramientas/INDICE.md` (decisión 0008).
 6. **Asegurar el hook** `SessionStart` → `node .claude/planes/lint-planes/lint-planes.js --quiet` con **registro doble** (PLANTILLA §Hook, decisión 0010): en `.claude/settings.json` (Claude Code) y en `.codex/hooks.json` (Codex CLI; avisar que requiere repo trusted y `features.hooks`). **Merge cuidadoso** en ambos: si el archivo o la clave `hooks` ya existen, agregar solo la entrada faltante sin pisar hooks ajenos; JSON válido (sin trailing commas).
 7. **En `AGENTS.md`** (punto de entrada en la raíz, decisión 0010): asegurar la sección **"Planes del proyecto"** (PLANTILLA §Sección) y, si existe el bloque "Mapa del repo (siempre cargado)" de `memoria-local`, asegurar la línea `@.claude/planes/PLANES.md` en él.

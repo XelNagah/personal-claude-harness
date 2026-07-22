@@ -72,7 +72,7 @@ Ambas cifras son ruido. **La decisión no es económica**: lo que se paga caro s
 
 ### Ya ejecutado (21/07/2026): B mínimo — inventario sin rutear
 
-Primera pieza del frente B. Herramienta `inventariar-artefactos-sueltos` (`.claude/herramientas/inventariar-artefactos-sueltos/`): barre `.claude/` y lista los artefactos (archivos y carpetas) que no son subsistema (por el criterio de lint co-ubicado de `pantalla-bienvenida`, decisión 0008) ni infra conocida. **Inventaría, no juzga.** Corre suelta (no cableada a `control-cierre`: eso ya sería veredicto) y acepta una ruta para apuntarla a un consumidor a mano.
+Primera pieza del frente B. Herramienta `inventariar-componentes-sueltos` (`.claude/herramientas/inventariar-componentes-sueltos/`): barre `.claude/` y lista los componentes (archivos y carpetas) que no son subsistema (por el criterio de lint co-ubicado de `pantalla-bienvenida`, decisión 0008) ni infra conocida. **Inventaría, no juzga.** Corre suelta (no cableada a `control-cierre`: eso ya sería veredicto) y acepta una ruta para apuntarla a un consumidor a mano.
 
 Alcance **opción A** (acordada 21/07/2026): solo `.claude/`, no la raíz del repo. Motivo: barrer la raíz sin los criterios del frente A marca todo el Propósito real como sospechoso; `.claude/` sí es decidible hoy. Probada en verde acá (0 sin rutear) y contra un repo sucio de juguete (caza carpetas/archivos mal puestos, incluida una carpeta con nombre de subsistema pero sin su lint). Control de cierre 9/9.
 

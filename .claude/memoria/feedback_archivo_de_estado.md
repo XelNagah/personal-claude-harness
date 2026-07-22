@@ -1,5 +1,5 @@
 ---
-name: artefacto-estado
+name: archivo-de-estado
 description: En tareas exploratorias multi-variable, mantener UN archivo de estado (tabla dimensión×resultado) actualizado antes de reportar en el chat; leerlo al retomar.
 metadata:
   type: feedback

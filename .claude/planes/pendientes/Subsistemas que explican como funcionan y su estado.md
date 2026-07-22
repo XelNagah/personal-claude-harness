@@ -2,7 +2,7 @@
 
 **Estado: Nuevo · Creado 26-07-20.** Pedido de Javier el 26-07-20: *"quiero poder preguntar por la memoria, por el conocimiento, las herramientas… preguntarle al agente qué hace y cómo funciona y que explique mecanismos y dominio."*
 
-**Diseño decidido 26-07-21 (`planificar`).** El plan se cruzó con una pregunta de carga de contexto ("¿por qué se cargan todos los planes siempre?") y de ahí salió el artefacto que lo materializa: el **Manifiesto de subsistema**. Ver sección abajo. Decisión **0017**.
+**Diseño decidido 26-07-21 (`planificar`).** El plan se cruzó con una pregunta de carga de contexto ("¿por qué se cargan todos los planes siempre?") y de ahí salió el componente que lo materializa: el **Manifiesto de subsistema**. Ver sección abajo. Decisión **0017**.
 
 ## Diseño decidido (26-07-21): Manifiesto de subsistema
 
@@ -21,8 +21,8 @@
 
 Aplicado al `.claude/` de **este** repo + `AGENTS.md`. Control de cierre 9/9 verde.
 
-- **6 `MANIFIESTO.md` creados** (memoria, planes, conocimiento, glosario, decisiones, herramientas) con la prosa que estaba en las `## <subsistema>` de `AGENTS.md`.
-- **`AGENTS.md` reescrito:** las 6 secciones de prosa + el bloque "Mapa del repo" (@índices) → una sola sección "## Subsistemas" con `@.claude/<sub>/MANIFIESTO.md ×6`. Cada manifiesto declara su `@INDICE.md` o no.
+- **6 `MANIFIESTO.md` creados** (memoria, planes, conocimiento, glosario, decisiones, herramientas) con el texto plano que estaba en las `## <subsistema>` de `AGENTS.md`.
+- **`AGENTS.md` reescrito:** las 6 secciones de texto plano + el bloque "Mapa del repo" (@índices) → una sola sección "## Subsistemas" con `@.claude/<sub>/MANIFIESTO.md ×6`. Cada manifiesto declara su `@INDICE.md` o no.
 - **Política aplicada:** cargan índice **memoria, conocimiento, herramientas**; NO cargan (se consultan a demanda) **planes, glosario, decisiones** (planes = el cambio buscado; glosario/decisiones ya estaban a demanda, se preservó).
 - **5 lints de subsistema** ahora excluyen `MANIFIESTO.md` como infra conocida (igual que ya ignoran la carpeta `lint-<sub>/`): memoria, conocimiento, glosario, decisiones, planes. Herramientas no lo necesitó.
 

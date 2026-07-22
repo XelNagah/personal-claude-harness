@@ -125,12 +125,19 @@ Barrido nuevo (87 `.md` + 10 `.js`) al detectar que los términos del 26-07-19 s
 - Base v2 → v3, verificada con el mismo md5 en los tres lugares; v2 registrada en `§Bases anteriores` para que la reconciliación distinga base desactualizada de base editada a mano.
 - Plugins 0.3.0 → 0.4.0.
 
-**Falta (la parte estructural de este plan):**
+**Hecho (26-07-21 — cierre estructural):**
 
-- Columna `Vetados` en el glosario + las tres preguntas abiertas de abajo.
-- Cambios al `lint-glosario` ([3], [4], [5] de la sección de lint).
-- Decisión nueva en el registro.
-- **Hueco detectado el 26-07-20:** `lint-harness` **no compara la Base** entre `PREFERENCIAS.md` y las dos `PLANTILLA.md` — no tiene ninguna referencia a preferencias. La divergencia de hoy no la habría cazado nadie; se verificó a mano. Sumar ese chequeo entra naturalmente acá, que ya toca lints.
+- Glosario a **6 columnas** (`Concepto | Definición | Alias | Propuestos | Vetados | Detalle`) + bloque de Gobernanza (el agente solo propone; ratificar y vetar son del usuario). Vetados ya ratificados sembrados en sus columnas.
+- **`lint-glosario`** reescrito: `[3]` colisión alias / contradicción alias↔vetado / vetado ambiguo · `[4]` propuestos pendientes · `[5]` apariciones de vetados en el repo (dos grupos texto-plano/código, autoexclusiones). Formato de `[5]` informativo (no rompe el control de cierre).
+- **Decisión 0018** asentada.
+- **`lint-harness` `[7]`**: compara la Base entre `PREFERENCIAS.md` y las dos `PLANTILLA.md` (hueco del 26-07-20). Probado positivo y negativo (texto y versión).
+- **Componente** (concepto nuevo, archivo/dir del repo) vetó `artefacto`; Herramienta `inventariar-artefactos-sueltos`→`inventariar-componentes-sueltos` (+ decisión 0015). Memoria `artefacto-estado`→`archivo-de-estado`.
+- **Terminología Farlopa** (concepto nuevo, ratificado por Javier): casa de los vetados sin concepto de dominio, con mapa término→reemplazo en Detalle + página de conocimiento (fenómeno universal, origen del glosario). `dogfooding` vetado.
+- Barrido de `prosa`→texto plano y `artefacto` (abstracto→salida/pieza; físico→componente) en planes vivos (subagente).
+- Frase "los alias se registran, no se prohíben" reescrita al modelo nuevo (repo-local + propagada).
+- **Propagado** al harness (funcionalidad glosario + orquestador + renombre de memoria en gestion-de-planes/setup-completo): 4 bloques de glosario idénticos, lint verbatim, versiones subidas (glosario 0.4.2, planes 0.4.1, setup 0.5.4). Verificado por inclusión + control de cierre 9/9 verde.
+
+**Preguntas abiertas — resueltas (26-07-21):** (1) columna `Propuestos` propia. (2) sin columna de motivo; el reemplazo/explicación va en `Detalle`. (3) frase reescrita, no borrada. Extra ratificado: `artefacto`→**Componente** (no "pieza"/"componente" como reemplazo único: `artefacto` es correcto pero se adoptó Componente para el sentido físico) y el concepto **Terminología Farlopa**.
 
 ## Preguntas abiertas
 
@@ -158,3 +165,15 @@ Doble formato + orquestador (`CLAUDE.md` §Mantenimiento, memoria [feedback prop
 ## Correr por
 
 `planificar` — es diseño estructural del subsistema y toca terminología, gobernada por 0004.
+
+## Notas de implementación
+
+Cierre estructural el **26-07-21** (ver "Estado de ejecución" arriba para el detalle). En síntesis:
+
+- **Modelo:** glosario a 6 columnas (`Concepto | Definición | Alias | Propuestos | Vetados | Detalle`) + gobernanza (el agente solo propone; ratificar y vetar son del usuario). **Decisión 0018.**
+- **Lints:** `lint-glosario` reescrito (`[3]` contradicción alias↔vetado y vetado ambiguo, `[4]` propuestos, `[5]` apariciones de vetados en el repo — informativo, no rompe el control). `lint-harness` `[7]`: compara la Base entre `PREFERENCIAS.md` y las dos `PLANTILLA.md` (hueco del 26-07-20); probado positivo y negativo.
+- **Términos:** `artefacto`→**Componente** (concepto nuevo); Herramienta `inventariar-artefactos-sueltos`→`inventariar-componentes-sueltos` (+ decisión 0015); memoria `artefacto-estado`→`archivo-de-estado`. **Terminología Farlopa** (concepto nuevo, ratificado por el usuario) = casa de vetados sin dominio, con mapa término→reemplazo en Detalle + página de conocimiento; `dogfooding` vetado.
+- **Barrido:** `prosa`→texto plano y `artefacto` en planes vivos (subagente; los meta-archivos y el histórico quedan excluidos).
+- **Propagación:** modelo + lint + memoria del glosario + renombre de memoria a funcionalidad glosario y orquestador; versiones subidas (glosario 0.4.2, planes 0.4.1, setup 0.5.4). Verificado por inclusión textual + control de cierre **9/9 verde**.
+
+**Quedó pendiente aparte** (no bloquea el cierre): las 34 apariciones de vetados que `[5]` reporta viven en archivos excluidos por convención (este plan, la memoria `terminologia-canonica`, citas v2 de las PLANTILLA, y un nombre de archivo en un link a `ejecutados/`).

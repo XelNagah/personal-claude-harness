@@ -162,6 +162,39 @@ if (fs.existsSync(claudeDir)) {
   }
 }
 
+// -- [7] Base de preferencias identica entre PREFERENCIAS.md y las PLANTILLA -----
+// Hueco detectado 26-07-20: el texto de la Base viaja (PREFERENCIAS.md -> PLANTILLA de
+// preferencias-trabajo y del orquestador setup-completo) y NADA comparaba las copias
+// (el chequeo [4] solo mira bloques de memoria y fragmentos de lint). Se extrae la seccion
+// `## Base (harness vN)` hasta `## Adaptaciones` de cada archivo que la contenga —incluida la
+// version en el encabezado— y se comparan normalizadas. Divergen -> se listan por hash.
+function extraerBase(txt) {
+  const m = txt.match(/(## Base \(harness[^\n]*)\n([\s\S]*?)\n## Adaptaciones/);
+  return m ? (m[1] + '\n' + m[2]).replace(/\s+/g, ' ').trim() : null;
+}
+const fuentesBase = [path.join(repo, '.claude', 'preferencias', 'PREFERENCIAS.md')];
+for (const f of enDisco) {
+  const skillsDir = path.join(funcDir, f, 'skills');
+  if (!fs.existsSync(skillsDir)) continue;
+  for (const s of fs.readdirSync(skillsDir)) {
+    const p = path.join(skillsDir, s, 'PLANTILLA.md');
+    if (fs.existsSync(p)) fuentesBase.push(p);
+  }
+}
+const basePorHash = new Map(); // hash -> [archivos]
+for (const f of fuentesBase) {
+  if (!fs.existsSync(f)) continue;
+  const base = extraerBase(fs.readFileSync(f, 'utf8'));
+  if (base == null) continue;
+  const h = crypto.createHash('sha1').update(base).digest('hex').slice(0, 10);
+  const arr = basePorHash.get(h) || [];
+  arr.push(path.relative(repo, f).replace(/\\/g, '/'));
+  basePorHash.set(h, arr);
+}
+const baseDivergente = basePorHash.size > 1
+  ? [...basePorHash].map(([h, arr]) => `(${h}) ${arr.join('  |  ')}`)
+  : [];
+
 // -- salida --------------------------------------------------------------
 const secciones = [
   ['PUNTO DE ENTRADA (AGENTS.md + adaptador CLAUDE.md)', entrada],
@@ -172,6 +205,7 @@ const secciones = [
   ['SKILLS SIN JUNCTION (tandas ~/.claude/skills y ~/.agents/skills)', sinJunction],
   ['JUNCTIONS QUE APUNTAN A OTRO LADO', junctionAjeno],
   ['BLOQUES VERBATIM DIVERGENTES ENTRE PLANTILLAS', divergentes],
+  ['BASE DE PREFERENCIAS DIVERGENTE (PREFERENCIAS.md vs PLANTILLAS)', baseDivergente],
   [`MANIFIESTOS QUE ENGORDARON (> ${LIMITE_MANIFIESTO} palabras)`, manifiestosLargos],
 ];
 const total = secciones.reduce((n, [, items]) => n + items.length, 0);

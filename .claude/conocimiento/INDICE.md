@@ -10,3 +10,4 @@ Convención completa en la memoria [feedback base conocimiento](../memoria/feedb
 
 - [Modos de falla ante reglas escritas](modos-de-falla-ante-reglas-escritas.md) — cinco formas distintas en que un agente incumple una regla que tiene cargada (recita sin obedecer, negocia, deja las cosas afuera, pide permiso para escribir pero no para ubicar, se inventa reglas); el texto de arranque gobierna la conversación, no la acción.
 - [grep y acentos en Windows](grep-y-acentos-en-windows.md) — `grep -i` con patrones acentuados devuelve 0 resultados en silencio en Git Bash; enumerar variantes sin `-i`.
+- [Terminología farlopa: la deriva terminológica de los agentes](terminologia-farlopa.md) — los agentes incorporan términos ajenos (anglicismos, calcos, jerga) al dominio sesión tras sesión sin ratificar; fenómeno universal a todo repo con agentes, síntoma la perplejidad del autor, y origen del subsistema glosario.

@@ -22,4 +22,4 @@ Persistir y gestionar planes bajo `.claude/planes/` con tres subcarpetas: `pendi
 
 Importante: borrar el archivo de `pendientes/` al moverlo — no duplicar. Un plan puede persistirse antes de arrancar la ejecución (p. ej. para cortar una sesión larga de diseño): Estado `Nuevo` o `Diferido` en el registro y bloque al tope con los pendientes para retomar.
 
-Relacionado: [[artefacto-estado]] (estado vivo de una exploración dentro del plan).
+Relacionado: [[archivo-de-estado]] (estado vivo de una exploración dentro del plan).

@@ -40,7 +40,7 @@ Volver a tener un blob autocontenido en el repo, generado a partir de las dos pi
 
 ### 3. Herramienta que concatena a demanda *(recomendada)*
 
-`node .claude/herramientas/armar-prompt-portable/armar-prompt-portable.js [funcionalidad]` → emite el blob autocontenido a stdout (o al portapapeles). Sin artefacto en el commit.
+`node .claude/herramientas/armar-prompt-portable/armar-prompt-portable.js [funcionalidad]` → emite el blob autocontenido a stdout (o al portapapeles). Sin componente en el commit.
 
 - **A favor:** imposible que divergja (se genera del original en el momento), no suma nada que sincronizar, `lint-harness` no cambia. Sirve para cualquier funcionalidad, no solo el orquestador.
 - **En contra:** requiere tener el repo clonado para generarlo — o sea, la vía C deja de ser 100% independiente de B. Mitigación: se genera **una vez acá** y se pega allá; no hace falta el repo en la máquina destino, solo en la de origen.

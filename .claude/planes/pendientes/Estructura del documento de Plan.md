@@ -16,7 +16,7 @@ La funcionalidad `gestion-de-planes` define a fondo el **ciclo** (ver `ESTADOS.m
 Hoy hay reglas sueltas sobre el documento, sin estar declaradas como "estructura de un plan":
 
 - **La sección `Notas de implementación`** — obligatoria en `ejecutados/` (el `lint-planes` la exige; sin ella, hallazgo).
-- **La sección `Estado`** — para el artefacto de estado de exploraciones multi-variable (memoria `feedback_artefacto_estado.md`), cuando el plan la necesita.
+- **La sección `Estado`** — para el archivo de estado de exploraciones multi-variable (memoria `feedback_archivo_de_estado.md`), cuando el plan la necesita.
 - **Forma de facto** que usan los planes recientes: título, una línea "Estado: X · Creado AA-MM-DD" al tope, luego secciones libres (Objetivo / Planteo, preguntas abiertas, depende de).
 
 ## Qué hay que definir (para cuando se retome)

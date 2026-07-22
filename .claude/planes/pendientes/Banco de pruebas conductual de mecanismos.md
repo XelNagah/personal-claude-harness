@@ -17,7 +17,7 @@ Los tres primeros se anotaron como incidentes y se propusieron mecanismos distin
 
 ## Qué es (y qué no)
 
-Un banco de pruebas que corre un agente de verdad sobre un repo preparado y evalúa el artefacto que produce.
+Un banco de pruebas que corre un agente de verdad sobre un repo preparado y evalúa la salida que produce.
 
 ```
 fixture:  repo temporal con el harness instalado + un diff staged
@@ -31,13 +31,13 @@ Si A da 9/10 y B da 2/10, la decisión del plan padre queda **probada**. Si empa
 
 **No es un lint.** El resultado es una tasa, no verde/rojo. Una corrida sola no prueba nada; el criterio de aceptación tiene que ser un umbral sobre N corridas, y hay que decidir qué se hace cuando el umbral falla (¿frena un commit? ¿solo informa?).
 
-**Es una tercera capa.** La decisión 0003 define dos: mecánica (lints `.js`, sin LLM) y semántica (contradicciones y duplicación, con LLM sobre texto, "hoy informal, pendiente de formalizar"). Ésta corre al agente y evalúa el artefacto producido. Si el plan avanza, amerita decisión estructural nueva.
+**Es una tercera capa.** La decisión 0003 define dos: mecánica (lints `.js`, sin LLM) y semántica (contradicciones y duplicación, con LLM sobre texto, "hoy informal, pendiente de formalizar"). Ésta corre al agente y evalúa la salida producida. Si el plan avanza, amerita decisión estructural nueva.
 
 ## Por qué el estilo de commits es el primer caso
 
-El artefacto es un string corto con marcadores verificables por regex (`Antes,`, `Ahora,`, el prefijo de área, la ausencia del trailer). Barato, determinista de evaluar, sin LLM juez.
+La salida es un string corto con marcadores verificables por regex (`Antes,`, `Ahora,`, el prefijo de área, la ausencia del trailer). Barato, determinista de evaluar, sin LLM juez.
 
-Los otros tres incidentes producen prosa difusa —un plan, una pregunta al usuario, un término acuñado en medio de un documento— y ahí el assert necesita un LLM que juzgue, lo que multiplica costo y mete varianza en el propio evaluador. Conviene construir el banco contra el caso barato y recién después ver si estira.
+Los otros tres incidentes producen texto plano difuso —un plan, una pregunta al usuario, un término acuñado en medio de un documento— y ahí el assert necesita un LLM que juzgue, lo que multiplica costo y mete varianza en el propio evaluador. Conviene construir el banco contra el caso barato y recién después ver si estira.
 
 ## Preguntas abiertas
 
