@@ -10,10 +10,11 @@ Instala el sistema de memoria local persistida en el proyecto actual. Es infraes
 ## Estructura objetivo
 
 ```
-├── AGENTS.md          # punto de entrada: secciones "Mapa del repo (siempre cargado)" y "Memoria del proyecto"
+├── AGENTS.md          # punto de entrada: sección "Subsistemas" con la línea @.claude/memoria/MANIFIESTO.md
 ├── CLAUDE.md          # adaptador para Claude Code: @AGENTS.md
 └── .claude/
     └── memoria/
+        ├── MANIFIESTO.md   # manifiesto de subsistema (siempre en contexto; importa @MEMORIA.md)
         ├── MEMORIA.md      # índice (solo punteros, nunca contenido)
         └── lint-memoria/
             └── lint-memoria.js   # lint mecánico de la memoria (sin LLM, sin red)
@@ -23,7 +24,7 @@ Instala el sistema de memoria local persistida en el proyecto actual. Es infraes
 
 Dos mecanismos, no uno:
 
-- **Datos** se cargan por **índice + fetch**: el bloque "Mapa del repo" importa los índices vía `@` — entran al contexto en todo arranque de sesión, sin depender de que el agente decida leerlos. La pregunta del user dispara la lectura del archivo apuntado. Para que esto rinda, las `description` del índice se escriben como **ganchos que cargan el dato clave** (ej.: "calendario de cobros — sueldo ~15, jerarquización ~15"), no como títulos vagos.
+- **Datos** se cargan por **índice + fetch**: la sección `## Subsistemas` importa el `MANIFIESTO.md` de cada subsistema vía `@`, y cada manifiesto importa —o no— su propio índice — entran al contexto en todo arranque de sesión, sin depender de que el agente decida leerlos. La pregunta del user dispara la lectura del archivo apuntado. Para que esto rinda, las `description` del índice se escriben como **ganchos que cargan el dato clave** (ej.: "calendario de cobros — sueldo ~15, jerarquización ~15"), no como títulos vagos.
 - **Reglas de conducta** NO alcanza con indexarlas: nada dispara ir a buscarlas (el agente que está por violar una regla no se pregunta si existe). Van **inline**, siempre en contexto — en este setup, vía la funcionalidad `preferencias` (o importadas individualmente si son del repo).
 
 ## Reconciliación (idempotencia)
@@ -52,16 +53,11 @@ Segura de re-correr: sirve para **"nivelar"** repos que ya tienen algunas partes
    ```
 
    Tipos: `user` (quién es el usuario), `feedback` (correcciones y enfoques confirmados, con el porqué), `project` (objetivos/restricciones no derivables del código), `reference` (punteros externos). Antes de crear una memoria nueva, revisar si una existente ya la cubre — actualizar en vez de duplicar. Fechas siempre absolutas.
-3. **En `AGENTS.md`** (punto de entrada en la raíz, decisión 0010; si no existe, crearlo junto al adaptador `CLAUDE.md` = `@AGENTS.md` — y si hay un CLAUDE.md con contenido, migrarlo primero como indica `inicializar-preferencias-trabajo`) asegurar la sección **"Mapa del repo (siempre cargado)"** con el import del índice:
-
-   ```markdown
-   ## Mapa del repo (siempre cargado)
-
-   @.claude/memoria/MEMORIA.md
-   ```
-
-   (La ruta del `@import` es relativa al archivo que importa — `AGENTS.md` está en la raíz, por eso el prefijo `.claude/`. En un agente sin soporte de imports, la línea funciona igual como instrucción de lectura.) Las demás funcionalidades agregan acá sus propios índices al instalarse (`@.claude/planes/PLANES.md`, `@.claude/conocimiento/INDICE.md`, `@.claude/herramientas/INDICE.md`). Si el punto de entrada ya carga la memoria por instrucción textual ("leer al inicio"), **reemplazar** esa instrucción por el import — es la misma convención con mecanismo en vez de obediencia (reportar el reemplazo, no preguntar).
+3. **En `AGENTS.md`** (punto de entrada en la raíz, decisión 0010; si no existe, crearlo junto al adaptador `CLAUDE.md` = `@AGENTS.md` — y si hay un CLAUDE.md con contenido, migrarlo primero como indica `inicializar-preferencias-trabajo`) cablear el subsistema por su **manifiesto** (decisiones 0017/0019):
+   - **Crear `.claude/memoria/MANIFIESTO.md`** con el contenido de [PLANTILLA.md](PLANTILLA.md) §Manifiesto — el archivo breve que va **siempre en contexto** (describe el subsistema e **importa su índice** con la línea final `@MEMORIA.md`, porque el índice de memoria se carga siempre).
+   - **Asegurar la sección `## Subsistemas`** (PLANTILLA §Subsistemas) y, dentro, la línea `@.claude/memoria/MANIFIESTO.md`. Es la sección que reemplaza al viejo bloque "Mapa del repo" y a las secciones de prosa por-subsistema; cada funcionalidad de subsistema agrega acá su propia línea `@.claude/<sub>/MANIFIESTO.md` al instalarse. Si no existe, crearla; si existe, agregar solo la línea faltante. (La ruta del `@import` es relativa a `AGENTS.md`, en la raíz, por eso el prefijo `.claude/`; en un agente sin imports la línea funciona como instrucción de lectura.)
+   - **Migración (modelo viejo).** Si AGENTS.md ya tenía el bloque **"Mapa del repo (siempre cargado)"** con `@.claude/memoria/MEMORIA.md` (o una instrucción textual "leer la memoria al inicio"), el manifiesto lo reemplaza: quitar esa línea/instrucción. Si el bloque Mapa queda sin líneas de subsistema, quitar también su encabezado (reportar el reemplazo, no preguntar).
 4. **Instalar el lint de la memoria** `.claude/memoria/lint-memoria/lint-memoria.js` con el contenido EXACTO de [PLANTILLA.md](PLANTILLA.md) §Script. Va en **su propia carpeta** co-ubicado con el subsistema (`.claude/memoria/lint-memoria/`), nunca suelto. Es un script Node sin dependencias ni red que chequea, sobre `.claude/memoria/`: **refs `.md` rotas** y wikilinks `[[name]]` sin memoria, **`MEMORIA.md` incompleto** (memorias no listadas), **huérfanos** y **frontmatter inválido** (`name`/`description`/`metadata.type` ∈ `user`·`feedback`·`project`·`reference`).
-5. **Asegurar también en `AGENTS.md` la sección "Memoria del proyecto"** con link a `.claude/memoria/MEMORIA.md`, el criterio de uso (respetar lo cargado; antes de crear una memoria, revisar si una existente la cubre) y el **paso de lint al cerrar**: al cerrar una tarea que tocó la memoria, correr **desde la raíz del repo** `node .claude/memoria/lint-memoria/lint-memoria.js`. Si existe una sección equivalente, no duplicar; si le falta el paso de lint, agregarlo.
+5. **El criterio de uso y el lint al cerrar viven en el manifiesto** (paso 3): `memoria/MANIFIESTO.md` ya trae el disparador (respetar lo cargado; antes de crear una memoria, revisar si una existente la cubre) y el paso de lint al cerrar (`node .claude/memoria/lint-memoria/lint-memoria.js` desde la raíz). **Migración:** si AGENTS.md tenía una sección de prosa "Memoria del proyecto" separada, el manifiesto la reemplaza — quitarla (su contenido ya está en el manifiesto). No dejar las dos.
 6. **Memorias que ya hayan surgido** en la conversación (preferencias, objetivos del proyecto) → persistirlas con el frontmatter de arriba y registrarlas en el índice, salvo que ya exista una que cubra el hecho.
 7. **Reportar** en los tres grupos (`agregado` / `ya estaba` / `divergente`). Correr el lint (`node .claude/memoria/lint-memoria/lint-memoria.js`) → debe dar limpio. **No hacer commit** salvo pedido explícito.

@@ -14,8 +14,9 @@ Instala un registro de las decisiones **estructurales al propósito del repo**. 
 ## Estructura objetivo
 
 ```
-├── AGENTS.md          # (raíz) se le asegura la sección "Decisiones del proyecto"; CLAUDE.md = adaptador
+├── AGENTS.md          # (raíz) línea @.claude/decisiones/MANIFIESTO.md en la sección "Subsistemas"; CLAUDE.md = adaptador
 ├── .claude/decisiones/
+│   ├── MANIFIESTO.md  # manifiesto de subsistema (siempre en contexto; NO importa índice — a demanda)
 │   ├── INDICE.md  # tabla: N° | Decisión | Fecha | Estado | Detalle
 │   ├── NNNN-slug.md   # página de detalle, solo para decisiones complejas
 │   └── lint-decisiones/
@@ -45,5 +46,8 @@ Segura de re-correr: sirve para **"nivelar"** repos que ya tienen algunas partes
 2. **Asegurar `.claude/decisiones/INDICE.md`** con el contenido inicial de [PLANTILLA.md](PLANTILLA.md) §Decisiones (encabezado + tabla vacía). Formato de página de detalle en §Detalle. Si ya existe un registro equivalente (ej. `docs/adr/`), no duplicar: reportar `divergente` y preguntar si migrar.
 3. **Instalar el lint** `.claude/decisiones/lint-decisiones/lint-decisiones.js` con el contenido EXACTO de PLANTILLA.md §Script.
 4. **Asegurar la memoria `feedback_decisiones.md`** (textual de PLANTILLA.md §Memoria) y su línea en `memoria/MEMORIA.md`. Equivalente presente → no duplicar; difiere → reportar.
-5. **En `AGENTS.md`** (punto de entrada en la raíz, decisión 0010; si falta, crearlo con el adaptador `CLAUDE.md` = `@AGENTS.md` como indica `inicializar-preferencias-trabajo`) asegurar la sección **"Decisiones del proyecto"** (PLANTILLA.md §Sección). Equivalente presente → no duplicar. No reescribir el archivo entero.
+5. **En `AGENTS.md`** (punto de entrada en la raíz, decisión 0010; si falta, crearlo con el adaptador `CLAUDE.md` = `@AGENTS.md` como indica `inicializar-preferencias-trabajo`) cablear el subsistema por su **manifiesto** (decisiones 0017/0019):
+   - **Crear `.claude/decisiones/MANIFIESTO.md`** con el contenido de [PLANTILLA.md](PLANTILLA.md) §Manifiesto — va **siempre en contexto**; **no** importa el índice (se consulta al planificar/analizar), así que **no lleva línea `@…` final**.
+   - **Asegurar la sección `## Subsistemas`** (PLANTILLA §Subsistemas; la crea `memoria-local`, o crearla si falta) y, dentro, la línea `@.claude/decisiones/MANIFIESTO.md`.
+   - **Migración (modelo viejo).** Si AGENTS.md ya tenía una sección de prosa "Decisiones del proyecto", el manifiesto la reemplaza: quitarla. No reescribir el archivo entero.
 6. **Reportar** en los tres grupos. Correr el lint (`node .claude/decisiones/lint-decisiones/lint-decisiones.js`) → debe dar limpio sobre el registro vacío. **No hacer commit** salvo pedido explícito.

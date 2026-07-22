@@ -19,7 +19,7 @@ function walk(dir, acc) {
     if (EXCLUDE.has(e.name)) continue;
     const full = path.join(dir, e.name);
     if (e.isDirectory()) { if (e.name.startsWith('lint-')) continue; walk(full, acc); }  // el lint co-ubicado del subsistema no es contenido
-    else if (e.name.endsWith('.md')) acc.push(full);
+    else if (e.name.endsWith('.md') && e.name !== 'MANIFIESTO.md') acc.push(full);  // MANIFIESTO.md: infra del subsistema (dec. 0017), no es pagina
   }
   return acc;
 }
@@ -167,3 +167,41 @@ El conocimiento persistido del agente (documentos, estudios, temas, notas de dom
 ```
 
 > Reemplazá `.claude` por el directorio real del harness si no es Claude Code.
+
+## §Manifiesto — `.claude/conocimiento/MANIFIESTO.md`
+
+Contenido EXACTO (si el archivo no existe, crearlo con esto; si existe, reconciliar sin pisar):
+
+````markdown
+# Conocimiento — manifiesto de subsistema
+
+Todo lo que el agente **sabe** del dominio vive en una ubicación única: este directorio (`conocimiento/`), indexado por `INDICE.md`. No en la raíz del repo (los `.md` de la raíz son documentación del proyecto, no conocimiento de agente).
+
+**Disparador:** asentar al averiguar algo del dominio que costó descubrir y que va a hacer falta de nuevo — cómo funciona un sistema externo, un formato, una restricción real. La prueba que lo separa de la memoria: **¿seguiría siendo cierto si este repo no existiera?** Sí → conocimiento. Un hallazgo que se explica y no se asienta se vuelve a averiguar la sesión siguiente.
+
+**Índice: se carga siempre** (liviano). Al cerrar una tarea que escribió conocimiento, correr el lint desde la raíz del repo:
+```bash
+node .claude/conocimiento/lint-conocimiento/lint-conocimiento.js
+```
+
+@INDICE.md
+````
+
+## §Subsistemas — sección `## Subsistemas` de `AGENTS.md`
+
+Contenido EXACTO (reemplaza las viejas secciones de prosa por-subsistema + el bloque "Mapa del repo"):
+
+```markdown
+## Subsistemas (manifiestos siempre cargados)
+
+Cada subsistema tiene un **Manifiesto** (`.claude/<sub>/MANIFIESTO.md`): una descripción breve —qué es, cómo se usa, cuándo consultarlo— que va **siempre en contexto** y que **declara si su índice también se carga** incluyendo —o no— la línea `@INDICE.md`. Lo que se carga siempre es el manifiesto, no necesariamente el índice.
+
+Si tu agente no expande imports, **leé estos manifiestos al inicio de la sesión** (y, si el manifiesto importa su índice, ese índice también).
+
+@.claude/memoria/MANIFIESTO.md
+@.claude/planes/MANIFIESTO.md
+@.claude/conocimiento/MANIFIESTO.md
+@.claude/glosario/MANIFIESTO.md
+@.claude/decisiones/MANIFIESTO.md
+@.claude/herramientas/MANIFIESTO.md
+```

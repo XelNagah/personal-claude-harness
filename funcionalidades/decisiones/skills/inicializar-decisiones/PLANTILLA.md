@@ -60,20 +60,6 @@ Las decisiones **estructurales al propósito del repo** se asientan en `.claude/
 Relacionado: [[flujo-planes]] (consultar/registrar decisiones al cerrar planes).
 ```
 
-## §Sección de `AGENTS.md` — "Decisiones del proyecto"
-
-```markdown
-## Decisiones del proyecto
-
-Las decisiones **estructurales al propósito del repo** (no las operativas triviales) se asientan en [`decisiones/INDICE.md`](.claude/decisiones/INDICE.md): una tabla donde cada fila es una decisión (N°, qué + por qué, fecha, estado, y link a detalle si requiere conceptualización mayor). Misma estructura que el glosario. **Consultarlas al planificar y analizar** para no re-decidir ni contradecir. Al cerrar una tarea que registró decisiones, correr el lint **desde la raíz del repo**:
-
-​```bash
-node .claude/decisiones/lint-decisiones/lint-decisiones.js
-​```
-
-Detalle de la convención en la memoria [`feedback_decisiones.md`](.claude/memoria/feedback_decisiones.md).
-```
-
 ## §Script — `.claude/decisiones/lint-decisiones/lint-decisiones.js`
 
 Contenido exacto (Node, sin dependencias, sin red):
@@ -144,7 +130,7 @@ for (const r of rows) {
 const huerfanos = [];
 if (fs.existsSync(root)) {
   for (const f of fs.readdirSync(root)) {
-    if (!f.endsWith('.md') || f === 'INDICE.md') continue;
+    if (!f.endsWith('.md') || f === 'INDICE.md' || f === 'MANIFIESTO.md') continue;  // MANIFIESTO.md: infra del subsistema (dec. 0017)
     if (!referenced.has(f)) huerfanos.push(f);
   }
 }
@@ -172,4 +158,40 @@ if (!huerfanos.length) console.log('    (ninguna)');
 console.log(`\n[4] SUPERSEDED ROTAS (${supRotas.length}):`);
 supRotas.forEach(([n, r]) => console.log(`    ${n}  ->  ${r}   [decision inexistente]`));
 if (!supRotas.length) console.log('    (ninguna)');
+```
+
+## §Manifiesto — `.claude/decisiones/MANIFIESTO.md`
+
+Contenido EXACTO (si el archivo no existe, crearlo con esto; si existe, reconciliar sin pisar):
+
+````markdown
+# Decisiones — manifiesto de subsistema
+
+Las decisiones **estructurales al propósito del repo** (no las operativas triviales) se asientan en `INDICE.md`: una tabla donde cada fila es una decisión (N°, qué + por qué, fecha, estado, y link a detalle si requiere conceptualización mayor).
+
+**Disparador:** consultar las decisiones al planificar y analizar, para no re-decidir ni contradecir lo asentado. Registrar al tomar una decisión que condiciona el repo a futuro; para revertir no se borra, se marca `reemplazada por NNNN`.
+
+**Índice: NO se carga siempre** — se consulta al planificar y analizar. Al cerrar una tarea que registró decisiones, correr el lint desde la raíz del repo:
+```bash
+node .claude/decisiones/lint-decisiones/lint-decisiones.js
+```
+````
+
+## §Subsistemas — sección `## Subsistemas` de `AGENTS.md`
+
+Contenido EXACTO (reemplaza las viejas secciones de prosa por-subsistema + el bloque "Mapa del repo"):
+
+```markdown
+## Subsistemas (manifiestos siempre cargados)
+
+Cada subsistema tiene un **Manifiesto** (`.claude/<sub>/MANIFIESTO.md`): una descripción breve —qué es, cómo se usa, cuándo consultarlo— que va **siempre en contexto** y que **declara si su índice también se carga** incluyendo —o no— la línea `@INDICE.md`. Lo que se carga siempre es el manifiesto, no necesariamente el índice.
+
+Si tu agente no expande imports, **leé estos manifiestos al inicio de la sesión** (y, si el manifiesto importa su índice, ese índice también).
+
+@.claude/memoria/MANIFIESTO.md
+@.claude/planes/MANIFIESTO.md
+@.claude/conocimiento/MANIFIESTO.md
+@.claude/glosario/MANIFIESTO.md
+@.claude/decisiones/MANIFIESTO.md
+@.claude/herramientas/MANIFIESTO.md
 ```

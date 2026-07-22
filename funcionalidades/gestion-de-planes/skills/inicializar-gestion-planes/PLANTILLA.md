@@ -123,18 +123,6 @@ Los **estados** y su semántica (a qué carpeta mapea cada uno, cuáles son term
 |------|--------|--------|---------|--------|-------|
 ```
 
-## §Sección de `AGENTS.md` — "Planes del proyecto"
-
-```markdown
-## Planes del proyecto
-
-Los planes se persisten en [`planes/`](.claude/planes/): `pendientes/` (planes vivos: `Nuevo`, `En curso`, `Diferido`), `ejecutados/` y `descartados/` (registro, con motivo). Nombre = nombre estable sin fecha; estado y fechas viven en el registro [`planes/PLANES.md`](.claude/planes/PLANES.md), y los estados disponibles (con su carpeta y si son terminales) en [`planes/ESTADOS.md`](.claude/planes/ESTADOS.md) — configurable, que el lint lee. Ciclo completo en la memoria [`feedback_flujo_planes.md`](.claude/memoria/feedback_flujo_planes.md). Al cerrar una tarea que tocó planes, correr el lint **desde la raíz del repo**:
-
-​```bash
-node .claude/planes/lint-planes/lint-planes.js
-​```
-```
-
 ## §Hook — chequeo al abrir sesión (registro doble, decisión 0010)
 
 El mismo script se registra en los dos formatos — Claude Code y Codex CLI ejecutan idéntico chequeo al abrir sesión.
@@ -252,7 +240,7 @@ for (const c of CARPETAS) {
 
 const sueltos = fs.existsSync(root)
   ? fs.readdirSync(root, { withFileTypes: true })
-      .filter(e => e.isFile() && e.name.endsWith('.md') && !['PLANES.md', 'ESTADOS.md'].includes(e.name)).map(e => e.name)
+      .filter(e => e.isFile() && e.name.endsWith('.md') && !['PLANES.md', 'ESTADOS.md', 'MANIFIESTO.md'].includes(e.name)).map(e => e.name)
   : [];
 
 const norm = r => r.replace(/\\/g, '/').replace(/^\.\//, '');
@@ -331,4 +319,40 @@ for (const [titulo, items] of secciones) {
 **Referenciado por:** hook `SessionStart` en `.claude/settings.json` — actualizar el hook si se mueve.
 **Dependencias:** Node.js (sin libs externas).
 **Origen (opcional):** funcionalidad `gestion-de-planes` del harness (análisis de uso 2026-07: los ciclos manuales de planes no se sostenían solos).
+```
+
+## §Manifiesto — `.claude/planes/MANIFIESTO.md`
+
+Contenido EXACTO (si el archivo no existe, crearlo con esto; si existe, reconciliar sin pisar):
+
+````markdown
+# Planes — manifiesto de subsistema
+
+Los planes se persisten en este directorio (`planes/`): `pendientes/` (vivos), `ejecutados/` y `descartados/` (con motivo). Nombre estable sin fecha; estado y fechas en el registro `PLANES.md`; los estados disponibles en `ESTADOS.md` (que el lint lee).
+
+**Disparador:** el agente sabe que los planes existen; consultar `PLANES.md` a demanda cuando un plan se vuelve relevante (retomar, cerrar, o al detectar que un pendiente ya se implementó). Escribir al abrir un plan o transicionarlo de estado.
+
+**Índice: NO se carga siempre** — `PLANES.md` es el registro que más crece; se consulta a demanda, no en cada arranque. Al cerrar una tarea que tocó planes, correr el lint desde la raíz del repo:
+```bash
+node .claude/planes/lint-planes/lint-planes.js
+```
+````
+
+## §Subsistemas — sección `## Subsistemas` de `AGENTS.md`
+
+Contenido EXACTO (reemplaza las viejas secciones de prosa por-subsistema + el bloque "Mapa del repo"):
+
+```markdown
+## Subsistemas (manifiestos siempre cargados)
+
+Cada subsistema tiene un **Manifiesto** (`.claude/<sub>/MANIFIESTO.md`): una descripción breve —qué es, cómo se usa, cuándo consultarlo— que va **siempre en contexto** y que **declara si su índice también se carga** incluyendo —o no— la línea `@INDICE.md`. Lo que se carga siempre es el manifiesto, no necesariamente el índice.
+
+Si tu agente no expande imports, **leé estos manifiestos al inicio de la sesión** (y, si el manifiesto importa su índice, ese índice también).
+
+@.claude/memoria/MANIFIESTO.md
+@.claude/planes/MANIFIESTO.md
+@.claude/conocimiento/MANIFIESTO.md
+@.claude/glosario/MANIFIESTO.md
+@.claude/decisiones/MANIFIESTO.md
+@.claude/herramientas/MANIFIESTO.md
 ```

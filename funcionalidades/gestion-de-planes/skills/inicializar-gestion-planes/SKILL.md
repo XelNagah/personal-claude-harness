@@ -12,13 +12,14 @@ Instala la gestión de planes persistida en el proyecto actual. Si parte ya exis
 ## Estructura objetivo
 
 ```
-AGENTS.md              # (raíz del repo) sección "Planes del proyecto" + import de PLANES.md en el Mapa; CLAUDE.md = adaptador
+AGENTS.md              # (raíz del repo) línea @.claude/planes/MANIFIESTO.md en la sección "Subsistemas"; CLAUDE.md = adaptador
 .claude/
 ├── settings.json      # hook SessionStart → lint-planes --quiet
 ├── memoria/
 │   ├── feedback_flujo_planes.md
 │   └── feedback_archivo_de_estado.md
 └── planes/
+    ├── MANIFIESTO.md  # manifiesto de subsistema (siempre en contexto; NO importa índice — PLANES.md a demanda)
     ├── ESTADOS.md     # estados: Estado | Sentido | Carpeta | Terminal (fuente de verdad, la lee el lint)
     ├── PLANES.md      # registro: Plan | Estado | Creado | Cerrado | Origen | Notas
     ├── pendientes/.gitkeep      # planes vivos (Nuevo · En curso · Diferido)
@@ -62,6 +63,9 @@ En cualquier caso, la memoria `feedback_flujo_planes.md` vieja se **reemplaza** 
 4. **Asegurar las memorias** `feedback_flujo_planes.md` y `feedback_archivo_de_estado.md` (textual de PLANTILLA) + sus líneas en `memoria/MEMORIA.md`.
 5. **Instalar el lint**: `planes/lint-planes/lint-planes.js` + `README.md` (textual de PLANTILLA §Script), co-ubicado con el subsistema en `.claude/planes/lint-planes/`. Es infra del Patrón, **no** una Herramienta: no se registra en `herramientas/INDICE.md` (decisión 0008).
 6. **Asegurar el hook** `SessionStart` → `node .claude/planes/lint-planes/lint-planes.js --quiet` con **registro doble** (PLANTILLA §Hook, decisión 0010): en `.claude/settings.json` (Claude Code) y en `.codex/hooks.json` (Codex CLI; avisar que requiere repo trusted y `features.hooks`). **Merge cuidadoso** en ambos: si el archivo o la clave `hooks` ya existen, agregar solo la entrada faltante sin pisar hooks ajenos; JSON válido (sin trailing commas).
-7. **En `AGENTS.md`** (punto de entrada en la raíz, decisión 0010): asegurar la sección **"Planes del proyecto"** (PLANTILLA §Sección) y, si existe el bloque "Mapa del repo (siempre cargado)" de `memoria-local`, asegurar la línea `@.claude/planes/PLANES.md` en él.
+7. **En `AGENTS.md`** (punto de entrada en la raíz, decisión 0010) cablear el subsistema por su **manifiesto** (decisiones 0017/0019):
+   - **Crear `.claude/planes/MANIFIESTO.md`** con el contenido de [PLANTILLA.md](PLANTILLA.md) §Manifiesto — va **siempre en contexto**; **no** importa el índice (`PLANES.md` es el registro más pesado del repo, se consulta a demanda), así que **no lleva línea `@…` final**.
+   - **Asegurar la sección `## Subsistemas`** (PLANTILLA §Subsistemas; la crea `memoria-local`, o crearla si falta) y, dentro, la línea `@.claude/planes/MANIFIESTO.md`.
+   - **Migración (modelo viejo).** Si AGENTS.md ya tenía una sección de prosa "Planes del proyecto" y/o la línea `@.claude/planes/PLANES.md` en un bloque "Mapa del repo", el manifiesto las reemplaza: quitarlas. Si el bloque Mapa queda sin líneas de subsistema, quitar su encabezado.
 8. **Correr el lint** → resolver hallazgos hasta 0 (o reportar los que requieren decisión del user).
 9. **Reportar** en los tres grupos (`agregado` / `ya estaba` / `divergente`). **No hacer commit** salvo pedido explícito.

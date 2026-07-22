@@ -65,20 +65,6 @@ Otras memorias, planes o conocimiento pueden referenciar una tool por su ruta ex
 Relacionado: [[flujo-planes]], [[base-conocimiento]].
 ```
 
-## §Sección de `AGENTS.md` — "Herramientas del proyecto"
-
-```markdown
-## Herramientas del proyecto
-
-Las **Herramientas** del repo — las *tools* que el Propósito requiere (tipos `script`, `skill` local, `MCP` local) — viven en [`herramientas/`](.claude/herramientas/), listadas en el registro [`herramientas/INDICE.md`](.claude/herramientas/INDICE.md) (tabla Herramienta | Tipo | Qué hace | Cómo se invoca | Estado). Los **lints de subsistema no son Herramientas**: son infra del Patrón y viven con su subsistema (`.claude/<sub>/lint-<sub>/`, decisión 0008). ⚠️ Una tool referenciada por ruta en `settings`, `.gitignore` o un hook no se mueve sin actualizar esa referencia (rompe el match por prefijo). Al cerrar una tarea que tocó Herramientas, correr el lint **desde la raíz del repo**:
-
-​```bash
-node .claude/herramientas/lint-herramientas/lint-herramientas.js
-​```
-
-Detalle de la convención en la memoria [`feedback_herramientas.md`](.claude/memoria/feedback_herramientas.md).
-```
-
 ## §Script — `.claude/herramientas/lint-herramientas/lint-herramientas.js`
 
 Contenido exacto (Node, sin dependencias, sin red):
@@ -158,4 +144,42 @@ if (!colgadas.length) console.log('    (ninguna)');
 console.log(`\n[4] REFS POR RUTA DE LINT ROTAS EN SETTINGS (${refsRotas.length}):`);
 refsRotas.forEach(([f, p]) => console.log(`    ${f}  ->  ${p}   [no existe]`));
 if (!refsRotas.length) console.log('    (ninguna)');
+```
+
+## §Manifiesto — `.claude/herramientas/MANIFIESTO.md`
+
+Contenido EXACTO (si el archivo no existe, crearlo con esto; si existe, reconciliar sin pisar):
+
+````markdown
+# Herramientas — manifiesto de subsistema
+
+Las **Herramientas** del repo — las *tools* que el Propósito requiere (tipos `script`, `skill` local, `MCP` local) — viven en este directorio (`herramientas/`), listadas en `INDICE.md` (tabla Herramienta | Tipo | Qué hace | Cómo se invoca | Estado). Los lints de subsistema **no** son Herramientas: son infra del Patrón y viven con su subsistema.
+
+**Disparador:** consultar el índice para saber qué tools existen y cómo se invocan; registrar una Herramienta al fabricar o adoptar una tool repetible del Propósito. ⚠️ Una tool referenciada por ruta en `settings`, `.gitignore` o un hook no se mueve sin actualizar esa referencia (rompe el match por prefijo).
+
+**Índice: se carga siempre** (liviano). Al cerrar una tarea que tocó Herramientas, correr el lint desde la raíz del repo:
+```bash
+node .claude/herramientas/lint-herramientas/lint-herramientas.js
+```
+
+@INDICE.md
+````
+
+## §Subsistemas — sección `## Subsistemas` de `AGENTS.md`
+
+Contenido EXACTO (reemplaza las viejas secciones de prosa por-subsistema + el bloque "Mapa del repo"):
+
+```markdown
+## Subsistemas (manifiestos siempre cargados)
+
+Cada subsistema tiene un **Manifiesto** (`.claude/<sub>/MANIFIESTO.md`): una descripción breve —qué es, cómo se usa, cuándo consultarlo— que va **siempre en contexto** y que **declara si su índice también se carga** incluyendo —o no— la línea `@INDICE.md`. Lo que se carga siempre es el manifiesto, no necesariamente el índice.
+
+Si tu agente no expande imports, **leé estos manifiestos al inicio de la sesión** (y, si el manifiesto importa su índice, ese índice también).
+
+@.claude/memoria/MANIFIESTO.md
+@.claude/planes/MANIFIESTO.md
+@.claude/conocimiento/MANIFIESTO.md
+@.claude/glosario/MANIFIESTO.md
+@.claude/decisiones/MANIFIESTO.md
+@.claude/herramientas/MANIFIESTO.md
 ```

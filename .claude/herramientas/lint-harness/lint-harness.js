@@ -2,7 +2,8 @@
 // Lint de coherencia del harness: punto de entrada (AGENTS.md + adaptador CLAUDE.md, decision 0010),
 // funcionalidades vs marketplace vs REGISTRO, archivos clave por funcionalidad, junctions de skills
 // (dos tandas: ~/.claude/skills y ~/.agents/skills), divergencia de bloques verbatim entre PLANTILLAs,
-// y tamaño de los MANIFIESTO.md de subsistema (dec. 0017: breves, van siempre en contexto). Sin LLM, sin red.
+// tamaño de los MANIFIESTO.md de subsistema (dec. 0017: breves, siempre en contexto) y su estructura
+// minima (dec. 0019: 5 campos + coherencia carga<->@INDICE). Sin LLM, sin red.
 // Uso: node lint-harness.js [--quiet]   (correr desde la raiz del repo del harness)
 const fs = require('fs'), path = require('path'), os = require('os'), crypto = require('crypto');
 const quiet = process.argv.includes('--quiet');
@@ -195,6 +196,35 @@ const baseDivergente = basePorHash.size > 1
   ? [...basePorHash].map(([h, arr]) => `(${h}) ${arr.join('  |  ')}`)
   : [];
 
+// -- [8] estructura minima de los manifiestos de subsistema (dec. 0019) ---
+// Cada MANIFIESTO.md debe traer los campos obligatorios: titulo H1, "Disparador",
+// una declaracion de carga del indice (se carga siempre | NO se carga siempre) y el
+// comando de lint del propio subsistema. Ademas la presencia de la linea de import del
+// indice (@...INDICE / @...MEMORIA / @...PLANES) debe ser COHERENTE con esa declaracion:
+// la linea ES la declaracion (M1 de 0017), no puede mentir. Lado autor, informativo: no
+// viaja al consumidor (se instala correcto desde PLANTILLA).
+const manifiestosSinCampos = [];
+if (fs.existsSync(claudeDir)) {
+  for (const sub of fs.readdirSync(claudeDir, { withFileTypes: true })) {
+    if (!sub.isDirectory()) continue;
+    const mani = path.join(claudeDir, sub.name, 'MANIFIESTO.md');
+    if (!fs.existsSync(mani)) continue;
+    const t = fs.readFileSync(mani, 'utf8');
+    const faltan = [];
+    if (!/^#\s+\S/m.test(t)) faltan.push('titulo H1');
+    if (!/Disparador/.test(t)) faltan.push('campo Disparador');
+    const cargaM = /(NO\s+)?se carga siempre/i.exec(t);
+    const cargaNo = !!(cargaM && /NO/i.test(cargaM[1] || ''));
+    const cargaSi = !!(cargaM && !cargaNo);
+    if (!cargaM) faltan.push('declaracion de carga del indice');
+    if (!new RegExp('node \\.claude/' + sub.name + '/lint-' + sub.name + '/').test(t)) faltan.push('comando de lint');
+    const tieneImport = /^@\S*(INDICE|MEMORIA|PLANES)/m.test(t);
+    if (cargaSi && !tieneImport) faltan.push('declara "se carga siempre" pero falta la linea @INDICE');
+    if (cargaNo && tieneImport) faltan.push('declara "NO se carga siempre" pero incluye una linea @INDICE');
+    if (faltan.length) manifiestosSinCampos.push(`${sub.name}/MANIFIESTO.md  [${faltan.join('; ')}]`);
+  }
+}
+
 // -- salida --------------------------------------------------------------
 const secciones = [
   ['PUNTO DE ENTRADA (AGENTS.md + adaptador CLAUDE.md)', entrada],
@@ -207,6 +237,7 @@ const secciones = [
   ['BLOQUES VERBATIM DIVERGENTES ENTRE PLANTILLAS', divergentes],
   ['BASE DE PREFERENCIAS DIVERGENTE (PREFERENCIAS.md vs PLANTILLAS)', baseDivergente],
   [`MANIFIESTOS QUE ENGORDARON (> ${LIMITE_MANIFIESTO} palabras)`, manifiestosLargos],
+  ['MANIFIESTOS SIN CAMPOS MINIMOS (dec. 0019)', manifiestosSinCampos],
 ];
 const total = secciones.reduce((n, [, items]) => n + items.length, 0);
 if (quiet && total === 0) process.exit(0);

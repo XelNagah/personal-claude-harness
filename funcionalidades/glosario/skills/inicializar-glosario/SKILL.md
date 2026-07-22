@@ -12,8 +12,9 @@ Instala un glosario del dominio: una **tabla** de conceptos (nombre canónico, d
 ## Estructura objetivo
 
 ```
-├── AGENTS.md          # (raíz) se le asegura la sección "Glosario del proyecto"; CLAUDE.md = adaptador
+├── AGENTS.md          # (raíz) línea @.claude/glosario/MANIFIESTO.md en la sección "Subsistemas"; CLAUDE.md = adaptador
 ├── .claude/glosario/
+│   ├── MANIFIESTO.md  # manifiesto de subsistema (siempre en contexto; NO importa índice — a demanda)
 │   ├── INDICE.md    # tabla: Concepto | Definición | Alias | Propuestos | Vetados | Detalle
 │   ├── <nombre>.md    # página de detalle, solo para conceptos complejos
 │   └── lint-glosario/
@@ -43,5 +44,8 @@ Segura de re-correr: sirve para **"nivelar"** repos que ya tienen algunas partes
 2. **Asegurar `.claude/glosario/INDICE.md`** con el contenido inicial de [PLANTILLA.md](PLANTILLA.md) §Glosario (encabezado + tabla vacía). Si ya existe un glosario equivalente (ej. un `CONTEXT.md` en la raíz), **no duplicar**: reportar `divergente` y preguntar si migrar su contenido a la tabla.
 3. **Instalar el lint** `.claude/glosario/lint-glosario/lint-glosario.js` con el contenido EXACTO de PLANTILLA.md §Script.
 4. **Asegurar la memoria `feedback_glosario.md`** (textual de PLANTILLA.md §Memoria) y su línea en `memoria/MEMORIA.md`. Equivalente presente → no duplicar; difiere → reportar.
-5. **En `AGENTS.md`** (punto de entrada en la raíz, decisión 0010; si falta, crearlo con el adaptador `CLAUDE.md` = `@AGENTS.md` como indica `inicializar-preferencias-trabajo`) asegurar la sección **"Glosario del proyecto"** (PLANTILLA.md §Sección). Equivalente presente → no duplicar. No reescribir el archivo entero.
+5. **En `AGENTS.md`** (punto de entrada en la raíz, decisión 0010; si falta, crearlo con el adaptador `CLAUDE.md` = `@AGENTS.md` como indica `inicializar-preferencias-trabajo`) cablear el subsistema por su **manifiesto** (decisiones 0017/0019):
+   - **Crear `.claude/glosario/MANIFIESTO.md`** con el contenido de [PLANTILLA.md](PLANTILLA.md) §Manifiesto — va **siempre en contexto**; **no** importa el índice (se consulta al planificar/analizar), así que **no lleva línea `@…` final**.
+   - **Asegurar la sección `## Subsistemas`** (PLANTILLA §Subsistemas; la crea `memoria-local`, o crearla si falta) y, dentro, la línea `@.claude/glosario/MANIFIESTO.md`.
+   - **Migración (modelo viejo).** Si AGENTS.md ya tenía una sección de prosa "Glosario del proyecto", el manifiesto la reemplaza: quitarla. No reescribir el archivo entero.
 6. **Reportar** en los tres grupos. Correr el lint (`node .claude/glosario/lint-glosario/lint-glosario.js`) → debe dar limpio sobre el glosario vacío. **No hacer commit** salvo pedido explícito.

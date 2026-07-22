@@ -14,8 +14,9 @@ Instala la convención de **Herramientas** del repo: las *tools* que el propósi
 ## Estructura objetivo
 
 ```
-├── AGENTS.md               # (raíz) se le asegura la sección "Herramientas del proyecto"; CLAUDE.md = adaptador
+├── AGENTS.md               # (raíz) línea @.claude/herramientas/MANIFIESTO.md en la sección "Subsistemas"; CLAUDE.md = adaptador
 ├── .claude/herramientas/
+│   ├── MANIFIESTO.md       # manifiesto de subsistema (siempre en contexto; importa @INDICE.md)
 │   ├── INDICE.md           # tabla: Herramienta | Tipo | Qué hace | Cómo se invoca | Estado
 │   ├── <tool>/             # una tool tipo script
 │   │   ├── README.md       # ficha del tool
@@ -58,5 +59,8 @@ Si el repo ya tiene una carpeta de scripts desordenada (archivos sueltos, sin do
 3. **Instalar el lint** `.claude/herramientas/lint-herramientas/lint-herramientas.js` (contenido EXACTO de PLANTILLA.md §Script) con su propio `README.md`.
 4. **Migrar** scripts sueltos existentes a `<tool>/` con README y fila en el registro (ver Migración). Grep de refs por ruta antes de mover.
 5. **Asegurar la memoria `feedback_herramientas.md`** (textual de PLANTILLA.md §Memoria) y su línea en `memoria/MEMORIA.md`.
-6. **En `AGENTS.md`** (punto de entrada en la raíz, decisión 0010) asegurar la sección **"Herramientas del proyecto"** (PLANTILLA.md §Sección). No reescribir el archivo entero. Si existe el bloque **"Mapa del repo (siempre cargado)"** (de `memoria-local`), asegurar la línea `@.claude/herramientas/INDICE.md` en él.
+6. **En `AGENTS.md`** (punto de entrada en la raíz, decisión 0010) cablear el subsistema por su **manifiesto** (decisiones 0017/0019):
+   - **Crear `.claude/herramientas/MANIFIESTO.md`** con el contenido de [PLANTILLA.md](PLANTILLA.md) §Manifiesto — va **siempre en contexto** e **importa su índice** con la línea final `@INDICE.md` (el índice de herramientas se carga siempre).
+   - **Asegurar la sección `## Subsistemas`** (PLANTILLA §Subsistemas; la crea `memoria-local`, o crearla si falta) y, dentro, la línea `@.claude/herramientas/MANIFIESTO.md`.
+   - **Migración (modelo viejo).** Si AGENTS.md ya tenía una sección de prosa "Herramientas del proyecto" y/o la línea `@.claude/herramientas/INDICE.md` en un bloque "Mapa del repo", el manifiesto las reemplaza: quitarlas. Si el bloque Mapa queda sin líneas de subsistema, quitar su encabezado. No reescribir el archivo entero.
 7. **Reportar** en los tres grupos. Correr el lint (`node .claude/herramientas/lint-herramientas/lint-herramientas.js`). **No hacer commit** salvo pedido explícito.

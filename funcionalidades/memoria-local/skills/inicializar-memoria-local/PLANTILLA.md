@@ -52,7 +52,7 @@ const all = walk(root, []);
 const indexFile = path.join(root, 'MEMORIA.md');
 const hasIndex = fs.existsSync(indexFile);
 const idxText = hasIndex ? read(indexFile) : '';
-const memos = all.filter(p => path.basename(p) !== 'MEMORIA.md');
+const memos = all.filter(p => path.basename(p) !== 'MEMORIA.md' && path.basename(p) !== 'MANIFIESTO.md');  // MANIFIESTO.md: infra del subsistema (dec. 0017), no es memoria
 
 // nombres validos para wikilinks: `name:` del frontmatter + stem del archivo
 const nameSet = new Set();
@@ -151,4 +151,42 @@ if (!orphans.length) console.log('    (ninguno)');
 console.log(`\n[4] FRONTMATTER (${fmBad.length}):`);
 fmBad.forEach(([p, w]) => console.log(`    ${p}   [${w}]`));
 if (!fmBad.length) console.log('    (ok)');
+```
+
+## §Manifiesto — `.claude/memoria/MANIFIESTO.md`
+
+Contenido EXACTO (si el archivo no existe, crearlo con esto; si existe, reconciliar sin pisar):
+
+````markdown
+# Memoria — manifiesto de subsistema
+
+La memoria local vive en este directorio (`memoria/`), indexada por `MEMORIA.md`: hechos que hay que recordar entre sesiones. Cada memoria es un `.md` con frontmatter (`name`, `description`, `metadata.type`); el índice lleva solo punteros, nunca contenido.
+
+**Disparador:** consultar `MEMORIA.md` al inicio de cada sesión y respetarlo. Escribir cuando surge algo para recordar entre sesiones; antes de crear una, revisar si una existente ya lo cubre — actualizar en vez de duplicar. Fechas siempre absolutas.
+
+**Índice: se carga siempre** (liviano). Al cerrar una tarea que tocó la memoria, correr el lint desde la raíz del repo:
+```bash
+node .claude/memoria/lint-memoria/lint-memoria.js
+```
+
+@MEMORIA.md
+````
+
+## §Subsistemas — sección `## Subsistemas` de `AGENTS.md`
+
+Contenido EXACTO (reemplaza las viejas secciones de prosa por-subsistema + el bloque "Mapa del repo"):
+
+```markdown
+## Subsistemas (manifiestos siempre cargados)
+
+Cada subsistema tiene un **Manifiesto** (`.claude/<sub>/MANIFIESTO.md`): una descripción breve —qué es, cómo se usa, cuándo consultarlo— que va **siempre en contexto** y que **declara si su índice también se carga** incluyendo —o no— la línea `@INDICE.md`. Lo que se carga siempre es el manifiesto, no necesariamente el índice.
+
+Si tu agente no expande imports, **leé estos manifiestos al inicio de la sesión** (y, si el manifiesto importa su índice, ese índice también).
+
+@.claude/memoria/MANIFIESTO.md
+@.claude/planes/MANIFIESTO.md
+@.claude/conocimiento/MANIFIESTO.md
+@.claude/glosario/MANIFIESTO.md
+@.claude/decisiones/MANIFIESTO.md
+@.claude/herramientas/MANIFIESTO.md
 ```

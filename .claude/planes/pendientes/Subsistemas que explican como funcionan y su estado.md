@@ -31,9 +31,29 @@ Aplicado al `.claude/` de **este** repo + `AGENTS.md`. Control de cierre 9/9 ver
 - **hop3 confirmado.** Sesión fresca (contexto de arranque, sin leer archivos): cargaron los índices de **memoria** (`MEMORIA.md`), **conocimiento** y **herramientas** (`INDICE.md`) vía `MANIFIESTO.md → @INDICE`; NO cargaron **planes/glosario/decisiones**; los 6 manifiestos presentes. Cadena `CLAUDE.md → @AGENTS.md → @MANIFIESTO.md → @INDICE.md` (hop3, límite 4) resuelta sin regresión. No hizo falta el fallback (devolver `@INDICE` directo al `AGENTS.md`).
 - **Lint de tamaño del manifiesto:** vive en **`lint-harness`** (transversal al concepto Manifiesto, dec. 0017 — no es lint *de un subsistema*, no aplica dec. 0008). Sección `MANIFIESTOS QUE ENGORDARON`, umbral **220 palabras** por archivo (mayor hoy: conocimiento 159 → ~40% de aire). Probado en positivo (con umbral 100 saltan 4) y negativo (con 220, cero). Ventaja: `lint-harness` no viaja → el chequeo queda fuera de la propagación. README + INDICE + AGENTS actualizados. Control de cierre 9/9.
 
+### Esqueleto y cableado del manifiesto — decidido (26-07-22, `planificar` → decisión 0019)
+
+Antes de escribir los 6 manifiestos genéricos se fijó su forma:
+
+- **Cableado: 6 `@MANIFIESTO` directos** en una sección `## Subsistemas` de `AGENTS.md`, **sin** archivo agregador. Se evaluó un `Subsistemas.md` que importara los 6 y se descartó como mero cargador: suma un hop (3→4, al ras del límite 4) y duplica la indirección cross-agente (0010). Solo se justificaría si llevara la **autodescripción del Agente Multipropósito completo** (pregunta abierta #1) — queda como opción futura, no para esta propagación.
+- **Estructura obligatoria (5 campos):** (1) título, (2) identidad (qué es + dónde vive), (3) **disparador** (cuándo se consulta y cuándo se escribe — el gancho conductual, obligatorio), (4) declaración explícita de carga del índice, (5) lint al cerrar; más `@INDICE.md` **solo si** carga (presencia = declaración, M1). **Sin frontmatter.** Opcionales por subsistema: gobernanza, advertencias, prueba de pertenencia.
+- **Control de estructura en `lint-harness`** (lado autor, junto al chequeo de tamaño), no viaja.
+
+### Ejecutado — propagación al harness (26-07-22)
+
+Propagado a las 6 funcionalidades de subsistema + orquestador (`/planificar` previo; subagente fresco para la copia verbatim de las PLANTILLA; verificación por inclusión propia). Control de cierre **9/9 verde**, `lint-harness` 0 hallazgos (incluido el chequeo nuevo de campos de manifiesto).
+
+- **Manifiestos vivos (este repo):** los 6 ganaron el campo **Disparador** explícito (faltaba en todos), conservando refs a decisiones de este repo.
+- **`lint-harness`:** chequeo nuevo "MANIFIESTOS SIN CAMPOS MÍNIMOS (dec. 0019)" — título H1, Disparador, declaración de carga, comando de lint, y coherencia carga↔`@INDICE`. Informativo (no corta). README + cabecera actualizados.
+- **6 PLANTILLA:** §Manifiesto (cerca de 4 backticks para no chocar con el ```bash interno → byte-idéntico al source) + §Subsistemas; §Sección de prosa vieja borrada donde existía (planes/glosario/decisiones/herramientas); §Script sincronizado con el lint vivo (exclusión `MANIFIESTO.md`).
+- **Orquestador:** §Mapa (pre-0017) → §Subsistemas + 6 §Manifiesto; 5 lints embebidos sincronizados. *Residual conocido:* la PLANTILLA del orquestador todavía carga los templates de prosa viejos ("## Glosario del proyecto", etc.) dentro de sus §-bloques grandes — inertes (el SKILL ya no los escribe y manda migrarlos), pero convendría depurarlos en una pasada futura.
+- **6 SKILL + orquestador SKILL:** cableado por manifiesto + **migración por subsistema** (cada `inicializar-<sub>` crea su MANIFIESTO, asegura `## Subsistemas` + su línea, y quita su prosa vieja + su `@INDICE` del Mapa; vacío el Mapa, se quita el encabezado). El orquestador suma la sección "Cableado de subsistemas".
+- **Versiones subidas:** memoria-local 0.4.3 · gestion-de-planes 0.4.2 · conocimiento 0.5.1 · glosario 0.4.3 · decisiones 0.4.2 · herramientas 0.4.3 · setup-completo 0.5.5. `marketplace.json` sin cambios (no hay plugins nuevos).
+- **Refinamiento de ejecución (cruce resuelto con el usuario):** la migración modelo-viejo→nuevo es **por subsistema** (no solo del orquestador) — aplicación de la idempotencia ya vigente + 0019, no decisión nueva.
+
 ### Qué queda para ejecutar
 
-1. **Propagar a las funcionalidades + orquestador:** cada manifiesto viaja en el plugin de su subsistema, y la exclusión de `MANIFIESTO.md` en los lints tiene que ir a las copias distribuidas (`propagar-harness`). Falta también el nivelado de consumidores. *(El lint de tamaño NO entra acá: vive en `lint-harness`, que no se distribuye.)*
+1. ~~Propagar a las funcionalidades + orquestador~~ **hecho (26-07-22, ver arriba).** Queda el **nivelado de consumidores** (correr los `inicializar-*` actualizados sobre repos ya instalados con el modelo viejo). *(El lint de tamaño NO entra acá: vive en `lint-harness`, que no se distribuye.)*
 2. **Publicación en inglés:** el nombre ya traduce 1:1 (`MANIFIESTO.md` ↔ `MANIFEST.md`); coordinar con la migración de idioma, no renombrar suelto.
 
 ## Qué se pide

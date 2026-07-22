@@ -57,20 +57,6 @@ La terminología del dominio vive en `.claude/glosario/INDICE.md`: una tabla don
 Relacionado: [[flujo-planes]] (consultar el glosario al planificar/analizar).
 ```
 
-## §Sección de `AGENTS.md` — "Glosario del proyecto"
-
-```markdown
-## Glosario del proyecto
-
-La terminología del dominio vive en [`glosario/INDICE.md`](.claude/glosario/INDICE.md): una tabla de conceptos con sus **términos por estado** (alias, propuestos, vetados) y link a página de detalle si el concepto es complejo. Los alias válidos se **registran**; los términos confusos o ajenos se **vetan**; el agente solo **propone** (ratificar y vetar son del usuario, decisión 0004). **Consultarlo al planificar y analizar.** Al cerrar una tarea que tocó el glosario, correr el lint **desde la raíz del repo**:
-
-​```bash
-node .claude/glosario/lint-glosario/lint-glosario.js
-​```
-
-Detalle de la convención en la memoria [`feedback_glosario.md`](.claude/memoria/feedback_glosario.md).
-```
-
 ## §Script — `.claude/glosario/lint-glosario/lint-glosario.js`
 
 Contenido exacto (Node, sin dependencias, sin red):
@@ -265,4 +251,40 @@ if (!apariciones.prosa.length) console.log('    (ninguna)');
 console.log('  codigo/nombres (refactor manual, cuidado con refs por ruta):');
 apariciones.codigo.forEach(([f, t, w]) => console.log(`    ${f}  "${t}"${w ? '  [' + w + ']' : ''}`));
 if (!apariciones.codigo.length) console.log('    (ninguna)');
+```
+
+## §Manifiesto — `.claude/glosario/MANIFIESTO.md`
+
+Contenido EXACTO (si el archivo no existe, crearlo con esto; si existe, reconciliar sin pisar):
+
+````markdown
+# Glosario — manifiesto de subsistema
+
+La terminología del dominio vive en `INDICE.md`: una tabla de conceptos (nombre canónico, definición, y términos por estado — alias, propuestos, vetados — más detalle para lo complejo). Los alias válidos se registran; los términos confusos o ajenos al dominio se vetan.
+
+**Disparador:** consultar el glosario al planificar y analizar (no acuñar términos propios; usar los del usuario). El agente solo **propone** (columna `Propuestos`); ratificar y vetar son potestad del usuario. Proponer una entrada al detectar un término del dominio sin registrar.
+
+**Índice: NO se carga siempre** — se consulta al planificar y analizar. Al cerrar una tarea que tocó el glosario, correr el lint desde la raíz del repo:
+```bash
+node .claude/glosario/lint-glosario/lint-glosario.js
+```
+````
+
+## §Subsistemas — sección `## Subsistemas` de `AGENTS.md`
+
+Contenido EXACTO (reemplaza las viejas secciones de prosa por-subsistema + el bloque "Mapa del repo"):
+
+```markdown
+## Subsistemas (manifiestos siempre cargados)
+
+Cada subsistema tiene un **Manifiesto** (`.claude/<sub>/MANIFIESTO.md`): una descripción breve —qué es, cómo se usa, cuándo consultarlo— que va **siempre en contexto** y que **declara si su índice también se carga** incluyendo —o no— la línea `@INDICE.md`. Lo que se carga siempre es el manifiesto, no necesariamente el índice.
+
+Si tu agente no expande imports, **leé estos manifiestos al inicio de la sesión** (y, si el manifiesto importa su índice, ese índice también).
+
+@.claude/memoria/MANIFIESTO.md
+@.claude/planes/MANIFIESTO.md
+@.claude/conocimiento/MANIFIESTO.md
+@.claude/glosario/MANIFIESTO.md
+@.claude/decisiones/MANIFIESTO.md
+@.claude/herramientas/MANIFIESTO.md
 ```
