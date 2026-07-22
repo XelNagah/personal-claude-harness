@@ -8,3 +8,6 @@ Desktop.ini
 
 # Config local de Claude Code en este repo (no se distribuye)
 .claude/settings.local.json
+
+# Scratch / temporales de trabajo (handoffs, notas de sesión)
+.claude/tmp/
