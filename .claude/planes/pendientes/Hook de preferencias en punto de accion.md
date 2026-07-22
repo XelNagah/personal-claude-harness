@@ -15,6 +15,17 @@ Evidencia de qué sí funciona: el modo caveman de esa sesión no se violó ni u
 1. **Hook `PreToolUse` sobre `AskUserQuestion`** — el punto exacto de la falla observada. Inyecta antes de cada pregunta al usuario: "las opciones deben llevar contexto y ejemplos concretos de cada postura (cómo es ahora vs. cómo quedaría, encadenando consecuencias)". Costo de contexto casi nulo, quirúrgico.
 2. **(Si aparecen violaciones de otro tipo)** Digest de 2-3 líneas de las reglas de Comunicación vía `UserPromptSubmit` — cobertura total, algo más de ruido por turno.
 
+## Costo de ejecución (medido 2026-07-22)
+
+El plan no consideraba cuánto tarda el mecanismo. Medido en la PC de casa: un hook de Node completo (el `caveman-mode-tracker.js`, que lee stdin y parsea el prompt) cuesta **~65-70 ms**, de los cuales ~50 ms son el arranque del intérprete — la lógica y el I/O son ruido. Inyectar texto estático con `cmd /c type archivo.txt`, sin intérprete, cuesta **~30 ms**. PowerShell cuesta 4-5× más que `cmd` y no va en el camino crítico.
+
+Consecuencias para las dos opciones de la propuesta:
+
+1. **`PreToolUse` sobre `AskUserQuestion`** — costo percibido nulo: se dispara pocas veces por sesión y en un momento en que el usuario ya espera al modelo. La latencia no es argumento en contra.
+2. **Digest vía `UserPromptSubmit`** — sí es camino crítico (bloquea entre el mensaje del usuario y el arranque del modelo), pero con presupuesto <100 ms entra sobrado. Dos hooks del mismo evento corren **en paralelo**: agregar uno no suma latencia si es más rápido que el peor que ya está.
+
+Si el hook inyecta **texto fijo**, usar `cmd /c type` en vez de Node (la salida cruda se inyecta como contexto en `UserPromptSubmit`; no hace falta emitir JSON). Node solo se justifica si hay que decidir según el prompt o el estado. Declarar `timeout` corto (1-2 s): en máquinas con antivirus corporativo un hook colgado paga el timeout entero **por mensaje** — es lo que pasó en la PC de la oficina (episodio y números completos en `como-uso-claude/.claude/conocimiento/latencia-hooks.md`).
+
 ## Entregable
 
 - Probar el hook primero en un repo (p. ej. `como-uso-claude`, donde está documentado el incidente).
