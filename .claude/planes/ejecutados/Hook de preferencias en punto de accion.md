@@ -1,5 +1,7 @@
 # Hook de preferencias en punto de acción
 
+**Estado: Ejecutado · Creado 26-07-19 · Cerrado 26-07-23.**
+
 ## Contexto (incidente que lo origina)
 
 Sesión del 2026-07-19 en `como-uso-claude`: el agente violó la primera preferencia de Comunicación ("al preguntar por una decisión, dar SIEMPRE ejemplos concretos de cada postura") **en el segundo turno de la sesión**, con las preferencias recién cargadas y el contexto fresco. Más tarde, misma sesión: ejecutó (creó y corrió una routine cloud) sin mostrar la configuración final para confirmación.
@@ -35,3 +37,11 @@ Si el hook inyecta **texto fijo**, usar `cmd /c type` en vez de Node (la salida 
 
 - ¿El hook inyecta la regla textual de PREFERENCIAS.md (single source) o un resumen? Preferible leer del archivo para no duplicar.
 - ¿Conviene un `PreToolUse` genérico configurable (tool → recordatorio) en vez de uno ad-hoc por herramienta?
+
+## Notas de implementación (cierre 26-07-23)
+
+**Realizado por el subsistema `conducta` (0021), no por el hook específico que este plan bocetaba.** El problema que originó el plan —las preferencias cargadas por `@import` no actúan en el punto de acción— está resuelto: la regla **"Respetar las preferencias cargadas"** (momento `cada turno`, `UserPromptSubmit`) está **vigente** en `.claude/conducta/INDICE.md` y el hook repartidor `establecer-conducta` la re-inyecta cada turno. Se ve disparando en cada mensaje de esta sesión.
+
+- **El diseño general superó al específico.** El plan proponía un `PreToolUse` sobre `AskUserQuestion`; el análisis del frente C de la madre (*Que el harness tenga efecto conductual*) corrigió una premisa (`PreToolUse` no inyecta contexto en todos los casos como se creía) y maduró a un subsistema `conducta` que cubre el momento `cada turno`. La reinyección quedó ahí, más general.
+- **Tail no bloqueante:** (1) nivelar la regla a `inicializar-preferencias-trabajo` para que todo repo la herede (hoy vive en `conducta`); (2) la *regla candidata* sobre `AskUserQuestion` (preguntar en texto plano con ejemplos, multiple choice solo si cada opción lleva contexto) sigue sin asentar.
+- **Salvedad honesta:** reinyectar **no** garantiza obedecer. En esta misma sesión, con la regla disparándose, acuñé "zombi" (una metáfora) sin correr el test. La eficacia del mecanismo es la pregunta de *verificación* del frente C — vive en el Diferido *Crecer conducta* y en *Banco de pruebas conductual*, no acá.

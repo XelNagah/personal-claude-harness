@@ -37,6 +37,23 @@ Cuarta aparición de la misma clase, sobre terminología en la salida: el agente
 - **Conversación:** hook `Stop` que escanea la salida contra los vetados → detección después del envío, alimenta la lista.
 - **Techo honesto:** la jerga nueva no se previene perfecto; se atrapa tras el primer (y único) escape. La lista crece; los escapes se vuelven únicos.
 
+## Quinto incidente (26-07-23): acuñación en la conversación + la revisión que faltó
+
+Sesión de cierre de planes. El agente acuñó **"zombi"** (metáfora tomada de *zombie process* de computación) para nombrar un plan abierto que ya estaba hecho, lo propagó a un subagente y a un informe, y **el usuario tuvo que marcarlo** — igual que con `acote`, `churn` y `hardcodear`. Dos agravantes nuevos:
+
+1. **Fue en la conversación, no en un archivo** ⇒ ningún hook lo podía ver antes de mandarlo (confirma el techo de la Actualización anterior: la salida de la conversación solo se detecta después, con `Stop`).
+2. **"Zombi" es palabra del castellano** (está en la RAE), así que pasó el filtro de *"¿suena a inglés?"*. Pero *plan zombi* es una **metáfora acuñada por el agente**, no una palabra que el usuario haya traído. El test por "sensación de rareza" no puede cazar una palabra naturalizada usada como metáfora nueva.
+
+### La revisión que el criterio de Terminología Farlopa implica (propuesta)
+
+El recordatorio actual es una **pregunta por sensación** (*"¿suena raro?"*) y falla porque el agente no siente lo raro (el inglés le es nativo; una palabra castellana usada de metáfora no "suena" a nada). La revisión que el criterio implica es otra: un **paso de sustitución forzada sobre el propio texto ya producido**, no sobre el texto en abstracto. Para cada término del dominio o metáfora que el agente **introdujo** (no que trajo el usuario):
+
+- **Pregunta operable, con respuesta obligada** (no una sensación): *"¿esta palabra la dijo el usuario, o la metí yo? Si la metí yo y es una imagen o metáfora, ¿cuál es la palabra llana que la reemplaza?"* — y escribir el reemplazo.
+- Es **generativa**: caza jerga nueva en el primer escape, como el test operable del commit `18f4af2`, pero aplicada a la **salida propia** en vez de a una lista de vetados.
+- **Cubre la conversación**, donde ningún hook llega: ahí el único control posible es este paso autoimpuesto antes de mandar la respuesta. En los archivos puede reforzarlo el escaneo mecánico que bloquea (`PreToolUse`).
+
+**El caso concreto:** aplicado a "zombi", la sustitución forzada da *"plan ya hecho que quedó abierto"*, y de ahí un rótulo llano — **"falso pendiente"** o **"ya-hecho"** — más coloquial y sin metáfora importada. Ese paso, corrido sobre la palabra que acababa de escribir, la habría reemplazado antes de mandarla. Lo que faltó no fue saber la regla: fue **correrla sobre el texto propio**.
+
 ## Conexión con lo ya decidido
 
 La **decisión 0003** fija integridad en dos capas: mecánica (lints `.js`, sin LLM) **obligatoria**, y semántica (contradicciones, incompatibilidades, desactualización — requiere LLM) *"hoy informal, pendiente de formalizar"*. Lo que pide este plan **es** esa capa semántica, acotada a un punto de disparo concreto. No es una capa nueva: es formalizar la que 0003 dejó pendiente, empezando por el caso más barato.
