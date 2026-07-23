@@ -32,5 +32,7 @@ Cada término de la columna `Vetados` de *Terminología Farlopa* se reemplaza se
 | `feasibility` | viabilidad |
 | `stress-test` | cuestionar a fondo |
 | `thin` / `thin-first` | fino / empezar fino |
+| `churn` | trajín / movimiento (o «rotación» si es de clientes o datos) |
+| `wedge` | cuña / palanca / punto de entrada (según contexto) |
 
-Todos fueron ratificados por el usuario (barridos del 2026-07-19 y 2026-07-20; `dogfooding` el 2026-07-21; `tripa` y los anglicismos de mecanismo —`static`, `binding`, `dispatcher`, `catch-all`, `feasibility`, `stress-test`, `thin`— el 2026-07-22). `payload` y `lookup` se evaluaron y **no** se vetaron: se entienden y se usan. El texto vivo ya está barrido; la columna `Vetados` y este mapa existen para que el lint cace **regresiones**.
+Todos fueron ratificados por el usuario (barridos del 2026-07-19 y 2026-07-20; `dogfooding` el 2026-07-21; `tripa` y los anglicismos de mecanismo —`static`, `binding`, `dispatcher`, `catch-all`, `feasibility`, `stress-test`, `thin`— el 2026-07-22; `churn` y `wedge` el 2026-07-23). `payload` y `lookup` se evaluaron y **no** se vetaron: se entienden y se usan. El texto vivo ya está barrido; la columna `Vetados` y este mapa existen para que el lint cace **regresiones**.
