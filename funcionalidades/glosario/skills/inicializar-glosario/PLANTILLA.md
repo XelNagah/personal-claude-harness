@@ -264,6 +264,8 @@ La terminología del dominio vive en `INDICE.md`: una tabla de conceptos (nombre
 
 **Disparador:** consultar el glosario al planificar y analizar (no acuñar términos propios; usar los del usuario). El agente solo **propone** (columna `Propuestos`); ratificar y vetar son potestad del usuario. Proponer una entrada al detectar un término del dominio sin registrar.
 
+**Skills:** `converger-terminologia` (recorre el texto del repo contra el glosario: detecta sinónimos, anglicismos y desvíos, y propone ratificar, vetar o reescribir); instalación con `inicializar-glosario`.
+
 **Índice: NO se carga siempre** — se consulta al planificar y analizar. Al cerrar una tarea que tocó el glosario, correr el lint desde la raíz del repo:
 ```bash
 node .claude/glosario/lint-glosario/lint-glosario.js

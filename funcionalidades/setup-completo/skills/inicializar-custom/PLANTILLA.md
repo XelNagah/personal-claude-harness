@@ -84,6 +84,8 @@ La memoria local vive en este directorio (`memoria/`), indexada por `MEMORIA.md`
 
 **Disparador:** consultar `MEMORIA.md` al inicio de cada sesión y respetarlo. Escribir cuando surge algo para recordar entre sesiones; antes de crear una, revisar si una existente ya lo cubre — actualizar en vez de duplicar. Fechas siempre absolutas.
 
+**Skills:** `registrar-memoria` (asienta un hecho como memoria tipada, detecta duplicados, indexa y corre el lint); instalación con `inicializar-memoria-local`.
+
 **Índice: se carga siempre** (liviano). Al cerrar una tarea que tocó la memoria, correr el lint desde la raíz del repo:
 ```bash
 node .claude/memoria/lint-memoria/lint-memoria.js
@@ -101,6 +103,10 @@ Los planes se persisten en este directorio (`planes/`): `pendientes/` (vivos), `
 
 **Disparador:** el agente sabe que los planes existen; consultar `PLANES.md` a demanda cuando un plan se vuelve relevante (retomar, cerrar, o al detectar que un pendiente ya se implementó). Escribir al abrir un plan o transicionarlo de estado.
 
+**Skills:** `ciclo-de-plan` (abre un plan —archivo con nombre estable + fila en `PLANES.md`— y lo transiciona de estado); instalación con `inicializar-gestion-planes`.
+
+**Flujo de trabajo:** multi-paso (abrir → transicionar → cerrar con lint); detalle en la memoria `feedback_flujo_planes.md`.
+
 **Índice: NO se carga siempre** — `PLANES.md` es el registro que más crece; se consulta a demanda, no en cada arranque. Al cerrar una tarea que tocó planes, correr el lint desde la raíz del repo:
 ```bash
 node .claude/planes/lint-planes/lint-planes.js
@@ -115,6 +121,8 @@ node .claude/planes/lint-planes/lint-planes.js
 Todo lo que el agente **sabe** del dominio vive en una ubicación única: este directorio (`conocimiento/`), indexado por `INDICE.md`. No en la raíz del repo (los `.md` de la raíz son documentación del proyecto, no conocimiento de agente).
 
 **Disparador:** asentar al averiguar algo del dominio que costó descubrir y que va a hacer falta de nuevo — cómo funciona un sistema externo, un formato, una restricción real. La prueba que lo separa de la memoria: **¿seguiría siendo cierto si este repo no existiera?** Sí → conocimiento. Un hallazgo que se explica y no se asienta se vuelve a averiguar la sesión siguiente.
+
+**Skills:** `registrar-conocimiento` (asienta una página del dominio, evita duplicar, indexa y corre el lint) y `buscar-conocimiento` (recorre el repo y propone páginas nuevas); instalación con `inicializar-conocimiento`.
 
 **Índice: se carga siempre** (liviano). Al cerrar una tarea que escribió conocimiento, correr el lint desde la raíz del repo:
 ```bash
@@ -133,6 +141,8 @@ La terminología del dominio vive en `INDICE.md`: una tabla de conceptos (nombre
 
 **Disparador:** consultar el glosario al planificar y analizar (no acuñar términos propios; usar los del usuario). El agente solo **propone** (columna `Propuestos`); ratificar y vetar son potestad del usuario. Proponer una entrada al detectar un término del dominio sin registrar.
 
+**Skills:** `converger-terminologia` (recorre el texto del repo contra el glosario: detecta sinónimos, anglicismos y desvíos, y propone ratificar, vetar o reescribir); instalación con `inicializar-glosario`.
+
 **Índice: NO se carga siempre** — se consulta al planificar y analizar. Al cerrar una tarea que tocó el glosario, correr el lint desde la raíz del repo:
 ```bash
 node .claude/glosario/lint-glosario/lint-glosario.js
@@ -148,6 +158,8 @@ Las decisiones **estructurales al propósito del repo** (no las operativas trivi
 
 **Disparador:** consultar las decisiones al planificar y analizar, para no re-decidir ni contradecir lo asentado. Registrar al tomar una decisión que condiciona el repo a futuro; para revertir no se borra, se marca `reemplazada por NNNN`.
 
+**Skills:** `registrar-decision` (juzga si es estructural, chequea que no re-decida ni contradiga, numera, redacta y corre el lint); instalación con `inicializar-decisiones`.
+
 **Índice: NO se carga siempre** — se consulta al planificar y analizar. Al cerrar una tarea que registró decisiones, correr el lint desde la raíz del repo:
 ```bash
 node .claude/decisiones/lint-decisiones/lint-decisiones.js
@@ -162,6 +174,8 @@ node .claude/decisiones/lint-decisiones/lint-decisiones.js
 Las **Herramientas** del repo — las *tools* que el Propósito requiere (tipos `script`, `skill` local, `MCP` local) — viven en este directorio (`herramientas/`), listadas en `INDICE.md` (tabla Herramienta | Tipo | Qué hace | Cómo se invoca | Estado). Los lints de subsistema **no** son Herramientas: son infra del Patrón y viven con su subsistema.
 
 **Disparador:** consultar el índice para saber qué tools existen y cómo se invocan; registrar una Herramienta al fabricar o adoptar una tool repetible del Propósito. ⚠️ Una tool referenciada por ruta en `settings`, `.gitignore` o un hook no se mueve sin actualizar esa referencia (rompe el match por prefijo).
+
+**Skills:** ninguna de operación — el registro (`INDICE.md`) se edita a mano; instalación con `inicializar-herramientas`.
 
 **Índice: se carga siempre** (liviano). Al cerrar una tarea que tocó Herramientas, correr el lint desde la raíz del repo:
 ```bash

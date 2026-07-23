@@ -1,6 +1,6 @@
 {
   "name": "setup-completo",
   "description": "Orquestador: instala el setup estándar completo (skill inicializar-custom) — preferencias, memoria, planes y commits de una pasada.",
-  "version": "0.5.5",
+  "version": "0.5.6",
   "author": { "name": "jllarens", "email": "jllarens@gmail.com" }
 }
