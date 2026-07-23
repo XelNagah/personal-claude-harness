@@ -24,5 +24,13 @@ Cada término de la columna `Vetados` de *Terminología Farlopa* se reemplaza se
 | `cementerio de tools` | herramientas desordenadas |
 | `sigilo` (por *sigil*) | símbolo |
 | `plomería` | infraestructura interna |
+| `tripa` / `tripas` | contenido interno de la Herramienta (código + archivos de trabajo dentro de su carpeta, que ningún índice lista) |
+| `static` | config fija / estático |
+| `binding` | atadura / vínculo |
+| `dispatcher` | hook repartidor |
+| `catch-all` | sin filtro / que atrapa todo |
+| `feasibility` | viabilidad |
+| `stress-test` | cuestionar a fondo |
+| `thin` / `thin-first` | fino / empezar fino |
 
-Todos fueron ratificados por el usuario (barridos del 2026-07-19 y 2026-07-20; `dogfooding` el 2026-07-21). El texto vivo ya está barrido; la columna `Vetados` y este mapa existen para que el lint cace **regresiones**.
+Todos fueron ratificados por el usuario (barridos del 2026-07-19 y 2026-07-20; `dogfooding` el 2026-07-21; `tripa` y los anglicismos de mecanismo —`static`, `binding`, `dispatcher`, `catch-all`, `feasibility`, `stress-test`, `thin`— el 2026-07-22). `payload` y `lookup` se evaluaron y **no** se vetaron: se entienden y se usan. El texto vivo ya está barrido; la columna `Vetados` y este mapa existen para que el lint cace **regresiones**.

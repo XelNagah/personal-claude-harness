@@ -68,7 +68,9 @@ Ambas cifras son ruido. **La decisión no es económica**: lo que se paga caro s
 
 **B — Cerrar el punto ciego.** Que el control barra la raíz del repo y reporte lo no ruteado; que el nivelador liste de verdad; que los `SKILL.md` entren al alcance del lint de terminología. Es mecánico y barato, y **no se puede desobedecer porque es un programa**. Versión mínima útil: inventariar sin juzgar — *"estas cuatro cosas están fuera de todo subsistema"* no necesita los criterios de A para servir.
 
-**C — El mecanismo en el punto de acción.** Re-inyección por turno en vez de texto cargado al arranque. Es lo caro y lo que puede meter ruido; **la decisión de si hace falta la contesta la medición del piloto**, no una discusión.
+**C — El mecanismo en el punto de acción.** Re-inyección en el punto de acción en vez de texto cargado al arranque. **Se diseña ahora** (no se espera): separar *solucionar* (construir el mecanismo, con la cabeza) de *verificar* (que efectivamente cambie la conducta, que sí lleva medición). Evidencia local en vivo de que funciona: el hook de caveman (`UserPromptSubmit`) se re-inyectó cada turno de la sesión del 22/07 y **se pegó** — hubo que anularlo a mano. El diseño es un mapa **{clase de regla → punto de acción → tipo de hook}**: cada turno (`UserPromptSubmit` → preferencias, no acuñar términos) · antes de escribir/crear (`PreToolUse` sobre `Write`/`Edit` → demarcación 0020) · antes de afirmar/preguntar (`PreToolUse` sobre `AskUserQuestion` → ratificación). Ese mapa es la resolución **única** que absorbe `Hook de preferencias`, `Control de ratificación` y `Chequear el plan escrito`.
+
+**Actualización 22/07 (tarde):** el chequeo de capacidades de hooks corrigió una premisa del mapa — `PreToolUse` **no inyecta contexto, solo bloquea**; el recordatorio antes de actuar solo existe vía `UserPromptSubmit`. El diseño maduró a un **subsistema propio, `conducta`** (decisión 0021): ata momentos del flujo a acciones (inyectar/correr/bloquear) por un hook repartidor que lee un registro compartido, viene con **Base instalada** y se apoya en los otros subsistemas. Construcción en su plan propio: `Construir el subsistema conducta`.
 
 ### Ya ejecutado (21/07/2026): B mínimo — inventario sin rutear
 
@@ -104,9 +106,17 @@ Cinco planes pendientes son **la misma falla** vista desde cinco ángulos — un
 - `Banco de pruebas conductual de mecanismos`
 - `Capa semantica de coherencia` (la capa que la decisión 0003 dejó pendiente)
 
-## Preguntas abiertas
+## Resuelto en análisis (22/07/2026, por `planificar`)
 
-- ¿A y B en paralelo, o B mínimo primero para que el inventario real de los 15 repos consumidores alimente A? (Recomendado: B mínimo primero — escribir criterios contra casos supuestos es el error que se viene evitando.)
-- Los 22 criterios: ¿ratificación fila por fila, o se agrupan por eje y se ratifican los cinco ejes?
-- El hueco de cobertura (`sessions.json`, estado vivo de una Herramienta): ¿entra en un subsistema existente o falta uno?
-- ¿Cuánto se espera antes de leer el resultado del piloto? Propuesto: dos semanas de uso normal, sin forzar.
+Las cuatro preguntas abiertas quedaron contestadas:
+
+- **Forma de asentar A (era "fila por fila vs por eje").** Se ratifican los **5 ejes** como *test de demarcación* → **decisión 0020** + página de detalle con los casos resueltos y los criterios finos como ejemplos. **No** 22 decisiones sueltas (re-correría la evaporación). Los 5 ejes: de quién es · lee/sabe/ejecuta · cambia o fijo · invocable por sí mismo · sustantivo o verbo.
+- **`sessions.json` (era "¿hueco o subsistema nuevo?").** No es hueco: es un **Registro volátil** (glosario nuevo) — contenido interno de la Herramienta que lo administra; esa Herramienta es fila del registro, el estado no. Cero subsistemas nuevos. Lo efímero es una propiedad, no un Tipo.
+- **Producto del Propósito (glosario nuevo).** Lo que el repo produce vive en la raíz, fuera de `.claude/`, y es correcto que quede afuera — criterio que destraba el barrido de la raíz del frente B.
+- **Secuencia y espera del piloto.** A ahora (necesita al usuario presente, y ya arrancó: veto de `tripa`, 2 conceptos, `sessions.json`). B es mecánico, va después. **El piloto NO frena nada**: baja a telemetría de fondo (páginas de `conocimiento` en `/amp-info`); *solucionar* C se hace ahora, *verificar* se mide o se testea activo (`Banco de pruebas conductual`). Sin fecha fija.
+
+## Falta
+
+- **A:** sumar a la página 0020 los criterios finos que aún no se enumeraron (arqueología: ~24 rescatados, varios sin escribir), cada uno con ratificación.
+- **B:** (1) barrido de la **raíz** — ya destrabado por *Producto del Propósito*; (2) nivelador que **liste de verdad**; (3) `SKILL.md` al alcance del lint de terminología (un vetado sobrevivió ahí — el lint del 22/07 confirmó backlog de vetados en PLANTILLAs distribuibles); (4) **distribuir** el inventario a los consumidores.
+- **C:** construir el mapa de hooks (arriba).
