@@ -65,6 +65,31 @@ Que el agente multipropósito **y cada subsistema por separado** puedan explicar
 
 Hoy el agente responde las dos a su manera cada vez, según qué archivo haya leído en esa sesión. No hay una forma acordada de contestar.
 
+## Decidido (26-07-23, `planificar` → decisión 0023, reemplaza 0022): autodescripción vía MANIFIESTO enriquecido
+
+Sesión de `planificar`. Primero se acordó una skill transversal que ensamblaba en runtime (0022); al iterar con el usuario se descartó por sobreingeniería y se resolvió **enriquecer el propio MANIFIESTO** para que sea la fuente. La skill nueva **ya no se construye**.
+
+- **Bloqueo de nomenclatura: no aplica a este nivel.** Los nombres de los subsistemas (memoria, planes, conocimiento, glosario, decisiones, herramientas, conducta) **no** están entre los sospechosos del plan de renombre — son firmes. Se avanza ya; solo se evita hardcodear los nombres en revisión (`Base`/`Adaptaciones`, nombres de skills).
+- **Alcance: solo el mecanismo.** La mitad "en qué estado está" **ya la construye `amp-info` / la Pantalla de bienvenida** (métricas por subsistema + lint, descubrimiento dinámico). El trabajo nuevo se enfoca en el "cómo funciona".
+- **Fuente = el MANIFIESTO, no una skill.** El MANIFIESTO está siempre en contexto; enriquecerlo hace que la autodescripción caiga por su peso. Preguntar "¿cómo funciona X?" ⇒ el agente contesta desde el MANIFIESTO ya cargado + corre `amp-info` para el estado. **Restricción que lo permite:** el MANIFIESTO viaja a los repos consumidores (se instala en `.claude/<sub>/`), a diferencia del README de plugin (`funcionalidades/`, no viaja).
+
+### Anatomía del MANIFIESTO (ratificada 26-07-23)
+
+Una sola clase: núcleo obligatorio + bloques opcionales que se prenden según el subsistema. El archivo queda plano y compacto (≤220 palabras); las categorías ordenan la spec, no son encabezados del archivo.
+
+- **Obligatorios:** (1) Título · (2) Identidad (qué es + dónde vive) · (3) Disparador (cuándo se consulta / cuándo se escribe) · (4) **Skills** *(campo nuevo)* — nombra las skills de **operación** y qué hace cada una; la de **instalación** `inicializar-<sub>` se menciona al pasar; `conducta` pone "ninguna aún" · (5) Carga del índice (declaración explícita + `@INDICE.md` solo si carga) · (6) Lint al cerrar.
+- **Opcionales:** **Flujo de trabajo** *(campo nuevo)* — solo si es multi-paso, y como **puntero** al detalle on-demand (`feedback`/`SKILL`), nunca el paso a paso inline (0017) · Gobernanza (glosario/decisiones) · Advertencias (herramientas) · Prueba de pertenencia (conocimiento).
+- **Extiende la 0019** (que fijó "5 campos, sin skills"). El chequeo de campos vive en `lint-harness` (lado autor, no viaja).
+
+### Qué queda para ejecutar
+
+1. **Extender `lint-harness`:** sumar `Skills` a los campos obligatorios del MANIFIESTO y `Flujo` como opcional reconocido (chequeo de estructura, dec. 0019/0023).
+2. **Llenar el campo Skills** en los 7 MANIFIESTOs vivos (este repo) — declara las skills de operación de cada subsistema. `conducta` = "ninguna aún".
+3. **Propagar al harness:** las 6 PLANTILLA de MANIFIESTO + orquestador ganan el campo Skills (y Flujo donde aplique); subir versiones. Skill `propagar-harness`.
+4. **Nivelar consumidores:** correr los `inicializar-*` actualizados sobre repos ya instalados.
+
+> El **ordenamiento de los skills** en sí (declarado por el campo Skills de arriba) ya está repartido en 3 planes vivos, no necesita uno nuevo: [Nombres y distribución de las skills del harness](Nombres%20y%20distribucion%20de%20las%20skills%20del%20harness.md) (ejecutar el prefijo 0013 — capa en-uso), [Revisar la nomenclatura de los subsistemas](Revisar%20la%20nomenclatura%20de%20los%20subsistemas.md) (los nombres opacos `ciclo-de-plan`/`converger-terminologia`), y [Revisar cada subsistema — sentido, disparador y skill de operación](Revisar%20cada%20subsistema%20-%20sentido%2C%20disparador%20y%20skill%20de%20operacion.md) (los huecos de cobertura de herramientas/conducta).
+
 ## Por qué no es el plan diferido
 
 [Funcionalidades como agentes consultables](Funcionalidades%20como%20agentes%20consultables.md) es **consulta de contenido**: *"che, agente conocimiento, ¿sabemos algo de X?"*. Se difirió porque su valor depende del volumen de cada base, y el volumen depende del propósito del repo.

@@ -3,7 +3,7 @@
 // funcionalidades vs marketplace vs REGISTRO, archivos clave por funcionalidad, junctions de skills
 // (dos tandas: ~/.claude/skills y ~/.agents/skills), divergencia de bloques verbatim entre PLANTILLAs,
 // tamaño de los MANIFIESTO.md de subsistema (dec. 0017: breves, siempre en contexto) y su estructura
-// minima (dec. 0019: 5 campos + coherencia carga<->@INDICE). Sin LLM, sin red.
+// minima (dec. 0019 + 0023: campos obligatorios incl. Skills + coherencia carga<->@INDICE). Sin LLM, sin red.
 // Uso: node lint-harness.js [--quiet]   (correr desde la raiz del repo del harness)
 const fs = require('fs'), path = require('path'), os = require('os'), crypto = require('crypto');
 const quiet = process.argv.includes('--quiet');
@@ -196,10 +196,12 @@ const baseDivergente = basePorHash.size > 1
   ? [...basePorHash].map(([h, arr]) => `(${h}) ${arr.join('  |  ')}`)
   : [];
 
-// -- [8] estructura minima de los manifiestos de subsistema (dec. 0019) ---
+// -- [8] estructura minima de los manifiestos de subsistema (dec. 0019 + 0023) ---
 // Cada MANIFIESTO.md debe traer los campos obligatorios: titulo H1, "Disparador",
+// "**Skills**" (dec. 0023: nombra las skills de operacion; "ninguna aun" si no tiene),
 // una declaracion de carga del indice (se carga siempre | NO se carga siempre) y el
-// comando de lint del propio subsistema. Ademas la presencia de la linea de import del
+// comando de lint del propio subsistema. El "Flujo de trabajo" es opcional (solo multi-paso,
+// como puntero) y no se chequea. Ademas la presencia de la linea de import del
 // indice (@...INDICE / @...MEMORIA / @...PLANES) debe ser COHERENTE con esa declaracion:
 // la linea ES la declaracion (M1 de 0017), no puede mentir. Lado autor, informativo: no
 // viaja al consumidor (se instala correcto desde PLANTILLA).
@@ -213,6 +215,7 @@ if (fs.existsSync(claudeDir)) {
     const faltan = [];
     if (!/^#\s+\S/m.test(t)) faltan.push('titulo H1');
     if (!/Disparador/.test(t)) faltan.push('campo Disparador');
+    if (!/\*\*Skills\b/.test(t)) faltan.push('campo Skills (dec. 0023)');
     const cargaM = /(NO\s+)?se carga siempre/i.exec(t);
     const cargaNo = !!(cargaM && /NO/i.test(cargaM[1] || ''));
     const cargaSi = !!(cargaM && !cargaNo);

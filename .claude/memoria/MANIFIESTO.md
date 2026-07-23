@@ -4,6 +4,8 @@ La memoria local vive en este directorio (`memoria/`), indexada por `MEMORIA.md`
 
 **Disparador:** consultar `MEMORIA.md` al inicio de cada sesión y respetarlo. Escribir cuando surge algo para recordar entre sesiones; antes de crear una, revisar si una existente ya cubre el hecho — actualizar en vez de duplicar. Fechas siempre absolutas.
 
+**Skills:** `registrar-memoria` (asienta un hecho como memoria tipada, detecta duplicados, indexa y corre el lint); instalación con `inicializar-memoria-local`.
+
 **Índice: se carga siempre** (liviano — decisión 0017). Al cerrar una tarea que tocó la memoria, correr el lint desde la raíz del repo:
 
 ```bash

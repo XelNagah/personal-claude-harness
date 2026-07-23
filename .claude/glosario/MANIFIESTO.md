@@ -4,6 +4,8 @@ La terminología del dominio vive en `INDICE.md`: una tabla de conceptos (nombre
 
 **Disparador:** consultar el glosario al planificar y analizar; no acuñar términos propios, preferir los del usuario. Proponer una entrada (columna `Propuestos`) al detectar un término del dominio sin registrar — toda entrada nueva pasa por el usuario (ratificación, decisión 0004).
 
+**Skills:** `converger-terminologia` (recorre el texto del repo contra el glosario: detecta sinónimos, anglicismos y desvíos, y propone ratificar, vetar o reescribir); instalación con `inicializar-glosario`.
+
 **Índice: NO se carga siempre** (decisión 0017) — se consulta al planificar y analizar. Al cerrar una tarea que tocó el glosario, correr el lint desde la raíz del repo:
 
 ```bash
