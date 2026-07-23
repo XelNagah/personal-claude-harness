@@ -1,6 +1,6 @@
 # Subsistemas que explican cómo funcionan y su estado
 
-**Estado: Nuevo · Creado 26-07-20.** Pedido de Javier el 26-07-20: *"quiero poder preguntar por la memoria, por el conocimiento, las herramientas… preguntarle al agente qué hace y cómo funciona y que explique mecanismos y dominio."*
+**Estado: Ejecutado · Creado 26-07-20 · Cerrado 26-07-23.** Pedido de Javier el 26-07-20: *"quiero poder preguntar por la memoria, por el conocimiento, las herramientas… preguntarle al agente qué hace y cómo funciona y que explique mecanismos y dominio."*
 
 **Diseño decidido 26-07-21 (`planificar`).** El plan se cruzó con una pregunta de carga de contexto ("¿por qué se cargan todos los planes siempre?") y de ahí salió el componente que lo materializa: el **Manifiesto de subsistema**. Ver sección abajo. Decisión **0017**.
 
@@ -125,3 +125,12 @@ Las direcciones no son excluyentes: 4 resuelve bien el estado y 1 o 2 resuelven 
 ## Depende de
 
 Conviene después de [Revisar la nomenclatura de los subsistemas](Revisar%20la%20nomenclatura%20de%20los%20subsistemas.md): escribir explicaciones sobre nombres que están por cambiar es trabajo que se rehace.
+
+## Notas de implementación (cierre 26-07-23)
+
+**Qué se hizo vs. lo planificado.** El plan cerró resolviendo la **mitad 1** del pedido original —explicar *cada subsistema por separado*— vía el MANIFIESTO enriquecido (decisión 0023, reemplaza 0022; extiende 0017/0019), no vía una skill que ensambla en runtime (esa idea, 0022, se descartó por sobreingeniería en el camino). Los 7 MANIFIESTOs ganaron el campo **Skills** (obligatorio) + **Flujo** (opcional, puntero); la autodescripción del mecanismo cae del MANIFIESTO ya cargado + `amp-info` para el estado.
+
+- **Commits:** `dac4c8a` (sumar el campo Skills al MANIFIESTO + extender `lint-harness`) + `5d7f206` (propagar a las 6 PLANTILLA + orquestador + 7 versiones). Control de cierre 10/10; inclusión textual verificada.
+- **Resto no bloqueante:** nivelar consumidores (correr los `inicializar-*` actualizados sobre repos ya instalados) queda **diferido al patrón de dormidos** — se ponen al día cuando se usan, igual que todo cambio del harness. No requiere seguimiento propio.
+
+**Lo que NO cubrió este plan — la mitad 2.** El pedido original pedía también explicar *el AMP completo*: cómo se articulan los subsistemas entre sí (por qué `planes` no carga índice pero `memoria` sí, cómo `conducta` se apoya en los otros sin duplicarlos). Ningún MANIFIESTO lo contesta —cada uno habla de sí mismo— y hoy vive desparramado en `AGENTS.md` + decisiones. Decisión Javier 26-07-23: **se desprende como plan nuevo** ([Skill del Agente Multiproposito para explicar el harness completo](../pendientes/Skill%20del%20Agente%20Multiproposito%20para%20explicar%20el%20harness%20completo.md)), no se fuerza dentro de este cierre.

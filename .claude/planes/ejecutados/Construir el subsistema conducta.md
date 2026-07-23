@@ -1,6 +1,6 @@
 # Construir el subsistema conducta
 
-**Estado: En curso · Creado 26-07-22.** Origen: *Que el harness tenga efecto conductual* (frente C). Diseño asentado en la **decisión 0021**; este plan es la construcción.
+**Estado: Ejecutado · Creado 26-07-22 · Cerrado 26-07-23.** Origen: *Que el harness tenga efecto conductual* (frente C). Diseño asentado en la **decisión 0021**; este plan es la construcción.
 
 ## Ya construido (26-07-22): la versión fina
 
@@ -52,3 +52,11 @@ Se para acá con **3 reglas activas** (2 de `cada turno` + 1 de `al escribir`) p
 ## Cómo seguir
 
 Diseñar el detalle con `planificar` antes de construir en serio; empezar por la versión fina para medir efecto. Candidato natural para la futura skill de ejecución de planes.
+
+## Notas de implementación (cierre 26-07-23)
+
+**Se cierra la construcción; el crecimiento se desprende.** El subsistema `conducta` está **construido y funcionando** in-repo: `.claude/conducta/` con registro de reglas (`INDICE.md`), vocabulario de momentos (`MOMENTOS.md`), `MANIFIESTO.md`, hook repartidor `establecer-conducta` (multi-evento, cableado Claude+Codex para `cada turno`; Claude-first para `al escribir`) y `lint-conducta`. **3 reglas activas** (2 de `cada turno`, 1 de `al escribir`). Control de cierre 10/10. Decisión 0021 asentada; glosario con *Conducta*, *Regla de conducta*, *Momento de conducta*. Nombre `establecer-conducta` ratificado (0016).
+
+**Lo que faltaba era *crecer*, no *construir*** — por eso se parte en vez de arrastrar En curso: repartidor `Stop` (requiere diseño, ver *Pausa deliberada*), skills de gestión, empaquetar como funcionalidad/plugin, y medir el efecto conductual (el juez del plan madre). Todo eso → plan nuevo **Diferido** [Crecer el subsistema conducta](../pendientes/Crecer%20el%20subsistema%20conducta.md).
+
+**Por qué Diferido y no Nuevo:** la *Pausa deliberada* (26-07-23) es una espera a propósito — dejar correr la medición unas sesiones antes de sumar momentos. Un plan que espera no está *en curso*; queda Diferido con la medición como condición de reanudación.

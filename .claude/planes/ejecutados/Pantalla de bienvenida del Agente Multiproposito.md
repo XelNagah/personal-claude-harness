@@ -1,6 +1,6 @@
 # Pantalla de bienvenida del Agente Multipropósito
 
-**Estado:** En curso. Diseñado con `planificar` (26-07-20). Pasada A ejecutada (26-07-20). **Corrección de raíz + refinamiento visual (26-07-21):** ver sección "Corrección de mecanismo" abajo. Sigue vivo por la distribución (pasada B).
+**Estado:** Ejecutado · Cerrado 26-07-23. Diseñado con `planificar` (26-07-20). Pasada A ejecutada (26-07-20). **Corrección de raíz + refinamiento visual (26-07-21):** ver sección "Corrección de mecanismo" abajo. **Cerrado 26-07-23 (path a):** la pasada A es el alcance ejecutado; la pasada B (distribución) se desprendió al plan nuevo *Distribuir la Pantalla de bienvenida como funcionalidad*.
 
 ## Qué es
 
@@ -55,3 +55,15 @@ La pasada A emitía el bloque por `additionalContext` → solo lo veía el model
 - **Regla de conteo por forma de índice:** memoria = lista de bullets; herramientas/glosario/decisiones/planes = tablas; conocimiento = páginas. El conteo genérico tiene que aguantar ambas formas (o degradar a "N entradas" contando líneas de tabla/bullet).
 - **¿En qué `source` dispara?** ¿Solo `startup`/`clear`, o también `resume`/`compact`? Compact es mitad de sesión → quizás ruidoso.
 - **Candidato a decisión** al ejecutar: formalizar que el Agente emite Pantalla de bienvenida y que existe la Identidad como dato estructural.
+
+## Notas de implementación (cierre 26-07-23)
+
+**Corte por path (a): se cierra la pasada A, se desprende la B.** El plan se partió en vez de seguir En curso arrastrando un cacho pendiente.
+
+**Ejecutado (pasada A, in-repo):**
+- Script `mostrar-pantalla-bienvenida` (descubrimiento dinámico, reusa la lógica de `ejecutar-control-cierre`) + hook `SessionStart` + skill `/amp-info` (misma pantalla a demanda). Todo `vigente` en `herramientas/INDICE.md`.
+- **Corrección de raíz:** emite por `systemMessage` (único campo que pinta la terminal del usuario), no `additionalContext` (solo-modelo) — **decisión 0012**, verificada en vivo. Flag `--hook`, caja de ancho automático, métrica de planes por carpeta derivada de `ESTADOS.md`.
+- Glosario asienta *Pantalla de bienvenida* con la mecánica correcta.
+- Control de cierre 9/9 en su momento.
+
+**Desprendido (pasada B → plan nuevo [Distribuir la Pantalla de bienvenida como funcionalidad](../pendientes/Distribuir%20la%20Pantalla%20de%20bienvenida%20como%20funcionalidad.md)):** distribución como plugin, hook doble Claude/Codex(/Gemini), `sessionTitle` al header, decidir `source`. El núcleo ya se diseñó portable ⇒ la B es traslado, no rediseño.
