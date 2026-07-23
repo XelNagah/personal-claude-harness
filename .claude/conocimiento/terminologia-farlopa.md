@@ -9,3 +9,20 @@ El efecto es acumulativo y silencioso. El agente recita y reusa esos términos c
 **Es el origen del subsistema glosario.** El glosario existe para frenar esta deriva: fija el vocabulario canónico del dominio, registra los alias válidos y **veta** los términos farlopa (los marca para barrer y para que el lint cace sus regresiones). La gobernanza de ratificación (decisión 0004: ningún término se asienta sin el usuario) es la defensa directa contra que el agente legitime su propia jerga.
 
 En este repo, el catálogo operativo de términos vetados y su mapa de reemplazos vive en el glosario: [Terminología Farlopa](../glosario/terminologia-farlopa.md).
+
+## Cómo detectarla: el criterio de demarcación
+
+Detectar TF **a tiempo** —antes de usarla— depende de un criterio operable, no de "sentir" que una palabra es rara. El agente **no siente lo raro**: una palabra que le es nativa (un anglicismo), o una imagen usada de metáfora, no "suena" a nada; por eso el recordatorio abstracto (*"no uses palabras raras"*) falla y la palabra se cuela igual.
+
+El criterio es **relativo al lector**: el lector de referencia es **el usuario del Propósito del repo**, no un perfil fijo. En un repo técnico (como el harness que autora este proyecto), ese usuario es un desarrollador y `hook`/`deploy`/`lint` le son transparentes; en un repo contable o de análisis de una mudanza, el usuario no es técnico y esos mismos términos **son** farlopa ahí. Coincide con la definición de TF: incomprensible para el autor del repo.
+
+Antes de usar un término para nombrar algo **del dominio**, pasarlo por estos filtros en orden:
+
+0. **¿Lo entiende el usuario del Propósito de este repo?** Sí → no es TF, cortá. (En el harness, el vocabulario técnico de un desarrollador entra acá; en un propósito no técnico, no.)
+1. **¿La traés vos o la dijo el usuario?** La dijo el usuario → válida (preferir sus palabras). La traés vos para el dominio → seguí.
+2. **¿Anglicismo o jerga fuera del vocabulario de ese lector?** (`churn`, `wedge`, `feasibility`, `staleness`, `dogfooding`) → TF.
+3. **¿Imagen o metáfora en lugar del nombre llano —del inglés o del castellano—?** (`zombi`, `tripa`, `plomería`, `cementerio de tools`, `baldes`, `semilla`) → TF.
+
+El **filtro 3 es el que más se escapa**: caza la metáfora acuñada aunque la palabra exista en español. Caso testigo: *plan zombi* — "zombi" existe (proceso zombi), pero la imagen extendida a un plan la acuñó el agente en lugar de decir "falso pendiente". Cuando un filtro da TF: **no usar el término; proponerlo en `Propuestos` y escribir el nombre llano.** Ante la duda, llanar.
+
+El subsistema `conducta` inyecta la versión corta de este criterio en el punto de acción (decisión 0025): soft en cada turno (minimiza la aparición), fuerte al escribir archivos (evita que se persista y propague).

@@ -23,5 +23,6 @@ Hoy la **Terminología Farlopa** vive como **una sola fila del glosario** (conce
 - ¿Cómo convive con la gobernanza de veto de 0004/0018 (control del usuario)?
 - El caso disparador (`tripa` → *contenido interno de la Herramienta*): ¿ese concepto amerita entrada propia en el glosario, en vez de vivir como reemplazo? Cruza con `Criterio de pertenencia al glosario`.
 - ¿Toca el `lint-glosario` (sección [5] apariciones de vetados) y su distribución a consumidores?
+- **(26-07-23)** El **criterio de demarcación de TF** (cómo detectarla a tiempo) se asentó en el conocimiento (`terminologia-farlopa`, decisión 0025), **no** en el glosario. Al evaluar este subsistema, decidir si ese criterio —junto con el catálogo de vetados— pertenece a un subsistema TF propio, al glosario, o se queda como conocimiento. Duda registrada acá para no perderla (pasada de refactor futura, pedido de Javier).
 
 Correr por `planificar`.

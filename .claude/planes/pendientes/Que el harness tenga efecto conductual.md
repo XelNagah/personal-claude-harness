@@ -119,4 +119,4 @@ Las cuatro preguntas abiertas quedaron contestadas:
 
 - **A:** sumar a la página 0020 los criterios finos que aún no se enumeraron (arqueología: ~24 rescatados, varios sin escribir), cada uno con ratificación.
 - **B:** (1) barrido de la **raíz** — ya destrabado por *Producto del Propósito*; (2) nivelador que **liste de verdad**; (3) `SKILL.md` al alcance del lint de terminología (un vetado sobrevivió ahí — el lint del 22/07 confirmó backlog de vetados en PLANTILLAs distribuibles); (4) **distribuir** el inventario a los consumidores.
-- **C:** construir el mapa de hooks (arriba).
+- **C:** construir el mapa de hooks (arriba). **Avance 26-07-23:** para la clase **terminología**, el mecanismo del punto de acción quedó decidido (decisión 0025: control de TF en dos niveles según persistencia, dentro de `conducta`) — falta construirlo (vive en *Chequear el plan escrito*). *Control de ratificación* reusará el mismo molde sobre su propio momento.

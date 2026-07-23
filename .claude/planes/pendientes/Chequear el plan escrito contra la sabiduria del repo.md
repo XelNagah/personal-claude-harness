@@ -54,6 +54,16 @@ El recordatorio actual es una **pregunta por sensación** (*"¿suena raro?"*) y 
 
 **El caso concreto:** aplicado a "zombi", la sustitución forzada da *"plan ya hecho que quedó abierto"*, y de ahí un rótulo llano — **"falso pendiente"** o **"ya-hecho"** — más coloquial y sin metáfora importada. Ese paso, corrido sobre la palabra que acababa de escribir, la habría reemplazado antes de mandarla. Lo que faltó no fue saber la regla: fue **correrla sobre el texto propio**.
 
+## Mecanismo decidido (26-07-23, `planificar` → decisión 0025)
+
+El "mecanismo a decidir una vez" (que este plan compartía con *Hook de preferencias* —ya cerrado— y *Control de ratificación*) quedó **resuelto para la clase terminología** en la decisión 0025: control de TF en dos niveles según persistencia, dentro de `conducta`.
+
+- **Conversación (`cada turno`, soft):** recordatorio del criterio; minimiza la aparición, acepta fugas (efímero). Es la regla que ya existe.
+- **Al persistir (`al escribir`), dos velocidades:** vetado conocido → `lint-glosario` que **deniega** la escritura (programa); TF nueva → recordatorio fuerte que fuerza el criterio antes de persistir (juicio).
+- **Criterio de demarcación** (4 filtros, relativo al usuario del Propósito) asentado en el conocimiento `terminologia-farlopa`; el filtro 3 (metáfora acuñada, del inglés o del castellano) es el que cazaba `zombi`.
+
+**Este plan queda listo para ejecutar en sesión limpia.** Trabajo concreto pendiente: subir el momento `al escribir` de recordatorio a **bloqueo** (reusar `lint-glosario` en `PreToolUse`, deny), redactar la regla `al escribir`-fuerte para TF nueva, probar en negativo (meter un vetado y ver que frena), y propagar. La parte "detección en la conversación después del envío" (hook `Stop`) sigue abierta como techo honesto (la conversación no se puede frenar antes de mandarla).
+
 ## Conexión con lo ya decidido
 
 La **decisión 0003** fija integridad en dos capas: mecánica (lints `.js`, sin LLM) **obligatoria**, y semántica (contradicciones, incompatibilidades, desactualización — requiere LLM) *"hoy informal, pendiente de formalizar"*. Lo que pide este plan **es** esa capa semántica, acotada a un punto de disparo concreto. No es una capa nueva: es formalizar la que 0003 dejó pendiente, empezando por el caso más barato.

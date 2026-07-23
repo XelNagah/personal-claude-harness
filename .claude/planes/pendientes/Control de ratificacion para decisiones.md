@@ -43,3 +43,7 @@ El fallo es de la misma clase que el del plan pendiente [Hook de preferencias en
 ## Riesgo
 
 Un control demasiado ancho convierte cada elección menor en una consulta y hace la sesión impracticable. El límite útil hay que definirlo: **decisiones estructurales** ya tiene criterio en el registro ("¿condiciona el repo a futuro?"); usar ese mismo umbral evita inventar uno nuevo. El incidente que motiva el plan pasa ese umbral holgado — el ancla de la frontera define comportamiento de los cinco lints en todos los repos consumidores.
+
+## Nota (26-07-23): el molde de mecanismo ya está
+
+La pregunta 2 (mecanismo) tiene ahora un molde resuelto para la clase hermana: la **decisión 0025** fijó cómo `conducta` controla la terminología en el punto de acción (momentos + clases `inyectar`/`bloquear`, fricción según persistencia). Este control de ratificación es **análogo pero sobre su propio momento** (afirmar/consolidar una decisión), no el mismo contenido. Al retomar: reusar la forma de 0025 (regla de `conducta` atada a un momento), no inventar mecanismo nuevo; falta definir cuál es el momento de "afirmar una decisión" y si es realizable por hook (la conversación no se frena antes de mandarla — mismo techo que terminología). Diseñar en su propia sesión.
