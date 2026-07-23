@@ -166,7 +166,16 @@ Y un bloque **específico por evento**, `hookSpecificOutput`:
 | `ask` | Fuerza el diálogo de permiso al usuario |
 | `defer` | Delega la decisión al flujo normal de permisos |
 
-> **`PreToolUse` SÍ inyecta contexto** (verificado contra la doc oficial el 2026-07-22, resolviendo una discrepancia de fuentes previa): `additionalContext` va **al modelo**, incluso con `permissionDecision: "allow"` — pero llega **junto al resultado de la tool** (post-ejecución en `allow`), no *antes* de actuar. El recordatorio estrictamente *previo* a la acción sigue siendo `deny`-con-`reason` (frena y explica) o `ask`. `updatedInput` reemplaza los args de la tool antes de correrla.
+> **`PreToolUse` SÍ inyecta `additionalContext` al modelo** (verificado contra la doc oficial el 2026-07-23, resolvió una discrepancia de fuentes previa). Comportamiento por decisión:
+>
+> | `permissionDecision` | ¿Inyecta `additionalContext`? | Flujo de permisos | Timing del texto |
+> |---|---|---|---|
+> | omitir (= `defer`) | **Sí** | normal (el usuario ve el prompt si aplica) | junto al resultado de la tool (post-ejecución) |
+> | `defer` | Sí | normal | post-ejecución |
+> | `allow` | Sí | **auto-aprueba** (no pide permiso — efecto de lado) | post-ejecución |
+> | `deny` | **No** (se descarta; solo llega el `reason`) | bloquea la tool | — |
+>
+> Para **inyectar sin efecto de lado**: **omitir `permissionDecision`** (o `defer`) — inyecta y deja el flujo de permisos intacto. El `additionalContext` **nunca** llega *antes* de que la tool corra: es un recordatorio **posterior**, no un aviso previo (el aviso estrictamente previo solo se logra bloqueando con `deny`-con-`reason` o `ask`). `updatedInput` reemplaza los args de la tool antes de correrla.
 
 **`UserPromptSubmit` / `SessionStart` — inyectar contexto:**
 ```json
