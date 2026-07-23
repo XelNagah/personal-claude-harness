@@ -24,6 +24,19 @@ Recomendación del agente, **a ratificar**: decidir el mecanismo **una vez** par
 
 Evidencia disponible, del plan #1: el hook re-inyectado (caveman) nunca se violó en toda la sesión; las preferencias escritas sí, dos veces. Sugiere que re-inyectar en el punto de acción funciona donde escribir en un registro no.
 
+## Actualización 26-07-23: recurrencia + arreglo parcial (test operable)
+
+Cuarta aparición de la misma clase, sobre terminología en la salida: el agente escribió `churn` (en la conversación) y `hardcodear` (en un registro) **con los recordatorios de conducta disparándose** (`cada turno` + `al escribir`). "Recita sin obedecer" en vivo — incluso emitió *"Contrastado: sin vetados"* sin contrastar de verdad. El usuario lo cazó, como con `acote`.
+
+**Diagnóstico afinado (con el usuario):** el recordatorio abstracto (*"no uses palabras raras"*) falla porque el agente **no puede sentir "raro"** — el inglés le es nativo. No es desobediencia: es **señal faltante**. Y hay un límite duro: **ningún hook ve la respuesta de la conversación antes de enviarse** (los eventos son `UserPromptSubmit`/`PreToolUse`/`Stop`) ⇒ la conversación no se puede frenar, solo detectar después (`Stop`). Los archivos sí se pueden frenar (`PreToolUse` ve el contenido antes de escribir).
+
+**Arreglo parcial ya hecho (commit `18f4af2`):** la regla de terminología del subsistema `conducta` pasó de *"no inventes palabras"* a un **test operable** (¿lo diría un desarrollador hispanohablante tal cual, o es una metáfora o modismo del inglés?), con ejemplos anclados en los vetados. Es el único mecanismo que puede cazar jerga **nueva** en el primer escape (una regla generativa, no una lista). Se vetaron `churn`/`wedge`.
+
+**Lo que queda para este plan (mecanismo, a decidir una vez con los planes #1/#2):**
+- **Archivos:** subir la acción `al escribir` de recordatorio a **escaneo mecánico que bloquea** (reusa `lint-glosario`; `PreToolUse` puede frenar la escritura). Prevención real.
+- **Conversación:** hook `Stop` que escanea la salida contra los vetados → detección después del envío, alimenta la lista.
+- **Techo honesto:** la jerga nueva no se previene perfecto; se atrapa tras el primer (y único) escape. La lista crece; los escapes se vuelven únicos.
+
 ## Conexión con lo ya decidido
 
 La **decisión 0003** fija integridad en dos capas: mecánica (lints `.js`, sin LLM) **obligatoria**, y semántica (contradicciones, incompatibilidades, desactualización — requiere LLM) *"hoy informal, pendiente de formalizar"*. Lo que pide este plan **es** esa capa semántica, acotada a un punto de disparo concreto. No es una capa nueva: es formalizar la que 0003 dejó pendiente, empezando por el caso más barato.

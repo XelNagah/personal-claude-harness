@@ -83,10 +83,10 @@ Una sola clase: núcleo obligatorio + bloques opcionales que se prenden según e
 
 ### Qué queda para ejecutar
 
-1. **Extender `lint-harness`:** sumar `Skills` a los campos obligatorios del MANIFIESTO y `Flujo` como opcional reconocido (chequeo de estructura, dec. 0019/0023).
-2. **Llenar el campo Skills** en los 7 MANIFIESTOs vivos (este repo) — declara las skills de operación de cada subsistema. `conducta` = "ninguna aún".
-3. **Propagar al harness:** las 6 PLANTILLA de MANIFIESTO + orquestador ganan el campo Skills (y Flujo donde aplique); subir versiones. Skill `propagar-harness`.
-4. **Nivelar consumidores:** correr los `inicializar-*` actualizados sobre repos ya instalados.
+1. ~~Extender `lint-harness` (`Skills` obligatorio + `Flujo` opcional)~~ **hecho 26-07-23** (commit `dac4c8a`).
+2. ~~Llenar el campo Skills en los 7 MANIFIESTOs vivos~~ **hecho 26-07-23** (`conducta` = "ninguna aún"; commit `dac4c8a`).
+3. ~~Propagar al harness: 6 PLANTILLA + orquestador + 7 versiones~~ **hecho 26-07-23** (commit `5d7f206`; inclusión verificada, control de cierre 10/10).
+4. **Nivelar consumidores:** correr los `inicializar-*` actualizados sobre repos ya instalados. **Pendiente** — diferido al patrón de consumidores dormidos (se ponen al día cuando se usan).
 
 > El **ordenamiento de los skills** en sí (declarado por el campo Skills de arriba) ya está repartido en 3 planes vivos, no necesita uno nuevo: [Nombres y distribución de las skills del harness](Nombres%20y%20distribucion%20de%20las%20skills%20del%20harness.md) (ejecutar el prefijo 0013 — capa en-uso), [Revisar la nomenclatura de los subsistemas](Revisar%20la%20nomenclatura%20de%20los%20subsistemas.md) (los nombres opacos `ciclo-de-plan`/`converger-terminologia`), y [Revisar cada subsistema — sentido, disparador y skill de operación](Revisar%20cada%20subsistema%20-%20sentido%2C%20disparador%20y%20skill%20de%20operacion.md) (los huecos de cobertura de herramientas/conducta).
 
