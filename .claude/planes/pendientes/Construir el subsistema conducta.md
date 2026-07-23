@@ -1,6 +1,25 @@
 # Construir el subsistema conducta
 
-**Estado: Nuevo · Creado 26-07-22.** Origen: *Que el harness tenga efecto conductual* (frente C). Diseño asentado en la **decisión 0021**; este plan es la construcción.
+**Estado: En curso · Creado 26-07-22.** Origen: *Que el harness tenga efecto conductual* (frente C). Diseño asentado en la **decisión 0021**; este plan es la construcción.
+
+## Ya construido (26-07-22): la versión fina
+
+Primera pieza medible, in-repo. Diseñada por `planificar` (alcance A, "fino de verdad"):
+
+- **Estructura `.claude/conducta/`**: registro de reglas `INDICE.md` (columnas `Regla · Momento · Clase · Contenido · Estado`), vocabulario de momentos `MOMENTOS.md` (semilla del registro de momentos: `cada turno` activo, `al escribir`/`al cerrar tarea` declarados), `MANIFIESTO.md` (5 campos 0019; índice **no** se carga —cargar reglas al arranque es el modo de falla que el subsistema corrige—), `lint-conducta/` autocontenido.
+- **Base de 4 reglas**: 2 `vigente` de momento `cada turno` (respetar preferencias · no acuñar terminología) que el hook entrega hoy; 2 `pendiente` de momentos aún sin repartidor (contrastar al escribir 0020 · registrar cuando algo cambia), declaradas honestas.
+- **Hook repartidor `establecer-conducta`** (`UserPromptSubmit`): lee el registro vivo, entrega las reglas `cada turno` como `additionalContext`. Cableado en `.claude/settings.json` (Claude) **y** `.codex/hooks.json` (Codex) — paridad plena del momento `cada turno`.
+- **Gotcha reconciliado**: `PreToolUse` **sí** inyecta `additionalContext` (verificado contra la doc oficial). Conocimiento migrado desde `como-uso-claude`: `hooks-claude-code.md` + `latencia-hooks.md` reemplazan la página flaca.
+- **Verde**: control de cierre 10/10 (lint-conducta nuevo incluido).
+
+Nombre `establecer-conducta` ratificado por el usuario (0016).
+
+## Falta (crecer, a demanda)
+
+- Repartidor(es) para los momentos `declarado` (`PreToolUse` sobre `Write`|`Edit`, `Stop`) que activen las 2 reglas `pendiente`.
+- Skills de gestión (crear/modificar/borrar/analizar/verificar reglas).
+- Empaquetar como funcionalidad/plugin (marketplace + junctions + REGISTRO + orquestador), como el piloto de `conocimiento`: primero medir in-repo, después distribuir.
+- Medir el efecto conductual (el juez del plan padre).
 
 ## Qué construir
 

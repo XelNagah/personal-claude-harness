@@ -86,7 +86,7 @@ node .claude/preferencias/lint-preferencias/lint-preferencias.js
 
 Cada subsistema tiene un **Manifiesto** (`.claude/<sub>/MANIFIESTO.md`, decisión 0017): una descripción breve —qué es, cómo se usa, cuándo consultarlo— que va **siempre en contexto** y que **declara si su índice también se carga**, incluyendo o no la línea `@INDICE.md`. Lo que se carga siempre es el manifiesto, no necesariamente el índice (reemplaza la carga incondicional del índice de la decisión 0002).
 
-Si tu agente no expande imports, **leé estos manifiestos al inicio de la sesión** (y, si el manifiesto importa su índice, ese índice también). Hoy cargan su índice: memoria, conocimiento, herramientas. NO lo cargan (se consultan a demanda): planes, glosario, decisiones.
+Si tu agente no expande imports, **leé estos manifiestos al inicio de la sesión** (y, si el manifiesto importa su índice, ese índice también). Hoy cargan su índice: memoria, conocimiento, herramientas. NO lo cargan (se consultan a demanda): planes, glosario, decisiones, conducta.
 
 @.claude/memoria/MANIFIESTO.md
 @.claude/planes/MANIFIESTO.md
@@ -94,3 +94,4 @@ Si tu agente no expande imports, **leé estos manifiestos al inicio de la sesió
 @.claude/glosario/MANIFIESTO.md
 @.claude/decisiones/MANIFIESTO.md
 @.claude/herramientas/MANIFIESTO.md
+@.claude/conducta/MANIFIESTO.md

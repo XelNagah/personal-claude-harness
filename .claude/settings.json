@@ -13,6 +13,16 @@
           }
         ]
       }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node .claude/conducta/establecer-conducta/establecer-conducta.js"
+          }
+        ]
+      }
     ]
   }
 }
