@@ -3,7 +3,8 @@
 // funcionalidades vs marketplace vs REGISTRO, archivos clave por funcionalidad, junctions de skills
 // (dos tandas: ~/.claude/skills y ~/.agents/skills), divergencia de bloques verbatim entre PLANTILLAs,
 // tamaño de los MANIFIESTO.md de subsistema (dec. 0017: breves, siempre en contexto) y su estructura
-// minima (dec. 0019 + 0023: campos obligatorios incl. Skills + coherencia carga<->@INDICE). Sin LLM, sin red.
+// minima (dec. 0019 + 0023: campos obligatorios incl. Skills + coherencia carga<->@INDICE) y citas a
+// decisiones del harness en archivos distribuibles (dec. 0024). Sin LLM, sin red.
 // Uso: node lint-harness.js [--quiet]   (correr desde la raiz del repo del harness)
 const fs = require('fs'), path = require('path'), os = require('os'), crypto = require('crypto');
 const quiet = process.argv.includes('--quiet');
@@ -228,6 +229,38 @@ if (fs.existsSync(claudeDir)) {
   }
 }
 
+// -- [9] refs a decisiones del harness en archivos distribuibles (dec. 0024) ---
+// El numero de decision referencia el registro de ESTE repo, que NO viaja al consumidor.
+// Un archivo que se instala (PLANTILLA, MANIFIESTO de subsistema, lint distribuido) no debe
+// citarlo: enuncia la razon inline. Se excluyen los que se quedan en el harness: lint-harness
+// (Herramienta de este repo) y conducta (aun no es funcionalidad distribuible; su plan de
+// empaquetado aplicara 0024). SKILL/README son instruccion que no se persiste en el consumidor.
+const citaDec = /(?:decisi[óo]n(?:es)?|dec\.)\s+0\d{3}(?:\/0\d{3})?/g;
+const refsDecision = [];
+function escanearCitas(archivo) {
+  if (!fs.existsSync(archivo)) return;
+  const txt = fs.readFileSync(archivo, 'utf8');
+  const rel = path.relative(repo, archivo).replace(/\\/g, '/');
+  const ms = [...txt.matchAll(citaDec)];
+  if (ms.length) refsDecision.push(`${rel}  [${[...new Set(ms.map(m => m[0]))].join(', ')}]`);
+}
+for (const f of enDisco) {
+  const skillsDir = path.join(funcDir, f, 'skills');
+  if (!fs.existsSync(skillsDir)) continue;
+  for (const s of fs.readdirSync(skillsDir)) escanearCitas(path.join(skillsDir, s, 'PLANTILLA.md'));
+}
+if (fs.existsSync(claudeDir)) {
+  for (const sub of fs.readdirSync(claudeDir, { withFileTypes: true })) {
+    if (!sub.isDirectory() || sub.name === 'conducta') continue;
+    escanearCitas(path.join(claudeDir, sub.name, 'MANIFIESTO.md'));
+  }
+}
+for (const js of buscarLints(path.join(repo, '.claude'), [])) {
+  const b = path.basename(js);
+  if (b === 'lint-harness.js' || b === 'lint-conducta.js') continue;
+  escanearCitas(js);
+}
+
 // -- salida --------------------------------------------------------------
 const secciones = [
   ['PUNTO DE ENTRADA (AGENTS.md + adaptador CLAUDE.md)', entrada],
@@ -241,6 +274,7 @@ const secciones = [
   ['BASE DE PREFERENCIAS DIVERGENTE (PREFERENCIAS.md vs PLANTILLAS)', baseDivergente],
   [`MANIFIESTOS QUE ENGORDARON (> ${LIMITE_MANIFIESTO} palabras)`, manifiestosLargos],
   ['MANIFIESTOS SIN CAMPOS MINIMOS (dec. 0019)', manifiestosSinCampos],
+  ['CITAS A DECISIONES DEL HARNESS EN DISTRIBUIBLES (dec. 0024)', refsDecision],
 ];
 const total = secciones.reduce((n, [, items]) => n + items.length, 0);
 if (quiet && total === 0) process.exit(0);

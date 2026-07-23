@@ -6,7 +6,7 @@ Todo lo que el agente **sabe** vive en una ubicación única: este directorio (`
 
 **Skills:** `registrar-conocimiento` (asienta una página del dominio, evita duplicar, indexa y corre el lint) y `buscar-conocimiento` (recorre el repo y propone páginas nuevas); instalación con `inicializar-conocimiento`.
 
-**Índice: se carga siempre** (liviano — decisión 0017). Al cerrar una tarea que escribió conocimiento, correr el lint desde la raíz del repo:
+**Índice: se carga siempre** (liviano). Al cerrar una tarea que escribió conocimiento, correr el lint desde la raíz del repo:
 
 ```bash
 node .claude/conocimiento/lint-conocimiento/lint-conocimiento.js

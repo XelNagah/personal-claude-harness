@@ -11,7 +11,7 @@ La terminología del dominio vive en `.claude/glosario/INDICE.md`: una tabla don
 
 **Why:** coherencia semántica a lo largo de la vida del repo. Los alias válidos **se registran** (saber que "birra/chela" son la misma cerveza evita confusión); los términos confusos o ajenos al dominio **se vetan** (dejan de usarse y se barren del texto vivo). Los agentes acumulan jerga sesión tras sesión —ver el conocimiento `terminologia-farlopa.md`—; el glosario la frena.
 
-**Gobernanza (decisión 0004):** el agente **nunca** escribe en `Alias` ni en `Vetados`: solo **propone** en `Propuestos`. Ratificar y vetar son del usuario. El agente **nunca usa** un término que esté en `Propuestos` o en `Vetados`, ni en texto plano, memorias, planes o código.
+**Gobernanza:** el agente **nunca** escribe en `Alias` ni en `Vetados`: solo **propone** en `Propuestos`. Ratificar y vetar son del usuario. El agente **nunca usa** un término que esté en `Propuestos` o en `Vetados`, ni en texto plano, memorias, planes o código.
 
 **How to apply:**
 

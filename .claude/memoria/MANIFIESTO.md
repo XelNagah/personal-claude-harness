@@ -6,7 +6,7 @@ La memoria local vive en este directorio (`memoria/`), indexada por `MEMORIA.md`
 
 **Skills:** `registrar-memoria` (asienta un hecho como memoria tipada, detecta duplicados, indexa y corre el lint); instalación con `inicializar-memoria-local`.
 
-**Índice: se carga siempre** (liviano — decisión 0017). Al cerrar una tarea que tocó la memoria, correr el lint desde la raíz del repo:
+**Índice: se carga siempre** (liviano). Al cerrar una tarea que tocó la memoria, correr el lint desde la raíz del repo:
 
 ```bash
 node .claude/memoria/lint-memoria/lint-memoria.js

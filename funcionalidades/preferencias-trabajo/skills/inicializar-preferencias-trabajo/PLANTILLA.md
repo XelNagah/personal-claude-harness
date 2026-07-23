@@ -91,7 +91,7 @@ if (!fs.existsSync(prefFile)) {
 }
 
 // @import en el punto de entrada (las preferencias tienen que estar siempre en contexto).
-// Fuente: AGENTS.md en la raiz (decision 0010); layouts legacy: CLAUDE.md en la raiz o dentro de <config>/.
+// Fuente: AGENTS.md en la raiz; layouts legacy: CLAUDE.md en la raiz o dentro de <config>/.
 const root = path.dirname(claudeDir);
 const entradas = [path.join(root, 'AGENTS.md'), path.join(root, 'CLAUDE.md'), path.join(claudeDir, 'CLAUDE.md')]
   .filter(f => fs.existsSync(f));

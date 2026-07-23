@@ -19,7 +19,7 @@ function walk(dir, acc) {
     if (EXCLUDE.has(e.name)) continue;
     const full = path.join(dir, e.name);
     if (e.isDirectory()) { if (e.name.startsWith('lint-')) continue; walk(full, acc); }  // el lint co-ubicado del subsistema no es contenido
-    else if (e.name.endsWith('.md') && e.name !== 'MANIFIESTO.md') acc.push(full);  // MANIFIESTO.md: infra del subsistema (dec. 0017), no es pagina
+    else if (e.name.endsWith('.md') && e.name !== 'MANIFIESTO.md') acc.push(full);  // MANIFIESTO.md: infra del subsistema, no es pagina
   }
   return acc;
 }
@@ -29,7 +29,7 @@ const read = f => fs.readFileSync(f, 'utf8');
 const inRoot = p => path.resolve(p).startsWith(path.resolve(root) + path.sep);
 
 // La raiz del repo se deduce de la ubicacion del propio lint: .claude/<sub>/lint-<sub>/ -> 3 arriba.
-// La profundidad la fija el instalador (decision 0008); no depende de desde donde se invoque.
+// La profundidad la fija el instalador; no depende de desde donde se invoque.
 const repoRoot = path.resolve(__dirname, '..', '..', '..');
 const dentroDelRepo = p => {
   const r = path.resolve(p);

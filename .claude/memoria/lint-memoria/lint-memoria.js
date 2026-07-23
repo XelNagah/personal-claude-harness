@@ -20,7 +20,7 @@ const read = f => fs.readFileSync(f, 'utf8');
 const inRoot = p => path.resolve(p).startsWith(path.resolve(root) + path.sep);
 
 // La raiz del repo se deduce de la ubicacion del propio lint: .claude/<sub>/lint-<sub>/ -> 3 arriba.
-// La profundidad la fija el instalador (decision 0008); no depende de desde donde se invoque.
+// La profundidad la fija el instalador; no depende de desde donde se invoque.
 const repoRoot = path.resolve(__dirname, '..', '..', '..');
 const dentroDelRepo = p => {
   const r = path.resolve(p);
@@ -43,7 +43,7 @@ const all = walk(root, []);
 const indexFile = path.join(root, 'MEMORIA.md');
 const hasIndex = fs.existsSync(indexFile);
 const idxText = hasIndex ? read(indexFile) : '';
-const memos = all.filter(p => path.basename(p) !== 'MEMORIA.md' && path.basename(p) !== 'MANIFIESTO.md');  // MANIFIESTO.md: infra del subsistema (dec. 0017), no es memoria
+const memos = all.filter(p => path.basename(p) !== 'MEMORIA.md' && path.basename(p) !== 'MANIFIESTO.md');  // MANIFIESTO.md: infra del subsistema, no es memoria
 
 // nombres validos para wikilinks: `name:` del frontmatter + stem del archivo
 const nameSet = new Set();

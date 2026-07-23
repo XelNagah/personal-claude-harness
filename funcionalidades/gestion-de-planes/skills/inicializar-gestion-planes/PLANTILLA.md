@@ -123,7 +123,7 @@ Los **estados** y su semántica (a qué carpeta mapea cada uno, cuáles son term
 |------|--------|--------|---------|--------|-------|
 ```
 
-## §Hook — chequeo al abrir sesión (registro doble, decisión 0010)
+## §Hook — chequeo al abrir sesión (registro doble)
 
 El mismo script se registra en los dos formatos — Claude Code y Codex CLI ejecutan idéntico chequeo al abrir sesión.
 
@@ -172,7 +172,7 @@ Con `--quiet` el lint solo imprime cuando hay hallazgos: sesión limpia = hook s
 
 ## §Script — `.claude/planes/lint-planes/lint-planes.js`
 
-Contenido exacto (Node, sin dependencias, sin red). El lint va co-ubicado con el subsistema (`.claude/planes/lint-planes/`) con su `README.md`; es infra del Patrón, **no** una Herramienta, así que no se registra en `herramientas/INDICE.md` (decisión 0008).
+Contenido exacto (Node, sin dependencias, sin red). El lint va co-ubicado con el subsistema (`.claude/planes/lint-planes/`) con su `README.md`; es infra del Patrón, **no** una Herramienta, así que no se registra en `herramientas/INDICE.md`.
 
 ```js
 #!/usr/bin/env node

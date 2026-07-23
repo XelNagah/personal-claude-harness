@@ -8,7 +8,7 @@ const glosPath = path.join(root, 'INDICE.md');
 const txt = fs.existsSync(glosPath) ? fs.readFileSync(glosPath, 'utf8') : '';
 
 // La raiz del repo se deduce de la ubicacion del propio lint: .claude/<sub>/lint-<sub>/ -> 3 arriba.
-// La profundidad la fija el instalador (decision 0008); no depende de desde donde se invoque.
+// La profundidad la fija el instalador; no depende de desde donde se invoque.
 const repoRoot = path.resolve(__dirname, '..', '..', '..');
 const dentroDelRepo = p => {
   const r = path.resolve(p);
@@ -66,7 +66,7 @@ for (const r of rows) {
 const huerfanos = [];
 if (fs.existsSync(root)) {
   for (const f of fs.readdirSync(root)) {
-    if (!f.endsWith('.md') || f === 'INDICE.md' || f === 'MANIFIESTO.md') continue;  // MANIFIESTO.md: infra del subsistema (dec. 0017)
+    if (!f.endsWith('.md') || f === 'INDICE.md' || f === 'MANIFIESTO.md') continue;  // MANIFIESTO.md: infra del subsistema
     if (!referenced.has(f)) huerfanos.push(f);
   }
 }

@@ -20,7 +20,7 @@ Terminología del dominio de este repo. Una fila por concepto en la tabla de aba
 
 Solo términos **propios del dominio** (no conceptos generales de programación). Consultar al planificar y analizar. Ejemplo completo en el README de la funcionalidad `glosario`.
 
-**Gobernanza (control del usuario, decisión 0004):**
+**Gobernanza (control del usuario):**
 
 - Toda entrada nueva —**concepto o alias**— pasa por el usuario. El agente puede *proponer* (columna `Propuestos`), pero no asienta nada en `Alias` ni en `Vetados`: ratificar y vetar son potestad del usuario. Preferir las palabras del usuario a acuñar nuevas.
 - El agente **nunca usa**, ni en texto plano, memorias, planes o código, un término que esté en `Propuestos` o en `Vetados`.
@@ -46,7 +46,7 @@ La terminología del dominio vive en `.claude/glosario/INDICE.md`: una tabla don
 
 **Why:** coherencia semántica a lo largo de la vida del repo. Los alias válidos **se registran** (saber que "birra/chela" son la misma cerveza evita confusión); los términos confusos o ajenos al dominio **se vetan** (dejan de usarse y se barren del texto vivo).
 
-**Gobernanza (decisión 0004):** el agente **nunca** escribe en `Alias` ni en `Vetados`: solo **propone** en `Propuestos`. Ratificar y vetar son del usuario. El agente **nunca usa** un término que esté en `Propuestos` o en `Vetados`, ni en texto plano, memorias, planes o código.
+**Gobernanza:** el agente **nunca** escribe en `Alias` ni en `Vetados`: solo **propone** en `Propuestos`. Ratificar y vetar son del usuario. El agente **nunca usa** un término que esté en `Propuestos` o en `Vetados`, ni en texto plano, memorias, planes o código.
 
 **How to apply:**
 
@@ -72,7 +72,7 @@ const glosPath = path.join(root, 'INDICE.md');
 const txt = fs.existsSync(glosPath) ? fs.readFileSync(glosPath, 'utf8') : '';
 
 // La raiz del repo se deduce de la ubicacion del propio lint: .claude/<sub>/lint-<sub>/ -> 3 arriba.
-// La profundidad la fija el instalador (decision 0008); no depende de desde donde se invoque.
+// La profundidad la fija el instalador; no depende de desde donde se invoque.
 const repoRoot = path.resolve(__dirname, '..', '..', '..');
 const dentroDelRepo = p => {
   const r = path.resolve(p);
@@ -130,7 +130,7 @@ for (const r of rows) {
 const huerfanos = [];
 if (fs.existsSync(root)) {
   for (const f of fs.readdirSync(root)) {
-    if (!f.endsWith('.md') || f === 'INDICE.md' || f === 'MANIFIESTO.md') continue;  // MANIFIESTO.md: infra del subsistema (dec. 0017)
+    if (!f.endsWith('.md') || f === 'INDICE.md' || f === 'MANIFIESTO.md') continue;  // MANIFIESTO.md: infra del subsistema
     if (!referenced.has(f)) huerfanos.push(f);
   }
 }

@@ -335,7 +335,7 @@ function walk(dir, acc) {
     if (EXCLUDE.has(e.name)) continue;
     const full = path.join(dir, e.name);
     if (e.isDirectory()) { if (e.name.startsWith('lint-')) continue; walk(full, acc); }  // el lint co-ubicado del subsistema no es contenido
-    else if (e.name.endsWith('.md') && e.name !== 'MANIFIESTO.md') acc.push(full);  // MANIFIESTO.md: infra del subsistema (dec. 0017), no es pagina
+    else if (e.name.endsWith('.md') && e.name !== 'MANIFIESTO.md') acc.push(full);  // MANIFIESTO.md: infra del subsistema, no es pagina
   }
   return acc;
 }
@@ -345,7 +345,7 @@ const read = f => fs.readFileSync(f, 'utf8');
 const inRoot = p => path.resolve(p).startsWith(path.resolve(root) + path.sep);
 
 // La raiz del repo se deduce de la ubicacion del propio lint: .claude/<sub>/lint-<sub>/ -> 3 arriba.
-// La profundidad la fija el instalador (decision 0008); no depende de desde donde se invoque.
+// La profundidad la fija el instalador; no depende de desde donde se invoque.
 const repoRoot = path.resolve(__dirname, '..', '..', '..');
 const dentroDelRepo = p => {
   const r = path.resolve(p);
@@ -529,7 +529,7 @@ Los **estados** y su semántica (a qué carpeta mapea cada uno, cuáles son term
 |------|--------|--------|---------|--------|-------|
 ```
 
-Hook — **registro doble** (decisión 0010): el mismo script se registra en los dos formatos — Claude Code y Codex CLI ejecutan idéntico chequeo al abrir sesión. Con `--quiet` el lint solo imprime cuando hay hallazgos: sesión limpia = hook silencioso. Es el trigger mecánico del ciclo — sin él, mover planes vuelve a depender de acordarse.
+Hook — **registro doble**: el mismo script se registra en los dos formatos — Claude Code y Codex CLI ejecutan idéntico chequeo al abrir sesión. Con `--quiet` el lint solo imprime cuando hay hallazgos: sesión limpia = hook silencioso. Es el trigger mecánico del ciclo — sin él, mover planes vuelve a depender de acordarse.
 
 **Claude Code** — merge (sin pisar hooks existentes) en `.claude/settings.json` del repo:
 
@@ -741,7 +741,7 @@ Terminología del dominio de este repo. Una fila por concepto en la tabla de aba
 
 Solo términos **propios del dominio** (no conceptos generales de programación). Consultar al planificar y analizar. Ejemplo completo en el README de la funcionalidad `glosario`.
 
-**Gobernanza (control del usuario, decisión 0004):**
+**Gobernanza (control del usuario):**
 
 - Toda entrada nueva —**concepto o alias**— pasa por el usuario. El agente puede *proponer* (columna `Propuestos`), pero no asienta nada en `Alias` ni en `Vetados`: ratificar y vetar son potestad del usuario. Preferir las palabras del usuario a acuñar nuevas.
 - El agente **nunca usa**, ni en texto plano, memorias, planes o código, un término que esté en `Propuestos` o en `Vetados`.
@@ -767,7 +767,7 @@ La terminología del dominio vive en `.claude/glosario/INDICE.md`: una tabla don
 
 **Why:** coherencia semántica a lo largo de la vida del repo. Los alias válidos **se registran** (saber que "birra/chela" son la misma cerveza evita confusión); los términos confusos o ajenos al dominio **se vetan** (dejan de usarse y se barren del texto vivo).
 
-**Gobernanza (decisión 0004):** el agente **nunca** escribe en `Alias` ni en `Vetados`: solo **propone** en `Propuestos`. Ratificar y vetar son del usuario. El agente **nunca usa** un término que esté en `Propuestos` o en `Vetados`, ni en texto plano, memorias, planes o código.
+**Gobernanza:** el agente **nunca** escribe en `Alias` ni en `Vetados`: solo **propone** en `Propuestos`. Ratificar y vetar son del usuario. El agente **nunca usa** un término que esté en `Propuestos` o en `Vetados`, ni en texto plano, memorias, planes o código.
 
 **How to apply:**
 
@@ -791,7 +791,7 @@ const glosPath = path.join(root, 'INDICE.md');
 const txt = fs.existsSync(glosPath) ? fs.readFileSync(glosPath, 'utf8') : '';
 
 // La raiz del repo se deduce de la ubicacion del propio lint: .claude/<sub>/lint-<sub>/ -> 3 arriba.
-// La profundidad la fija el instalador (decision 0008); no depende de desde donde se invoque.
+// La profundidad la fija el instalador; no depende de desde donde se invoque.
 const repoRoot = path.resolve(__dirname, '..', '..', '..');
 const dentroDelRepo = p => {
   const r = path.resolve(p);
@@ -849,7 +849,7 @@ for (const r of rows) {
 const huerfanos = [];
 if (fs.existsSync(root)) {
   for (const f of fs.readdirSync(root)) {
-    if (!f.endsWith('.md') || f === 'INDICE.md' || f === 'MANIFIESTO.md') continue;  // MANIFIESTO.md: infra del subsistema (dec. 0017)
+    if (!f.endsWith('.md') || f === 'INDICE.md' || f === 'MANIFIESTO.md') continue;  // MANIFIESTO.md: infra del subsistema
     if (!referenced.has(f)) huerfanos.push(f);
   }
 }
@@ -1043,7 +1043,7 @@ const txt = fs.existsSync(mainPath) ? fs.readFileSync(mainPath, 'utf8') : '';
 const pad = n => String(n).padStart(4, '0');
 
 // La raiz del repo se deduce de la ubicacion del propio lint: .claude/<sub>/lint-<sub>/ -> 3 arriba.
-// La profundidad la fija el instalador (decision 0008); no depende de desde donde se invoque.
+// La profundidad la fija el instalador; no depende de desde donde se invoque.
 const repoRoot = path.resolve(__dirname, '..', '..', '..');
 const dentroDelRepo = p => {
   const r = path.resolve(p);
@@ -1098,7 +1098,7 @@ for (const r of rows) {
 const huerfanos = [];
 if (fs.existsSync(root)) {
   for (const f of fs.readdirSync(root)) {
-    if (!f.endsWith('.md') || f === 'INDICE.md' || f === 'MANIFIESTO.md') continue;  // MANIFIESTO.md: infra del subsistema (dec. 0017)
+    if (!f.endsWith('.md') || f === 'INDICE.md' || f === 'MANIFIESTO.md') continue;  // MANIFIESTO.md: infra del subsistema
     if (!referenced.has(f)) huerfanos.push(f);
   }
 }
@@ -1204,7 +1204,7 @@ const idxPath = path.join(root, 'INDICE.md');
 const idx = fs.existsSync(idxPath) ? fs.readFileSync(idxPath, 'utf8') : '';
 
 // subdirectorios = herramientas tipo script/tool que viven aca (skill/MCP viven en su casa nativa).
-// El lint co-ubicado del propio subsistema (lint-<sub>, decision 0008) NO es una Herramienta: se excluye.
+// El lint co-ubicado del propio subsistema (lint-<sub>) NO es una Herramienta: se excluye.
 const selfLint = 'lint-' + path.basename(root);
 const tools = fs.existsSync(root)
   ? fs.readdirSync(root, { withFileTypes: true }).filter(e => e.isDirectory() && e.name !== selfLint).map(e => e.name)
@@ -1237,7 +1237,7 @@ for (const line of idx.split('\n')) {
 
 // [4] refs por ruta a lints en settings que no resuelven (cualquier .claude/**/*.js|sh|...)
 // La raiz del repo se deduce de la ubicacion del propio lint: .claude/<sub>/lint-<sub>/ -> 3 arriba.
-// La profundidad la fija el instalador (decision 0008); no depende de desde donde se invoque.
+// La profundidad la fija el instalador; no depende de desde donde se invoque.
 const repoRoot = path.resolve(__dirname, '..', '..', '..');
 const refsRotas = [];
 for (const sf of ['.claude/settings.local.json', '.claude/settings.json']) {
@@ -1297,7 +1297,7 @@ const read = f => fs.readFileSync(f, 'utf8');
 const inRoot = p => path.resolve(p).startsWith(path.resolve(root) + path.sep);
 
 // La raiz del repo se deduce de la ubicacion del propio lint: .claude/<sub>/lint-<sub>/ -> 3 arriba.
-// La profundidad la fija el instalador (decision 0008); no depende de desde donde se invoque.
+// La profundidad la fija el instalador; no depende de desde donde se invoque.
 const repoRoot = path.resolve(__dirname, '..', '..', '..');
 const dentroDelRepo = p => {
   const r = path.resolve(p);
@@ -1320,7 +1320,7 @@ const all = walk(root, []);
 const indexFile = path.join(root, 'MEMORIA.md');
 const hasIndex = fs.existsSync(indexFile);
 const idxText = hasIndex ? read(indexFile) : '';
-const memos = all.filter(p => path.basename(p) !== 'MEMORIA.md' && path.basename(p) !== 'MANIFIESTO.md');  // MANIFIESTO.md: infra del subsistema (dec. 0017), no es memoria
+const memos = all.filter(p => path.basename(p) !== 'MEMORIA.md' && path.basename(p) !== 'MANIFIESTO.md');  // MANIFIESTO.md: infra del subsistema, no es memoria
 
 // nombres validos para wikilinks: `name:` del frontmatter + stem del archivo
 const nameSet = new Set();
@@ -1445,7 +1445,7 @@ if (!fs.existsSync(prefFile)) {
 }
 
 // @import en el punto de entrada (las preferencias tienen que estar siempre en contexto).
-// Fuente: AGENTS.md en la raiz (decision 0010); layouts legacy: CLAUDE.md en la raiz o dentro de <config>/.
+// Fuente: AGENTS.md en la raiz; layouts legacy: CLAUDE.md en la raiz o dentro de <config>/.
 const root = path.dirname(claudeDir);
 const entradas = [path.join(root, 'AGENTS.md'), path.join(root, 'CLAUDE.md'), path.join(claudeDir, 'CLAUDE.md')]
   .filter(f => fs.existsSync(f));

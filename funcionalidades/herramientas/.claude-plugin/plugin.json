@@ -1,6 +1,6 @@
 {
   "name": "herramientas",
   "description": "Gestión de Herramientas del repo: las tools del Propósito (script/skill local/MCP local) en .claude/herramientas/ con registro INDICE.md (columna Tipo) + lint. Los lints de subsistema no son herramientas. Depende de memoria-local.",
-  "version": "0.4.4",
+  "version": "0.4.5",
   "author": { "name": "jllarens", "email": "jllarens@gmail.com" }
 }

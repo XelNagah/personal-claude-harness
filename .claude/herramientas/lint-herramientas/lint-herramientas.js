@@ -8,7 +8,7 @@ const idxPath = path.join(root, 'INDICE.md');
 const idx = fs.existsSync(idxPath) ? fs.readFileSync(idxPath, 'utf8') : '';
 
 // subdirectorios = herramientas tipo script/tool que viven aca (skill/MCP viven en su casa nativa).
-// El lint co-ubicado del propio subsistema (lint-<sub>, decision 0008) NO es una Herramienta: se excluye.
+// El lint co-ubicado del propio subsistema (lint-<sub>) NO es una Herramienta: se excluye.
 const selfLint = 'lint-' + path.basename(root);
 const tools = fs.existsSync(root)
   ? fs.readdirSync(root, { withFileTypes: true }).filter(e => e.isDirectory() && e.name !== selfLint).map(e => e.name)
@@ -41,7 +41,7 @@ for (const line of idx.split('\n')) {
 
 // [4] refs por ruta a lints en settings que no resuelven (cualquier .claude/**/*.js|sh|...)
 // La raiz del repo se deduce de la ubicacion del propio lint: .claude/<sub>/lint-<sub>/ -> 3 arriba.
-// La profundidad la fija el instalador (decision 0008); no depende de desde donde se invoque.
+// La profundidad la fija el instalador; no depende de desde donde se invoque.
 const repoRoot = path.resolve(__dirname, '..', '..', '..');
 const refsRotas = [];
 for (const sf of ['.claude/settings.local.json', '.claude/settings.json']) {

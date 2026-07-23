@@ -8,7 +8,7 @@ Los planes se persisten en este directorio (`planes/`): `pendientes/` (planes vi
 
 **Flujo de trabajo:** multi-paso (abrir → transicionar → cerrar con lint); detalle en la memoria `feedback_flujo_planes.md`.
 
-**Índice: NO se carga siempre** (decisión 0017 — `PLANES.md` es el registro más pesado del repo); se consulta a demanda, no en cada arranque. Al cerrar una tarea que tocó planes, correr el lint desde la raíz del repo:
+**Índice: NO se carga siempre** (`PLANES.md` es el registro más pesado del repo); se consulta a demanda, no en cada arranque. Al cerrar una tarea que tocó planes, correr el lint desde la raíz del repo:
 
 ```bash
 node .claude/planes/lint-planes/lint-planes.js
