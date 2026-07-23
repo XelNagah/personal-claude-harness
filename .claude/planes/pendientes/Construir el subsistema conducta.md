@@ -14,9 +14,15 @@ Primera pieza medible, in-repo. Diseñada por `planificar` (alcance A, "fino de 
 
 Nombre `establecer-conducta` ratificado por el usuario (0016).
 
+## Crecido (26-07-23): momento `al escribir`
+
+- El repartidor `establecer-conducta` se generalizó a **multi-evento**: el mismo script sirve `UserPromptSubmit` (momento `cada turno`) y `PreToolUse` (momento `al escribir`), resolviendo por evento qué momento realiza. La regla 3 (contrastar contra la sabiduría del repo) pasó a `vigente`.
+- Momento `al escribir` = `PreToolUse` sobre `Write`|`Edit` con condición `file_path` es `.md` bajo `.claude/`. Cableado en `settings.json` de Claude con matcher `Write|Edit`. **Claude-first**: no se cablea en Codex (su `PreToolUse` solo ve Bash; degradación en `MOMENTOS.md`).
+- Mecánica verificada (26-07-23): se **omite** `permissionDecision` (= `defer`) para inyectar sin auto-aprobar la tool ni tocar el flujo de permisos; el `additionalContext` llega **post-ejecución** (junto al resultado), así que la regla es un recordatorio posterior a la escritura, no un aviso previo. Probado en vivo (disparó sobre las ediciones de esta misma sesión).
+
 ## Falta (crecer, a demanda)
 
-- Repartidor(es) para los momentos `declarado` (`PreToolUse` sobre `Write`|`Edit`, `Stop`) que activen las 2 reglas `pendiente`.
+- Repartidor `Stop` (momento `al cerrar tarea`) para activar la 4.ª regla `pendiente` (registrar cuando algo cambia).
 - Skills de gestión (crear/modificar/borrar/analizar/verificar reglas).
 - Empaquetar como funcionalidad/plugin (marketplace + junctions + REGISTRO + orquestador), como el piloto de `conocimiento`: primero medir in-repo, después distribuir.
 - Medir el efecto conductual (el juez del plan padre).
