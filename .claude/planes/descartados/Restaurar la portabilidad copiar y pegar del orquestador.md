@@ -1,6 +1,12 @@
 # Restaurar la portabilidad copiar y pegar del orquestador
 
-**Estado: Nuevo · Creado 26-07-20.** Regresión detectada al preparar la réplica del harness en la PC de la oficina. Origen: [Migración a harness multiagente](../ejecutados/Migracion%20a%20harness%20multiagente%20-%20AGENTS.md%20fuente%20unica.md) (fase 3, commit `cac6921`).
+**Estado: Descartado · Creado 26-07-20 · Cerrado 26-07-24.** Regresión detectada al preparar la réplica del harness en la PC de la oficina. Origen: [Migración a harness multiagente](../ejecutados/Migracion%20a%20harness%20multiagente%20-%20AGENTS.md%20fuente%20unica.md) (fase 3, commit `cac6921`).
+
+## Notas de cierre (descartado)
+
+Superado por obsolescencia de premisa. La premisa —restaurar la instalación por copiar-y-pegar del orquestador— quedó absorbida por el plan **Modelo de distribución marketplace y forma de la fábrica**, que decidió que la instalación pasa a ser por **plugin** (el orquestador se vuelve `amp-inicializar`). Ese plan lo declara en sus cruces: *"Refina/absorbe: Restaurar la portabilidad copiar y pegar del orquestador (el orquestador se vuelve amp-inicializar)"*.
+
+La Herramienta `armar-prompt-portable` (opción 3, recomendada) se alcanzó a construir pero **no** se integró: quedó guardada aparte en la rama git `piloto/plan4-portabilidad`, reservada por si sirve al *canal-copia opcional estilo skills.sh* que el propio Modelo de distribución menciona como vía secundaria.
 
 ## Contexto (la regresión)
 
