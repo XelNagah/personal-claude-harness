@@ -9,7 +9,7 @@ Instala la convención de **Herramientas** del repo: las *tools* que el propósi
 
 **Depende de `memoria-local`**: la convención se guarda como memoria. Si `.claude/memoria/MEMORIA.md` no existe, ejecutar primero la skill `inicializar-memoria-local`.
 
-> **Qué NO entra:** los lints de subsistema (lint-memoria, lint-glosario…) **no** son Herramientas. Son infra del Patrón de cada subsistema y viven con su subsistema (`.claude/<sub>/lint-<sub>/`), instalados por la funcionalidad de ese subsistema. Este registro cataloga solo las tools de dominio que sirven al propósito.
+> **Qué NO entra:** los lints de subsistema (lint-memoria, lint-semantica…) **no** son Herramientas. Son infra del Patrón de cada subsistema y viven con su subsistema (`.claude/<sub>/lint-<sub>/`), instalados por la funcionalidad de ese subsistema. Este registro cataloga solo las tools de dominio que sirven al propósito.
 
 ## Estructura objetivo
 

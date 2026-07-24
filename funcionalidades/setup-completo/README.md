@@ -8,7 +8,7 @@ Es la forma cómoda de arrancar un repo nuevo. Cada funcionalidad también se pu
 
 ```
 <repo>/
-├── AGENTS.md          # punto de entrada (fuente única): Descripción + Preferencias (@import) + Mapa del repo (@imports) + Memoria + Planes + Conocimiento + Glosario + Decisiones + Herramientas
+├── AGENTS.md          # punto de entrada (fuente única): Descripción + Preferencias (@import) + Mapa del repo (@imports) + Memoria + Planes + Conocimiento + Semántica + Decisiones + Herramientas
 ├── CLAUDE.md          # adaptador para Claude Code: @AGENTS.md
 ├── .codex/
 │   └── hooks.json     # hook SessionStart → lint-planes --quiet (Codex CLI)
@@ -23,7 +23,7 @@ Es la forma cómoda de arrancar un repo nuevo. Cada funcionalidad también se pu
     │   ├── feedback_archivo_de_estado.md
     │   ├── feedback_estilo_commits.md
     │   ├── feedback_base_conocimiento.md
-    │   ├── feedback_glosario.md
+    │   ├── feedback_semantica.md
     │   ├── feedback_decisiones.md
     │   ├── feedback_herramientas.md
     │   └── lint-memoria/
@@ -37,9 +37,10 @@ Es la forma cómoda de arrancar un repo nuevo. Cada funcionalidad también se pu
     ├── conocimiento/
     │   ├── INDICE.md
     │   └── lint-conocimiento/
-    ├── glosario/
-    │   ├── INDICE.md
-    │   └── lint-glosario/
+    ├── semantica/
+    │   ├── GLOSARIO.md
+    │   ├── TERMINOLOGIA-FARLOPA.md
+    │   └── lint-semantica/
     ├── decisiones/
     │   ├── INDICE.md
     │   └── lint-decisiones/
@@ -55,7 +56,7 @@ Es la forma cómoda de arrancar un repo nuevo. Cada funcionalidad también se pu
 3. [`gestion-de-planes`](../gestion-de-planes/) — `planes/` (pendientes/ejecutados/descartados) + `ESTADOS.md` + `PLANES.md` + lint + hook `SessionStart` con registro doble (`.claude/settings.json` + `.codex/hooks.json`).
 4. [`estilo-commits`](../estilo-commits/) — memoria de commits.
 5. [`conocimiento`](../conocimiento/) — `conocimiento/INDICE.md` + lint (migra conocimiento disperso).
-6. [`glosario`](../glosario/) — `glosario/INDICE.md` + lint.
+6. [`semantica`](../semantica/) — `semantica/GLOSARIO.md` + `TERMINOLOGIA-FARLOPA.md` + lint.
 7. [`decisiones`](../decisiones/) — `decisiones/INDICE.md` + lint.
 8. [`herramientas`](../herramientas/) — `herramientas/INDICE.md` (columna Tipo) + lint (ordena las herramientas desordenadas del Propósito; los lints de subsistema no van acá).
 

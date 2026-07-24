@@ -193,7 +193,7 @@ Si tu agente no expande imports, **leé estos manifiestos al inicio de la sesió
 @.claude/memoria/MANIFIESTO.md
 @.claude/planes/MANIFIESTO.md
 @.claude/conocimiento/MANIFIESTO.md
-@.claude/glosario/MANIFIESTO.md
+@.claude/semantica/MANIFIESTO.md
 @.claude/decisiones/MANIFIESTO.md
 @.claude/herramientas/MANIFIESTO.md
 ```

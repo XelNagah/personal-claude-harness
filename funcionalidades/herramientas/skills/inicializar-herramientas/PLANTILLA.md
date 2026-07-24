@@ -11,7 +11,7 @@ Si el archivo no existe, crearlo con este contenido (tabla vacía — sin filas 
 
 Registro de las **Herramientas** del repo: las *tools* que el **Propósito** del repo requiere y el agente invoca para tareas repetibles. Tipos: `script`, `skill` local del repo, `MCP` local. Una fila por Herramienta. Ordena las herramientas desordenadas: qué es cada una, cómo se invoca, si sigue vigente.
 
-> Los **lints de subsistema** (lint-memoria, lint-glosario, …) **no** van acá: son infra del Patrón de cada subsistema y viven con su subsistema (`.claude/<sub>/lint-<sub>/`). Acá solo van tools de dominio.
+> Los **lints de subsistema** (lint-memoria, lint-semantica, …) **no** van acá: son infra del Patrón de cada subsistema y viven con su subsistema (`.claude/<sub>/lint-<sub>/`). Acá solo van tools de dominio.
 
 - **Herramienta** — nombre; si es tipo `script` con carpeta local, link a `<tool>/` (adentro, README + código). Si es `skill` o `MCP`, link a donde vive (`.claude/skills/<skill>/`, `.mcp.json`).
 - **Tipo** — `script` | `skill` | `mcp`.
@@ -181,7 +181,7 @@ Si tu agente no expande imports, **leé estos manifiestos al inicio de la sesió
 @.claude/memoria/MANIFIESTO.md
 @.claude/planes/MANIFIESTO.md
 @.claude/conocimiento/MANIFIESTO.md
-@.claude/glosario/MANIFIESTO.md
+@.claude/semantica/MANIFIESTO.md
 @.claude/decisiones/MANIFIESTO.md
 @.claude/herramientas/MANIFIESTO.md
 ```

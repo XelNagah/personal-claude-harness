@@ -21,4 +21,4 @@ Dos mecanismos por los que la terminología ajena sobrevive aunque el usuario la
 4. **Excluir del barrido:** `planes/ejecutados/` y `descartados/` (historia congelada — reescribir el pasado falsea el registro), el glosario y el plan de veto (contienen los términos vetados como ejemplo, a propósito).
 5. Al cambiar la Base de preferencias, **verificar a mano** que quedó idéntica en los tres lugares (`PREFERENCIAS.md` y las dos `PLANTILLA.md`): `lint-harness` no compara ese texto.
 
-Relacionado: [[glosario]], [[propagacion-harness]].
+Relacionado: [[semantica]], [[propagacion-harness]].

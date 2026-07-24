@@ -6,9 +6,9 @@ El efecto es acumulativo y silencioso. El agente recita y reusa esos términos c
 
 **Es universal.** No depende de este repo ni de su propósito: le pasa a cualquier proyecto trabajado con agentes durante el tiempo suficiente. Cuanto más largo el proyecto y más autónomo el agente, más deriva.
 
-**Es el origen del subsistema glosario.** El glosario existe para frenar esta deriva: fija el vocabulario canónico del dominio, registra los alias válidos y **veta** los términos farlopa (los marca para barrer y para que el lint cace sus regresiones). La gobernanza de ratificación (decisión 0004: ningún término se asienta sin el usuario) es la defensa directa contra que el agente legitime su propia jerga.
+**Es el origen del subsistema semántica.** El subsistema semántica existe para frenar esta deriva: fija el vocabulario canónico del dominio en el glosario, registra los alias válidos y **veta** los términos farlopa en el registro de Terminología Farlopa (los marca para barrer y para que el lint cace sus regresiones). La gobernanza de ratificación (decisión 0004: ningún término se asienta sin el usuario) es la defensa directa contra que el agente legitime su propia jerga.
 
-En este repo, el catálogo operativo de términos vetados y su mapa de reemplazos vive en el glosario: [Terminología Farlopa](../glosario/terminologia-farlopa.md).
+En este repo, el catálogo operativo de relaciones vetadas y sus reemplazos vive en el registro par del glosario: [Terminología Farlopa](../semantica/TERMINOLOGIA-FARLOPA.md).
 
 ## Cómo detectarla: el criterio de demarcación
 

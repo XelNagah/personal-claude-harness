@@ -18,7 +18,7 @@ Segura de re-correr: este es el modo de **"nivelar"** repos que ya tienen partes
 
 ## Cableado de subsistemas (decisiones 0017 / 0019)
 
-Cada subsistema se cablea en `AGENTS.md` con **una línea `@.claude/<sub>/MANIFIESTO.md`** dentro de una **única sección `## Subsistemas`** (PLANTILLA §Subsistemas) — no con una sección de prosa por subsistema ni con el viejo bloque "Mapa del repo". Además de su índice/lint/memoria, cada paso de subsistema **crea `<sub>/MANIFIESTO.md`** (PLANTILLA §Manifiesto de ese subsistema) y **asegura su línea** en `## Subsistemas`. El manifiesto **declara si su índice se carga** incluyendo o no la línea `@INDICE.md`: cargan índice **memoria, conocimiento, herramientas**; NO cargan (se consultan a demanda) **planes, glosario, decisiones**.
+Cada subsistema se cablea en `AGENTS.md` con **una línea `@.claude/<sub>/MANIFIESTO.md`** dentro de una **única sección `## Subsistemas`** (PLANTILLA §Subsistemas) — no con una sección de prosa por subsistema ni con el viejo bloque "Mapa del repo". Además de su índice/lint/memoria, cada paso de subsistema **crea `<sub>/MANIFIESTO.md`** (PLANTILLA §Manifiesto de ese subsistema) y **asegura su línea** en `## Subsistemas`. El manifiesto **declara si su índice se carga** incluyendo o no la línea `@INDICE.md`: cargan índice **memoria, conocimiento, herramientas**; NO cargan (se consultan a demanda) **planes, semántica, decisiones**.
 
 **Migración (modelo viejo → nuevo).** Si el repo ya tenía secciones de prosa por-subsistema ("## Memoria del proyecto", "## Glosario del proyecto", …) y/o el bloque "## Mapa del repo (siempre cargado)", `## Subsistemas` las **reemplaza**: al cablear cada subsistema, quitar su sección de prosa vieja y su línea `@…INDICE`/`@…MEMORIA`/`@…PLANES` del Mapa; cuando el bloque Mapa queda sin líneas de subsistema, quitar también su encabezado. La sección `## Preferencias (siempre cargadas)` y la Descripción del proyecto **no se tocan**.
 
@@ -40,7 +40,7 @@ Cada subsistema se cablea en `AGENTS.md` con **una línea `@.claude/<sub>/MANIFI
     │   ├── feedback_archivo_de_estado.md
     │   ├── feedback_estilo_commits.md
     │   ├── feedback_base_conocimiento.md
-    │   ├── feedback_glosario.md
+    │   ├── feedback_semantica.md
     │   ├── feedback_decisiones.md
     │   ├── feedback_herramientas.md
     │   └── lint-memoria/lint-memoria.js
@@ -54,9 +54,10 @@ Cada subsistema se cablea en `AGENTS.md` con **una línea `@.claude/<sub>/MANIFI
     ├── conocimiento/
     │   ├── INDICE.md
     │   └── lint-conocimiento/lint-conocimiento.js
-    ├── glosario/
-    │   ├── INDICE.md
-    │   └── lint-glosario/lint-glosario.js
+    ├── semantica/
+    │   ├── GLOSARIO.md
+    │   ├── TERMINOLOGIA-FARLOPA.md
+    │   └── lint-semantica/lint-semantica.js
     ├── decisiones/
     │   ├── INDICE.md
     │   └── lint-decisiones/lint-decisiones.js
@@ -79,7 +80,7 @@ Cada subsistema se cablea en `AGENTS.md` con **una línea `@.claude/<sub>/MANIFI
    - **(c) fuentes crudas: NO se mueven** — lo que el agente *lee* (escaneos, PDFs de resúmenes, exports, json/csv de origen) vs. lo que *sabe* (el md sintetizado). Salvo que ya estén entreveradas dentro de una carpeta de conocimiento.
 
    Proponer plan de move y mover por defecto; ambiguo (código/assets/build) → preguntar antes. ⚠️ **Material sensible, en los dos sentidos:** (i) si un archivo a mover está **ya ignorado** por ruta (`memoria/*-token.md`, credenciales), moverlo rompe el ignore y **hace el commit del secreto** → no moverlo o actualizar el `.gitignore` en el mismo paso (verificar con `git status`); (ii) si hay material sensible **sin ignorar** (credenciales/tokens/`.env`/`*.key`, documentos personales o legales, resúmenes bancarios, libros contables, estudios médicos) → **sugerir** las líneas de `.gitignore` y el riesgo concreto, como hallazgo aparte, sin aplicarlo solo (el user decide; puede querer versionarlos en un repo local) + avisar si el repo nunca debería pushearse a un remoto. **Índice completo:** si había un índice parcial, cubrir TODOS los documentos (los no listados eran huérfanos). **Reparar refs:** índices, links, refs desde `AGENTS.md`/memorias/planes, y acople de scripts movidos a `herramientas/<tool>/` — `__dirname` (reapuntar) o **cwd** (prepender `process.chdir(require('path').join(__dirname,'<ruta datos>'))`). ⚠️ **Script referenciado por ruta en `settings.local.json`/`settings.json`** (ej. `"Bash(bash tools/moonraker-get.sh:*)"`): las reglas de permiso matchean por prefijo exacto → moverlo rompe la pre-autorización (en headless = denegación). `grep` su ruta en los settings antes de mover: o no lo movés, o actualizás la regla en el mismo paso. Correr el lint → 0 refs rotas. **Sin git en el repo → `git init` + commit inicial ANTES de mover** (un commit inicial post-migración no sirve de rollback).
-6. **glosario** — asegurar `glosario/INDICE.md` (tabla vacía; PLANTILLA.md §Glosario); instalar el lint `glosario/lint-glosario/lint-glosario.js` (PLANTILLA.md §Glosario); instalar la memoria `feedback_glosario.md` e indexarla; crear `glosario/MANIFIESTO.md` (PLANTILLA.md §Manifiesto glosario; NO importa índice) y asegurar su línea `@.claude/glosario/MANIFIESTO.md` en `## Subsistemas` (ver **Cableado de subsistemas**; migrar la sección "Glosario del proyecto" si estaba). Alias registrados (no prohibidos); conceptos complejos con página de detalle.
+6. **semántica** — asegurar `semantica/GLOSARIO.md` (tabla legítima vacía; PLANTILLA.md §Glosario) y `semantica/TERMINOLOGIA-FARLOPA.md` (tabla de relaciones vetadas vacía; PLANTILLA.md §Farlopa); instalar el lint `semantica/lint-semantica/lint-semantica.js` (PLANTILLA.md §Script — lint-semantica); instalar la memoria `feedback_semantica.md` e indexarla; crear `semantica/MANIFIESTO.md` (PLANTILLA.md §Manifiesto semántica; NO importa índice) y asegurar su línea `@.claude/semantica/MANIFIESTO.md` en `## Subsistemas` (ver **Cableado de subsistemas**; migrar la sección "Glosario del proyecto" si estaba). **El veto es la relación término→significado, no el término**: lo vetado va a Terminología Farlopa con su significado; el glosario no tiene columna de vetados. Alias registrados (no prohibidos); conceptos complejos con página de detalle.
 7. **decisiones** — asegurar `decisiones/INDICE.md` (tabla vacía; PLANTILLA.md §Decisiones); instalar el lint `decisiones/lint-decisiones/lint-decisiones.js`; instalar la memoria `feedback_decisiones.md` e indexarla; crear `decisiones/MANIFIESTO.md` (PLANTILLA.md §Manifiesto decisiones; NO importa índice) y asegurar su línea `@.claude/decisiones/MANIFIESTO.md` en `## Subsistemas` (ver **Cableado de subsistemas**; migrar la sección "Decisiones del proyecto" si estaba). Solo lo **estructural al propósito** del repo; misma estructura tabla+detalle que el glosario.
 8. **herramientas** — asegurar `herramientas/INDICE.md` (registro-tabla vacío **Herramienta | Tipo | Qué hace | Cómo se invoca | Estado**; PLANTILLA.md §Herramientas) — las *tools* que el Propósito requiere (tipos `script`, `skill` local, `MCP` local); instalar el lint `herramientas/lint-herramientas/lint-herramientas.js` con su `README.md`; instalar la memoria `feedback_herramientas.md` e indexarla; crear `herramientas/MANIFIESTO.md` (PLANTILLA.md §Manifiesto herramientas; importa su índice `@INDICE.md`) y asegurar su línea `@.claude/herramientas/MANIFIESTO.md` en `## Subsistemas` (ver **Cableado de subsistemas**; migrar la sección "Herramientas del proyecto"/`@INDICE` del Mapa si estaban). Los **lints de subsistema no van acá** (son infra del Patrón, co-ubicados con su subsistema). **Migrar las herramientas desordenadas:** cada script suelto a `<tool>/` con README y fila (`Tipo: script`); lo que no se sabe qué hace → `Estado: obsoleto` + reportar. ⚠️ Grep de refs por ruta en `settings`/`.gitignore`/hooks antes de mover.
 9. **Memorias adicionales**: si en la conversación ya surgieron preferencias u objetivos del proyecto, persistirlos con el frontmatter estándar e indexarlos.

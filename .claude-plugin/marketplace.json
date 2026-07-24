@@ -32,9 +32,9 @@
       "description": "Base de conocimiento en carpeta única .claude/conocimiento/ + lint de integridad. Depende de memoria-local."
     },
     {
-      "name": "glosario",
-      "source": "./funcionalidades/glosario",
-      "description": "Glosario del dominio en .claude/glosario/ (tabla de conceptos + alias registrados + detalle para lo complejo) + lint. Depende de memoria-local."
+      "name": "semantica",
+      "source": "./funcionalidades/semantica",
+      "description": "Subsistema semántica en .claude/semantica/: dos registros pares — glosario (terminología legítima) y Terminología Farlopa (relaciones término→significado vetadas) — + lint. El veto es la relación, no el término. Depende de memoria-local."
     },
     {
       "name": "decisiones",

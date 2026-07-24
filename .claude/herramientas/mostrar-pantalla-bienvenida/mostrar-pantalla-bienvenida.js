@@ -31,12 +31,12 @@ const HOOK = process.argv.slice(2).includes('--hook');
 // Sustantivo cosmético por subsistema conocido; los desconocidos caen a "entradas".
 // (Solo afecta la etiqueta, no el conteo: el descubrimiento sigue siendo dinámico.)
 const SUSTANTIVO = {
-  memoria: 'memorias', glosario: 'términos', decisiones: 'decisiones',
+  memoria: 'memorias', semantica: 'términos', decisiones: 'decisiones',
   herramientas: 'herramientas', planes: 'planes', conocimiento: 'páginas',
   preferencias: 'preferencias',
 };
 // Archivo de índice del subsistema, por prioridad (nombres no uniformes entre subsistemas).
-const INDICES = ['INDICE.md', 'MEMORIA.md', 'PLANES.md', 'PREFERENCIAS.md'];
+const INDICES = ['INDICE.md', 'MEMORIA.md', 'PLANES.md', 'PREFERENCIAS.md', 'GLOSARIO.md'];
 
 function existe(p) { try { return fs.existsSync(p); } catch { return false; } }
 function leer(p) { try { return fs.readFileSync(p, 'utf8'); } catch { return ''; } }

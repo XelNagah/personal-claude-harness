@@ -1,6 +1,6 @@
 ---
 name: planificar
-description: Sesión de análisis que interroga un plan o una idea contra la sabiduría del repo (glosario + decisiones + conocimiento) hasta llegar a un acuerdo, para descubrir qué hacer, y lo critica (problemas, faltantes, oportunidades, sobreingeniería). Actualiza glosario y decisiones sobre la marcha. Use when el usuario dice "planificar", "analizá el plan", "cuestionalo", "revisá contra las docs", o después de armar un plan (post modo plan).
+description: Sesión de análisis que interroga un plan o una idea contra la sabiduría del repo (semántica + decisiones + conocimiento) hasta llegar a un acuerdo, para descubrir qué hacer, y lo critica (problemas, faltantes, oportunidades, sobreingeniería). Actualiza semántica y decisiones sobre la marcha. Use when el usuario dice "planificar", "analizá el plan", "cuestionalo", "revisá contra las docs", o después de armar un plan (post modo plan).
 ---
 
 # Planificar — análisis crítico contra la sabiduría del repo
@@ -11,7 +11,7 @@ Interrogá el plan o la idea a fondo, sin pausa, hasta llegar a un **entendimien
 
 Si existen, leer:
 
-- **`.claude/glosario/INDICE.md`** — la terminología canónica del dominio (y las páginas de detalle que enlace).
+- **`.claude/semantica/GLOSARIO.md`** y **`.claude/semantica/TERMINOLOGIA-FARLOPA.md`** — la terminología canónica del dominio (glosario) y las relaciones término→significado vetadas (Terminología Farlopa), más las páginas de detalle que enlacen.
 - **`.claude/decisiones/INDICE.md`** — las decisiones estructurales ya tomadas (y su detalle).
 - **`.claude/conocimiento/INDICE.md`** — lo que el agente sabe del dominio.
 
@@ -36,7 +36,7 @@ Aplicá las dos sobre el plan:
 
 ### 1. Coherencia contra la sabiduría del repo
 
-- **Contra el glosario:** si el usuario usa un término que choca con uno canónico, marcarlo al toque ("el glosario llama X a esto, vos parecés querer decir Y — ¿cuál es?"). Si usa un término vago o sobrecargado, proponer el término canónico. Si aparece un alias conocido, reconocerlo.
+- **Contra la semántica (glosario + Terminología Farlopa):** si el usuario usa un término que choca con uno canónico, marcarlo al toque ("el glosario llama X a esto, vos parecés querer decir Y — ¿cuál es?"). Si usa un término vago o sobrecargado, proponer el término canónico. Si aparece un alias conocido, reconocerlo. Si usa un término en un significado vetado, señalarlo.
 - **Contra las decisiones:** si el plan re-abre algo ya decidido o lo contradice, sacarlo a la luz ("la decisión NNNN ya fijó esto así por tal razón — ¿lo estás cambiando a propósito?").
 - **Contra el conocimiento y el código:** si el plan afirma cómo funciona algo, verificar que el código o el conocimiento coincidan. Si hay contradicción, mostrarla.
 
@@ -55,10 +55,10 @@ Discutir con **escenarios concretos**: inventar casos borde que obliguen a ser p
 
 A medida que las cosas se cristalizan, no las acumules — capturalas en el momento:
 
-- **Se resuelve un término** → actualizar `.claude/glosario/INDICE.md` (fila del concepto; alias si aparecieron). El glosario es solo terminología, no detalles de implementación.
+- **Se resuelve un término** → actualizar `.claude/semantica/GLOSARIO.md` (fila del concepto; alias si aparecieron) o vetarlo en `.claude/semantica/TERMINOLOGIA-FARLOPA.md`. La semántica es solo terminología, no detalles de implementación.
 - **Se cristaliza una decisión estructural** (fija operatoria funcional, o elige un camino que condiciona el futuro) → registrarla en `.claude/decisiones/INDICE.md`. Ofrecerla **solo** si es estructural — no las triviales u operativas.
 - **Se averigua algo del dominio que costó descubrir** (cómo funciona un sistema externo, un formato, una restricción real) → asentarlo en `.claude/conocimiento/`. La prueba: *¿seguiría siendo cierto si este repo no existiera?* Sí → es conocimiento; no → es memoria o decisión. **Este análisis lee las tres bases; también tiene que escribirlas** — el hallazgo que se explica en la conversación y no se asienta se vuelve a averiguar en la sesión siguiente.
-- Al cerrar, correr los lints correspondientes (`lint-glosario`, `lint-decisiones`, `lint-conocimiento`) si se tocaron esas carpetas.
+- Al cerrar, correr los lints correspondientes (`lint-semantica`, `lint-decisiones`, `lint-conocimiento`) si se tocaron esas carpetas.
 
 ## Cierre
 

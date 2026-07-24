@@ -1,11 +1,15 @@
 #!/usr/bin/env node
-// Lint del glosario: links de detalle resuelven, paginas sin huerfanos, colisiones de terminos,
-// propuestos pendientes y apariciones de vetados en el repo. Sin LLM, sin red.
-// Uso: node lint-glosario.js [<carpeta>]   (default: .claude/glosario)
+// Lint de semantica: dos registros pares (GLOSARIO.md + TERMINOLOGIA-FARLOPA.md). Chequea links de
+// detalle, huerfanos, colisiones/contradicciones termino<->vetado, propuestos pendientes y apariciones
+// de vetados en el repo. El veto es sobre la relacion termino->significado: el lint marca por termino,
+// el agente juzga el significado al leer la marca. Sin LLM, sin red.
+// Uso: node lint-semantica.js [<carpeta>]   (default: .claude/semantica)
 const fs = require('fs'), path = require('path');
-const root = path.resolve(process.argv[2] || '.claude/glosario');
-const glosPath = path.join(root, 'INDICE.md');
+const root = path.resolve(process.argv[2] || '.claude/semantica');
+const glosPath = path.join(root, 'GLOSARIO.md');
+const farlPath = path.join(root, 'TERMINOLOGIA-FARLOPA.md');
 const txt = fs.existsSync(glosPath) ? fs.readFileSync(glosPath, 'utf8') : '';
+const farlTxt = fs.existsSync(farlPath) ? fs.readFileSync(farlPath, 'utf8') : '';
 
 // La raiz del repo se deduce de la ubicacion del propio lint: .claude/<sub>/lint-<sub>/ -> 3 arriba.
 // La profundidad la fija el instalador; no depende de desde donde se invoque.
@@ -29,14 +33,16 @@ function resolverRef(t, fdir) {
 
 // separar celdas de una columna en terminos: coma/;, descartando vacios y guiones
 const splitTerms = s => (s || '').split(/[,;]/).map(x => x.trim()).filter(x => x && x !== '—' && x !== '-');
+// la columna Termino de la farlopa agrupa variantes con "/"; ademas viene con backticks
+const splitFarlop = s => (s || '').replace(/`/g, '').split(/[,;/]/).map(x => x.trim()).filter(x => x && x !== '—' && x !== '-');
 
-// parsear filas de la tabla: | Concepto | Definicion | Alias | Propuestos | Vetados | Detalle |
+// parsear filas de GLOSARIO.md: | Concepto | Definicion | Alias | Propuestos | Detalle |
 const rows = [];
 for (const line of txt.split('\n')) {
   const t = line.trim();
   if (!t.startsWith('|')) continue;
   const cells = t.split('|').slice(1, -1).map(c => c.trim());
-  if (cells.length < 6) continue;
+  if (cells.length < 5) continue;
   const c0 = cells[0].replace(/[*\s]/g, '');
   if (/^:?-{2,}:?$/.test(c0)) continue;                 // separador |---|
   if (/^concepto$/i.test(c0)) continue;                  // header
@@ -44,12 +50,25 @@ for (const line of txt.split('\n')) {
     concepto: cells[0].replace(/\*/g, '').trim(),
     alias: cells[2],
     propuestos: cells[3],
-    vetados: cells[4],
-    detalle: cells[5],
+    detalle: cells[4],
   });
 }
 
-// [1] links de detalle rotos
+// parsear filas de TERMINOLOGIA-FARLOPA.md: | Termino | Significado vetado | Como decirlo |
+// Solo interesa la primera columna (los terminos vetados); el significado lo juzga el agente.
+const vetados = [];   // termino pelado, en minuscula
+for (const line of farlTxt.split('\n')) {
+  const t = line.trim();
+  if (!t.startsWith('|')) continue;
+  const cells = t.split('|').slice(1, -1).map(c => c.trim());
+  if (cells.length < 3) continue;
+  const c0 = cells[0].replace(/[*`\s]/g, '');
+  if (/^:?-{2,}:?$/.test(c0)) continue;                 // separador |---|
+  if (/^t[eé]rmino$/i.test(c0)) continue;                // header
+  for (const v of splitFarlop(cells[0])) vetados.push(v.toLowerCase());
+}
+
+// [1] links de detalle rotos (en GLOSARIO.md)
 const linkRe = /\]\(([^)]+?\.md)\)/;
 const referenced = new Set();
 const refsRotas = [];
@@ -62,24 +81,24 @@ for (const r of rows) {
   else refsRotas.push([r.concepto, target]);
 }
 
-// [2] paginas .md huerfanas (en glosario/, no referenciadas por la tabla)
+// [2] paginas .md huerfanas (en semantica/, no referenciadas por la tabla)
+// Los dos registros y la infra del subsistema no son paginas de detalle: se excluyen.
+const NO_HUERFANO = new Set(['GLOSARIO.md', 'TERMINOLOGIA-FARLOPA.md', 'INDICE.md', 'MANIFIESTO.md']);
 const huerfanos = [];
 if (fs.existsSync(root)) {
   for (const f of fs.readdirSync(root)) {
-    if (!f.endsWith('.md') || f === 'INDICE.md' || f === 'MANIFIESTO.md') continue;  // MANIFIESTO.md: infra del subsistema
+    if (!f.endsWith('.md') || NO_HUERFANO.has(f)) continue;
     if (!referenced.has(f)) huerfanos.push(f);
   }
 }
 
-// [3] colisiones de terminos, sobre alias y vetados
-//   - mismo termino como alias en dos conceptos          -> error (ya existia)
-//   - termino como alias en una fila y vetado en otra     -> error duro (el glosario lo bendice y lo prohibe)
-//   - mismo termino vetado en dos filas                   -> vetado ambiguo (no es error; pedir pagina de Detalle)
+// [3] colisiones de terminos
+//   - mismo termino como alias en dos conceptos          -> error (colision de alias)
+//   - termino como alias/concepto del glosario y vetado   -> contradiccion (se bendice y se prohibe)
+// La farlopa admite el MISMO termino en varias filas (distinto significado vetado): no es ambiguo.
 const aliasOf = new Map();     // termino -> concepto que lo tiene como alias (incluye el canonico)
-const vetadoEn = new Map();    // termino -> [conceptos que lo vetan]
 const colisionesAlias = [];
 const contradicciones = [];
-const vetadosAmbiguos = [];
 const registrarAlias = (term, concepto) => {
   const key = term.toLowerCase();
   if (aliasOf.has(key) && aliasOf.get(key) !== concepto) colisionesAlias.push([term, aliasOf.get(key), concepto]);
@@ -87,13 +106,9 @@ const registrarAlias = (term, concepto) => {
 };
 for (const r of rows) registrarAlias(r.concepto, r.concepto);
 for (const r of rows) for (const a of splitTerms(r.alias)) registrarAlias(a, r.concepto);
-for (const r of rows) for (const v of splitTerms(r.vetados)) {
-  const key = v.toLowerCase();
-  vetadoEn.set(key, [...(vetadoEn.get(key) || []), r.concepto]);
-}
-for (const [key, concepts] of vetadoEn) {
-  if (aliasOf.has(key)) contradicciones.push([key, aliasOf.get(key), concepts[0]]);
-  if (concepts.length > 1) vetadosAmbiguos.push([key, concepts]);
+const vetadoSet = new Set(vetados);
+for (const key of vetadoSet) {
+  if (aliasOf.has(key)) contradicciones.push([key, aliasOf.get(key)]);
 }
 
 // [4] propuestos pendientes de ratificacion (recordatorio, no error)
@@ -103,10 +118,10 @@ for (const r of rows) for (const p of splitTerms(r.propuestos)) propuestos.push(
 // [5] apariciones de vetados en el repo (barrido recursivo desde la raiz)
 // Reusa walk()+EXCLUDE de lint-conocimiento. Dos grupos: prosa (accion inmediata) y codigo (informativo).
 const EXCLUDE = new Set(['.git', 'node_modules', 'exports', 'pdfs']);
-// Autoexclusiones obligatorias: el glosario contiene los vetados por definicion; el historico congelado
-// de planes no se reescribe (falsearia el registro).
+// Autoexclusiones obligatorias: el registro de semantica contiene los vetados por definicion; el
+// historico congelado de planes no se reescribe (falsearia el registro).
 const AUTOEXCL = [
-  path.join(repoRoot, '.claude', 'glosario'),
+  path.join(repoRoot, '.claude', 'semantica'),
   path.join(repoRoot, '.claude', 'planes', 'ejecutados'),
   path.join(repoRoot, '.claude', 'planes', 'descartados'),
 ];
@@ -137,7 +152,7 @@ function codeSpans(t) {
 }
 const enCodeSpan = (spans, idx) => spans.some(([s, e]) => idx >= s && idx < e);
 const esc = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-const vetadosTerms = [...vetadoEn.keys()];
+const vetadosTerms = [...vetadoSet];
 const apariciones = { prosa: [], codigo: [] };
 if (vetadosTerms.length) {
   const rel = p => path.relative(repoRoot, p).replace(/\\/g, '/');
@@ -164,19 +179,18 @@ if (vetadosTerms.length) {
   }
 }
 
-console.log(`== LINT GLOSARIO: ${root} ==`);
-console.log(`conceptos: ${rows.length}\n`);
+console.log(`== LINT SEMANTICA: ${root} ==`);
+console.log(`conceptos: ${rows.length} | vetados: ${vetadosTerms.length}\n`);
 console.log(`[1] LINKS DE DETALLE ROTOS (${refsRotas.length}):`);
 refsRotas.forEach(([c, t]) => console.log(`    ${c}  ->  ${t}   [no existe]`));
 if (!refsRotas.length) console.log('    (ninguno)');
 console.log(`\n[2] PAGINAS HUERFANAS (${huerfanos.length}):`);
 huerfanos.forEach(h => console.log(`    ${h}`));
 if (!huerfanos.length) console.log('    (ninguna)');
-console.log(`\n[3] COLISIONES DE TERMINOS (${colisionesAlias.length + contradicciones.length + vetadosAmbiguos.length}):`);
+console.log(`\n[3] COLISIONES DE TERMINOS (${colisionesAlias.length + contradicciones.length}):`);
 colisionesAlias.forEach(([t, a, b]) => console.log(`    alias "${t}"  en  ${a}  y  ${b}   [colision de alias]`));
-contradicciones.forEach(([t, a, b]) => console.log(`    "${t}"  alias en  ${a}  y vetado en  ${b}   [contradiccion]`));
-vetadosAmbiguos.forEach(([t, cs]) => console.log(`    "${t}"  vetado en  ${cs.join(', ')}   [ambiguo: dar pagina de Detalle]`));
-if (!colisionesAlias.length && !contradicciones.length && !vetadosAmbiguos.length) console.log('    (ninguna)');
+contradicciones.forEach(([t, a]) => console.log(`    "${t}"  alias/concepto en  ${a}  y vetado en la farlopa   [contradiccion]`));
+if (!colisionesAlias.length && !contradicciones.length) console.log('    (ninguna)');
 console.log(`\n[4] PROPUESTOS PENDIENTES DE RATIFICACION (${propuestos.length}):`);
 propuestos.forEach(([p, c]) => console.log(`    "${p}"  propuesto para  ${c}`));
 if (!propuestos.length) console.log('    (ninguno)');

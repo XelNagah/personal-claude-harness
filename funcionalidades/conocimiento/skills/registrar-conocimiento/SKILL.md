@@ -20,7 +20,7 @@ Antes de escribir nada, ubicar el hallazgo. Cinco destinos, y solo uno es este s
 | Lo que el agente **sabe** del dominio | **`conocimiento/`** ✅ | Cómo funciona algo, un formato, una restricción real, un procedimiento externo |
 | Cómo hay que **trabajar** en este repo | `memoria/` | Corrección del usuario, preferencia, estado de un proyecto en curso |
 | Una elección que **condiciona el futuro** | `decisiones/` | Se toma una vez, se respeta después, tenía alternativas |
-| Qué significa una **palabra** | `glosario/` | Es un sustantivo del dominio, no un procedimiento |
+| Qué significa una **palabra** | `semantica/` | Es un sustantivo del dominio, no un procedimiento |
 | Lo que el agente **lee**, no lo que sabe | se queda donde está | Fuentes crudas: documentos, datos, escaneos, exports |
 
 **La prueba que discrimina:** *¿esto seguiría siendo cierto si este repo no existiera?*

@@ -29,7 +29,7 @@ Mecánica y capacidades de hooks: conocimiento `hooks-claude-code`. Latencia (~6
 
 ```bash
 echo {"hook_event_name":"UserPromptSubmit"} | node .claude/conducta/establecer-conducta/establecer-conducta.js
-echo {"hook_event_name":"PreToolUse","tool_name":"Write","tool_input":{"file_path":".claude/glosario/INDICE.md"}} | node .claude/conducta/establecer-conducta/establecer-conducta.js
+echo {"hook_event_name":"PreToolUse","tool_name":"Write","tool_input":{"file_path":".claude/semantica/GLOSARIO.md"}} | node .claude/conducta/establecer-conducta/establecer-conducta.js
 ```
 
 Emiten el JSON con las reglas vigentes de ese momento, o nada si no aplica.

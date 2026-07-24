@@ -13,7 +13,7 @@ Una skill de **análisis** que interroga un plan o una idea contra la **sabidur�
 
 ## Reemplaza a `grill-with-docs`
 
-Es la versión propia, en español y de propósito general, del flujo de `grill-with-docs` (Matt Pocock): en vez de apuntar a `CONTEXT.md` y `docs/adr/`, apunta al glosario y las decisiones del harness (`.claude/glosario/`, `.claude/decisiones/`). Suma la mirada de crítica de calidad.
+Es la versión propia, en español y de propósito general, del flujo de `grill-with-docs` (Matt Pocock): en vez de apuntar a `CONTEXT.md` y `docs/adr/`, apunta a la semántica y las decisiones del harness (`.claude/semantica/`, `.claude/decisiones/`). Suma la mirada de crítica de calidad.
 
 ## Dependencias
 
