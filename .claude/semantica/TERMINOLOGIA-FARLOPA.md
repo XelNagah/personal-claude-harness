@@ -17,7 +17,7 @@ El **lint marca por término** (lo mecánico: encuentra la palabra en el texto v
 | `prosa` | el texto corriente de los `.md` | texto plano |
 | `levelear` / `leveleo` / `leveling` | poner al día una instalación existente | nivelar |
 | `verbatim` / `byte-exact` / `byte-check` | copia idéntica carácter a carácter | Textual / carácter a carácter |
-| `dogfooding` | cualquier uso | el harness probándose a sí mismo / usarlo sobre el propio repo |
+| `dogfooding` / `dogfood` | cualquier uso | el harness probándose a sí mismo / usarlo sobre el propio repo |
 | `Workflow` | cualquier uso (como encabezado o sustantivo) | flujo de trabajo |
 | `bump` / `bumpear` | cualquier uso | subir la versión |
 | `reconcile-on-use` | cualquier uso | se ponen al día cuando se usan |
@@ -39,5 +39,8 @@ El **lint marca por término** (lo mecánico: encuentra la palabra en el texto v
 | `thin` / `thin-first` | cualquier uso | fino / empezar fino |
 | `churn` | cualquier uso | trajín / movimiento (o «rotación» si es de clientes o datos) |
 | `wedge` | cualquier uso | cuña / palanca / punto de entrada (según contexto) |
+| `reconciler` | el nivelador consolidado (`amp-actualizar`) | nivelador (glosario: *Nivelar*) |
+| `install-prompts` | los inicializadores del setup | skills de instalación / inicializadores |
+| `reforma de disco` | reorganizar el árbol de carpetas del repo | reorganizar el árbol de carpetas |
 
-Ratificados por el usuario (barridos del 2026-07-19 y 2026-07-20; `dogfooding` el 2026-07-21; `tripa` y los anglicismos de mecanismo —`static`, `binding`, `dispatcher`, `catch-all`, `feasibility`, `stress-test`, `thin`— el 2026-07-22; `churn` y `wedge` el 2026-07-23; los cinco ex-`Vetados` del glosario —`artefacto`, `gate`, `prosa`, `levelear`, `verbatim`— migrados al registro el 2026-07-23). `payload` y `lookup` se evaluaron y **no** se vetaron: se entienden y se usan. El texto vivo ya está barrido; este registro existe para que el lint cace **regresiones**.
+Ratificados por el usuario (barridos del 2026-07-19 y 2026-07-20; `dogfooding` el 2026-07-21; `tripa` y los anglicismos de mecanismo —`static`, `binding`, `dispatcher`, `catch-all`, `feasibility`, `stress-test`, `thin`— el 2026-07-22; `churn` y `wedge` el 2026-07-23; los cinco ex-`Vetados` del glosario —`artefacto`, `gate`, `prosa`, `levelear`, `verbatim`— migrados al registro el 2026-07-23; `reconciler`, `install-prompts`, `dogfood` y `reforma de disco` el 2026-07-24). `payload` y `lookup` se evaluaron y **no** se vetaron: se entienden y se usan. El texto vivo ya está barrido; este registro existe para que el lint cace **regresiones**.
