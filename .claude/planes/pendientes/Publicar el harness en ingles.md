@@ -13,6 +13,10 @@ Migración de idioma del harness completo, de español a inglés, para publicaci
 - **Lints:** rutas y strings hardcodeados en español (nombres de columnas, headers de tabla que parsean, mensajes de salida).
 - **Marketplace/plugins:** nombres de plugin, `name` del marketplace (`xelnagah-harness` ya estaba pendiente de renombre por otra vía).
 
+## Insumo
+
+- **[Proyectos similares al harness](../../conocimiento/proyectos-similares-al-harness.md)** (relevamiento 2026-07-21/23): qué hay en el ecosistema, los cinco diferenciadores del harness, el riesgo de que lo lean como "otro banco de memoria" y el ángulo publicable para el primer párrafo del README en inglés. Incluye la advertencia sobre el nombre (*harness* colisiona con *agent harness* / *test harness*). ⚠️ Caduca: re-verificar antes de posicionar.
+
 ## Se cruza con
 
 - **[Separar mecánica del harness de criterio del autor](Separar%20mecanica%20del%20harness%20de%20criterio%20del%20autor.md):** publicar para otros obliga a separar el criterio personal (español, ejemplos, commits en español) de la mecánica. La migración de idioma y esa separación conviene hacerlas juntas o en secuencia — no traducir a ciegas criterio que quizá no debería viajar.
