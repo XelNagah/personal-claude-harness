@@ -4,67 +4,42 @@
     "name": "jllarens",
     "email": "jllarens@gmail.com"
   },
-  "description": "Setup estándar de jllarens para inicializar repos: memoria local, preferencias de trabajo, gestión de planes y estilo de commits. Cada funcionalidad es un plugin instalable suelto; 'setup-completo' instala el orquestador que arma todo.",
+  "description": "Setup estándar del Agente Multipropósito (AMP): un plugin transversal 'amp' (inicializar · planificar · info · actualizar) + un plugin por subsistema con skill de operación (amp-memoria, amp-conocimiento, amp-decisiones, amp-preferencias, amp-planes, amp-semantica). Instalás 'amp' y el bundle completo entra por dependencias (project scope).",
   "plugins": [
     {
-      "name": "memoria-local",
-      "source": "./funcionalidades/memoria-local",
-      "description": "Sistema de memoria local persistida (infraestructura base)."
+      "name": "amp",
+      "source": "./funcionalidades/amp",
+      "description": "Plugin transversal del AMP: inicializar (arma el .claude completo), planificar, info (estado) y actualizar (nivelador). Trae los 6 amp-<sub> por dependencias."
     },
     {
-      "name": "preferencias-trabajo",
-      "source": "./funcionalidades/preferencias-trabajo",
-      "description": "Preferencias de comunicación + principios de trabajo."
+      "name": "amp-memoria",
+      "source": "./funcionalidades/amp-memoria",
+      "description": "Memoria local persistida: memoria/ + índice MEMORIA.md + memorias tipadas. Skill registrar-memoria. Infraestructura base."
     },
     {
-      "name": "gestion-de-planes",
-      "source": "./funcionalidades/gestion-de-planes",
-      "description": "Ciclo de planes pendientes→ejecutados. Depende de memoria-local."
+      "name": "amp-preferencias",
+      "source": "./funcionalidades/amp-preferencias",
+      "description": "Preferencias de trabajo versionadas (Base + Adaptaciones). Skill registrar-preferencia."
     },
     {
-      "name": "estilo-commits",
-      "source": "./funcionalidades/estilo-commits",
-      "description": "Commits en español, sin co-autoría de IA. Depende de memoria-local."
+      "name": "amp-planes",
+      "source": "./funcionalidades/amp-planes",
+      "description": "Ciclo de planes pendientes→ejecutados→descartados + registro PLANES.md. Skill ciclo-de-plan. Depende de amp-memoria."
     },
     {
-      "name": "conocimiento",
-      "source": "./funcionalidades/conocimiento",
-      "description": "Base de conocimiento en carpeta única .claude/conocimiento/ + lint de integridad. Depende de memoria-local."
+      "name": "amp-conocimiento",
+      "source": "./funcionalidades/amp-conocimiento",
+      "description": "Base de conocimiento en .claude/conocimiento/ + lint. Skills registrar-conocimiento y buscar-conocimiento. Depende de amp-memoria."
     },
     {
-      "name": "semantica",
-      "source": "./funcionalidades/semantica",
-      "description": "Subsistema semántica en .claude/semantica/: dos registros pares — glosario (terminología legítima) y Terminología Farlopa (relaciones término→significado vetadas) — + lint. El veto es la relación, no el término. Depende de memoria-local."
+      "name": "amp-semantica",
+      "source": "./funcionalidades/amp-semantica",
+      "description": "Subsistema semántica: glosario (terminología legítima) + Terminología Farlopa (relaciones término→significado vetadas) + lint. Skill converger-terminologia. Depende de amp-memoria."
     },
     {
-      "name": "decisiones",
-      "source": "./funcionalidades/decisiones",
-      "description": "Registro de decisiones estructurales del repo en .claude/decisiones/ (tabla + detalle para las complejas, no ADR) + lint. Depende de memoria-local."
-    },
-    {
-      "name": "herramientas",
-      "source": "./funcionalidades/herramientas",
-      "description": "Gestión de Herramientas del repo: las tools del Propósito (script/skill local/MCP local) en .claude/herramientas/ con registro INDICE.md (columna Tipo) + lint. Los lints de subsistema no son herramientas. Depende de memoria-local."
-    },
-    {
-      "name": "conducta",
-      "source": "./funcionalidades/conducta",
-      "description": "Subsistema conducta en .claude/conducta/: reglas \"cuando hagas X, asegurate de Y\" que atan momentos (evento de hook + condición sin juicio) a acciones (inyectar/correr/bloquear), entregadas por un hook repartidor que lee el registro vivo (no el agente a mano). Separa Reglas Base (harness) de Reglas del Propósito (repo). Trae el hook y el lint. Depende de memoria-local."
-    },
-    {
-      "name": "setup-completo",
-      "source": "./funcionalidades/setup-completo",
-      "description": "Orquestador: instala el setup completo (skill inicializar-custom)."
-    },
-    {
-      "name": "planificar",
-      "source": "./funcionalidades/planificar",
-      "description": "Skill de análisis (skill planificar): interroga un plan contra la sabiduría del repo y lo critica. Reemplaza grill-with-docs. Operacional, no se instala por-repo."
-    },
-    {
-      "name": "amp-actualizar",
-      "source": "./funcionalidades/amp-actualizar",
-      "description": "Nivelador del harness (skill amp-actualizar): pone al día el .claude/ de un repo con el AMP ya instalado contra la plantilla nueva. Pisa lo Base respaldándolo, no toca lo aprendido, pregunta ante lo divergente; renombra glosario→semantica e instala subsistemas faltantes. Trae vista previa. Operacional, no se instala por-repo."
+      "name": "amp-decisiones",
+      "source": "./funcionalidades/amp-decisiones",
+      "description": "Registro de decisiones estructurales del repo (tabla + detalle) + lint. Skill registrar-decision. Depende de amp-memoria."
     }
   ]
 }

@@ -18,6 +18,18 @@ La sesión arrancó preguntando por subagentes en un AMP y derivó en repensar l
 
 5. **Subagentes como componente nuevo del Producto.** Los transversales (investigador, test-runner, code-reviewer) viajan en la plantilla → `.claude/agents/` del consumidor (commiteados, tuneables). Los de dominio se commitean en cada repo consumidor. Análisis fuente en el conocimiento del agente `automejora` (páginas `subagentes-agentes-codigo` y `subagentes-en-harness`).
 
+## Resuelto — Frente 2 (sesión `planificar`, 24/07/2026, decisión 0029)
+
+Los puntos 2, 3 y 4 de "Qué se decidió (firme)" se **concretaron y asentaron** en la decisión **0029**. Diseño final del empaquetado:
+
+- **7 plugins:** `amp` transversal (prefijo `amp:`, skills `inicializar` · `planificar` · `info` · `actualizar`) + 6 `amp-<sub>` con skill de operación (`amp-memoria`, `amp-conocimiento`, `amp-decisiones`, `amp-preferencias`, `amp-planes`, `amp-semantica`). Prefijo `amp-<sub>:` → agrupa al tipear "amp" **y** deja visible el subsistema.
+- **Subsistema sin skill de operación** (`herramientas`, `conducta`, `commits`) → **no tiene plugin** hasta que gane una; su estructura la escribe `amp:inicializar`.
+- **Bundle completo** vía `dependencies` de `amp` → **1 install/repo, project scope** (no user). Absorbe el fix de `dependencies` (Frente 1) como mecanismo.
+- **10 `inicializar-<sub>` → 1 `amp:inicializar`** (sin argumento à la carte; el bundle es siempre todo).
+- **Modifica 0013:** prefijo pelado (`memoria:`) → `amp-<sub>:`. Multi-plugin y segmentación por prefijo quedan.
+
+**Ejecución pendiente** (migración coordinada, no hecha aún): reescribir `marketplace.json`, renombrar carpetas de `funcionalidades/` a `amp-<sub>` + fusionar `setup-completo`/`planificar`/`amp-actualizar` en `amp`, cablear `dependencies`, renombrar las 4 skills transversales, actualizar junctions/REGISTRO/AGENTS, `claude plugin validate`. Cuidado: `amp-actualizar` está instalado como plugin vivo → la migración lo rompe si se hace suelto. Cruza con `Nombres y distribucion de las skills del harness`. Follow-up de terminología: el término vetado esta sesión (ver `TERMINOLOGIA-FARLOPA.md`) aparece en el `SKILL.md` de `planificar` → barrer y propagar.
+
 ## Forma del repo (publicado como marketplace)
 
 ```

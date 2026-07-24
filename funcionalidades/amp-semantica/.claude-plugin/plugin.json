@@ -1,0 +1,6 @@
+{
+  "name": "amp-semantica",
+  "description": "Subsistema semántica en .claude/semantica/ — dos registros pares: glosario (terminología legítima, alias/propuestos) y Terminología Farlopa (relaciones término→significado vetadas). El veto es la relación, no el término. El agente propone; el usuario ratifica y veta. Incluye la skill operativa converger-terminologia. Depende de amp-memoria.",
+  "version": "0.5.0",
+  "author": { "name": "jllarens", "email": "jllarens@gmail.com" }
+}

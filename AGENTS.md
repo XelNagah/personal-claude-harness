@@ -29,25 +29,24 @@ El repo es a la vez un **marketplace de plugins de Claude Code** (estilo Matt Po
 │   └── herramientas/                          # tools del Propósito (INDICE.md, columna Tipo) + MANIFIESTO.md; los lints de subsistema viven con su subsistema, no acá
 │       ├── lint-herramientas/                 # lint del registro de Herramientas
 │       └── lint-harness/                      # lint de coherencia del harness (disco↔marketplace↔REGISTRO, junctions, textual, tamaño de manifiestos)
-├── .claude-plugin/marketplace.json            # catálogo del marketplace (12 plugins)
+├── .claude-plugin/marketplace.json            # catálogo del marketplace (7 plugins, decisión 0029)
 └── funcionalidades/                           # cada subcarpeta = un plugin
-    ├── memoria-local/                         # infra: memoria/ + MEMORIA.md + Mapa del repo (@imports)
-    ├── preferencias-trabajo/                  # preferencias versionadas Base/Adaptaciones (@import)
-    ├── gestion-de-planes/                     # ciclo pendientes/ejecutados/descartados + PLANES.md + lint + hook (dep: memoria-local)
-    ├── estilo-commits/                        # memoria de commits (dep: memoria-local)
-    ├── conocimiento/                          # base .claude/conocimiento/ + lint (dep: memoria-local)
-    ├── semantica/                             # semántica del dominio: glosario + terminología farlopa + lint (dep: memoria-local)
-    ├── decisiones/                            # decisiones estructurales: tabla + detalle + lint (dep: memoria-local)
-    ├── herramientas/                          # gestión de Herramientas: registro + lint (dep: memoria-local)
-    ├── setup-completo/                        # orquestador, skill inicializar-custom (instala las 8)
-    └── planificar/                            # skill de análisis (operacional, no instala; skill planificar)
+    ├── amp/                                   # plugin transversal: skills inicializar · planificar · actualizar (+ info); dep: las 6 amp-<sub>
+    ├── amp-memoria/                           # infra: memoria/ + MEMORIA.md + Mapa del repo (@imports); skill registrar-memoria
+    ├── amp-preferencias/                      # preferencias versionadas Base/Adaptaciones (@import); skill registrar-preferencia
+    ├── amp-planes/                            # ciclo pendientes/ejecutados/descartados + PLANES.md + lint + hook; skill ciclo-de-plan (dep: amp-memoria)
+    ├── amp-conocimiento/                      # base .claude/conocimiento/ + lint; skills registrar-conocimiento · buscar-conocimiento (dep: amp-memoria)
+    ├── amp-semantica/                         # glosario + terminología farlopa + lint; skill converger-terminologia (dep: amp-memoria)
+    └── amp-decisiones/                        # decisiones estructurales: tabla + detalle + lint; skill registrar-decision (dep: amp-memoria)
 ```
+
+Los subsistemas **sin skill de operación** (`herramientas`, `conducta`, `commits`) **no tienen plugin**: su estructura la escribe `amp:inicializar` (el instalador consolidado dentro del plugin `amp`).
 
 Cada **funcionalidad/plugin** = `funcionalidades/<nombre>/` con `.claude-plugin/plugin.json` + `README.md` + `skills/<nombre-skill>/SKILL.md` (formato estándar Agent Skills, **fuente única** del flujo, rutas `.claude/` literales) y `PLANTILLA.md` cuando lleva textos literales. Catálogo, dependencias, nombres de plugin/skill en `REGISTRO.md`.
 
 ## Distribución: marketplace de plugins
 
-`.claude-plugin/marketplace.json` (name `xelnagah-harness`) lista los 12 plugins con `source: "./funcionalidades/<nombre>"`. Validado con `claude plugin validate .` (el `source` debe arrancar con `./`; `metadata.pluginRoot` lo rechazó esta versión del CLI). En PC destino: `/plugin marketplace add <owner>/<repo>` + `/plugin install <plugin>@xelnagah-harness`. Repo privado: anda con git autenticado (clone por debajo); auto-update background necesita `GITHUB_TOKEN`. Para Codex/Cursor/Gemini no hay marketplace: clone del repo + junctions de skills (abajo).
+`.claude-plugin/marketplace.json` (name `xelnagah-harness`) lista los 7 plugins con `source: "./funcionalidades/<nombre>"`: `amp` transversal + 6 `amp-<sub>`. Validado con `claude plugin validate .` (el `source` debe arrancar con `./`; `metadata.pluginRoot` lo rechazó esta versión del CLI). En PC destino: `/plugin marketplace add <owner>/<repo>` + `/plugin install amp@xelnagah-harness` (trae los 6 `amp-<sub>` por `dependencies`, project scope — 1 install por repo, decisión 0029). Repo privado: anda con git autenticado (clone por debajo); auto-update background necesita `GITHUB_TOKEN`. Para Codex/Cursor/Gemini no hay marketplace: clone del repo + junctions de skills (abajo).
 
 ## Desarrollo local (junctions dobles, ya hecho en esta máquina)
 
@@ -66,9 +65,9 @@ node .claude/herramientas/instalar-junctions/instalar-junctions.js
 
 ## Mantenimiento
 
-- **`SKILL.md` es la fuente única de cada flujo** (no hay más `prompt.md` por funcionalidad). Cambia una preferencia o un texto que viaja → actualizar el `SKILL.md`/`PLANTILLA.md` de la funcionalidad afectada **y** el orquestador `setup-completo` (su `SKILL.md` y `PLANTILLA.md` duplican los textos literales, porque tanto el junction como el cache de plugins aíslan la carpeta del skill — no pueden leer las piezas en ejecución). Usar la skill `propagar-harness`.
-- **Agregar una funcionalidad nueva** → skill `agregar-funcionalidad`: crear `funcionalidades/<nombre>/` (plugin.json + README + skills/<skill>/), sumarla a `marketplace.json`, junctions dobles si se edita en vivo, registrarla en `REGISTRO.md`, y sumarla al orquestador si es parte del setup base. Validar con `claude plugin validate .`. Procedimiento en `REGISTRO.md`.
-- **Dependencias actuales:** `gestion-de-planes` y `estilo-commits` dependen de `memoria-local` (guardan memorias en `memoria/`). El orquestador respeta el orden: preferencias-trabajo → memoria-local → gestion-de-planes → estilo-commits.
+- **`SKILL.md` es la fuente única de cada flujo** (no hay más `prompt.md` por funcionalidad). Cambia una preferencia o un texto que viaja → actualizar el `SKILL.md`/`PLANTILLA.md` de la funcionalidad afectada **y** el instalador consolidado `amp:inicializar` (`funcionalidades/amp/skills/inicializar/`: su `SKILL.md` y `PLANTILLA.md` duplican los textos literales de todos los subsistemas, porque tanto el junction como el cache de plugins aíslan la carpeta del skill — no pueden leer las piezas en ejecución). Usar la skill `propagar-harness`. `amp:inicializar` es la **fuente única** del setup: absorbió los ex `inicializar-<sub>` individuales.
+- **Agregar una funcionalidad nueva** → skill `agregar-funcionalidad`: crear `funcionalidades/<nombre>/` (plugin.json + README + skills/<skill>/), sumarla a `marketplace.json` (y a `dependencies` de `amp` si es un `amp-<sub>` del bundle), junctions dobles si se edita en vivo, registrarla en `REGISTRO.md`, y sumar su sección a `amp:inicializar` si es parte del setup base. Validar con `claude plugin validate .`. Procedimiento en `REGISTRO.md`.
+- **Dependencias actuales (decisión 0029):** `amp-planes`, `amp-conocimiento`, `amp-semantica` y `amp-decisiones` dependen de `amp-memoria` (guardan memorias en `memoria/`); `amp-memoria` y `amp-preferencias` no dependen de nada. El plugin transversal `amp` depende de las 6 `amp-<sub>` (bundle). `amp:inicializar` respeta el orden: amp-memoria/amp-preferencias primero, después los que dependen de memoria.
 - **Idempotencia / nivelar:** todo skill lleva una sección "Reconciliación (idempotencia)" — son seguros de re-correr y sirven para llevar al día repos a medio configurar. Reglas: inspeccionar antes de escribir, crear solo lo ausente, detectar equivalentes por tema (no pisar lo divergente, preguntar), reportar al final en tres grupos (`agregado` / `ya estaba` / `divergente`). Al tocar un flujo de trabajo, conservar esa propiedad: nada de "Crear X" a secas sobre archivos compartidos (`AGENTS.md`, `MEMORIA.md`).
 - **Versionado de plugins:** cada `plugin.json` tiene `version`. Con `version` fijo, los usuarios solo reciben la actualización al subirle la versión; si se omite, cada commit cuenta como versión nueva. Subir la versión al publicar cambios, o quitar `version` para auto-versionar por commit.
 
