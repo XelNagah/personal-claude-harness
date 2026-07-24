@@ -23,7 +23,7 @@ Recorré el **árbol de decisión**, resolviendo las dependencias una por una. P
 
 Agrupá según el tipo de pregunta:
 
-- **Cruces que mandan** (los que reconfiguran lo de abajo) → **una por una, a fondo**, bien visibles, para que el usuario pueda redirigir. Nunca esconder un cruce estructural dentro de una tanda.
+- **Preguntas de fondo que mandan** (las que reconfiguran lo de abajo) → **una por una, a fondo**, bien visibles, para que el usuario pueda redirigir. Nunca esconder una pregunta de fondo estructural dentro de una tanda.
 - **Racimo de preguntas independientes** (ninguna depende de la respuesta de otra) → **una sola tanda** (hasta 4 juntas). Preguntarlas de a una desperdicia turnos.
 - **Preguntas dependientes** (una necesita la respuesta de la anterior para siquiera existir) → **secuenciales**, nunca en tanda.
 - **La cola final de confirmaciones** (las que casi seguro son "sí") → presentarlas en **una sola tanda** con la recomendada de cada una, para que el usuario las revise juntas y corrija lo que no le cierre en una respuesta. Evita el arrastre de preguntar cada una por separado — pero igual espera su respuesta a la tanda.
