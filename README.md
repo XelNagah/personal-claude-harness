@@ -95,7 +95,7 @@ A partir de ahí, trabajás normal: el agente lee sus índices al arrancar y esc
 │   ├── memoria/ preferencias/ planes/ conocimiento/ glosario/ decisiones/ herramientas/
 │   └── ...                    # cada subsistema con su índice + lint
 ├── .claude-plugin/
-│   └── marketplace.json       # catálogo del marketplace (10 plugins)
+│   └── marketplace.json       # catálogo del marketplace (12 plugins)
 └── funcionalidades/           # cada subcarpeta = un plugin
     └── <nombre>/              # plugin.json + README + skills/<skill>/
 ```

@@ -1,0 +1,6 @@
+{
+  "name": "amp-actualizar",
+  "description": "Nivelador del harness: una sola skill pone al día el .claude/ de un repo con el AMP ya instalado, contra la plantilla nueva. Converge por estructura (sin guardar versión): pisa lo Base (mecanismo del harness) respaldándolo antes, nunca toca lo aprendido (contenido del repo), y pregunta antes de reacomodar formas viejas que puedan enredar contenido. Aplica renombres conocidos (glosario→semantica) e instala subsistemas faltantes (conducta). Trae modo de vista previa. Operacional: no se instala por-repo.",
+  "version": "0.1.0",
+  "author": { "name": "jllarens", "email": "jllarens@gmail.com" }
+}

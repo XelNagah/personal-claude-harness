@@ -29,7 +29,7 @@ El repo es a la vez un **marketplace de plugins de Claude Code** (estilo Matt Po
 │   └── herramientas/                          # tools del Propósito (INDICE.md, columna Tipo) + MANIFIESTO.md; los lints de subsistema viven con su subsistema, no acá
 │       ├── lint-herramientas/                 # lint del registro de Herramientas
 │       └── lint-harness/                      # lint de coherencia del harness (disco↔marketplace↔REGISTRO, junctions, textual, tamaño de manifiestos)
-├── .claude-plugin/marketplace.json            # catálogo del marketplace (10 plugins)
+├── .claude-plugin/marketplace.json            # catálogo del marketplace (12 plugins)
 └── funcionalidades/                           # cada subcarpeta = un plugin
     ├── memoria-local/                         # infra: memoria/ + MEMORIA.md + Mapa del repo (@imports)
     ├── preferencias-trabajo/                  # preferencias versionadas Base/Adaptaciones (@import)
@@ -47,7 +47,7 @@ Cada **funcionalidad/plugin** = `funcionalidades/<nombre>/` con `.claude-plugin/
 
 ## Distribución: marketplace de plugins
 
-`.claude-plugin/marketplace.json` (name `xelnagah-harness`) lista los 10 plugins con `source: "./funcionalidades/<nombre>"`. Validado con `claude plugin validate .` (el `source` debe arrancar con `./`; `metadata.pluginRoot` lo rechazó esta versión del CLI). En PC destino: `/plugin marketplace add <owner>/<repo>` + `/plugin install <plugin>@xelnagah-harness`. Repo privado: anda con git autenticado (clone por debajo); auto-update background necesita `GITHUB_TOKEN`. Para Codex/Cursor/Gemini no hay marketplace: clone del repo + junctions de skills (abajo).
+`.claude-plugin/marketplace.json` (name `xelnagah-harness`) lista los 12 plugins con `source: "./funcionalidades/<nombre>"`. Validado con `claude plugin validate .` (el `source` debe arrancar con `./`; `metadata.pluginRoot` lo rechazó esta versión del CLI). En PC destino: `/plugin marketplace add <owner>/<repo>` + `/plugin install <plugin>@xelnagah-harness`. Repo privado: anda con git autenticado (clone por debajo); auto-update background necesita `GITHUB_TOKEN`. Para Codex/Cursor/Gemini no hay marketplace: clone del repo + junctions de skills (abajo).
 
 ## Desarrollo local (junctions dobles, ya hecho en esta máquina)
 

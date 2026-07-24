@@ -12,8 +12,10 @@ Catálogo de las funcionalidades que este repo instala para armar un agente de *
 | **semantica** | Subsistema semántica en `semantica/`: dos registros pares — `GLOSARIO.md` (terminología legítima: conceptos + alias + detalle) y `TERMINOLOGIA-FARLOPA.md` (relaciones término→significado vetadas) — + lint + gobernanza (**toda entrada nueva pasa por el usuario**: el agente propone, no ratifica ni veta). El veto es la relación, no el término. Skill operativa `converger-terminologia` (barrido semántico del repo contra los dos registros). Coherencia semántica al planificar/analizar. | memoria-local | [`semantica/`](funcionalidades/semantica/) |
 | **decisiones** | Registro de decisiones estructurales en `decisiones/` (tabla + detalle, **no ADR**) + lint. Skill operativa `registrar-decision` (juzga estructural, no re-decide, confirma y asienta). Coherencia decisional. | memoria-local | [`decisiones/`](funcionalidades/decisiones/) |
 | **herramientas** | Gestión de Herramientas: las *tools* que el Propósito requiere (tipos `script`/`skill` local/`MCP` local) en `herramientas/` con registro-tabla (columna Tipo) + lint. Los lints de subsistema **no** van acá (viven con su subsistema). Ordena las herramientas desordenadas. | memoria-local | [`herramientas/`](funcionalidades/herramientas/) |
+| **conducta** | Reglas "cuando hagas X, asegurate de Y" en `conducta/`: atan **momentos** (evento de hook + condición sin juicio) a **acciones** (`inyectar`/`correr`/`bloquear`). Un hook repartidor (`establecer-conducta`) lee el registro **vivo** y entrega la regla del momento — no se carga al arranque (una regla cargada al inicio se recita, no se obedece). Registro partido en Reglas Base (harness) / Reglas del Propósito (repo) + `lint-conducta`. Cablea el hook en `settings.json`. | memoria-local | [`conducta/`](funcionalidades/conducta/) |
 | **setup-completo** | Orquestador: instala las ocho de convención de una pasada. Conserva el skill `inicializar-custom`. | (las ocho) | [`setup-completo/`](funcionalidades/setup-completo/) |
 | **planificar** | Skill de análisis: interroga un plan contra la sabiduría del repo (semántica + decisiones + conocimiento) hasta acuerdo y lo critica (problemas, faltantes, sobreingeniería). **Operacional**: no instala nada ni entra al orquestador. Reemplaza `grill-with-docs`. | (usa semántica/decisiones/conocimiento) | [`planificar/`](funcionalidades/planificar/) |
+| **amp-actualizar** | Nivelador del harness: pone al día el `.claude/` de un repo con el AMP ya instalado contra la plantilla nueva. Converge por estructura (sin versión): pisa lo Base respaldándolo en `.claude/.respaldo-amp/<fecha>/`, no toca lo aprendido, pregunta ante lo divergente. Renombra `glosario`→`semantica` e instala subsistemas faltantes (`conducta`) delegando en los `inicializar-<sub>`. Skill de juicio + script mecánico (respaldo/detección/vista previa). **Operacional**: no instala estructura propia ni entra al orquestador. | (delega en `inicializar-<sub>`) | [`amp-actualizar/`](funcionalidades/amp-actualizar/) |
 
 ## Plugin y skill (Claude Code)
 
@@ -27,14 +29,16 @@ Catálogo de las funcionalidades que este repo instala para armar un agente de *
 | semantica | `semantica@xelnagah-harness` | `inicializar-semantica`, `converger-terminologia` |
 | decisiones | `decisiones@xelnagah-harness` | `inicializar-decisiones`, `registrar-decision` |
 | herramientas | `herramientas@xelnagah-harness` | `inicializar-herramientas` |
+| conducta | `conducta@xelnagah-harness` | `inicializar-conducta` |
 | setup-completo | `setup-completo@xelnagah-harness` | `inicializar-custom` |
 | planificar | `planificar@xelnagah-harness` | `planificar` |
+| amp-actualizar | `amp-actualizar@xelnagah-harness` | `amp-actualizar` |
 
 > **Instalar en otra PC:** `/plugin marketplace add <owner>/<repo>` y después `/plugin install <plugin>@xelnagah-harness` (ver [README](README.md#instalación-en-otra-pc-marketplace-de-plugins)).
 > **En esta máquina** los skills están enlazados por junction (autoría/edición en vivo). No mezclar junction + plugin del mismo skill en una misma máquina.
 > Las **skills operativas** (`registrar-memoria`, `ciclo-de-plan`, `converger-terminologia`, `registrar-conocimiento`, `buscar-conocimiento`, `registrar-decision`, `registrar-preferencia`) viajan en el plugin de su funcionalidad junto a la de instalación — un plugin puede llevar varias skills.
 > **Agentes no-Claude** (Codex/Cursor/Gemini): las skills se leen desde `~/.agents/skills/` — clonar el repo y correr `node .claude/herramientas/instalar-junctions/instalar-junctions.js`; no necesitan marketplace.
-> **Nota:** `planificar` es la única funcionalidad **operacional** (no instala nada en el repo destino; se invoca y opera). Las otras nueve instalan convención. Por eso `planificar` no entra al orquestador.
+> **Nota:** `planificar` y `amp-actualizar` son **operacionales** (no instalan estructura propia en el repo destino; se invocan y operan) — por eso no entran al orquestador. `planificar` analiza sin escribir; `amp-actualizar` es el nivelador (pone al día un repo ya instalado, contraparte de `inicializar-custom`). Las otras diez instalan convención. De esas diez, `conducta` todavía no entra al orquestador `setup-completo` —se suma en un paso propio de propagación—: `inicializar-custom` instala las ocho base, `conducta` se instala suelta o vía el nivelador.
 
 ## Cómo agregar una funcionalidad nueva
 

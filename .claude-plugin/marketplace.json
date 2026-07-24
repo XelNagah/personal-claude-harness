@@ -47,6 +47,11 @@
       "description": "Gestión de Herramientas del repo: las tools del Propósito (script/skill local/MCP local) en .claude/herramientas/ con registro INDICE.md (columna Tipo) + lint. Los lints de subsistema no son herramientas. Depende de memoria-local."
     },
     {
+      "name": "conducta",
+      "source": "./funcionalidades/conducta",
+      "description": "Subsistema conducta en .claude/conducta/: reglas \"cuando hagas X, asegurate de Y\" que atan momentos (evento de hook + condición sin juicio) a acciones (inyectar/correr/bloquear), entregadas por un hook repartidor que lee el registro vivo (no el agente a mano). Separa Reglas Base (harness) de Reglas del Propósito (repo). Trae el hook y el lint. Depende de memoria-local."
+    },
+    {
       "name": "setup-completo",
       "source": "./funcionalidades/setup-completo",
       "description": "Orquestador: instala el setup completo (skill inicializar-custom)."
@@ -55,6 +60,11 @@
       "name": "planificar",
       "source": "./funcionalidades/planificar",
       "description": "Skill de análisis (skill planificar): interroga un plan contra la sabiduría del repo y lo critica. Reemplaza grill-with-docs. Operacional, no se instala por-repo."
+    },
+    {
+      "name": "amp-actualizar",
+      "source": "./funcionalidades/amp-actualizar",
+      "description": "Nivelador del harness (skill amp-actualizar): pone al día el .claude/ de un repo con el AMP ya instalado contra la plantilla nueva. Pisa lo Base respaldándolo, no toca lo aprendido, pregunta ante lo divergente; renombra glosario→semantica e instala subsistemas faltantes. Trae vista previa. Operacional, no se instala por-repo."
     }
   ]
 }

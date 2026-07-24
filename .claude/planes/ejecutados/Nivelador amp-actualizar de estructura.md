@@ -34,3 +34,18 @@ El problema de "cómo distingue lo que puede pisar de lo que no" se **disuelve**
 - Absorbe la idempotencia de la decisión 0001; se apoya en 0024.
 
 Correr por `planificar` al desbloquearse.
+
+## Notas de implementación
+
+**Ejecutado 24/07/2026.** Construido como funcionalidad operacional `funcionalidades/amp-actualizar/` (skill + script), **contra la arquitectura actual** (`funcionalidades/` + un `inicializar-<sub>` por subsistema) — no dentro de `plugins/amp/`, que es la arquitectura futura del plan de distribución y todavía no existe.
+
+- **Nombre `amp-actualizar` ratificado** por Javier (0028/0016).
+- **Shape (aplica 0009):** skill `amp-actualizar` = juicio (vista previa → confirmar → respaldo → aplicar Base delegando en `inicializar-<sub>` → renombres → divergentes → reporte → lint); script `amp-actualizar.js` = mecánico (barrido/clasificación, respaldo, vista previa). Operacional como `planificar`: sin PLANTILLA, sin lint, fuera del orquestador.
+- **Precondición hecha en la misma sesión:** `conducta` empaquetada como funcionalidad/plugin distribuible (con 0024 aplicada y destrabada en `lint-harness`).
+- **Resolución de los "Falta para construir":** cableado del hook = reusa el bloque `§Cableado` de `conducta` (merge); renombres v1 = solo `glosario`→`semantica` (tabla extensible en el script); **modo previo incluido** (`--vista-previa`, o sin flag); respaldo en `.claude/.respaldo-amp/<AAAA-MM-DD>/`; reporte en 4 grupos (Base instalar/pisar · Renombres legacy · Divergente→pregunta · Ya estaba); 0024 respetada (lo que instala sale de las PLANTILLAs 0024-limpias).
+- **Bug encontrado y corregido:** `fs.cpSync` rechaza copiar `.claude/` dentro de un subdirectorio de sí mismo (el respaldo vive bajo `.claude/`) → se copia hijo por hijo excluyendo `.respaldo-amp`/`node_modules`/`.git`.
+- **Probado** con un repo legacy simulado: detecta `glosario/`→`semantica/` (términos preservados), `conducta/` ausente (Base + hook), `MANIFIESTO` viejo (sin campos), y `conducta` con reglas sin corte Base/Propósito → **divergente** (pregunta). Sobre este repo (al día): 0 acciones, 7 subsistemas "ya estaba". Respaldo verificado (8 entradas, sin auto-copiarse).
+- **Cableado:** marketplace + REGISTRO (dos tablas + nota de operacionales) + junctions dobles; conteos a 12 plugins. Control de cierre **10/10**.
+- **Sin decisión nueva:** ejecución de 0027 (separación Base/aprendido) y 0028 (diseño del nivelador); la 0028 supera el ítem "a asentar" del plan de distribución (que es previo).
+
+**Queda fuera (planes aparte):** correr el nivelador sobre los ~18 AMP desplegados (fuera de este repo — se hace en cada consumidor con `/amp-actualizar`, vista previa primero); y la migración a `plugins/amp/` + `amp-inicializar` + subagentes + prefijo `amp-` (plan de distribución, abierto).
