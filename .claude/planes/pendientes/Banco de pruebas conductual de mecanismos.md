@@ -46,3 +46,12 @@ Los otros tres incidentes producen texto plano difuso —un plan, una pregunta a
 - **¿Qué fixture?** ¿Se instala el harness de verdad con `inicializar-custom` (lento, pero prueba la instalación además del mecanismo) o se arma el `.claude/` a mano (rápido, pero puede divergir de lo que la skill realmente instala)?
 - **¿Mide el turno 1 o la deriva?** El incidente de `Hook de preferencias` fue en el turno 2 con contexto fresco, o sea que el turno 1 solo no alcanza. Una sesión larga es mucho más cara de simular.
 - **¿Qué se hace con un resultado malo?** Si A y B empatan, ¿se revierte el diseño ya commiteado o se acepta y se busca otro mecanismo (hook, control en skill)? Conviene decidirlo **antes** de correr el experimento, para no racionalizar el resultado después.
+
+## Insumo externo (2026-07-23): artículo de bucles de verificación
+
+Anthropic, *"Building verification loops in Claude Code with skills"* (2026-07-22). Valida de afuera la dirección de este plan:
+
+- **El patrón "grader aparte" existe y está nombrado:** el artículo lista *"Rubrics in Claude Managed Agents — verificás resultados contra una rúbrica usando un agente evaluador separado; las fallas realimentan solas"*. Es la misma idea que este banco (correr un agente y evaluar su salida), pero como servicio administrado. Refuerza que **el verificador tiene que ser un tercero**, no el mismo agente auto-revisándose — que es justo el punto ciego que motiva este plan.
+- **On-PR** como destino natural de un gate conductual, si el banco madura de experimento a control recurrente.
+- **Techo compartido:** el artículo insiste en probar la cadena antes de desplegar (el encadenado gasta tokens) — coincide con la pregunta abierta del costo (N corridas × variantes × agentes).
+- Análisis completo del cruce en el conocimiento de `como-uso-claude` (`documentos-investigacion/bucles-de-verificacion.md`).

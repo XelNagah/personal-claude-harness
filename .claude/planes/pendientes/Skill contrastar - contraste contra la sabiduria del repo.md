@@ -31,6 +31,15 @@ Salida: **no** un plan, sino el **resultado del contraste** (coincidencias, choq
 - **Nombre:** `contrastar` es verbo (cumple 0015); ratificar (0016). Alias EN posible: *contrast* / *cross-check*.
 - ¿El solape con `planificar` es tan grande que conviene un **modo** de `planificar` en lugar de una skill nueva?
 
+## Insumo externo (2026-07-23): artículo de bucles de verificación
+
+Anthropic, *"Building verification loops in Claude Code with skills"* (2026-07-22). Aporta a este plan:
+
+- **La pregunta "¿skill nueva o modo de `planificar`?" se ilumina con el eje standalone / embedded / chained.** `/contrastar` es un **verificador que se encadena** (o se invoca standalone) sobre una entrada dada — el artículo lo trata como patrón de primera clase, distinto de embeberlo en la skill que produce.
+- **El truco directamente aplicable:** *"chaining es cómo agregás verificación a una skill que no podés modificar — una skill que la envuelve y después invoca la de verificación"*. Es el mecanismo para la dirección **hacia atrás** de `/contrastar` (contrastar lo ejecutado sin tocar la skill que lo produjo).
+- **Refuerza el "no construir tres mecanismos distintos":** el artículo empuja a una sola cadena reusable, no a un chequeo ad-hoc por flujo.
+- Análisis completo del cruce en el conocimiento de `como-uso-claude` (`documentos-investigacion/bucles-de-verificacion.md`).
+
 ## Depende de
 
 Diseñarla con `planificar` antes de construir. Coordinar con los planes de capa semántica (no duplicar el mecanismo).

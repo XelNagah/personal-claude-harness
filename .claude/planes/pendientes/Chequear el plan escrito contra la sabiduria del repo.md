@@ -89,3 +89,12 @@ Se cruza con el plan [Capa semantica de coherencia](Capa%20semantica%20de%20cohe
 ## Riesgo
 
 Un control que dispara en cada escritura de plan y exige repasar tres registros hace la sesión impracticable, y termina desactivado. El costo tiene que ser proporcional: barrer terminología es barato y automatizable; releer todo el conocimiento en cada guardado, no.
+
+## Insumo externo (2026-07-23): artículo de bucles de verificación
+
+Anthropic publicó *"Building verification loops in Claude Code with skills"* (2026-07-22). Aporta a este plan:
+
+- **Vocabulario para el mecanismo:** standalone / embedded / chained / on-PR. Lo que este plan busca —chequear el **texto producido**— es un bucle **encadenado** (una pasada de verificación distinta del paso que escribió), no embebido: el artículo confirma que el embebido corre en la misma skill que produce, y por eso hereda el punto ciego del agente. Refuerza la decisión de separar el verificador.
+- **Valida la "regla propia del proyecto que ningún linter genérico caza":** el ejemplo del artículo (*"rechazá una migración que borra una columna sin backfill"*) es exactamente la clase de `lint-glosario` que deniega un vetado (0025). El chequeo determinista es fuerte porque no lo corre el modelo.
+- **No cubre** el techo de este plan (la salida de la conversación no la ve ningún hook antes de mandarse): el artículo asume verificación sobre artefactos, no sobre el turno conversacional.
+- Análisis completo del cruce en el conocimiento de `como-uso-claude` (`documentos-investigacion/bucles-de-verificacion.md`).
