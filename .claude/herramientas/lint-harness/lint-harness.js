@@ -88,11 +88,13 @@ if (fs.existsSync(path.join(repo, '.claude', 'CLAUDE.md'))) entrada.push('.claud
 // todos los lints (no el lint entero: cada subsistema tiene el suyo, pero comparten piezas).
 // Se identifican por su comentario ancla. Los fragmentos NO se normalizan como las memorias:
 // deben coincidir caracter a caracter (solo se unifica el fin de linea).
-// Son dos piezas con alcance distinto: la raiz del repo la usan los 5 lints; la resolucion de
-// refs solo los 4 que validan links .md (lint-herramientas valida rutas en settings, no refs).
+// Son tres piezas con alcance distinto: la raiz del repo la usan los 5 lints; la resolucion de
+// refs solo los 4 que validan links .md (lint-herramientas valida rutas en settings, no refs);
+// la atribucion por ancestro solo los 2 que recorren subarbol (lint-conocimiento y lint-memoria).
 const FRAGMENTOS = [
   { nombre: 'raiz del repo', re: /\/\/ La raiz del repo se deduce[\s\S]*?const repoRoot = path\.resolve\(__dirname, '\.\.', '\.\.', '\.\.'\);/g },
   { nombre: 'resolucion de refs', re: /const dentroDelRepo = p => \{[\s\S]*?\n\}\n/g },
+  { nombre: 'atribucion por ancestro', re: /\/\/ --- Atribucion por ancestro[\s\S]*?\/\/ --- fin atribucion por ancestro ---/g },
 ];
 
 const bloques = new Map(); // name -> [{archivo, hash}]
