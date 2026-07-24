@@ -15,6 +15,18 @@
 - **Empaquetar como funcionalidad/plugin** (marketplace + junctions dobles + fila en `REGISTRO.md` + orquestador), patrón `agregar-funcionalidad`. Primero medir in-repo, después distribuir — igual que el piloto de `conocimiento`. Al distribuir, respetar que el texto que viaja no cita números de decisión del harness (decisión 0024, follow-up ya anotado).
 - **Medir el efecto conductual** — el juez del plan madre. Es la razón del diferimiento.
 
+## Comparable externo (fuente)
+
+**Hermes Agent (Nous Research)** valida el diseño de `conducta` desde afuera. Su bucle de auto-mejora en vivo es, mecánicamente, **un texto en el system prompt que empuja al agente + una herramienta que escribe un archivo** (`skill_manage`) — nada más; la parte estadística (los motores GEPA/Atropos) corre en diferido y con una persona aprobando cada cambio. Eso mapea uno a uno a `conducta`:
+
+- El **empuje** de Hermes = una regla clase `inyectar`. La 4.ª regla Base (*registrar cuando algo cambia*, momento `al cerrar tarea`) **ya es exactamente eso** — hoy `pendiente` por falta del repartidor `Stop` que este plan tiene que construir.
+- La **herramienta que escribe** (`skill_manage`, `memory_tool`) = las skills `registrar-*` / `/contrastar`.
+- **Dónde `conducta` supera a Hermes:** la clase **`correr`** (resolver el momento **sin juicio del agente**) no existe en Hermes en vivo, que solo puede inyectar y confiar en el juicio del agente. Una fila `al cerrar tarea | correr | /contrastar hacia atrás` da la versión determinística en vivo — que Hermes solo logra en diferido. El repartidor `Stop` habilita ambas intensidades.
+
+Fuentes en el repo de mejora de uso:
+- Mecanismos: `D:\Proyectos\analisis\como-uso-claude\.claude\conocimiento\hermes-agent.md`
+- Mapeo componente↔subsistema (cómo replicar Hermes con subsistemas): `D:\Proyectos\analisis\como-uso-claude\.claude\conocimiento\replicar-hermes-en-amp.md`
+
 ## Se cruza con
 
 - **Plan madre** [Que el harness tenga efecto conductual](Que%20el%20harness%20tenga%20efecto%20conductual.md): la medición de acá es su frente C (verificar que el mecanismo cambie la conducta).

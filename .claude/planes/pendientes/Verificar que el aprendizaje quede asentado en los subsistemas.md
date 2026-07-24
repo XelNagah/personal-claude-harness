@@ -38,6 +38,18 @@ El harness tiene subsistemas para capturar cada tipo de aprendizaje, pero **nada
 
 Candidato a decisión detectado esta sesión y **todavía sin rutear**: *"el lint de un concepto transversal del harness vive en `lint-harness`, no repartido en los lints de subsistema; la dec. 0008 aplica a lints DE un subsistema, no a chequeos transversales"*. Coherente con lo que ya asume el plan **Vetar términos** ("chequeo de Base en `lint-harness`"). Es exactamente lo que este disparo tendría que haber cazado. Evaluar registrarlo (¿decisión nueva o nota en 0008?) al diseñar, como caso de prueba real.
 
+## Comparable externo (fuente)
+
+**Hermes Agent (Nous Research)** implementa exactamente este bucle como su componente central (lo llama "bucle de auto-mejora"): observa las tareas de varios pasos, tras repetirlas destila una skill, y la afina con el uso. Es la implementación de referencia externa del mecanismo que este plan quiere: captura del aprendizaje sin que el usuario lo pida.
+
+Relevamiento de mecanismos (2026-07-23), en el repo de mejora de uso:
+`D:\Proyectos\analisis\como-uso-claude\.claude\conocimiento\hermes-agent.md`
+
+Qué mirar de ahí para este plan:
+- **Auto-edición de memoria por el agente** (`memory_tool` add/replace/remove, con tope de tamaño y scan de prompt injection antes de escribir) — el AMP hoy asienta a mano; esto es lo que habilita el disparo automático.
+- **Sesiones pasadas buscables** (`session_search_tool` sobre SQLite/FTS) — sostiene "recuperar lo que se dijo antes", que al AMP le falta estructurado.
+- Lo que **no** conviene copiar: los motores de entrenamiento en diferido (Atropos/GEPA) — fuera de alcance; acá alcanza `/contrastar` disparado por hook / cierre de plan.
+
 ## Depende de
 
 - **`/contrastar`** — es el motor. Este plan no arranca sin él; su diseño incluye la entrada "hacia atrás". Diseñar `/contrastar` teniendo esta necesidad a la vista.
