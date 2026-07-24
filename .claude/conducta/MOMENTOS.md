@@ -9,8 +9,9 @@ Vocabulario de los **momentos** válidos a los que una regla de conducta puede a
 
 | Momento | Qué representa | Evento de hook | Disponibilidad |
 |---------|----------------|----------------|----------------|
+| al arrancar la sesión | Al iniciar la sesión, sin condición. Su realización corre una Herramienta y reenvía su salida; hoy muestra la Pantalla de bienvenida (bloque de estado → `systemMessage`, visible al usuario). | `SessionStart` | activo |
 | cada turno | Antes de cada respuesta del agente, sin condición. | `UserPromptSubmit` | activo |
 | al escribir | Al escribir o editar un `.md` bajo `.claude/` (registros y docs del harness). El `additionalContext` llega **junto al resultado** de la tool: es un recordatorio posterior a la escritura, no un aviso previo. | `PreToolUse` sobre `Write`\|`Edit`, condición: `file_path` es `.md` bajo `.claude/` | activo (Claude) |
 | al cerrar tarea | Al terminar de responder una tarea. | `Stop` | declarado |
 
-> Paridad: `cada turno` (`UserPromptSubmit` + `additionalContext`) tiene paridad plena Claude Code ↔ Codex (conocimiento `hooks-claude-code`). `al escribir` es **Claude-first**: el `PreToolUse` de Codex intercepta solo Bash, así que ese momento **no es realizable** en Codex sin desviar por Bash — degradación explícita, no rota en silencio. Los momentos `declarado` esperan su repartidor.
+> Paridad: `cada turno` (`UserPromptSubmit` + `additionalContext`) tiene paridad plena Claude Code ↔ Codex (conocimiento `hooks-claude-code`). `al arrancar la sesión` (`SessionStart` → `systemMessage`) anda en Claude Code, Codex y Gemini; Cursor no tiene banner nativo y degrada sin caja. `al escribir` es **Claude-first**: el `PreToolUse` de Codex intercepta solo Bash, así que ese momento **no es realizable** en Codex sin desviar por Bash — degradación explícita, no rota en silencio. Los momentos `declarado` esperan su repartidor.

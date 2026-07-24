@@ -5,14 +5,17 @@
 // (no un banner del CLI: SessionStart no tiene punto de extensión para eso).
 //
 // Agregación por DESCUBRIMIENTO DINÁMICO (Postura 2): un subsistema es un dir hijo de
-// `.claude/` que tiene su lint co-ubicado `.claude/<D>/lint-<D>/lint-<D>.js` (decisión 0008).
+// `.claude/` que tiene su lint co-ubicado `.claude/<D>/lint-<D>/lint-<D>.js`.
 // Sumar un subsistema con su lint lo hace aparecer solo, sin editar este script.
 //
+// Co-ubicado con el subsistema `conducta`: la Pantalla de bienvenida es una Regla Base clase
+// `correr` del momento `al arrancar la sesión`, no una Herramienta. La corre el hook repartidor
+// `establecer-conducta` (que reenvía su stdout) y la skill `amp:info` a demanda.
 // Uso:
-//   node .claude/herramientas/mostrar-pantalla-bienvenida/mostrar-pantalla-bienvenida.js            (a mano / skill /amp-info: caja en cerca de código)
-//   node .claude/herramientas/mostrar-pantalla-bienvenida/mostrar-pantalla-bienvenida.js --sin-lint (rápido, sin correr lints)
-//   node .claude/herramientas/mostrar-pantalla-bienvenida/mostrar-pantalla-bienvenida.js --hook     (para el SessionStart hook: emite JSON {"systemMessage": <caja>} → visible al usuario)
-// Pensado también para un hook SessionStart. Sin process.exit(1): informa, no falla.
+//   node .claude/conducta/mostrar-pantalla-bienvenida/mostrar-pantalla-bienvenida.js            (a mano / skill amp:info: caja en cerca de código)
+//   node .claude/conducta/mostrar-pantalla-bienvenida/mostrar-pantalla-bienvenida.js --sin-lint (rápido, sin correr lints)
+//   node .claude/conducta/mostrar-pantalla-bienvenida/mostrar-pantalla-bienvenida.js --hook     (para el SessionStart hook: emite JSON {"systemMessage": <caja>} → visible al usuario)
+// Sin process.exit(1): informa, no falla.
 //
 // Por qué --hook: el stdout crudo de un SessionStart hook va a `additionalContext` (lo ve
 // el modelo, NO el usuario). El único campo que se pinta en la terminal del usuario es
@@ -74,7 +77,7 @@ function contarEntradas(txt) {
 
 // --- enriquecimientos baratos por subsistema conocido ---
 // Planes: agrupa por CARPETA (pendientes/ejecutados/descartados), no por estado suelto.
-// La agrupación sale de ESTADOS.md (fuente de verdad configurable, decisión 0005): cada
+// La agrupación sale de ESTADOS.md (fuente de verdad configurable): cada
 // estado mapea a una carpeta, y los tres estados vivos caen todos en `pendientes`. Así el
 // juego de estados se puede reconfigurar por repo sin tocar este script. La suma de las
 // carpetas = total de planes (Pendientes + Ejecutados + Descartados = Total).
@@ -180,7 +183,7 @@ const lintGlobal = SIN_LINT ? '(sin correr)'
 // desarma cuando una métrica gana dígitos (planes 9 → 99 → 999). Las líneas largas
 // (Propósito) se envuelven a un techo `WRAP`; el ancho final = el renglón más largo,
 // con un piso `MIN` para que no quede angosta. Envuelta en cerca de código (```) para
-// el transcript de un cliente no-terminal (skill /amp-info); en --hook va como systemMessage.
+// el transcript de un cliente no-terminal (skill amp:info); en --hook va como systemMessage.
 const WRAP = 82;                                // techo de envoltura para texto largo
 const MIN = 74;                                 // piso de ancho interno
 const nfc = s => (s || '').normalize('NFC');    // acentos precompuestos → .length correcto
@@ -228,7 +231,7 @@ const box = boxLines.join('\n');
 
 // --hook: emitir JSON {"systemMessage": <caja>} → único campo que la terminal del usuario
 // pinta en SessionStart (sin cerca ```: los backticks saldrían literales). Sin --hook:
-// caja envuelta en cerca de código para el transcript (skill /amp-info + corridas a mano).
+// caja envuelta en cerca de código para el transcript (skill amp:info + corridas a mano).
 if (HOOK) {
   // Salto inicial: separa la caja del prefijo "SessionStart:… says:" que antepone el CLI.
   process.stdout.write(JSON.stringify({ systemMessage: '\n' + box }));
