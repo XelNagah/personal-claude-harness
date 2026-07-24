@@ -1,11 +1,11 @@
 #!/usr/bin/env node
-// Hook repartidor del subsistema conducta (decision 0021). Un mismo script sirve a varios eventos:
+// Hook repartidor del subsistema conducta. Un mismo script sirve a varios eventos:
 // lee el registro VIVO de reglas (../INDICE.md), resuelve que momento(s) realiza el evento que lo
 // disparo (con su condicion, sin juicio), y entrega el Contenido de las reglas de clase `inyectar`,
 // estado `vigente` y ese momento, como additionalContext para el modelo.
 // Agregar/cambiar una regla NO toca este script: lee el registro en cada disparo.
 //
-// Eventos que realiza hoy (la realizacion del momento es agente-especifica, 0021):
+// Eventos que realiza hoy (la realizacion del momento es agente-especifica):
 //   - UserPromptSubmit         -> momento `cada turno`   (sin condicion)
 //   - PreToolUse Write|Edit .md bajo .claude/ -> momento `al escribir` (condicion sin juicio)
 // El vocabulario de momentos vive en ../MOMENTOS.md; aca vive COMO se realiza cada uno.

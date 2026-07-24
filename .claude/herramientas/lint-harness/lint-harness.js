@@ -234,9 +234,8 @@ if (fs.existsSync(claudeDir)) {
 // -- [9] refs a decisiones del harness en archivos distribuibles (dec. 0024) ---
 // El numero de decision referencia el registro de ESTE repo, que NO viaja al consumidor.
 // Un archivo que se instala (PLANTILLA, MANIFIESTO de subsistema, lint distribuido) no debe
-// citarlo: enuncia la razon inline. Se excluyen los que se quedan en el harness: lint-harness
-// (Herramienta de este repo) y conducta (aun no es funcionalidad distribuible; su plan de
-// empaquetado aplicara 0024). SKILL/README son instruccion que no se persiste en el consumidor.
+// citarlo: enuncia la razon inline. Se excluye lo que se queda en el harness: lint-harness
+// (Herramienta de este repo). SKILL/README son instruccion que no se persiste en el consumidor.
 const citaDec = /(?:decisi[óo]n(?:es)?|dec\.)\s+0\d{3}(?:\/0\d{3})?/g;
 const refsDecision = [];
 function escanearCitas(archivo) {
@@ -253,13 +252,13 @@ for (const f of enDisco) {
 }
 if (fs.existsSync(claudeDir)) {
   for (const sub of fs.readdirSync(claudeDir, { withFileTypes: true })) {
-    if (!sub.isDirectory() || sub.name === 'conducta') continue;
+    if (!sub.isDirectory()) continue;
     escanearCitas(path.join(claudeDir, sub.name, 'MANIFIESTO.md'));
   }
 }
 for (const js of buscarLints(path.join(repo, '.claude'), [])) {
   const b = path.basename(js);
-  if (b === 'lint-harness.js' || b === 'lint-conducta.js') continue;
+  if (b === 'lint-harness.js') continue;
   escanearCitas(js);
 }
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Lint del subsistema conducta (decision 0021): valida el registro de reglas (INDICE.md) contra el
+// Lint del subsistema conducta: valida el registro de reglas (INDICE.md) contra el
 // vocabulario de momentos (MOMENTOS.md). Sin LLM, sin red. Autocontenido: solo lee archivos del
 // propio subsistema (por eso no comparte el fragmento repoRoot de los otros lints).
 // Uso: node lint-conducta.js [<carpeta conducta>]   (default: .claude/conducta)
@@ -7,7 +7,7 @@ const fs = require('fs'), path = require('path');
 const root = path.resolve(process.argv[2] || '.claude/conducta');
 const quiet = process.argv.includes('--quiet');
 
-const CLASES = ['inyectar', 'correr', 'bloquear'];      // las tres clases de accion (0021), cerradas
+const CLASES = ['inyectar', 'correr', 'bloquear'];      // las tres clases de accion, cerradas
 const ESTADOS = ['vigente', 'pendiente', 'obsoleto'];
 
 // -- parseo de tablas markdown ------------------------------------------

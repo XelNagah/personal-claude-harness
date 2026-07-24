@@ -1,0 +1,6 @@
+{
+  "name": "conducta",
+  "description": "Subsistema conducta en .claude/conducta/ — reglas \"cuando hagas X, asegurate de Y\" que atan momentos (evento de hook + condición sin juicio) a acciones (inyectar/correr/bloquear), entregadas por un hook repartidor que lee el registro vivo (no el agente a mano: una regla cargada al arranque se recita, no se obedece). Separa Reglas Base (harness) de Reglas del Propósito (repo). Trae el hook repartidor y el lint. Depende de memoria-local.",
+  "version": "0.1.0",
+  "author": { "name": "jllarens", "email": "jllarens@gmail.com" }
+}

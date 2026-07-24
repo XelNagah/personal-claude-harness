@@ -1,6 +1,6 @@
 # establecer-conducta — hook repartidor de conducta
 
-Hook del subsistema `conducta` (decisión 0021). **No es una Herramienta** (los hooks van afuera del registro de Herramientas, decisión 0007): es infra co-ubicada del subsistema, como el lint. El agente no lo invoca — lo dispara el harness.
+Hook del subsistema `conducta`. **No es una Herramienta** (los hooks van afuera del registro de Herramientas): es infra co-ubicada del subsistema, como el lint. El agente no lo invoca — lo dispara el harness.
 
 ## Qué hace
 
@@ -23,7 +23,7 @@ Mecánica y capacidades de hooks: conocimiento `hooks-claude-code`. Latencia (~6
 ## Cableado
 
 - **Claude Code (`.claude/settings.json`):** `UserPromptSubmit` (sin matcher) + `PreToolUse` (matcher `Write|Edit`).
-- **Codex (`.codex/hooks.json`):** solo `UserPromptSubmit` (paridad del momento `cada turno`). El momento `al escribir` es **Claude-first**: el `PreToolUse` de Codex intercepta solo Bash (decisión 0021), no es realizable ahí — degradación documentada en `../MOMENTOS.md`.
+- **Codex (`.codex/hooks.json`):** solo `UserPromptSubmit` (paridad del momento `cada turno`). El momento `al escribir` es **Claude-first**: el `PreToolUse` de Codex intercepta solo Bash, no es realizable ahí — degradación documentada en `../MOMENTOS.md`.
 
 ## Probar a mano
 
