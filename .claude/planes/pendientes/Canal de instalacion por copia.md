@@ -23,5 +23,5 @@ El plan padre lo marcó **no urgente**, y el motivo sigue vigente: el canal prin
 ## Se cruza con
 
 - [Publicar el harness en inglés](Publicar%20el%20harness%20en%20ingles.md) — dos canales por dos idiomas son cuatro combinaciones a publicar; conviene decidir el idioma antes.
-- [Refresco de autoría al pasar de enlace a plugin](Refresco%20de%20autoria%20al%20pasar%20de%20junction%20a%20plugin.md) — el canal de copia es una tercera forma de tener las skills en una máquina, y las tres colisionan por nombre entre sí.
+- [Control de desfase entre el harness en disco y el plugin cargado](Control%20de%20desfase%20entre%20el%20harness%20en%20disco%20y%20el%20plugin%20cargado.md) — el canal de copia es una tercera forma de tener las skills en una máquina, y las tres colisionan por nombre entre sí.
 - El plan descartado `Restaurar la portabilidad copiar y pegar del orquestador` dejó la Herramienta `armar-prompt-portable` construida y **reservada en la rama git `piloto/plan4-portabilidad`**, explícitamente "por si sirve al canal-copia". Mirarla antes de escribir nada.
