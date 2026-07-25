@@ -25,6 +25,7 @@ Ante *"¿dónde va X?"*, pasar X por los ejes hasta que un lugar lo reclame. Si 
 ## Casos resueltos
 
 - **La base de inmuebles / la web del agente inmobiliario** → Producto del Propósito (eje 1): raíz del repo, fuera de `.claude/`. Por esto el inventario de fuera-de-subsistema barre solo `.claude/`, no la raíz.
+- **`REGISTRO.md` en la raíz** → **registro con lint**, no documentación humana (ejes 2 + 4): `lint-harness` lo abre como fuente de datos y falla si diverge del disco o de `marketplace.json`. Ser un `.md` de la raíz no lo vuelve texto para humanos — vive ahí porque su lector lo busca ahí. Por eso **no** baja a `docs/` cuando la documentación humana se muda (decisión 0031). El error a evitar: clasificar por extensión y ubicación en vez de por quién lo lee.
 - **`sessions.json`** (estado de sesión que dos Herramientas escriben en el repo consumidor `Agente-Coordinador`) → **Registro volátil** (ejes 3 + 4): es contenido interno de la Herramienta que lo administra; esa Herramienta sí es una fila del registro, el estado en sí no. No falta un subsistema — lo efímero es una propiedad, no un Tipo ni un cajón nuevo.
 
 ## Criterios finos ya acordados
