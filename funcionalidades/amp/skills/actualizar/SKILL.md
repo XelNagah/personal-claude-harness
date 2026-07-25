@@ -1,11 +1,11 @@
 ---
 name: actualizar
-description: Nivela el .claude/ de un repo con el AMP ya instalado contra la plantilla nueva del harness. Converge por estructura, sin guardar versión: pisa lo Base (mecanismo del harness) respaldándolo antes en .claude/.respaldo-amp/<fecha>/, nunca toca lo aprendido (contenido del repo), y pregunta antes de reacomodar formas viejas. Aplica renombres conocidos (glosario→semantica) e instala subsistemas faltantes (conducta), delegando en el instalador consolidado amp:inicializar. Trae vista previa. Use when el usuario dice "nivelá el AMP", "actualizá el harness del repo", "poné al día el .claude", "amp:actualizar", o al detectar un repo con el harness viejo.
+description: Nivela el .claude/ de un repo con el Agente Multipropósito ya instalado contra la plantilla nueva del harness. Converge por estructura, sin guardar versión: pisa lo Base (mecanismo del harness) respaldándolo antes en .claude/.respaldo-amp/<fecha>/, nunca toca lo aprendido (contenido del repo), y pregunta antes de reacomodar formas viejas. Aplica renombres conocidos (glosario→semantica) e instala subsistemas faltantes (conducta), delegando en el instalador consolidado amp:inicializar. Arranca chequeando los plugins de la máquina y, si están atrasados, los pone al día y pide reiniciar antes de tocar archivos. Trae vista previa. Use when el usuario dice "nivelá el Agente Multipropósito", "actualizá el harness del repo", "poné al día el .claude", "amp:actualizar", o al detectar un repo con el harness viejo.
 ---
 
 # amp:actualizar — nivelador del harness
 
-Pone al día el `.claude/` de un repo que **ya** tiene el AMP instalado, contra la plantilla nueva. **No** es para arrancar un repo de cero (para eso está `amp:inicializar`): es para uno vivo, sin romperle lo que aprendió. Diseño en la decisión 0028; se apoya en la separación Base/aprendido (decisión 0027).
+Pone al día el `.claude/` de un repo que **ya** tiene el Agente Multipropósito instalado, contra la plantilla nueva. **No** es para arrancar un repo de cero (para eso está `amp:inicializar`): es para uno vivo, sin romperle lo que aprendió. Diseño en la decisión 0028; se apoya en la separación Base/aprendido (decisión 0027).
 
 ## Principio (qué se pisa y qué no)
 
@@ -23,6 +23,23 @@ Lo mecánico y determinista lo hace el script `amp-actualizar.js` (decisión 000
 
 - **Script** (`node <ruta-skill>/amp-actualizar.js`): barrido y clasificación de la estructura, respaldo, y el reporte / vista previa. Modos: `--vista-previa` (o sin flag) detecta y muestra el plan **sin escribir**; `--respaldo` copia `.claude/` a `.claude/.respaldo-amp/<fecha>/`. Acepta la raíz del repo como argumento (default: el repo actual).
 - **Skill** (este flujo): confirma el plan, **delega la instalación** al instalador consolidado `amp:inicializar` (que trae la plantilla 0024-limpia de todos los subsistemas y es idempotente), migra términos y prosa con criterio, y pregunta ante lo divergente.
+
+## Paso previo obligado: la fase de plugins
+
+Poner al día un repo son **dos fases** y esta skill ejecuta la segunda. La primera —los plugins de la máquina— va **antes**, porque esta misma skill viaja adentro del plugin: si se nivelan los archivos con los plugins atrasados, el repo queda puesto al día por una versión vieja del instalador.
+
+Por eso lo primero de todo, antes de la vista previa, es diagnosticar los plugins:
+
+```bash
+node .claude/herramientas/actualizar-plugins/actualizar-plugins.js
+```
+
+- **Si reporta `TODO AL DIA`** → seguir con el flujo de abajo.
+- **Si reporta `DESACTUALIZADO`** → resolverlo acá y **frenar**: correr la Herramienta con `--aplicar`, avisarle al usuario que **reinicie la sesión** y que vuelva a pedir `amp:actualizar` al volver. No seguir con los archivos en esta corrida: la skill que los escribiría sigue siendo la vieja hasta el reinicio.
+- **Si reporta `RETIRADO`** → el repo quedó con nombres de plugin que el marketplace ya no ofrece. Eso **no se arregla actualizando**: es una migración (desinstalar los viejos, instalar el conjunto nuevo). Reportarlo y remitir al manual de instalación; tampoco seguir.
+- **Si la Herramienta no existe** en el repo (instalación anterior a que existiera) → decirlo y remitir al manual: esa primera pasada se hace con los comandos del CLI, una sola vez, y después la Herramienta queda instalada.
+
+Se recuerda un solo nombre —`amp:actualizar`— y el orden lo garantiza esta skill.
 
 ## Flujo de trabajo
 

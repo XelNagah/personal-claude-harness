@@ -25,5 +25,5 @@ El dato para detectarlo está a la vista y no hace falta adivinarlo: la versión
 ## Notas de lo verificado (25/07/2026)
 
 - `/reload-plugins` **no** trae versión nueva: recarga los plugins ya instalados en la versión que ya tenían. Sirve después de actualizar, no en lugar de actualizar.
-- `claude plugin update` exige identificador completo **y** alcance: `claude plugin update amp@xelnagah-harness --scope project`. Con el nombre pelado falla, y con el alcance por omisión (usuario) también, con el **mismo** mensaje —*Plugin "amp" not found*— que no distingue cuál de los dos falta. Documentado en `docs/INSTALAR.md` §A1.
+- `claude plugin update` exige identificador completo **y** alcance: `claude plugin update amp@xelnagah-harness --scope project`. Con el nombre pelado falla, y con el alcance por omisión (usuario) también, con el **mismo** mensaje —*Plugin "amp" not found*— que no distingue cuál de los dos falta. Documentado en `docs/INSTALAR.md`, fase 1.
 - **`skills-dir` existe pero no se persigue.** `claude plugin init` crea plugins en `~/.claude/skills/<nombre>/` que se auto-cargan como `<nombre>@skills-dir`. Daría edición en vivo conservando el prefijo, pero es un modo de consumo distinto del decidido; se anota para no re-descubrirlo, no como camino a tomar.

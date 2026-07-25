@@ -1257,7 +1257,7 @@ Registro de las **Herramientas** del repo: las *tools* que el **Propósito** del
 - **Cómo se invoca** — el comando (`script`), el nombre de skill que dispara el modelo (`skill`), o cómo se conecta y qué tool-calls expone (`mcp`).
 - **Estado** — `vigente`, `experimental` u `obsoleto` (los obsoletos se pueden depurar).
 
-> **Origen del contenido:** las Herramientas se separan por origen en dos secciones — **Herramientas Base** (las manda el harness; el nivelador `amp:actualizar` reemplaza esa sección entera al poner al día un AMP) y **Herramientas del Propósito** (las suma cada repo; el nivelador no las toca). Mismo molde que `conducta/INDICE.md` y que Base/Adaptaciones en `PREFERENCIAS.md`.
+> **Origen del contenido:** las Herramientas se separan por origen en dos secciones — **Herramientas Base** (las manda el harness; el nivelador `amp:actualizar` reemplaza esa sección entera al poner al día un Agente Multipropósito) y **Herramientas del Propósito** (las suma cada repo; el nivelador no las toca). Mismo molde que `conducta/INDICE.md` y que Base/Adaptaciones en `PREFERENCIAS.md`.
 
 ## Herramientas Base
 
@@ -1265,7 +1265,7 @@ Las que instala el harness (origen **Base**). El nivelador reemplaza **esta secc
 
 | Herramienta | Tipo | Qué hace | Cómo se invoca | Estado |
 |-------------|------|----------|----------------|--------|
-| [actualizar-plugins](actualizar-plugins/) | script | Pone al día la capa de plugins del AMP en esta máquina y detecta el desfase entre lo que corre y lo publicado; marca aparte los plugins `RETIRADO` (nombres que el marketplace dejó de ofrecer ⇒ migración, no actualización). Sin `--aplicar` solo diagnostica; acepta ruta para apuntarlo a otro repo | `node .claude/herramientas/actualizar-plugins/actualizar-plugins.js [--aplicar] [rutaRepo]` | vigente |
+| [actualizar-plugins](actualizar-plugins/) | script | Pone al día los plugins del Agente Multipropósito en esta máquina y detecta el desfase entre lo que corre y lo publicado; marca aparte los plugins `RETIRADO` (nombres que el marketplace dejó de ofrecer ⇒ migración, no actualización). Sin `--aplicar` solo diagnostica; acepta ruta para apuntarlo a otro repo | `node .claude/herramientas/actualizar-plugins/actualizar-plugins.js [--aplicar] [rutaRepo]` | vigente |
 
 ## Herramientas del Propósito
 
@@ -1398,13 +1398,13 @@ if (!refsRotas.length) console.log('    (ninguna)');
 
 ## §Script — actualizar-plugins — `.claude/herramientas/actualizar-plugins/actualizar-plugins.js`
 
-Herramienta **Base** del subsistema `herramientas` (va en la sección `## Herramientas Base` del registro). Pone al día la capa de plugins del AMP en esta máquina: los plugins se sirven de un clon del repo del marketplace, así que la versión que corre es la que quedó en la caché el día que se instaló y nada avisa cuando hay una nueva.
+Herramienta **Base** del subsistema `herramientas` (va en la sección `## Herramientas Base` del registro). Pone al día los plugins del Agente Multipropósito en esta máquina: los plugins se sirven de un clon del repo del marketplace, así que la versión que corre es la que quedó en la caché el día que se instaló y nada avisa cuando hay una nueva.
 
 Contenido exacto (Node, sin dependencias, sin red):
 
 ```js
 #!/usr/bin/env node
-// actualizar-plugins.js — pone al dia la CAPA DE PLUGINS del Agente Multiproposito en esta maquina.
+// actualizar-plugins.js — pone al dia los PLUGINS del Agente Multiproposito en esta maquina.
 //
 // Los plugins se sirven de un clon del repo del marketplace, asi que no se actualizan solos: la
 // version que CORRE es la que quedo en el cache el dia que se instalo. Este script compara lo que
@@ -1423,7 +1423,8 @@ const os = require('os');
 const { spawnSync } = require('child_process');
 
 const APLICAR = process.argv.includes('--aplicar');
-// Acepta una ruta de repo como argumento (para apuntarlo a otro AMP de la maquina); por omision, el propio.
+// Acepta una ruta de repo como argumento (para apuntarlo a otro Agente Multiproposito de la maquina);
+// por omision, el propio.
 const RUTA_ARG = process.argv.slice(2).find(a => !a.startsWith('--'));
 const REPO = RUTA_ARG ? path.resolve(RUTA_ARG) : path.resolve(__dirname, '..', '..', '..');
 const PLUGINS_DIR = path.join(os.homedir(), '.claude', 'plugins');
@@ -1590,7 +1591,7 @@ Ficha `.claude/herramientas/actualizar-plugins/README.md`:
 ````markdown
 # actualizar-plugins
 
-Pone al día la **capa de plugins** del Agente Multipropósito en esta máquina, y sirve de control de desfase.
+Pone al día los **plugins** del Agente Multipropósito en esta máquina, y sirve de control de desfase.
 
 ```bash
 # diagnostica, no toca nada
@@ -1642,7 +1643,7 @@ Refresca el catálogo primero y **vuelve a diagnosticar** antes de actualizar: t
 ## Lo que no hace
 
 - **No escribe el handoff.** Un script no sabe en qué venías trabajando; eso lo redacta el agente antes de llamarlo.
-- **No toca los archivos de `.claude/`.** Esa es la otra capa, y la pone al día `amp:actualizar`.
+- **No toca los archivos de `.claude/`.** Esa es la otra fase, y la pone al día `amp:actualizar`.
 - **No migra los nombres viejos.** Los detecta y los reporta; el procedimiento está en `docs/INSTALAR.md`.
 
 Sin `process.exit(1)`: reporta, no frena — es capa mecánica, el juicio queda del lado del agente.
@@ -1687,11 +1688,11 @@ Registro de las **reglas de conducta** del repo: cada fila ata un **momento** (d
 - **Contenido** — el texto a inyectar (`inyectar`), la Herramienta a correr (`correr`) o la condición de bloqueo (`bloquear`).
 - **Estado** — `vigente` (se entrega) · `pendiente` (declarada, su momento aún no tiene repartidor) · `obsoleto` (no se entrega; se puede depurar).
 
-> **Origen del contenido:** las reglas se separan por origen en dos secciones — **Reglas Base** (las manda el harness; el nivelador `amp-actualizar` las reemplaza enteras al poner al día un AMP) y **Reglas del Propósito** (las suma cada repo; el nivelador no las toca). Hoy tienen repartidor los momentos `al arrancar la sesión` (`SessionStart`, clase `correr`), `cada turno` (`UserPromptSubmit`) y `al escribir` (`PreToolUse`); la regla de momento `al cerrar tarea` (`Stop`) queda en `pendiente` (honesta, sin entregar) hasta que se sume su repartidor.
+> **Origen del contenido:** las reglas se separan por origen en dos secciones — **Reglas Base** (las manda el harness; el nivelador `amp-actualizar` las reemplaza enteras al poner al día un Agente Multipropósito) y **Reglas del Propósito** (las suma cada repo; el nivelador no las toca). Hoy tienen repartidor los momentos `al arrancar la sesión` (`SessionStart`, clase `correr`), `cada turno` (`UserPromptSubmit`) y `al escribir` (`PreToolUse`); la regla de momento `al cerrar tarea` (`Stop`) queda en `pendiente` (honesta, sin entregar) hasta que se sume su repartidor.
 
 ## Reglas Base
 
-Las que instala el harness (origen **Base**). El nivelador `amp-actualizar` reemplaza **esta sección entera** al poner al día un AMP; nunca abre la de abajo.
+Las que instala el harness (origen **Base**). El nivelador `amp-actualizar` reemplaza **esta sección entera** al poner al día un Agente Multipropósito; nunca abre la de abajo.
 
 | Regla | Momento | Clase | Contenido | Estado |
 |-------|---------|-------|-----------|--------|

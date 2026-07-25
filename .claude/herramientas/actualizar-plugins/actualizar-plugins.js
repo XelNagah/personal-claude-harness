@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// actualizar-plugins.js — pone al dia la CAPA DE PLUGINS del Agente Multiproposito en esta maquina.
+// actualizar-plugins.js — pone al dia los PLUGINS del Agente Multiproposito en esta maquina.
 //
 // Los plugins se sirven de un clon del repo del marketplace, asi que no se actualizan solos: la
 // version que CORRE es la que quedo en el cache el dia que se instalo. Este script compara lo que
@@ -18,7 +18,8 @@ const os = require('os');
 const { spawnSync } = require('child_process');
 
 const APLICAR = process.argv.includes('--aplicar');
-// Acepta una ruta de repo como argumento (para apuntarlo a otro AMP de la maquina); por omision, el propio.
+// Acepta una ruta de repo como argumento (para apuntarlo a otro Agente Multiproposito de la maquina);
+// por omision, el propio.
 const RUTA_ARG = process.argv.slice(2).find(a => !a.startsWith('--'));
 const REPO = RUTA_ARG ? path.resolve(RUTA_ARG) : path.resolve(__dirname, '..', '..', '..');
 const PLUGINS_DIR = path.join(os.homedir(), '.claude', 'plugins');

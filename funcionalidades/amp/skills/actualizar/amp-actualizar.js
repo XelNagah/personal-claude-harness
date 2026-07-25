@@ -58,7 +58,7 @@ const add = (grupo, marca, item, detalle) => hallazgos.push({ grupo, marca, item
 
 function clasificar() {
   if (!esDir(claude)) {
-    add('divergente', '?', '.claude/', 'no existe: este repo no tiene el AMP instalado (usar inicializar-custom, no el nivelador)');
+    add('divergente', '?', '.claude/', 'no existe: este repo no tiene el Agente Multiproposito instalado (usar amp:inicializar, no el nivelador)');
     return;
   }
 

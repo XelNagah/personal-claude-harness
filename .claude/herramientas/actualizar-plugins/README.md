@@ -1,6 +1,6 @@
 # actualizar-plugins
 
-Pone al día la **capa de plugins** del Agente Multipropósito en esta máquina, y sirve de control de desfase.
+Pone al día los **plugins** del Agente Multipropósito en esta máquina, y sirve de control de desfase.
 
 ```bash
 # diagnostica, no toca nada
@@ -52,7 +52,7 @@ Refresca el catálogo primero y **vuelve a diagnosticar** antes de actualizar: t
 ## Lo que no hace
 
 - **No escribe el handoff.** Un script no sabe en qué venías trabajando; eso lo redacta el agente antes de llamarlo.
-- **No toca los archivos de `.claude/`.** Esa es la otra capa, y la pone al día `amp:actualizar`.
+- **No toca los archivos de `.claude/`.** Esa es la otra fase, y la pone al día `amp:actualizar`.
 - **No migra los nombres viejos.** Los detecta y los reporta; el procedimiento está en `docs/INSTALAR.md`.
 
 Sin `process.exit(1)`: reporta, no frena — es capa mecánica, el juicio queda del lado del agente.

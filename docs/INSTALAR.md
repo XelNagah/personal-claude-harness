@@ -1,11 +1,11 @@
 # Instalar el Agente Multipropósito
 
-Manual de instalación y actualización del **AMP** en un repo. Cubre las dos situaciones:
+Manual de instalación y actualización del **Agente Multipropósito** en un repo. Cubre las dos situaciones:
 
 - [Instalar de cero](#instalar-de-cero) — repo que todavía no tiene el harness.
-- [Actualizar un AMP ya instalado](#actualizar-un-amp-ya-instalado) — repo que lo tiene, con nombres de plugin viejos o con archivos desactualizados.
+- [Actualizar una instalación existente](#actualizar-una-instalación-existente) — repo que lo tiene, con nombres de plugin viejos o con archivos desactualizados.
 
-El AMP se distribuye como **marketplace de plugins de Claude Code** y, en paralelo, como skills en el estándar abierto [Agent Skills](https://agentskills.io/) (`SKILL.md`) para Codex CLI, Cursor y Gemini CLI. La instalación por marketplace de abajo es la de Claude Code; para los otros agentes ver [Otros agentes](#otros-agentes-codex-cursor-gemini).
+El Agente Multipropósito se distribuye como **marketplace de plugins de Claude Code** y, en paralelo, como skills en el estándar abierto [Agent Skills](https://agentskills.io/) (`SKILL.md`) para Codex CLI, Cursor y Gemini CLI. La instalación por marketplace de abajo es la de Claude Code; para los otros agentes ver [Otros agentes](#otros-agentes-codex-cursor-gemini).
 
 ---
 
@@ -45,7 +45,7 @@ claude plugin install amp@xelnagah-harness -s project
 
 Los seis `amp-<sub>` entran solos por dependencias: es **una instalación por repo**, no siete.
 
-El alcance (*scope*) es **`project`** a propósito: el harness aplica a los repos que lo usan, no a todos. Instalarlo a nivel usuario le pondría estas skills a cualquier repo que abras, incluidos los que no tienen `.claude/` de AMP.
+El alcance (*scope*) es **`project`** a propósito: el harness aplica a los repos que lo usan, no a todos. Instalarlo a nivel usuario le pondría estas skills a cualquier repo que abras, incluidos los que no tienen `.claude/` de Agente Multipropósito.
 
 ### 3. Reiniciar la sesión
 
@@ -71,24 +71,31 @@ Muestra el Título y el Propósito del repo más las métricas de cada subsistem
 
 ---
 
-## Actualizar un AMP ya instalado
+## Actualizar una instalación existente
 
-Poner al día un repo son **dos capas separadas**, y cada una tiene su procedimiento:
+Poner al día un repo es un **proceso de dos fases**, y cada una tiene su ejecutor:
 
-| Capa | Qué pone al día | Cómo |
-|------|-----------------|------|
-| **Plugins** | Los plugins instalados en la máquina: nombres, versiones, alcance | Comandos de este documento |
-| **Archivos** | El contenido de `.claude/` en el repo: lints, manifiestos, estructura | La skill `amp:actualizar` |
+| Fase | Qué pone al día | Quién la ejecuta |
+|------|-----------------|------------------|
+| **1. Plugins** | Los plugins instalados en la máquina: nombres, versiones, alcance | La Herramienta `actualizar-plugins` |
+| **2. Archivos** | El contenido de `.claude/` en el repo: lints, manifiestos, estructura | La skill `amp:actualizar` |
 
-**Por qué la capa de plugins va en un documento y no en una skill.** Es una **dependencia circular**: `amp:actualizar` vive *adentro* del plugin `amp`, así que no puede instalarse a sí misma ni renombrar el plugin que la está ejecutando. Alguien tiene que arrancar la cadena desde afuera — este manual.
+**El orden de ejecución es plugins primero, después archivos**, con un reinicio en el medio. El motivo: los archivos los escribe una skill que viaja *adentro* del plugin, así que si nivelás los archivos antes, te los pone al día una versión vieja del instalador.
 
-### A. Poner al día la capa de plugins
+### Fase 1 — los plugins
 
-Hay dos casos distintos: el **rutinario** (ya tenés los 7 plugins y querés la versión nueva) y la **migración** desde la generación vieja de nombres. Empezá por el rutinario; si al listar te aparecen nombres viejos, seguí con el otro.
+```bash
+node .claude/herramientas/actualizar-plugins/actualizar-plugins.js            # diagnostica
+node .claude/herramientas/actualizar-plugins/actualizar-plugins.js --aplicar  # actualiza
+```
 
-#### A1. Traer la versión nueva (rutinario)
+Los plugins **no se actualizan solos**: el marketplace se sirve de un clon del repo en GitHub, así que hasta que no traigas la versión nueva seguís corriendo la que instalaste el primer día. Sin `--aplicar` la Herramienta solo diagnostica, así que se puede correr sin miedo para ver cómo está la instalación.
 
-Los plugins **no se actualizan solos**: el marketplace se sirve de un clon del repo en GitHub, así que hasta que no lo traigas seguís corriendo la versión que instalaste el primer día.
+**Después: reiniciar la sesión.** Hasta entonces seguís con la versión vieja cargada. `/reload-plugins` **no** sirve para esto: recarga los plugins que ya están, en la versión que ya tenían.
+
+#### Si el repo todavía no tiene la Herramienta
+
+Un repo instalado antes de que `actualizar-plugins` existiera no la tiene, y no puede usarla para actualizarse. Esa primera pasada se hace con los comandos del CLI, una sola vez — de ahí en adelante la Herramienta queda instalada y esto no vuelve a hacer falta:
 
 ```bash
 # 1. Traer el catálogo nuevo desde GitHub
@@ -98,15 +105,13 @@ claude plugin marketplace update xelnagah-harness
 claude plugin update amp@xelnagah-harness --scope project
 ```
 
-⚠️ **Las dos partes del comando son obligatorias.** Con el nombre pelado (`claude plugin update amp`) falla con *Plugin "amp" not found*, y sin `--scope project` lo busca en el alcance de usuario, donde no está — el AMP se instala con alcance de proyecto. El mensaje de error es el mismo en los dos casos y no dice cuál de las dos cosas falta.
-
-**Después: reiniciar la sesión.** Hasta entonces seguís con la versión vieja cargada. `/reload-plugins` **no** sirve para esto: recarga los plugins que ya están, en la versión que ya tenían.
+⚠️ **Las dos partes del segundo comando son obligatorias.** Con el nombre pelado (`claude plugin update amp`) falla con *Plugin "amp" not found*, y sin `--scope project` lo busca en el alcance de usuario, donde no está — el Agente Multipropósito se instala con alcance de proyecto. El mensaje de error es el mismo en los dos casos y no dice cuál de las dos cosas falta. Por eso conviene usar la Herramienta y no los comandos sueltos.
 
 **Verificar que aplicó:** `claude plugin list` tiene que mostrar la versión nueva. Si querés confirmarlo contra el origen, la versión que corre es el nombre de la carpeta en `~/.claude/plugins/cache/xelnagah-harness/<plugin>/<version>/`.
 
-#### A2. Migrar desde los nombres viejos
+#### Si aparecen nombres de plugin retirados
 
-Si instalaste el AMP antes de la consolidación en 7 plugins, tenés hasta 10 plugins con nombres viejos (`memoria-local`, `gestion-de-planes`, `preferencias-trabajo`, `conocimiento`, `semantica`, `decisiones`, `herramientas`, `conducta`, `planificar`, `amp-actualizar`). Hay que sacarlos y poner el conjunto nuevo.
+Si instalaste el Agente Multipropósito antes de la consolidación en 7 plugins, tenés hasta 10 plugins con nombres viejos (`memoria-local`, `gestion-de-planes`, `preferencias-trabajo`, `conocimiento`, `semantica`, `decisiones`, `herramientas`, `conducta`, `planificar`, `amp-actualizar`). Hay que sacarlos y poner el conjunto nuevo.
 
 ```bash
 # 1. Traer la lista nueva de plugins desde GitHub
@@ -142,7 +147,7 @@ foreach ($p in @('memoria-local','preferencias-trabajo','gestion-de-planes','con
 
 **Verificar que quedó bien.** Lo que carga de verdad no es lo que lista `claude plugin list`, sino el campo `enabledPlugins` de `settings.json` — el del repo (`.claude/settings.json`) y el del usuario (`~/.claude/settings.json`). Ahí tienen que estar los siete nombres nuevos y ninguno viejo. Si `plugin list` sigue mostrando nombres viejos marcados como deshabilitados pero no están en `enabledPlugins`, son restos de la caché: no cargan y no molestan.
 
-### B. Poner al día los archivos del `.claude/`
+### Fase 2 — los archivos del `.claude/`
 
 Ya con los plugins nuevos cargados, adentro de la sesión:
 
@@ -189,6 +194,6 @@ El punto de entrada de instrucciones es `AGENTS.md` en la raíz del repo, que es
 
 **La misma skill aparece dos veces.** Tenés el enlace y el plugin conviviendo. Elegí uno: borrá el enlace de `~/.claude/skills/<skill>` o desinstalá el plugin.
 
-**Edité una skill en el repo y la sesión sigue comportándose igual.** Si la consumís por plugin, estás corriendo la copia de la caché, que se sirve de GitHub: el cambio no llega hasta que lo commiteás, lo pusheás y corrés A1. Editar el repo local no alcanza, y `/reload-plugins` tampoco. Si estás escribiendo skills a menudo, conviene consumirlas por enlace (ver la sección de otros agentes) en vez de por plugin.
+**Edité una skill en el repo y la sesión sigue comportándose igual.** Si la consumís por plugin, estás corriendo la copia de la caché, que se sirve de GitHub: el cambio no llega hasta que lo commiteás, lo pusheás y corrés la fase 1. Editar el repo local no alcanza, y `/reload-plugins` tampoco. Si estás escribiendo skills a menudo, conviene consumirlas por enlace (ver la sección de otros agentes) en vez de por plugin.
 
 **`amp:inicializar` no pisó algo que yo quería actualizar.** Es a propósito: cuando encuentra algo divergente lo reporta en vez de pisarlo. Para converger contra la plantilla nueva usá `amp:actualizar`, que sí pisa lo Base (con respaldo).

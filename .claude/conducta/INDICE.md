@@ -8,11 +8,11 @@ Registro de las **reglas de conducta** del repo: cada fila ata un **momento** (d
 - **Contenido** — el texto a inyectar (`inyectar`), la Herramienta a correr (`correr`) o la condición de bloqueo (`bloquear`).
 - **Estado** — `vigente` (se entrega) · `pendiente` (declarada, su momento aún no tiene repartidor) · `obsoleto` (no se entrega; se puede depurar).
 
-> **Origen del contenido:** las reglas se separan por origen en dos secciones — **Reglas Base** (las manda el harness; el nivelador `amp-actualizar` las reemplaza enteras al poner al día un AMP) y **Reglas del Propósito** (las suma cada repo; el nivelador no las toca). Hoy tienen repartidor los momentos `al arrancar la sesión` (`SessionStart`, clase `correr`), `cada turno` (`UserPromptSubmit`) y `al escribir` (`PreToolUse`); la regla de momento `al cerrar tarea` (`Stop`) queda en `pendiente` (honesta, sin entregar) hasta que se sume su repartidor.
+> **Origen del contenido:** las reglas se separan por origen en dos secciones — **Reglas Base** (las manda el harness; el nivelador `amp-actualizar` las reemplaza enteras al poner al día un Agente Multipropósito) y **Reglas del Propósito** (las suma cada repo; el nivelador no las toca). Hoy tienen repartidor los momentos `al arrancar la sesión` (`SessionStart`, clase `correr`), `cada turno` (`UserPromptSubmit`) y `al escribir` (`PreToolUse`); la regla de momento `al cerrar tarea` (`Stop`) queda en `pendiente` (honesta, sin entregar) hasta que se sume su repartidor.
 
 ## Reglas Base
 
-Las que instala el harness (origen **Base**). El nivelador `amp-actualizar` reemplaza **esta sección entera** al poner al día un AMP; nunca abre la de abajo.
+Las que instala el harness (origen **Base**). El nivelador `amp-actualizar` reemplaza **esta sección entera** al poner al día un Agente Multipropósito; nunca abre la de abajo.
 
 | Regla | Momento | Clase | Contenido | Estado |
 |-------|---------|-------|-----------|--------|
