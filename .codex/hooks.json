@@ -7,6 +7,11 @@
             "type": "command",
             "command": "node .claude/planes/lint-planes/lint-planes.js --quiet",
             "statusMessage": "Chequeando el ciclo de planes"
+          },
+          {
+            "type": "command",
+            "command": "node .claude/conducta/establecer-conducta/establecer-conducta.js",
+            "statusMessage": "Estableciendo conducta"
           }
         ]
       }
