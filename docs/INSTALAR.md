@@ -84,6 +84,28 @@ Poner al día un repo son **dos capas separadas**, y cada una tiene su procedimi
 
 ### A. Poner al día la capa de plugins
 
+Hay dos casos distintos: el **rutinario** (ya tenés los 7 plugins y querés la versión nueva) y la **migración** desde la generación vieja de nombres. Empezá por el rutinario; si al listar te aparecen nombres viejos, seguí con el otro.
+
+#### A1. Traer la versión nueva (rutinario)
+
+Los plugins **no se actualizan solos**: el marketplace se sirve de un clon del repo en GitHub, así que hasta que no lo traigas seguís corriendo la versión que instalaste el primer día.
+
+```bash
+# 1. Traer el catálogo nuevo desde GitHub
+claude plugin marketplace update xelnagah-harness
+
+# 2. Actualizar el plugin (arrastra los 6 amp-<sub> por dependencias)
+claude plugin update amp@xelnagah-harness --scope project
+```
+
+⚠️ **Las dos partes del comando son obligatorias.** Con el nombre pelado (`claude plugin update amp`) falla con *Plugin "amp" not found*, y sin `--scope project` lo busca en el alcance de usuario, donde no está — el AMP se instala con alcance de proyecto. El mensaje de error es el mismo en los dos casos y no dice cuál de las dos cosas falta.
+
+**Después: reiniciar la sesión.** Hasta entonces seguís con la versión vieja cargada. `/reload-plugins` **no** sirve para esto: recarga los plugins que ya están, en la versión que ya tenían.
+
+**Verificar que aplicó:** `claude plugin list` tiene que mostrar la versión nueva. Si querés confirmarlo contra el origen, la versión que corre es el nombre de la carpeta en `~/.claude/plugins/cache/xelnagah-harness/<plugin>/<version>/`.
+
+#### A2. Migrar desde los nombres viejos
+
 Si instalaste el AMP antes de la consolidación en 7 plugins, tenés hasta 10 plugins con nombres viejos (`memoria-local`, `gestion-de-planes`, `preferencias-trabajo`, `conocimiento`, `semantica`, `decisiones`, `herramientas`, `conducta`, `planificar`, `amp-actualizar`). Hay que sacarlos y poner el conjunto nuevo.
 
 ```bash
@@ -166,5 +188,7 @@ El punto de entrada de instrucciones es `AGENTS.md` en la raíz del repo, que es
 **`claude plugin list` muestra nombres viejos.** Si no están en `enabledPlugins`, no cargan — son restos de la caché. Se pueden sacar con `claude plugin uninstall <viejo>@xelnagah-harness -s <alcance> -y`.
 
 **La misma skill aparece dos veces.** Tenés el enlace y el plugin conviviendo. Elegí uno: borrá el enlace de `~/.claude/skills/<skill>` o desinstalá el plugin.
+
+**Edité una skill en el repo y la sesión sigue comportándose igual.** Si la consumís por plugin, estás corriendo la copia de la caché, que se sirve de GitHub: el cambio no llega hasta que lo commiteás, lo pusheás y corrés A1. Editar el repo local no alcanza, y `/reload-plugins` tampoco. Si estás escribiendo skills a menudo, conviene consumirlas por enlace (ver la sección de otros agentes) en vez de por plugin.
 
 **`amp:inicializar` no pisó algo que yo quería actualizar.** Es a propósito: cuando encuentra algo divergente lo reporta en vez de pisarlo. Para converger contra la plantilla nueva usá `amp:actualizar`, que sí pisa lo Base (con respaldo).
