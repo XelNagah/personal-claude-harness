@@ -176,16 +176,21 @@ node .claude/decisiones/lint-decisiones/lint-decisiones.js
 ````markdown
 # Herramientas — manifiesto de subsistema
 
-Las **Herramientas** del repo — las *tools* que el Propósito requiere (tipos `script`, `skill` local, `MCP` local) — viven en este directorio (`herramientas/`), listadas en `INDICE.md` (tabla Herramienta | Tipo | Qué hace | Cómo se invoca | Estado). Los lints de subsistema **no** son Herramientas: son infra del Patrón y viven con su subsistema.
+Las **Herramientas** del repo — las *tools* que el Propósito requiere (tipos `script`, `skill` local, `MCP` local) — viven en este directorio (`herramientas/`), listadas en `INDICE.md` (tabla Herramienta | Tipo | Qué hace | Cómo se invoca | Estado). Los **lints de subsistema no son Herramientas**: son infra del Patrón y viven con su subsistema.
+
+El registro se separa **por origen** en dos secciones: **Herramientas Base** (las manda el harness; el nivelador reemplaza esa sección entera) y **Herramientas del Propósito** (las suma cada repo; el nivelador no las toca). Una Herramienta nueva del repo va siempre a la segunda.
 
 **Disparador:** consultar el índice para saber qué tools existen y cómo se invocan; registrar una Herramienta al fabricar o adoptar una tool repetible del Propósito. ⚠️ Una tool referenciada por ruta en `settings`, `.gitignore` o un hook no se mueve sin actualizar esa referencia (rompe el match por prefijo).
 
 **Skills:** ninguna de operación — el registro (`INDICE.md`) se edita a mano; instalación con `inicializar-herramientas`.
 
 **Índice: se carga siempre** (liviano). Al cerrar una tarea que tocó Herramientas, correr el lint desde la raíz del repo:
+
 ```bash
 node .claude/herramientas/lint-herramientas/lint-herramientas.js
 ```
+
+Convención en la memoria `feedback_herramientas.md`.
 
 @INDICE.md
 ````
@@ -1237,7 +1242,7 @@ if (!supRotas.length) console.log('    (ninguna)');
 
 ## §Herramientas — `.claude/herramientas/`
 
-Contenido inicial de `.claude/herramientas/INDICE.md` (tabla vacía — sin filas de ejemplo):
+Contenido inicial de `.claude/herramientas/INDICE.md` (dos secciones por origen: `## Herramientas Base` poblada con la Herramienta Base que manda el harness + `## Herramientas del Propósito` con la tabla vacía — sin filas de ejemplo):
 
 ```markdown
 # Herramientas del proyecto
@@ -1251,6 +1256,20 @@ Registro de las **Herramientas** del repo: las *tools* que el **Propósito** del
 - **Qué hace** — una línea.
 - **Cómo se invoca** — el comando (`script`), el nombre de skill que dispara el modelo (`skill`), o cómo se conecta y qué tool-calls expone (`mcp`).
 - **Estado** — `vigente`, `experimental` u `obsoleto` (los obsoletos se pueden depurar).
+
+> **Origen del contenido:** las Herramientas se separan por origen en dos secciones — **Herramientas Base** (las manda el harness; el nivelador `amp:actualizar` reemplaza esa sección entera al poner al día un AMP) y **Herramientas del Propósito** (las suma cada repo; el nivelador no las toca). Mismo molde que `conducta/INDICE.md` y que Base/Adaptaciones en `PREFERENCIAS.md`.
+
+## Herramientas Base
+
+Las que instala el harness (origen **Base**). El nivelador reemplaza **esta sección entera**; nunca abre la de abajo.
+
+| Herramienta | Tipo | Qué hace | Cómo se invoca | Estado |
+|-------------|------|----------|----------------|--------|
+| [actualizar-plugins](actualizar-plugins/) | script | Pone al día la capa de plugins del AMP en esta máquina y detecta el desfase entre lo que corre y lo publicado; marca aparte los plugins `RETIRADO` (nombres que el marketplace dejó de ofrecer ⇒ migración, no actualización). Sin `--aplicar` solo diagnostica; acepta ruta para apuntarlo a otro repo | `node .claude/herramientas/actualizar-plugins/actualizar-plugins.js [--aplicar] [rutaRepo]` | vigente |
+
+## Herramientas del Propósito
+
+Las que este repo suma para su Propósito (origen **aprendido**). El nivelador **no toca esta sección**.
 
 | Herramienta | Tipo | Qué hace | Cómo se invoca | Estado |
 |-------------|------|----------|----------------|--------|
@@ -1376,6 +1395,258 @@ console.log(`\n[4] REFS POR RUTA DE LINT ROTAS EN SETTINGS (${refsRotas.length})
 refsRotas.forEach(([f, p]) => console.log(`    ${f}  ->  ${p}   [no existe]`));
 if (!refsRotas.length) console.log('    (ninguna)');
 ```
+
+## §Script — actualizar-plugins — `.claude/herramientas/actualizar-plugins/actualizar-plugins.js`
+
+Herramienta **Base** del subsistema `herramientas` (va en la sección `## Herramientas Base` del registro). Pone al día la capa de plugins del AMP en esta máquina: los plugins se sirven de un clon del repo del marketplace, así que la versión que corre es la que quedó en la caché el día que se instaló y nada avisa cuando hay una nueva.
+
+Contenido exacto (Node, sin dependencias, sin red):
+
+```js
+#!/usr/bin/env node
+// actualizar-plugins.js — pone al dia la CAPA DE PLUGINS del Agente Multiproposito en esta maquina.
+//
+// Los plugins se sirven de un clon del repo del marketplace, asi que no se actualizan solos: la
+// version que CORRE es la que quedo en el cache el dia que se instalo. Este script compara lo que
+// corre contra lo que hay disponible y, con --aplicar, corre los comandos del CLI que lo nivelan.
+//
+//   node .claude/herramientas/actualizar-plugins/actualizar-plugins.js            (solo diagnostica)
+//   node .claude/herramientas/actualizar-plugins/actualizar-plugins.js --aplicar  (actualiza)
+//
+// Sin argumentos NO toca nada: sirve como control de desfase disco<->cargado.
+// Generico: no hardcodea nombres de plugin ni de marketplace — sale de `enabledPlugins` del repo.
+// Sin process.exit(1): reporta, no frena — es capa mecanica, el juicio queda del lado del agente.
+
+const fs = require('fs');
+const path = require('path');
+const os = require('os');
+const { spawnSync } = require('child_process');
+
+const APLICAR = process.argv.includes('--aplicar');
+// Acepta una ruta de repo como argumento (para apuntarlo a otro AMP de la maquina); por omision, el propio.
+const RUTA_ARG = process.argv.slice(2).find(a => !a.startsWith('--'));
+const REPO = RUTA_ARG ? path.resolve(RUTA_ARG) : path.resolve(__dirname, '..', '..', '..');
+const PLUGINS_DIR = path.join(os.homedir(), '.claude', 'plugins');
+
+function leerJson(p) {
+  try { return JSON.parse(fs.readFileSync(p, 'utf8')); } catch (e) { return null; }
+}
+
+// -- que plugins usa este repo: enabledPlugins del settings del repo + el del usuario --
+function plugesHabilitados() {
+  const ids = new Set();
+  const fuentes = [
+    path.join(REPO, '.claude', 'settings.json'),
+    path.join(REPO, '.claude', 'settings.local.json'),
+    path.join(os.homedir(), '.claude', 'settings.json'),
+  ];
+  for (const f of fuentes) {
+    const j = leerJson(f);
+    if (!j || !j.enabledPlugins) continue;
+    for (const [id, on] of Object.entries(j.enabledPlugins)) if (on) ids.add(id);
+  }
+  return [...ids];
+}
+
+// -- version que CORRE: la entrada de installed_plugins.json que aplica a este repo --
+function instalado(id) {
+  const j = leerJson(path.join(PLUGINS_DIR, 'installed_plugins.json'));
+  const entradas = (j && j.plugins && j.plugins[id]) || [];
+  // preferir la entrada de este repo; si no hay, la de alcance usuario
+  const propia = entradas.find(e => e.projectPath && path.resolve(e.projectPath) === REPO);
+  const usuario = entradas.find(e => e.scope === 'user');
+  return propia || usuario || entradas[0] || null;
+}
+
+// -- version DISPONIBLE: la del clon del marketplace, leyendo el plugin.json que apunta el catalogo --
+function disponible(nombre, marketplace) {
+  const mkts = leerJson(path.join(PLUGINS_DIR, 'known_marketplaces.json')) || {};
+  const mkt = mkts[marketplace];
+  if (!mkt || !mkt.installLocation) return { error: 'marketplace no registrado' };
+  const catalogo = leerJson(path.join(mkt.installLocation, '.claude-plugin', 'marketplace.json'));
+  if (!catalogo || !Array.isArray(catalogo.plugins)) return { error: 'catalogo ilegible' };
+  const fila = catalogo.plugins.find(p => p.name === nombre);
+  // Habilitado pero ausente del catalogo = el marketplace ya no lo ofrece (renombrado o dado de baja).
+  // No es "sin dato": es un plugin colgado, y actualizarlo no lo arregla — hay que migrar los nombres.
+  if (!fila) return { retirado: true };
+  // `source` es una ruta relativa dentro del clon ("./funcionalidades/amp"). Algunos marketplaces
+  // lo declaran como objeto (origen remoto propio): ahi el manifiesto no esta en este clon.
+  const origen = fila.source === undefined ? '.' : fila.source;
+  if (typeof origen !== 'string') return { error: 'el plugin se sirve de un origen propio, no del clon' };
+  const manifiesto = leerJson(path.join(mkt.installLocation, origen, '.claude-plugin', 'plugin.json'));
+  if (!manifiesto) return { error: 'plugin.json ilegible' };
+  // Sin campo `version` el plugin se versiona por commit: se compara el sha del clon.
+  if (!manifiesto.version) {
+    const r = spawnSync('git', ['rev-parse', 'HEAD'], { cwd: mkt.installLocation, encoding: 'utf8' });
+    return { version: null, sha: (r.stdout || '').trim() || null };
+  }
+  return { version: manifiesto.version, sha: null };
+}
+
+// -- diagnostico: una fila por plugin habilitado --
+function diagnosticar() {
+  const filas = [];
+  for (const id of plugesHabilitados().sort()) {
+    const [nombre, marketplace] = id.split('@');
+    if (!marketplace) continue;   // plugin sin marketplace (skills-dir u otra fuente): no aplica
+    const inst = instalado(id);
+    const disp = disponible(nombre, marketplace);
+    let estado, detalle;
+    if (disp.retirado) {
+      estado = 'RETIRADO';
+      detalle = `habilitado, pero ${marketplace} ya no lo ofrece (renombrado o dado de baja)`;
+    } else if (!inst) {
+      estado = 'NO INSTALADO';
+      detalle = 'habilitado en settings pero sin entrada instalada';
+    } else if (disp.error) {
+      estado = 'SIN DATO';
+      detalle = disp.error;
+    } else if (disp.version) {
+      estado = inst.version === disp.version ? 'AL DIA' : 'DESACTUALIZADO';
+      detalle = `corre ${inst.version} · disponible ${disp.version}`;
+    } else if (disp.sha) {
+      const igual = (inst.gitCommitSha || '').startsWith(disp.sha.slice(0, 12));
+      estado = igual ? 'AL DIA' : 'DESACTUALIZADO';
+      detalle = `versiona por commit · corre ${(inst.gitCommitSha || '?').slice(0, 12)} · disponible ${disp.sha.slice(0, 12)}`;
+    } else {
+      estado = 'SIN DATO';
+      detalle = 'no se pudo determinar la version disponible';
+    }
+    filas.push({ id, nombre, marketplace, estado, detalle, scope: (inst && inst.scope) || 'project' });
+  }
+  return filas;
+}
+
+function imprimir(filas) {
+  const ancho = Math.max(...filas.map(f => f.id.length), 10);
+  for (const f of filas) {
+    console.log(`  ${f.id.padEnd(ancho)}  ${f.estado.padEnd(15)} ${f.detalle}`);
+  }
+}
+
+// -- aplicar: refrescar el catalogo del marketplace y actualizar lo desactualizado --
+// El CLI exige el identificador COMPLETO (plugin@marketplace) y el alcance: con el nombre pelado
+// o con el alcance por omision falla con el mismo mensaje, `Plugin "x" not found`.
+function aplicar(filas) {
+  const marketplaces = [...new Set(filas.map(f => f.marketplace))];
+  for (const m of marketplaces) {
+    console.log(`\n> Refrescando el catalogo de ${m}...`);
+    const r = spawnSync('claude', ['plugin', 'marketplace', 'update', m], { encoding: 'utf8', shell: true, timeout: 180000 });
+    console.log('  ' + ((r.stdout || r.stderr || '').trim().split('\n').pop() || 'sin salida'));
+  }
+
+  // Releer: refrescar el catalogo puede haber cambiado que esta desactualizado.
+  const pendientes = diagnosticar().filter(f => f.estado === 'DESACTUALIZADO' || f.estado === 'NO INSTALADO');
+  if (!pendientes.length) {
+    console.log('\nNada que actualizar despues de refrescar el catalogo.');
+    return;
+  }
+  for (const f of pendientes) {
+    console.log(`\n> Actualizando ${f.id} (alcance ${f.scope})...`);
+    const r = spawnSync('claude', ['plugin', 'update', f.id, '--scope', f.scope], { encoding: 'utf8', shell: true, timeout: 180000 });
+    console.log('  ' + ((r.stdout || r.stderr || '').trim().split('\n').pop() || 'sin salida'));
+  }
+}
+
+// ---------------------------------------------------------------------------
+console.log(`== ACTUALIZAR PLUGINS: ${REPO} ==`);
+
+let filas = diagnosticar();
+if (!filas.length) {
+  console.log('\nNingun plugin habilitado para este repo (enabledPlugins vacio o ausente).');
+} else {
+  console.log('');
+  imprimir(filas);
+
+  const desfasados = filas.filter(f => f.estado === 'DESACTUALIZADO' || f.estado === 'NO INSTALADO');
+  const retirados = filas.filter(f => f.estado === 'RETIRADO');
+
+  if (APLICAR) {
+    aplicar(filas);
+    console.log('\n-- despues de aplicar --\n');
+    filas = diagnosticar();
+    imprimir(filas);
+    console.log('\nREINICIAR LA SESION para que los cambios tomen efecto.');
+    console.log('(`/reload-plugins` no alcanza: recarga los plugins en la version que ya tenian.)');
+  } else if (desfasados.length) {
+    console.log(`\n${desfasados.length} plugin(s) con desfase. Para nivelarlos:`);
+    console.log('  node .claude/herramientas/actualizar-plugins/actualizar-plugins.js --aplicar');
+  } else if (!retirados.length) {
+    console.log('\nTODO AL DIA.');
+  }
+
+  // Los retirados no se arreglan actualizando: son nombres que el marketplace dejo de ofrecer.
+  if (retirados.length) {
+    console.log(`\n${retirados.length} plugin(s) RETIRADO(S): este repo quedo en una generacion de nombres`);
+    console.log('que el marketplace ya no ofrece. Actualizar no los arregla — hay que desinstalar los');
+    console.log('nombres viejos e instalar el conjunto nuevo (migracion, no actualizacion).');
+    console.log('  ' + retirados.map(f => f.id).join('\n  '));
+  }
+}
+```
+
+Ficha `.claude/herramientas/actualizar-plugins/README.md`:
+
+````markdown
+# actualizar-plugins
+
+Pone al día la **capa de plugins** del Agente Multipropósito en esta máquina, y sirve de control de desfase.
+
+```bash
+# diagnostica, no toca nada
+node .claude/herramientas/actualizar-plugins/actualizar-plugins.js
+
+# actualiza lo que esté atrás y vuelve a verificar
+node .claude/herramientas/actualizar-plugins/actualizar-plugins.js --aplicar
+
+# apuntarlo a otro repo de la máquina
+node .claude/herramientas/actualizar-plugins/actualizar-plugins.js "D:/Proyectos/otro-repo"
+```
+
+## Por qué hace falta
+
+Los plugins **no se actualizan solos**: el marketplace se sirve de un clon del repo remoto, así que la versión que corre es la que quedó en la caché el día que se instaló. Un cambio publicado no llega hasta que alguien lo trae, y hasta entonces nada avisa.
+
+Pasó el 25/07/2026: el plugin `amp` corría la 0.6.2 con la 0.6.3 publicada, seis commits atrás. La versión vieja no tenía una preferencia Base que sí estaba escrita en el repo, así que el instalador habría sembrado preferencias viejas en un repo nuevo. Se descubrió de casualidad.
+
+## Qué compara
+
+Por cada plugin habilitado para el repo (`enabledPlugins` de `.claude/settings.json`, `settings.local.json` y el del usuario):
+
+| Estado | Qué significa |
+|--------|---------------|
+| `AL DIA` | Lo que corre coincide con lo disponible |
+| `DESACTUALIZADO` | Hay versión nueva sin traer |
+| `RETIRADO` | Está habilitado pero el marketplace ya no lo ofrece — el repo quedó en una generación de nombres vieja. **Actualizar no lo arregla**: es una migración (desinstalar los nombres viejos, instalar el conjunto nuevo) |
+| `NO INSTALADO` | Habilitado en `settings` pero sin entrada instalada |
+| `SIN DATO` | El plugin se sirve de un origen propio, o el catálogo no se pudo leer |
+
+- **Lo que corre** sale de `installed_plugins.json`, prefiriendo la entrada de este repo sobre la de alcance usuario.
+- **Lo disponible** sale del `plugin.json` dentro del clon del marketplace. Si ese manifiesto no declara `version`, el plugin se versiona por commit y se comparan los sha.
+
+Es genérico: no hardcodea nombres de plugin ni de marketplace, así que también reporta los plugins ajenos al harness que el repo tenga habilitados.
+
+## Qué corre con `--aplicar`
+
+```
+claude plugin marketplace update <marketplace>
+claude plugin update <plugin>@<marketplace> --scope <alcance>
+```
+
+⚠️ Las dos partes del segundo comando son obligatorias: con el nombre pelado (`claude plugin update amp`) o con el alcance por omisión falla con el mismo mensaje, `Plugin "amp" not found`, que no dice cuál de las dos falta. Por eso conviene correr esto y no los comandos a mano.
+
+Refresca el catálogo primero y **vuelve a diagnosticar** antes de actualizar: traer el catálogo puede cambiar qué está atrasado.
+
+**Después hay que reiniciar la sesión.** `/reload-plugins` no alcanza: recarga los plugins en la versión que ya tenían.
+
+## Lo que no hace
+
+- **No escribe el handoff.** Un script no sabe en qué venías trabajando; eso lo redacta el agente antes de llamarlo.
+- **No toca los archivos de `.claude/`.** Esa es la otra capa, y la pone al día `amp:actualizar`.
+- **No migra los nombres viejos.** Los detecta y los reporta; el procedimiento está en `docs/INSTALAR.md`.
+
+Sin `process.exit(1)`: reporta, no frena — es capa mecánica, el juicio queda del lado del agente.
+````
 
 ## §Conducta — `.claude/conducta/`
 
