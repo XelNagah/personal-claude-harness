@@ -11,3 +11,7 @@ Desktop.ini
 
 # Scratch / temporales de trabajo (handoffs, notas de sesión)
 .claude/tmp/
+
+# Respaldo que deja el nivelador antes de pisar lo Base: copia completa de .claude/,
+# de un solo uso. Se borra una vez verificado que el nivelado quedó bien.
+.claude/.respaldo-amp/
