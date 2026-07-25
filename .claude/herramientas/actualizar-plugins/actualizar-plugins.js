@@ -10,7 +10,7 @@
 //
 // Sin argumentos NO toca nada: sirve como control de desfase disco<->cargado.
 // Generico: no hardcodea nombres de plugin ni de marketplace — sale de `enabledPlugins` del repo.
-// Sin process.exit(1): reporta, no frena (decision 0003, capa mecanica).
+// Sin process.exit(1): reporta, no frena — es capa mecanica, el juicio queda del lado del agente.
 
 const fs = require('fs');
 const path = require('path');

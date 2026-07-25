@@ -10,13 +10,26 @@ Registro de las **Herramientas** del repo: las *tools* que el **Propósito** del
 - **Cómo se invoca** — el comando (`script`), el nombre de skill que dispara el modelo (`skill`), o cómo se conecta y qué tool-calls expone (`mcp`).
 - **Estado** — `vigente`, `experimental` u `obsoleto` (los obsoletos se pueden depurar).
 
+> **Origen del contenido:** las Herramientas se separan por origen en dos secciones — **Herramientas Base** (las manda el harness; el nivelador `amp:actualizar` reemplaza esa sección entera al poner al día un AMP) y **Herramientas del Propósito** (las suma cada repo; el nivelador no las toca). Mismo molde que `conducta/INDICE.md` y que Base/Adaptaciones en `PREFERENCIAS.md`.
+
+## Herramientas Base
+
+Las que instala el harness (origen **Base**). El nivelador reemplaza **esta sección entera**; nunca abre la de abajo.
+
+| Herramienta | Tipo | Qué hace | Cómo se invoca | Estado |
+|-------------|------|----------|----------------|--------|
+| [actualizar-plugins](actualizar-plugins/) | script | Pone al día la capa de plugins del AMP en esta máquina y detecta el desfase entre lo que corre y lo publicado; marca aparte los plugins `RETIRADO` (nombres que el marketplace dejó de ofrecer ⇒ migración, no actualización). Sin `--aplicar` solo diagnostica; acepta ruta para apuntarlo a otro repo | `node .claude/herramientas/actualizar-plugins/actualizar-plugins.js [--aplicar] [rutaRepo]` | vigente |
+
+## Herramientas del Propósito
+
+Las que este repo suma para su Propósito (origen **aprendido**) — acá, autorar el harness. El nivelador **no toca esta sección**.
+
 | Herramienta | Tipo | Qué hace | Cómo se invoca | Estado |
 |-------------|------|----------|----------------|--------|
 | [instalar-junctions](instalar-junctions/) | script | Crea/repara las dos tandas de junctions de skills (`~/.claude/skills` para Claude Code + `~/.agents/skills` para Codex/Cursor/Gemini) apuntando a `funcionalidades/*/skills/`; idempotente, no pisa lo divergente | `node .claude/herramientas/instalar-junctions/instalar-junctions.js` | vigente |
 | [ejecutar-control-cierre](ejecutar-control-cierre/) | script | Corre todos los chequeos del repo de una pasada (lints de subsistema descubiertos dinámicamente + `claude plugin validate`) y resume verde/hallazgos | `node .claude/herramientas/ejecutar-control-cierre/ejecutar-control-cierre.js` | vigente |
 | [lint-harness](lint-harness/) | script | Lint de coherencia del harness: disco↔marketplace↔REGISTRO, junctions, texto literal divergente entre plantillas, tamaño y estructura de los MANIFIESTO.md (dec. 0017/0019), citas a decisiones del harness en archivos distribuibles (dec. 0024) | `node .claude/herramientas/lint-harness/lint-harness.js` | vigente |
 | [inventariar-componentes-sueltos](inventariar-componentes-sueltos/) | script | Barre `.claude/` y lista los componentes (archivos y carpetas) que no son subsistema (lint co-ubicado) ni infra conocida; inventaría sin juzgar. Frente B del plan de efecto conductual; acepta ruta para apuntarla a un consumidor | `node .claude/herramientas/inventariar-componentes-sueltos/inventariar-componentes-sueltos.js [rutaRepo]` | vigente |
-| [actualizar-plugins](actualizar-plugins/) | script | Pone al día la capa de plugins del AMP en esta máquina y detecta el desfase entre lo que corre y lo publicado; marca aparte los plugins `RETIRADO` (nombres que el marketplace dejó de ofrecer ⇒ migración, no actualización). Sin `--aplicar` solo diagnostica; acepta ruta para apuntarlo a otro repo | `node .claude/herramientas/actualizar-plugins/actualizar-plugins.js [--aplicar] [rutaRepo]` | vigente |
 | [lint-herramientas](lint-herramientas/) | script | Lint de este registro: README por herramienta local, herramienta en índice, filas colgadas, refs por ruta de lint en settings | `node .claude/herramientas/lint-herramientas/lint-herramientas.js` | vigente |
 | [propagar-harness](../skills/propagar-harness/) | skill | Propaga un cambio textual al instalador consolidado `amp:inicializar`: subagente fresco para la copia, verificación carácter a carácter de los embebidos, subida de versión | skill `propagar-harness` (el agente la dispara al tocar textos que viajan) | vigente |
 | [agregar-funcionalidad](../skills/agregar-funcionalidad/) | skill | Alta completa de una funcionalidad/plugin: carpeta + marketplace + junction + REGISTRO + `amp:inicializar` si aplica, con validación final | skill `agregar-funcionalidad` | vigente |

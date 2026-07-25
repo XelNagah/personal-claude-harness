@@ -55,4 +55,4 @@ Refresca el catálogo primero y **vuelve a diagnosticar** antes de actualizar: t
 - **No toca los archivos de `.claude/`.** Esa es la otra capa, y la pone al día `amp:actualizar`.
 - **No migra los nombres viejos.** Los detecta y los reporta; el procedimiento está en `docs/INSTALAR.md`.
 
-Sin `process.exit(1)`: reporta, no frena (decisión 0003, capa mecánica).
+Sin `process.exit(1)`: reporta, no frena — es capa mecánica, el juicio queda del lado del agente.
