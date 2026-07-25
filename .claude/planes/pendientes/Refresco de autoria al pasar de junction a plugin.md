@@ -11,7 +11,24 @@ Este repo tiene dos formas de consumir sus propias skills, y no pueden convivir 
 
 Hoy esta máquina está del lado plugin: los 7 plugins están habilitados en `.claude/settings.json` y `lint-harness` reporta 22 enlaces faltantes como hallazgo conocido. O sea que **el repo que autora el harness lo consume como si fuera un repo ajeno**: un cambio en un `SKILL.md` no se prueba hasta publicarlo.
 
-Ejemplo concreto de lo que cuesta: corregir una línea de `amp:planificar` y probarla hoy son cinco pasos (editar, subir versión, commit, push, actualizar plugin) y deja versión publicada por cada intento; con enlace es uno (editar) y no ensucia el historial de versiones. Si el ciclo de prueba cuesta cinco pasos ⇒ se prueba menos ⇒ se publica sin probar.
+## Lo que se verificó el 25/07/2026
+
+Lo de arriba dejó de ser sospecha. Mediciones sobre esta máquina:
+
+- **El marketplace `xelnagah-harness` es de tipo `github`** (`XelNagah/personal-claude-harness`), no de tipo `directory`. Los plugins se sirven de un **clon del repo remoto**, no del disco. Consecuencia dura: **no hay forma de probar un cambio sin publicarlo antes**. El ciclo real no es de cinco pasos sino de seis — editar, subir versión, commit, **push**, `plugin update`, reiniciar — y el cuarto es publicar en GitHub.
+- **El fallo ya ocurrió, en silencio.** El plugin `amp` estaba en **0.6.2** mientras el repo tenía **0.6.3** en disco, clavado en el commit `56607d6`, seis commits atrás. La 0.6.3 traía la preferencia Base nueva (una decisión por vez): esa regla estaba escrita en el repo y **ausente de la skill que corría**. Si alguien hubiera corrido `amp:inicializar` desde esta máquina en ese lapso, habría instalado las preferencias Base viejas en un repo nuevo. Nada avisó.
+- **`/reload-plugins` no arregla esto:** recarga los plugins ya instalados en la versión que ya tenían. Releer el clon no es actualizarlo.
+- **`claude plugin update` exige las dos cosas a la vez:** identificador completo **y** alcance (`claude plugin update amp@xelnagah-harness --scope project`). Con el nombre pelado falla, y con el alcance por omisión (usuario) también — con el **mismo** mensaje, *Plugin "amp" not found*, que no distingue cuál de las dos falta. Ya documentado en `docs/INSTALAR.md` §A1.
+
+## Una alternativa que no estaba sobre la mesa: `skills-dir`
+
+El CLI tiene una **tercera fuente de plugins** además del marketplace y las skills sueltas: `claude plugin init` crea un plugin en `~/.claude/skills/<nombre>/` y su ayuda declara que se auto-carga la sesión siguiente como `<nombre>@skills-dir`; `claude plugin eval` dice resolver *"installed and skills-dir plugins both"*. Si un enlace `~/.claude/skills/amp` → `funcionalidades/amp` funciona igual, sería edición en vivo **sin** perder la forma real de distribución (prefijo incluido) — que es exactamente lo que falta.
+
+**No verificado.** Riesgo previsible: `amp@skills-dir` y `amp@xelnagah-harness` son el mismo nombre de plugin por dos fuentes; probablemente haya que desinstalar el del marketplace. Es una prueba corta y decide buena parte del plan.
+
+## Un control que avise, sea cual sea el modo
+
+Ortogonal a elegir modo: hoy `lint-harness` compara disco ↔ marketplace ↔ `REGISTRO.md`, pero **no** contra lo que está realmente cargado. La versión que corre es legible sin adivinar — es el nombre de la carpeta en `~/.claude/plugins/cache/<marketplace>/<plugin>/<version>/`. Compararla contra la `version` del `plugin.json` habría gritado *"amp: disco 0.6.3, activo 0.6.2"* el mismo día. No reemplaza decidir el modo, pero convierte un fallo silencioso en un hallazgo. Abierto: en una máquina que consume por enlace ese chequeo no aplica, así que el control tiene que saber en qué modo está — el mismo dato que hoy le falta al hallazgo de los 22 enlaces.
 
 ## A resolver
 
