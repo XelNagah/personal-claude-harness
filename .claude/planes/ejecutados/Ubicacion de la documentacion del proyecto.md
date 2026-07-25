@@ -1,6 +1,6 @@
 # Ubicación de la documentación del proyecto
 
-**Estado: Nuevo · Creado 26-07-24.**
+**Estado: Ejecutado · Creado 26-07-24 · Cerrado 26-07-25.**
 
 ## Problema
 
@@ -23,3 +23,12 @@ El README es el landing de GitHub. Referencia otras páginas, que a su vez puede
 ## Contexto
 
 Se abrió al detectar que el README está completamente desactualizado y que hacía falta un doc de instalación/actualización. El usuario frenó la ejecución para resolver primero la ubicación de los docs, en vez de tirar el archivo en la raíz. La actualización del README y la escritura de `INSTALAR.md` quedan **bloqueadas** por esta decisión de ubicación.
+
+## Notas de implementación
+
+**Cerrado 26-07-25** (commits `d5ba81e` la decisión, `b89bbc1` la documentación). Los tres puntos a resolver quedaron resueltos y lo que bloqueaban, escrito.
+
+- **Dónde → `docs/` en la raíz** (decisión **0031**). Se eligió sobre `documentacion/` y sobre dejar los archivos sueltos: GitHub le da trato especial a `docs/` y el repo es público. Es convención, no aplicación de un eje — la decisión lo dice explícito.
+- **Qué cuenta como qué → cuatro clases de texto fuera de `.claude/`:** punto de entrada (`AGENTS.md`, `CLAUDE.md`), portada (`README.md`), **registro con lint** (`REGISTRO.md`) y documentación humana (`docs/`). El caso `REGISTRO.md` se sumó al **Test de demarcación (0020)**: es registro, no documentación, porque `lint-harness` lo lee como fuente de datos. El error a evitar es clasificar por extensión y ubicación en vez de por **quién lo lee**.
+- **¿Viaja al consumidor? → no.** Convención de este repo solamente: `amp:inicializar` no la instala. La documentación es del lado Producto, y del lado Producto el harness no manda — cada repo documenta su Propósito donde quiera.
+- **Desbloqueado y escrito:** `docs/INSTALAR.md` (instalación de cero, actualización en dos capas —plugins por comandos del propio documento, archivos por `amp:actualizar`, con la dependencia circular explicada—, Codex/Cursor/Gemini por enlaces, problemas frecuentes) y el **README al día** (título AMP, tablas de 9 subsistemas y 7 plugins, diagrama del patrón corregido para arrancar en el manifiesto, estructura). De paso se arregló la sección de instalación del README, que mandaba instalar `setup-completo` e invocar `inicializar-custom` — ninguno de los dos existe desde la decisión 0029.

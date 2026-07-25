@@ -32,6 +32,8 @@ La separación se realiza **según la granularidad del subsistema**, no con una 
 - Aplicar el corte de conducta a su **funcionalidad/plugin** cuando se empaquete conducta (hoy no está empaquetada); va con el plan de crecer/empaquetar conducta.
 - Nada en los otros subsistemas: ya quedan separados por la estructura existente.
 
+**Heredado del plan de distribución** (cerrado el 25/07/2026): su abierto *«marcadores de región gestionada — formato exacto de los delimitadores que el nivelador respeta en archivos mixtos»* queda **acá, y ya resuelto por la vía negativa**: la separación por origen elimina los archivos mixtos, así que no hay delimitadores que definir. Si en el futuro algún archivo vuelve a mezclar los dos orígenes, el formato se decide en este plan, no en el de distribución.
+
 ## Cruces
 
 - **Distinto, no igual:** `Separar mecánica del harness de criterio del autor` — ese es otro eje (gusto personal vs mecánica universal, los dos upstream); este es upstream vs aprendido.

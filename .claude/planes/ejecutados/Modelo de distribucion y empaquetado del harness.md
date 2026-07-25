@@ -1,6 +1,6 @@
 # Modelo de distribución y empaquetado del harness
 
-**Estado: Nuevo · Creado 26-07-23.** Diseño acordado en una sesión larga del agente `automejora` (repo `como-uso-claude`); traspaso a este repo, que es su dueño. Corrió en parte por `planificar` (esta sesión). **Ratifica y refina** las decisiones 0009/0010/0013; suma piezas nuevas (nivelador consolidado, subagentes, plantilla de estructura empaquetada en el plugin).
+**Estado: Ejecutado · Creado 26-07-23 · Cerrado 26-07-25.** Diseño acordado en una sesión larga del agente `automejora` (repo `como-uso-claude`); traspaso a este repo, que es su dueño. Corrió en parte por `planificar` (esta sesión). **Ratifica y refina** las decisiones 0009/0010/0013; suma piezas nuevas (nivelador consolidado, subagentes, plantilla de estructura empaquetada en el plugin).
 
 ## Contexto
 
@@ -71,6 +71,31 @@ harness/  (se publica como marketplace)
 - **Precondición:** `Separar origen Base y aprendido en los subsistemas` (decisión 0027) — el nivelador `amp-actualizar` la necesita para saber qué puede pisar.
 - **Refina/absorbe:** `Nombres y distribucion de las skills del harness` (ahí viven el `amp-` prefijo y la limpieza de nombres); `Restaurar la portabilidad copiar y pegar del orquestador` (el orquestador se vuelve `amp-inicializar`).
 - **Relacionado, NO igual:** `Habilidad para poblar subsistemas desde un repo existente` (Diferido; es descubrimiento/siembra activa, distinto de `amp-actualizar`, que pone al día la estructura); `Publicar el harness en ingles` (es/en).
+
+## Notas de implementación
+
+**Cerrado 26-07-25.** Es un plan paraguas: capturó un diseño completo, y sus partes se ejecutaron o se desprendieron por separado. Cierra porque **no le queda cuerpo propio** — todo lo suyo está ejecutado, asentado como decisión, o vive en un plan con dueño.
+
+**De los 5 puntos "firme":**
+
+| Punto | Dónde terminó |
+|-------|---------------|
+| 1. Distribución = marketplace (Modelo A) | **Ejecutado.** `.claude-plugin/marketplace.json` publica `xelnagah-harness`; instalación por `/plugin marketplace add` + `/plugin install amp`, documentada en `docs/INSTALAR.md` (decisión 0031) |
+| 2. Multi-plugin por subsistema | **Ejecutado**, asentado en la decisión **0029**: 7 plugins (`amp` + 6 `amp-<sub>`), bundle por `dependencies`, 1 install por repo, project scope |
+| 3. Inicializadores 10 → 1 | **Ejecutado.** `amp:inicializar` es la fuente única del setup; los `inicializar-<sub>` ya no existen |
+| 4. `amp:actualizar` (nivelador) | **Ejecutado** por el plan desprendido `Nivelador amp-actualizar de estructura` (cerrado 24/07/2026), con la decisión 0027 como precondición |
+| 5. Subagentes como componente nuevo | **NO ejecutado** → desprendido a [Subagentes como componente distribuible del AMP](../pendientes/Subagentes%20como%20componente%20distribuible%20del%20AMP.md). Verificado al cerrar: no hay `.claude/agents/`, ni mención en `amp:inicializar`, ni subagentes empaquetados en el plugin `amp` |
+
+**Ejecución de 0029 — verificada al cerrar.** El plan la declaraba pendiente; hoy está hecha: `marketplace.json` reescrito a 7 plugins, carpetas renombradas a `amp-<sub>`, `dependencies` cableadas en el `plugin.json` de `amp`, y las 4 skills transversales renombradas (`amp:inicializar`, `amp:planificar`, `amp:info`, `amp:actualizar`). El follow-up de terminología también: barrido de los vetados del 24/07/2026 sobre `funcionalidades/`, `REGISTRO.md`, `AGENTS.md` y `docs/` sin acierto — el único es la propia regla de conducta que cita `dogfooding` como **ejemplo** del test de anglicismos, uso legítimo.
+
+**De los 4 abiertos:**
+
+- **es/en (amp/mpa)** → al plan [Publicar el harness en inglés](../pendientes/Publicar%20el%20harness%20en%20ingles.md), que es su dueño natural. Ahí se sumó como pregunta abierta, con la observación de que el eje **solo existe si la publicación es bilingüe**: si es reemplazo, desaparece.
+- **Marcadores de región gestionada** → al plan [Separar origen Base y aprendido](../pendientes/Separar%20origen%20Base%20y%20aprendido%20en%20los%20subsistemas.md), donde ya está resuelto por la vía negativa: separar por origen elimina los archivos mixtos, así que no hay delimitadores que definir.
+- **Refresco de autoría** (hueco de 0013) → desprendido a [Refresco de autoría al pasar de enlace a plugin](../pendientes/Refresco%20de%20autoria%20al%20pasar%20de%20junction%20a%20plugin.md). Sigue abierto y hoy pesa: esta máquina está del lado plugin, así que el repo que autora el harness lo consume como si fuera ajeno.
+- **Canal-copia estilo `skills.sh`** → desprendido a [Canal de instalación por copia](../pendientes/Canal%20de%20instalacion%20por%20copia.md), en estado **Diferido**, que refleja el "no urgente" del original.
+
+**Lo que queda como referencia y no se mueve:** las secciones "Forma del repo", "Cruces con lo ya decidido" y la lección de Pocock de abajo. La primera describe una estructura (`plugins/` en la raíz) que **no** es la que quedó — el repo usa `funcionalidades/`; se conserva como registro de lo que se pensó, no como instrucción.
 
 ## Lección de referencia — Matt Pocock (`mattpocock/skills`)
 

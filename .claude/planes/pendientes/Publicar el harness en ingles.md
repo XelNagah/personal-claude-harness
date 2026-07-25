@@ -27,6 +27,7 @@ Migración de idioma del harness completo, de español a inglés, para publicaci
 - **¿El dominio del usuario también va a inglés, o solo la infra del harness?** La preferencia Base dice *"español para el dominio, inglés para infra"* — publicar en inglés puede exigir revisar esa preferencia misma.
 - **¿Repos consumidores ya instalados en español?** Ruptura (como el `name` del marketplace).
 - **¿Se traduce el historial** (decisiones, memorias viejas) o solo lo vivo?
+- **¿Cómo se publican los dos idiomas — `amp` y `mpa`?** (Eje heredado del plan [Modelo de distribución y empaquetado del harness](../ejecutados/Modelo%20de%20distribucion%20y%20empaquetado%20del%20harness.md) al cerrarse el 25/07/2026; era su último abierto de esta clase.) Dos formas: **un solo repo de autoría** con las dos versiones adentro, publicando un marketplace por idioma, o **dos repos separados**. Con un repo, un arreglo de lint se hace una vez y se refleja en los dos marketplaces, pero cada cambio obliga a tocar las dos versiones en el mismo commit o quedan desparejas; con dos repos, cada uno vive tranquilo y el arreglo hay que hacerlo dos veces. La respuesta depende de la primera pregunta de esta lista: si es **reemplazo**, el eje desaparece (hay un solo idioma vivo y esto no se pregunta); solo existe si es **bilingüe**. El nombre de producto ya está decidido para los dos idiomas: *Agentes Multipropósito* (AMP) / *Multipurpose Agents* (MPA), decisión 0014.
 
 ## Depende de
 
