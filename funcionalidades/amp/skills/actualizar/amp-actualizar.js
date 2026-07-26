@@ -116,12 +116,18 @@ function clasificar() {
     }
   }
 
-  // [3] conducta: piezas propias + corte Base/Proposito
+  // [3] conducta: piezas propias + corte Base/Proposito + la Pantalla de bienvenida
   const cond = path.join(claude, 'conducta');
   if (esDir(cond)) {
-    for (const pieza of [['MOMENTOS.md', 'archivo'], ['establecer-conducta', 'hook'], ['lint-conducta', 'lint']]) {
+    for (const pieza of [['MOMENTOS.md', 'archivo'], ['establecer-conducta', 'hook'], ['lint-conducta', 'lint'],
+                         ['mostrar-pantalla-bienvenida', 'Herramienta de la Pantalla de bienvenida']]) {
       if (!existe(path.join(cond, pieza[0]))) add('base', '~', `conducta/${pieza[0]}`, `${pieza[1]} ausente: instalar`);
     }
+    // El momento "al arrancar la sesion" es lo que dispara la Pantalla; sin el, la regla no se entrega.
+    const momentos = path.join(cond, 'MOMENTOS.md');
+    if (existe(momentos) && !/al arrancar la sesi[oó]n/i.test(leer(momentos)))
+      add('base', '~', 'conducta/MOMENTOS.md', 'sin el momento «al arrancar la sesion» (SessionStart): agregar la fila');
+
     const indice = path.join(cond, 'INDICE.md');
     if (existe(indice)) {
       const t = leer(indice);
@@ -131,14 +137,22 @@ function clasificar() {
         add('divergente', '?', 'conducta/INDICE.md', 'reglas sin corte Base/Proposito (pre-0027): repartir requiere decidir cuales son Base y cuales del Proposito');
       else if (!tieneCorte)
         add('base', '~', 'conducta/INDICE.md', 'sin secciones Reglas Base / Reglas del Proposito: poner al dia');
+      if (!/mostrar-pantalla-bienvenida/.test(t))
+        add('base', '~', 'conducta/INDICE.md', 'sin la Regla Base que muestra la Pantalla de bienvenida al arrancar: agregar la fila');
     }
   }
 
-  // [4] cableado del hook de conducta en settings.json
+  // [3b] identidad del repo: Titulo + Proposito. Sin este archivo, la Pantalla de bienvenida y
+  // amp:info no tienen que mostrar.
+  if (!existe(path.join(claude, 'identidad.md')))
+    add('base', '+', 'identidad.md', 'ausente: Titulo + Proposito del repo (se preguntan, no se inventan)');
+
+  // [4] cableado de los hooks en settings.json. Son TRES eventos y cada uno cumple lo suyo: sin
+  // SessionStart no hay Pantalla de bienvenida al arrancar, que es una regla Base de conducta.
   const settings = path.join(claude, 'settings.json');
   const cableado = revisarHook(settings);
-  if (!cableado.ups || !cableado.pre) {
-    const faltan = [!cableado.ups && 'UserPromptSubmit', !cableado.pre && 'PreToolUse Write|Edit'].filter(Boolean).join(' + ');
+  if (!cableado.ups || !cableado.pre || !cableado.ses) {
+    const faltan = [!cableado.ses && 'SessionStart', !cableado.ups && 'UserPromptSubmit', !cableado.pre && 'PreToolUse Write|Edit'].filter(Boolean).join(' + ');
     add('base', '~', 'settings.json', `hook establecer-conducta sin cablear (${faltan}): agregar por merge`);
   }
 }
@@ -158,7 +172,7 @@ function contarFilasTabla(txt) {
 
 // lee settings.json y dice si el hook establecer-conducta esta en UserPromptSubmit y en PreToolUse
 function revisarHook(settingsPath) {
-  const out = { ups: false, pre: false };
+  const out = { ups: false, pre: false, ses: false };
   if (!existe(settingsPath)) return out;
   let cfg; try { cfg = JSON.parse(leer(settingsPath)); } catch { return out; }
   const hooks = (cfg && cfg.hooks) || {};
@@ -166,6 +180,7 @@ function revisarHook(settingsPath) {
     (g.hooks || []).some(h => typeof h.command === 'string' && /establecer-conducta/.test(h.command)));
   out.ups = tiene('UserPromptSubmit');
   out.pre = tiene('PreToolUse');
+  out.ses = tiene('SessionStart');
   return out;
 }
 
