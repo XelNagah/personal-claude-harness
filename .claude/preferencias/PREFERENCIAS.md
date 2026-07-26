@@ -18,7 +18,7 @@ Reglas de conducta del agente en este repo. Siempre en contexto (importado desde
 - Nomenclatura en español para el dominio; inglés solo para infraestructura técnica.
 - Cero invención de datos: lo que no salga de una fuente verificada se marca como faltante o como interpretación propia.
 - Terminología: no acuñar términos del dominio por cuenta propia; preferir las palabras del usuario. **Español corriente en todo**: nada de palabras inventadas o raras (aunque suenen técnicas), ni en texto plano ni en diagramas — no solo en los registros. **Control duro en registros canónicos** (glosario, decisiones): ningún término acuñado por el agente se asienta sin ratificación del usuario. En texto plano/diagramas se puede usar, marcado como propuesto.
-- **Nunca abreviar en lo que queda escrito.** En documentación, registros, comentarios y textos que viajan a otros repos, los nombres del dominio van **completos**: nada de siglas ni formas acortadas. Las siglas quedan para la conversación. Que un alias esté registrado en el glosario dice qué significa ese término, **no** autoriza a usarlo en lugar del nombre.
+- **La sigla nunca sola en lo que queda escrito.** En documentación, registros, comentarios y textos que viajan a otros repos, el nombre del dominio va **completo**. La sigla puede **acompañarlo** —`Agente Multipropósito (AMP)`— y conviene presentarla así en la primera mención, para que el lector la reconozca cuando la cruce; lo que no se hace es usarla **en lugar** del nombre. En la conversación es libre. Que un alias esté registrado en el glosario dice qué significa ese término, **no** autoriza a sustituir el nombre por él en el texto escrito.
 
 ## Adaptaciones de este repo
 
