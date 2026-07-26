@@ -1,4 +1,4 @@
-# Agente Multipropósito — AMP
+# Agente Multipropósito
 
 Setup estándar para agentes de código de **propósito general**. Vos le decís al repo **qué querés lograr** (llevar la contabilidad, analizar dónde mudarte, probar modelos de IA) y el agente construye ese dominio **sesión a sesión**: aprende algo, lo persiste fuera de la memoria efímera del chat, y por eso la próxima vez arranca más capaz. El mismo setup sirve a cualquier propósito.
 
@@ -100,7 +100,7 @@ amp:inicializar
 
 A partir de ahí, trabajás normal: al arrancar la sesión el agente ve el estado del repo y sus manifiestos, y escribe lo aprendido a medida que aparece.
 
-📄 **[Manual de instalación completo](docs/INSTALAR.md)** — instalación de cero paso a paso, cómo actualizar un repo que ya tiene el AMP (incluidas las versiones con nombres de plugin viejos), instalación para Codex / Cursor / Gemini, y problemas frecuentes.
+📄 **[Manual de instalación completo](docs/INSTALAR.md)** — instalación de cero paso a paso, cómo actualizar un repo que ya tiene el Agente Multipropósito (incluidas las versiones con nombres de plugin viejos), instalación para Codex / Cursor / Gemini, y problemas frecuentes.
 
 El catálogo completo de funcionalidades, dependencias y nombres de skill está en [REGISTRO.md](REGISTRO.md).
 
