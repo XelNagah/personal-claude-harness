@@ -86,6 +86,16 @@ Los planes **ejecutados** y **descartados** son registro de lo que pasó, con la
 - Si conviene un control que impida la reincidencia. Marcar cada aparición como hallazgo es ruidoso —el uso genérico es legítimo—; el candidato es una regla de conducta en el momento de escribir, no un lint.
 - El orden: la Plantilla primero (es lo que viaja), el resto después.
 
+## El momento de escribir no cubre lo que se publica
+
+Apareció al verificar el Frente A el 26/07/2026, y no lo cubre ningún plan. La regla Base de conducta que actúa en el momento `al escribir` arranca diciendo *"Acabás de escribir un `.md` del harness (`.claude/`)"*: **nombra solo el Agente Multipropósito instalado acá y no menciona lo que este repo publica**, que es por donde entró toda la terminología vetada. La regla se entrega igual —el hook la dispara al escribir cualquier `.md`—, pero el texto que llega le señala al agente el lugar equivocado.
+
+Falta además la acción `bloquear` que la decisión 0025 previó para términos vetados conocidos: hoy la única clase implementada en ese momento es `inyectar`.
+
+Consecuencia: el control nuevo agarra el término **después** de escrito, cuando corre el control de cierre. En el momento de escribirlo no hay cobertura. Es el frente que conviene encarar primero, porque los otros dos barren texto que se va a volver a escribir.
+
+Se cruza con `Crecer el subsistema conducta`, que es el dueño de las clases de acción que faltan.
+
 ## Cruces
 
 - `Nombres y distribucion de las skills del harness` — dueño del renombre del marketplace, que es la población 2.

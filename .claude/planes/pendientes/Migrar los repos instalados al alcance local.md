@@ -20,4 +20,4 @@ Por repo: desinstalar los siete de `project` e instalar `amp` en `local`. **El o
 
 ## Por qué no se hizo el mismo día
 
-Este repo estaba en medio de la sesión que autoraba los cambios: migrarlo dejaba los plugins sin cargar a mitad de trabajo. El Coordinador espera su propia sesión desde antes (ver el frente A del handoff).
+Este repo estaba en medio de la sesión que autoraba los cambios: migrarlo dejaba los plugins sin cargar a mitad de trabajo. El Coordinador no se puede migrar desde acá: hay que abrir una sesión en `D:\Proyectos\Agente-Coordinador` y pedir `amp:actualizar` allá, porque nivelar un Agente con Propósito se corre adentro del repo que se nivela. Eso quedó pendiente de la sesión del 24/07/2026 y sigue sin hacerse.
