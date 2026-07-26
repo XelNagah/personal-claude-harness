@@ -3,7 +3,9 @@
 // Uso: node lint-conocimiento.js [<carpeta>]   (default: .claude/conocimiento)
 const fs = require('fs'), path = require('path');
 const root = path.resolve(process.argv[2] || '.claude/conocimiento');
-const EXCLUDE = new Set(['.git', 'node_modules', 'exports', 'pdfs']);
+// '.respaldo-amp' son copias congeladas de .claude/ que dejaron corridas viejas del nivelador:
+// sus hallazgos ya no se pueden corregir y duplican el diagnostico real. No se barren.
+const EXCLUDE = new Set(['.git', 'node_modules', '.respaldo-amp', 'exports', 'pdfs']);
 
 function walk(dir, acc) {
   for (const e of fs.readdirSync(dir, { withFileTypes: true })) {

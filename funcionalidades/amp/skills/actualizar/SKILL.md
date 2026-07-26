@@ -74,9 +74,12 @@ El repo quedó con nombres de plugin que el marketplace ya no ofrece. **No se ar
    ```bash
    node <ruta-de-esta-skill>/amp-actualizar.js --respaldo
    ```
-   Deja la copia en `.claude/.respaldo-amp/<fecha>/`. Es la única red: `.claude/` suele estar gitignoreado en el host.
+   El script decide solo, y puede no hacer nada:
 
-   **Asegurar que el respaldo esté ignorado por git.** Si el repo usa git, agregar `.claude/.respaldo-amp/` al `.gitignore` (si no está ya). Es una copia completa de `.claude/`: commitearla duplicaría la base entera, y en un repo donde `.claude/` **sí** está versionado el respaldo ya es redundante —git cumple ese papel—, pero igual aparece como pendiente y confunde.
+   - **Si `.claude/` está versionado en git** (lo chequea con `git ls-files`) → **omite el respaldo** y lo dice. Git ya es la red: para volver atrás alcanza con `git diff` y `git checkout --` sobre lo pisado. Es el caso normal.
+   - **Si no lo está** → respalda **fuera del repo**, en el directorio temporal del sistema, e imprime la ruta absoluta. Pasársela al usuario en el reporte final.
+
+   ⚠️ **El respaldo no va adentro de `.claude/`,** y las dos razones se sufrieron en repos reales: ahí el agente **no puede borrarlo** —el borrado recursivo bajo `.claude/` está vedado, así que la limpieza que este mismo flujo manda hacer le queda al usuario a mano—, y además **contamina los lints**, que barren `.claude/` entero: cada copia congelada duplica los hallazgos viejos, que ya no se pueden corregir, y tapa los reales.
 5. **Aplicar Base** (el grupo Base del plan). La fuente canónica es la PLANTILLA única de `amp:inicializar` (una sección por subsistema). Para cada ítem:
    - **Subsistema ausente** (p. ej. `conducta/`) → correr `amp:inicializar` (idempotente: instala los subsistemas ausentes desde su PLANTILLA consolidada y preserva lo que ya está).
    - **`MANIFIESTO`/lint/estructura vieja** → tomar el contenido canónico de la sección del subsistema en la PLANTILLA de `amp:inicializar` y **pisar** el archivo Base. (A diferencia de la reconciliación normal de `amp:inicializar`, que preserva lo existente, acá el archivo Base **se pisa** — es del harness. El contenido aprendido del mismo subsistema no se toca.)
@@ -88,7 +91,9 @@ El repo quedó con nombres de plugin que el marketplace ya no ofrece. **No se ar
      2. Correr `amp:inicializar` en reconciliación: pone al día el mecanismo de semántica (lint nuevo, `MANIFIESTO`, estructura de columnas) **preservando** `GLOSARIO.md` y `TERMINOLOGIA-FARLOPA.md` con sus términos. Verificar que ningún término se haya perdido.
      3. Migrar las referencias: en `AGENTS.md`, `@.claude/glosario/MANIFIESTO.md` → `@.claude/semantica/MANIFIESTO.md`; el prefijo de skill `glosario:` → `semantica:` donde aparezca; y toda referencia por ruta al lint renombrado (settings, hooks).
 7. **Divergentes** — aplicar solo lo que el usuario aprobó en el paso 3.
-8. **Reporte final.** Resumir lo hecho en los tres grupos (`pisado/instalado` · `ya estaba` · `divergente resuelto`) y **dónde quedó el respaldo**. Decir explícitamente que el respaldo es **de un solo uso**: sirve hasta que el usuario verifique que el repo quedó bien, y después se borra. Si al respaldar ya había respaldos de corridas anteriores, mencionarlo — se acumulan copias completas de `.claude/` que nadie limpia.
+8. **Reporte final.** Resumir lo hecho en los tres grupos (`pisado/instalado` · `ya estaba` · `divergente resuelto`) y **qué pasó con el respaldo**: si se omitió (git lo cubre) o dónde quedó, con la ruta absoluta. Cuando se hizo, decir que es **de un solo uso**: sirve hasta que el usuario verifique que el repo quedó bien, y después se borra.
+
+   **Si el repo tiene `.claude/.respaldo-amp/`,** viene de corridas anteriores a este cambio. Avisarlo: son copias completas de `.claude/` que nadie limpia y que **inflan los hallazgos de todos los lints**. Ofrecer borrarlas — y si el borrado recursivo bajo `.claude/` está vedado en ese entorno, decírselo al usuario con el comando exacto en vez de dejarlo pasar en silencio.
 9. **Lint.** Correr los lints de los subsistemas tocados (o `ejecutar-control-cierre` si es el repo autor). **No hacer commit** salvo pedido explícito.
 
 ## Reconciliación (idempotencia)

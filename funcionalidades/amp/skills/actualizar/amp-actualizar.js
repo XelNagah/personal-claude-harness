@@ -8,11 +8,12 @@
 //
 // Modos (uno por corrida):
 //   (sin flag) | --vista-previa   detecta y muestra el plan; NO escribe nada.
-//   --respaldo                     copia .claude/ a .claude/.respaldo-amp/<fecha>/ y muestra la ruta.
+//   --respaldo                     respalda .claude/ FUERA del repo (o lo omite si git ya lo cubre).
 // Uso: node amp-actualizar.js [--vista-previa | --respaldo] [<raiz del repo>]
 //      (default: raiz = cwd; sin flag equivale a --vista-previa)
 
-const fs = require('fs'), path = require('path');
+const fs = require('fs'), path = require('path'), os = require('os');
+const { spawnSync } = require('child_process');
 
 const args = process.argv.slice(2);
 const modoRespaldo = args.includes('--respaldo');
@@ -39,6 +40,11 @@ const RENOMBRES = [
 
 // Subsistemas Base esperados por el harness al dia (carpetas bajo .claude/).
 const SUBSISTEMAS = ['memoria', 'planes', 'conocimiento', 'semantica', 'decisiones', 'herramientas', 'conducta'];
+
+// Herramientas que el harness manda (origen Base) y que todo repo al dia deberia tener bajo
+// .claude/herramientas/<nombre>/<nombre>.js. No confundir con las del Proposito, que las suma
+// cada repo y el nivelador nunca toca.
+const HERRAMIENTAS_BASE = ['actualizar-plugins'];
 
 // Campos minimos de un MANIFIESTO (mismo criterio que lint-harness): titulo, Disparador, Skills,
 // declaracion de carga del indice, comando de lint del propio subsistema.
@@ -90,6 +96,24 @@ function clasificar() {
     else if (!manifiestoCompleto(leer(mani), sub)) add('base', '~', `${sub}/MANIFIESTO.md`, 'estructura vieja: poner al dia');
     // lint del subsistema presente
     if (!existe(path.join(dir, `lint-${sub}`, `lint-${sub}.js`))) add('base', '~', `${sub}/lint-${sub}/`, 'lint ausente: instalar');
+  }
+
+  // [2b] Herramientas Base: viven DENTRO de herramientas/, asi que un subsistema presente puede
+  // igual estar incompleto. Sin este chequeo, un repo al que le falta una Herramienta Base se
+  // informa "ya estaba" — que es lo que pasa cuando se clasifica por subsistema y no por pieza.
+  const dirHerr = path.join(claude, 'herramientas');
+  if (esDir(dirHerr)) {
+    for (const h of HERRAMIENTAS_BASE) {
+      if (!existe(path.join(dirHerr, h, `${h}.js`))) add('base', '+', `herramientas/${h}/`, 'Herramienta Base ausente: instalar con su README y su fila en el INDICE');
+      else if (!existe(path.join(dirHerr, h, 'README.md'))) add('base', '~', `herramientas/${h}/README.md`, 'ausente: instalar');
+    }
+    const indiceHerr = path.join(dirHerr, 'INDICE.md');
+    if (existe(indiceHerr)) {
+      const t = leer(indiceHerr);
+      for (const h of HERRAMIENTAS_BASE) {
+        if (!t.includes(h)) add('base', '~', `herramientas/INDICE.md`, `sin fila para la Herramienta Base ${h}: agregar en la seccion Herramientas Base`);
+      }
+    }
   }
 
   // [3] conducta: piezas propias + corte Base/Proposito
@@ -146,20 +170,44 @@ function revisarHook(settingsPath) {
 }
 
 // -- respaldo -----------------------------------------------------------
+// El respaldo existe por UNA razon: `.claude/` suele estar fuera del control de versiones, asi que
+// pisar lo Base no tiene red. Cuando `.claude/` SI esta versionado, git ya cumple ese papel y el
+// respaldo solo agrega una copia que nadie limpia.
+function claudeVersionado() {
+  const r = spawnSync('git', ['ls-files', '--', '.claude'], { cwd: repo, encoding: 'utf8', timeout: 10000 });
+  if (!r || r.status !== 0) return false;         // no es repo git, o git no esta: hace falta respaldo
+  return !!(r.stdout || '').trim();
+}
+
+// Cuando hace falta, el respaldo va FUERA de `.claude/`, al temporal del sistema. Dos motivos, y
+// los dos se sufrieron: adentro de `.claude/` el propio agente no puede borrarlo (el borrado
+// recursivo bajo `.claude/` esta vedado, asi que la limpieza que la skill manda hacer queda para
+// el usuario a mano), y ademas los lints barren `.claude/` entero — una copia congelada duplica
+// cada hallazgo viejo, ya incorregible, y ahoga la senal con ruido.
+function carpetaRespaldo() {
+  const marca = path.basename(repo).replace(/[^\w.-]+/g, '-');
+  return path.join(os.tmpdir(), 'amp-respaldo', marca, hoy);
+}
+
 function respaldar() {
   if (!esDir(claude)) { console.log('No hay .claude/ para respaldar.'); process.exit(0); }
-  const destino = path.join(claude, '.respaldo-amp', hoy);
+  if (claudeVersionado()) {
+    console.log('Respaldo OMITIDO: `.claude/` esta versionado en git, que ya es la red.');
+    console.log('(Para volver atras: `git diff` y `git checkout --` sobre lo que se haya pisado.)');
+    return;
+  }
+  const destino = carpetaRespaldo();
   const EXCL = new Set(['.respaldo-amp', 'node_modules', '.git']);
   fs.mkdirSync(destino, { recursive: true });
-  // Se copia CADA hijo de .claude/ por separado: fs.cpSync rechaza copiar un directorio dentro de
-  // un subdirectorio de si mismo (el respaldo vive bajo .claude/), aunque el filtro lo excluya.
   let copiados = 0;
   for (const entrada of fs.readdirSync(claude)) {
     if (EXCL.has(entrada)) continue;
     fs.cpSync(path.join(claude, entrada), path.join(destino, entrada), { recursive: true });
     copiados++;
   }
-  console.log(`Respaldo hecho (${copiados} entrada(s)): ${path.relative(repo, destino).replace(/\\/g, '/')}`);
+  console.log(`Respaldo hecho (${copiados} entrada(s)) FUERA del repo:`);
+  console.log(`  ${destino}`);
+  console.log('Es de un solo uso: sirve hasta verificar que el repo quedo bien, despues se borra.');
 }
 
 // -- reporte ------------------------------------------------------------

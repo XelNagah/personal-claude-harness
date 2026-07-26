@@ -389,7 +389,9 @@ Contenido exacto (Node, sin dependencias, sin red):
 // Uso: node lint-conocimiento.js [<carpeta>]   (default: .claude/conocimiento)
 const fs = require('fs'), path = require('path');
 const root = path.resolve(process.argv[2] || '.claude/conocimiento');
-const EXCLUDE = new Set(['.git', 'node_modules', 'exports', 'pdfs']);
+// '.respaldo-amp' son copias congeladas de .claude/ que dejaron corridas viejas del nivelador:
+// sus hallazgos ya no se pueden corregir y duplican el diagnostico real. No se barren.
+const EXCLUDE = new Set(['.git', 'node_modules', '.respaldo-amp', 'exports', 'pdfs']);
 
 function walk(dir, acc) {
   for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
@@ -999,7 +1001,9 @@ for (const r of rows) for (const p of splitTerms(r.propuestos)) propuestos.push(
 
 // [5] apariciones de vetados en el repo (barrido recursivo desde la raiz)
 // Reusa walk()+EXCLUDE de lint-conocimiento. Dos grupos: prosa (accion inmediata) y codigo (informativo).
-const EXCLUDE = new Set(['.git', 'node_modules', 'exports', 'pdfs']);
+// '.respaldo-amp' son copias congeladas de .claude/ que dejaron corridas viejas del nivelador:
+// sus hallazgos ya no se pueden corregir y duplican el diagnostico real. No se barren.
+const EXCLUDE = new Set(['.git', 'node_modules', '.respaldo-amp', 'exports', 'pdfs']);
 // Autoexclusiones obligatorias: el registro de semantica contiene los vetados por definicion; el
 // historico congelado de planes no se reescribe (falsearia el registro).
 const AUTOEXCL = [
@@ -2630,7 +2634,9 @@ Contenido exacto (Node, sin dependencias, sin red):
 // Uso: node lint-memoria.js [<carpeta>]   (default: .claude/memoria)
 const fs = require('fs'), path = require('path');
 const root = path.resolve(process.argv[2] || '.claude/memoria');
-const EXCLUDE = new Set(['.git', 'node_modules']);
+// '.respaldo-amp' son copias congeladas de .claude/ que dejaron corridas viejas del nivelador:
+// sus hallazgos ya no se pueden corregir y duplican el diagnostico real. No se barren.
+const EXCLUDE = new Set(['.git', 'node_modules', '.respaldo-amp']);
 const TYPES = new Set(['user', 'feedback', 'project', 'reference']);
 
 function walk(dir, acc) {

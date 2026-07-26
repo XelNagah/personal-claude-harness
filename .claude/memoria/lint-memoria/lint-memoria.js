@@ -3,7 +3,9 @@
 // Uso: node lint-memoria.js [<carpeta>]   (default: .claude/memoria)
 const fs = require('fs'), path = require('path');
 const root = path.resolve(process.argv[2] || '.claude/memoria');
-const EXCLUDE = new Set(['.git', 'node_modules']);
+// '.respaldo-amp' son copias congeladas de .claude/ que dejaron corridas viejas del nivelador:
+// sus hallazgos ya no se pueden corregir y duplican el diagnostico real. No se barren.
+const EXCLUDE = new Set(['.git', 'node_modules', '.respaldo-amp']);
 const TYPES = new Set(['user', 'feedback', 'project', 'reference']);
 
 function walk(dir, acc) {
