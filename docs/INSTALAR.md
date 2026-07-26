@@ -99,6 +99,8 @@ Sin `--aplicar` la Herramienta solo diagnostica, así que se puede correr sin mi
 
 **Después: reiniciar la sesión.** Hasta entonces seguís con la versión vieja cargada. `/reload-plugins` **no** sirve para esto: recarga los plugins que ya están, en la versión que ya tenían.
 
+Aparte de esos tres desfases, la Herramienta marca `RETIRADO` a los plugins habilitados cuyo nombre el marketplace ya no ofrece. Esos **no los arregla `--aplicar`**: son una migración y van por [su propia sección](#si-aparecen-nombres-de-plugin-retirados).
+
 #### Si el repo todavía no tiene la Herramienta
 
 Un repo instalado antes de que `actualizar-plugins` existiera no la tiene, y no puede usarla para actualizarse. Esa primera pasada se hace con los comandos del CLI, una sola vez — de ahí en adelante la Herramienta queda instalada y esto no vuelve a hacer falta:
@@ -117,28 +119,31 @@ claude plugin update amp@xelnagah-harness --scope project
 
 #### Si aparecen nombres de plugin retirados
 
-Si instalaste el Agente Multipropósito antes de la consolidación en 7 plugins, tenés hasta 10 plugins con nombres viejos (`memoria-local`, `gestion-de-planes`, `preferencias-trabajo`, `conocimiento`, `semantica`, `decisiones`, `herramientas`, `conducta`, `planificar`, `amp-actualizar`). Hay que sacarlos y poner el conjunto nuevo.
+Si instalaste el Agente Multipropósito antes de la consolidación en 7 plugins, tenés hasta 10 plugins con nombres viejos (`memoria-local`, `gestion-de-planes`, `preferencias-trabajo`, `conocimiento`, `semantica`, `decisiones`, `herramientas`, `conducta`, `planificar`, `amp-actualizar`). Hay que poner el conjunto nuevo y sacar esos.
+
+**Sacarlos no es opcional.** La generación vieja y la nueva no se pisan: **coexisten**. `memoria-local` y `amp-memoria` traen las dos una skill `registrar-memoria`, con la misma descripción y distinto prefijo de plugin, y no hay ganador definido — el modelo elige cuál usa. Mientras convivan, cada tarea puede caer en la versión vieja sin que te enteres.
+
+Es una **migración, no una actualización**: `actualizar-plugins --aplicar` no los toca, porque desinstalar no se puede deshacer —esos nombres ya no se publican, así que no hay forma de reinstalarlos desde el marketplace—. La Herramienta los marca `RETIRADO` e imprime los comandos para que los corras vos.
+
+⚠️ **El orden es obligatorio: instalar lo nuevo → desinstalar lo viejo → reiniciar.** Nunca al revés: entre medio el repo se queda sin las skills que todavía usa.
 
 ```bash
 # 1. Traer la lista nueva de plugins desde GitHub
 claude plugin marketplace update xelnagah-harness
 
-# 2. Sacar los nombres viejos de todos los alcances donde estén
+# 2. Instalar el conjunto nuevo (trae los 6 amp-<sub> por dependencias)
+claude plugin install amp@xelnagah-harness -s project
+
+# 3. Recién ahora, sacar los nombres viejos de todos los alcances donde estén
 for p in memoria-local preferencias-trabajo gestion-de-planes conocimiento \
          semantica decisiones herramientas conducta planificar amp-actualizar; do
   for s in project local user; do
     claude plugin uninstall "$p@xelnagah-harness" -s "$s" -y 2>/dev/null
   done
 done
-
-# 3. Instalar el conjunto nuevo (trae los 6 amp-<sub> por dependencias)
-claude plugin install amp@xelnagah-harness -s project
-
-# 4. Limpiar dependencias que quedaron huérfanas
-claude plugin prune -y
 ```
 
-En PowerShell, el paso 2 es:
+En PowerShell, el paso 3 es:
 
 ```powershell
 foreach ($p in @('memoria-local','preferencias-trabajo','gestion-de-planes','conocimiento',
@@ -150,6 +155,10 @@ foreach ($p in @('memoria-local','preferencias-trabajo','gestion-de-planes','con
 ```
 
 **Después: reiniciar la sesión.** Los plugins nuevos no cargan hasta entonces.
+
+> **`claude plugin prune` no sirve para limpiar acá.** Solo mira el alcance de usuario: con seis dependencias huérfanas instaladas en alcance de proyecto contesta `Nothing to prune (no auto-installed plugins at user scope)`. Las dependencias de proyecto se sacan a mano, una por una.
+
+> **Desinstalar un plugin no arrastra sus dependencias.** `claude plugin uninstall amp@xelnagah-harness -s project` saca **solo** `amp` y deja los seis `amp-<sub>` instalados y habilitados. Si alguna vez necesitás sacar el conjunto entero, van los siete nombres, uno por uno.
 
 **Verificar que quedó bien.** Lo que carga de verdad no es lo que lista `claude plugin list`, sino el campo `enabledPlugins` de `settings.json` — el del repo (`.claude/settings.json`) y el del usuario (`~/.claude/settings.json`). Ahí tienen que estar los siete nombres nuevos y ninguno viejo. Si `plugin list` sigue mostrando nombres viejos marcados como deshabilitados pero no están en `enabledPlugins`, son restos de la caché: no cargan y no molestan.
 
@@ -198,7 +207,10 @@ El punto de entrada de instrucciones es `AGENTS.md` en la raíz del repo, que es
 
 **`claude plugin list` muestra nombres viejos.** Si no están en `enabledPlugins`, no cargan — son restos de la caché. Se pueden sacar con `claude plugin uninstall <viejo>@xelnagah-harness -s <alcance> -y`.
 
-**La misma skill aparece dos veces.** Tenés el enlace y el plugin conviviendo. Elegí uno: borrá el enlace de `~/.claude/skills/<skill>` o desinstalá el plugin.
+**La misma skill aparece dos veces.** Dos causas posibles:
+
+- **Enlace y plugin conviviendo.** Elegí uno: borrá el enlace de `~/.claude/skills/<skill>` o desinstalá el plugin.
+- **Generación vieja y nueva conviviendo** — `registrar-memoria` aparece con prefijo `memoria-local:` y con `amp-memoria:`. No hay ganador definido, el modelo elige. Se arregla desinstalando los nombres viejos (ver [Si aparecen nombres de plugin retirados](#si-aparecen-nombres-de-plugin-retirados)).
 
 **Edité una skill en el repo y la sesión sigue comportándose igual.** Si la consumís por plugin, estás corriendo la copia de la caché, que se sirve de GitHub: el cambio no llega hasta que lo commiteás, lo pusheás y corrés la fase 1. Editar el repo local no alcanza, y `/reload-plugins` tampoco. Si estás escribiendo skills a menudo, conviene consumirlas por enlace (ver la sección de otros agentes) en vez de por plugin.
 
