@@ -1784,10 +1784,12 @@ if (!filas.length) {
     console.log('nuevo y recien despues sacar estos (migracion, no actualizacion).');
     console.log('\nORDEN: 1) instalar lo nuevo  2) desinstalar lo viejo  3) reiniciar la sesion.');
     console.log('Nunca al reves: entre medio el repo se queda sin las skills que todavia usa.');
-    console.log('\nPara el paso 2, cuando lo nuevo ya este instalado:');
+    console.log('\nPara el paso 2, cuando lo nuevo ya este instalado (ojo el alcance de cada uno:');
+    console.log('es normal que los viejos esten en project y los nuevos en local, y con el alcance');
+    console.log('equivocado el comando no encuentra nada y no borra nada, sin error claro):');
     for (const f of retirados) console.log(`  claude plugin uninstall ${f.id} --scope ${f.scope}`);
-    console.log('\nY sacar tambien su linea de `enabledPlugins` en el settings donde este declarado.');
-    console.log('(`claude plugin prune --dry-run` lista que dependencias quedarian sin dueno, sin tocar nada.)');
+    console.log('\nCada uninstall saca solo su linea de `enabledPlugins`; no hace falta editar el settings');
+    console.log('a mano. `claude plugin prune` NO sirve para limpiar acá: solo mira el alcance de usuario.');
   }
 }
 ```

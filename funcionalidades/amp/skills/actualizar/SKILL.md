@@ -1,6 +1,6 @@
 ---
 name: actualizar
-description: Nivela el .claude/ de un Agente con Propósito ya instalado, poniendo al día el Agente Multipropósito que tiene adentro contra la plantilla nueva. Converge por estructura, sin guardar versión: pisa lo Base (mecanismo del harness) respaldándolo antes en .claude/.respaldo-amp/<fecha>/, nunca toca el Aprendizaje (las entradas que el repo acumuló persiguiendo su Propósito), y pregunta antes de reacomodar formas viejas. Aplica renombres conocidos (glosario→semantica) e instala subsistemas faltantes (conducta), delegando en el instalador consolidado amp:inicializar. Arranca chequeando los plugins de la máquina y, si están atrasados, los pone al día y pide reiniciar antes de tocar archivos. Trae vista previa. Use when el usuario dice "nivelá el Agente Multipropósito", "actualizá el harness del repo", "poné al día el .claude", "amp:actualizar", o al detectar un Agente con Propósito cuyo Agente Multipropósito quedó viejo.
+description: Nivela el .claude/ de un Agente con Propósito ya instalado, poniendo al día el Agente Multipropósito que tiene adentro contra la plantilla nueva. Converge por estructura, sin guardar versión: pisa lo Base (mecanismo del harness) respaldándolo antes en .claude/.respaldo-amp/<fecha>/, nunca toca el Aprendizaje (las entradas que el repo acumuló persiguiendo su Propósito), y pregunta antes de reacomodar formas viejas. Aplica renombres conocidos (glosario→semantica) e instala subsistemas faltantes (conducta), delegando en el instalador consolidado amp:inicializar. Arranca chequeando los plugins de la máquina con la Herramienta Base actualizar-plugins —si el repo no la tiene todavía, usa la del marketplace bajado, que siempre está— y, si están atrasados, los pone al día y pide reiniciar antes de tocar archivos; si el repo quedó con nombres de plugin retirados, ejecuta él mismo la migración (instalar lo nuevo, desinstalar lo viejo con el alcance de cada uno) previa confirmación, sin que el usuario tipee comandos. Trae vista previa. Use when el usuario dice "nivelá el Agente Multipropósito", "actualizá el harness del repo", "poné al día el .claude", "amp:actualizar", o al detectar un Agente con Propósito cuyo Agente Multipropósito quedó viejo.
 ---
 
 # amp:actualizar — nivelador del harness
@@ -28,19 +28,38 @@ Lo mecánico y determinista lo hace el script `amp-actualizar.js` (decisión 000
 
 Poner al día un repo son **dos fases** y esta skill ejecuta la segunda. La primera —los plugins de la máquina— va **antes**, porque esta misma skill viaja adentro del plugin: si se nivelan los archivos con los plugins atrasados, el repo queda puesto al día por una versión vieja del instalador.
 
-Por eso lo primero de todo, antes de la vista previa, es diagnosticar los plugins:
+Por eso lo primero de todo, antes de la vista previa, es diagnosticar los plugins con la **Herramienta Base `actualizar-plugins`**:
 
 ```bash
 node .claude/herramientas/actualizar-plugins/actualizar-plugins.js
 ```
 
-- **Si reporta `TODO ACTUALIZADO`** → seguir con el flujo de abajo.
-- **Si reporta `ACTUALIZAR` en algún plugin, o el marketplace bajado en `ACTUALIZAR`** → resolverlo acá y **frenar**: correr la Herramienta con `--aplicar`, avisarle al usuario que **reinicie la sesión** y que vuelva a pedir `amp:actualizar` al volver. No seguir con los archivos en esta corrida: la skill que los escribiría sigue siendo la vieja hasta el reinicio.
-- **Si reporta `NO INSTALADO`** → el repo declara un plugin en `settings` que **no llegó a instalarse**: los archivos pueden estar al día y las skills no. Mismo tratamiento que el anterior —`--aplicar`, reiniciar, volver a pedir la skill— y **frenar igual**. Es el estado típico de una migración que quedó por la mitad, y seguir nivelando archivos acá los pondría al día con las skills viejas.
-- **Si reporta `RETIRADO`** → el repo quedó con nombres de plugin que el marketplace ya no ofrece. Eso **no se arregla actualizando**: es una migración. La Herramienta imprime el comando de desinstalación y el orden (instalar lo nuevo → desinstalar lo viejo → reiniciar); pasárselo al usuario, remitir al manual de instalación y **no seguir**. Ojo: mientras conviven, el plugin viejo y el nuevo **no se pisan, coexisten** —dos skills con la misma descripción y distinto prefijo—, así que el paso de desinstalar no es opcional.
-- **Si la Herramienta no existe** en el repo (instalación anterior a que existiera) → decirlo y remitir al manual: esa primera pasada se hace con los comandos del CLI, una sola vez, y después la Herramienta queda instalada.
+**Si ese archivo no existe** —repo instalado antes de que la Herramienta existiera— usar la del **marketplace bajado**, que siempre está: agregar un marketplace clona el repo entero en la máquina, así que la Herramienta llega ahí antes que cualquier plugin.
+
+```bash
+node ~/.claude/plugins/marketplaces/<marketplace>/.claude/herramientas/actualizar-plugins/actualizar-plugins.js
+```
+
+En Windows, `~` es `%USERPROFILE%`. El `<marketplace>` es el que sirve este plugin. Nunca hace falta que el usuario tipee comandos del CLI de plugins: la Herramienta ya está en la máquina. La copia propia del repo llega después, cuando `amp:inicializar` la instala como Herramienta Base; hasta entonces vale la del marketplace.
+
+Según lo que reporte:
+
+- **`TODO ACTUALIZADO`** → seguir con el flujo de abajo.
+- **`ACTUALIZAR` en algún plugin, o el marketplace bajado en `ACTUALIZAR`** → resolverlo acá y **frenar**: correr la Herramienta con `--aplicar`, avisarle al usuario que **reinicie la sesión** y que vuelva a pedir `amp:actualizar` al volver. No seguir con los archivos en esta corrida: la skill que los escribiría sigue siendo la vieja hasta el reinicio.
+- **`NO INSTALADO`** → el repo declara un plugin en `settings` que **no llegó a instalarse**: los archivos pueden estar al día y las skills no. Mismo tratamiento que el anterior —`--aplicar`, reiniciar, volver a pedir la skill— y **frenar igual**. Es el estado típico de una migración que quedó por la mitad, y seguir nivelando archivos acá los pondría al día con las skills viejas.
+- **`RETIRADO`** → migración de nombres: ver abajo.
 
 Se recuerda un solo nombre —`amp:actualizar`— y el orden lo garantiza esta skill.
+
+### Migración de nombres retirados
+
+El repo quedó con nombres de plugin que el marketplace ya no ofrece. **No se arregla actualizando**, y **no se le pasa la lista al usuario para que la corra**: la ejecuta esta skill. Mientras el nombre viejo y el nuevo conviven **no se pisan, coexisten** —dos skills con la misma descripción y distinto prefijo, sin ganador definido—, así que desinstalar no es opcional.
+
+1. **Mostrar qué se va a hacer y pedir confirmación**, una sola vez, con la lista de plugins a desinstalar. Es **irreversible**: esos nombres ya no se publican, así que no hay forma de reinstalarlos desde el marketplace. Sin confirmación no se ejecuta nada.
+2. **Instalar el conjunto nuevo primero**, si todavía no está. El orden es obligatorio —instalar lo nuevo → desinstalar lo viejo → reiniciar—: al revés, entre medio el repo se queda sin las skills que todavía usa.
+3. **Desinstalar los retirados**, uno por uno, **cada uno con el alcance que informa la Herramienta** (`--scope` de su fila). No asumir un alcance parejo: es normal que los viejos estén en `project` y los nuevos en `local`, y con el alcance equivocado el comando no encuentra nada y no borra nada, sin error claro.
+4. **Verificar** que `enabledPlugins` quedó solo con los nombres nuevos, y volver a correr la Herramienta para confirmar que no queda ningún `RETIRADO`.
+5. **Frenar y pedir el reinicio.** Los plugins nuevos no cargan hasta entonces. Al volver, el usuario pide `amp:actualizar` de nuevo y ahí sí se nivelan los archivos.
 
 ## Flujo de trabajo
 

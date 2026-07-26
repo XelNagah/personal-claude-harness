@@ -103,7 +103,15 @@ Aparte de esos tres desfases, la Herramienta marca `RETIRADO` a los plugins habi
 
 #### Si el repo todavía no tiene la Herramienta
 
-Un repo instalado antes de que `actualizar-plugins` existiera no la tiene, y no puede usarla para actualizarse. Esa primera pasada se hace con los comandos del CLI, una sola vez — de ahí en adelante la Herramienta queda instalada y esto no vuelve a hacer falta:
+Un repo instalado antes de que `actualizar-plugins` existiera no la tiene en su `.claude/`. **Igual se puede usar**: agregar o actualizar un marketplace clona el repo entero en la máquina, así que la Herramienta está ahí desde antes de instalar cualquier plugin.
+
+```bash
+node ~/.claude/plugins/marketplaces/xelnagah-harness/.claude/herramientas/actualizar-plugins/actualizar-plugins.js
+```
+
+En Windows, `~` es `%USERPROFILE%`. Diagnostica el repo donde se corre, no el del marketplace.
+
+Y normalmente **ni siquiera hace falta**: `amp:actualizar` la busca sola —primero en el repo, después en el marketplace bajado— y hace la fase 1 él mismo. Los comandos del CLI de acá abajo son para cuando se quiere hacer a mano:
 
 ```bash
 # 1. Traer el catálogo nuevo desde GitHub
@@ -123,7 +131,11 @@ Si instalaste el Agente Multipropósito antes de la consolidación en 7 plugins,
 
 **Sacarlos no es opcional.** La generación vieja y la nueva no se pisan: **coexisten**. `memoria-local` y `amp-memoria` traen las dos una skill `registrar-memoria`, con la misma descripción y distinto prefijo de plugin, y no hay ganador definido — el modelo elige cuál usa. Mientras convivan, cada tarea puede caer en la versión vieja sin que te enteres.
 
-Es una **migración, no una actualización**: `actualizar-plugins --aplicar` no los toca, porque desinstalar no se puede deshacer —esos nombres ya no se publican, así que no hay forma de reinstalarlos desde el marketplace—. La Herramienta los marca `RETIRADO` e imprime los comandos para que los corras vos.
+**La hace `amp:actualizar`.** Pedísela y ejecuta la migración completa —instalar lo nuevo, desinstalar lo viejo con el alcance de cada uno, pedirte el reinicio— previa confirmación tuya, porque desinstalar no se puede deshacer: esos nombres ya no se publican, así que no hay forma de reinstalarlos desde el marketplace. Los comandos de abajo son para hacerlo a mano.
+
+Es una **migración, no una actualización**: `actualizar-plugins --aplicar` no la ejecuta por su cuenta; marca los plugins como `RETIRADO` e imprime los comandos, cada uno con **su** alcance.
+
+⚠️ **Los alcances pueden ser distintos entre generaciones.** Es normal que los viejos estén en `project` y los nuevos en `local`. Con el alcance equivocado el comando no encuentra nada y no borra nada, sin error claro — por eso conviene tomar los comandos de la Herramienta y no escribirlos de memoria.
 
 ⚠️ **El orden es obligatorio: instalar lo nuevo → desinstalar lo viejo → reiniciar.** Nunca al revés: entre medio el repo se queda sin las skills que todavía usa.
 
