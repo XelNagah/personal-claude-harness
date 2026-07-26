@@ -2,7 +2,7 @@
 
 Catálogo de las funcionalidades que este repo instala para armar un agente de **propósito general** — el usuario define el propósito del repo y los subsistemas se llenan con lo aprendido para lograrlo. Cada funcionalidad vive en `funcionalidades/<nombre>/`, **es un plugin de Claude Code** (listado en `.claude-plugin/marketplace.json`) y sus skills usan el **estándar abierto Agent Skills** (`SKILL.md`), legible también por Codex CLI, Cursor, Gemini CLI y Copilot (decisión 0010). Ver el README de cada una para el detalle.
 
-**Empaquetado (decisión 0029):** un plugin transversal **`amp`** (prefijo `amp:`, skills `inicializar` · `planificar` · `info` · `actualizar`) + un plugin **`amp-<sub>`** por cada subsistema con skill de operación. Se instala `amp` y el **bundle completo** entra por `dependencies` (project scope, 1 install por repo). Los subsistemas **sin** skill de operación (`herramientas`, `conducta`, `commits`) **no tienen plugin**: su estructura la escribe `amp:inicializar`.
+**Empaquetado (decisión 0029):** un plugin transversal **`amp`** (prefijo `amp:`, skills `inicializar` · `planificar` · `info` · `actualizar`) + un plugin **`amp-<sub>`** por cada subsistema con skill de operación. Se instala `amp` y el **bundle completo** entra por `dependencies` (alcance **local**, 1 install por repo — decisión 0035). Los subsistemas **sin** skill de operación (`herramientas`, `conducta`, `commits`) **no tienen plugin**: su estructura la escribe `amp:inicializar`.
 
 | Funcionalidad | Qué hace | Depende de | Carpeta |
 |---------------|----------|-----------|---------|

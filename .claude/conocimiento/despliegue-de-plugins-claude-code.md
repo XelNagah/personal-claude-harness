@@ -33,13 +33,15 @@ El desfase 3 **no se puede diagnosticar desde afuera**: depende de qué levantó
 
 **`/reload-plugins` no trae versión nueva.** Recarga los plugins que ya están, en la versión que ya tenían. Para pasar de la parada 4 a la 5 hay que reiniciar la sesión.
 
-**`claude plugin update` exige el identificador completo *y* el alcance.** Con el nombre pelado (`claude plugin update amp`) falla con `Plugin "amp" not found`; sin `--scope project` lo busca en el alcance de usuario, donde puede no estar. El mensaje de error es el mismo en los dos casos y no dice cuál de las dos cosas falta.
+**`claude plugin update` exige el identificador completo *y* el alcance.** Con el nombre pelado (`claude plugin update amp`) falla con `Plugin "amp" not found`; sin `--scope` lo busca en el alcance de usuario, donde puede no estar. El mensaje de error es el mismo en los dos casos y no dice cuál de las dos cosas falta.
 
 **`claude plugin prune` solo mira el alcance de usuario.** Con seis dependencias huérfanas instaladas en alcance de proyecto contesta `Nothing to prune (no auto-installed plugins at user scope)`. Las dependencias de proyecto se sacan a mano.
 
 **Desinstalar un plugin no arrastra sus dependencias.** `claude plugin uninstall <plugin> --scope project` saca solo ese plugin; los que había traído por `dependencies` quedan instalados y habilitados. Hay que desinstalarlos uno por uno.
 
-**Instalar y desinstalar sí mantienen `enabledPlugins`.** Con alcance de proyecto, instalar agrega la línea de cada plugin (el pedido y sus dependencias) en `.claude/settings.json`, y desinstalar saca la del plugin desinstalado.
+**Instalar y desinstalar sí mantienen `enabledPlugins`.** Instalar agrega la línea de cada plugin (el pedido y sus dependencias) y desinstalar saca la del desinstalado, en el archivo que corresponde al alcance: `.claude/settings.json` con `project`, `.claude/settings.local.json` con `local`.
+
+**Pero esa declaración commiteada no hace que el plugin llegue.** Se midió el 26/07/2026: un repo cuyo `.claude/settings.json` declaraba un plugin **sin tenerlo instalado** abrió sesión sin la skill, y no se creó ninguna entrada de instalación. O sea que versionar `enabledPlugins` no le ahorra a otra máquina el paso de instalar — el alcance `project`, que el menú ofrece como *"install for all collaborators"*, no cumple esa promesa.
 
 **Dos generaciones de un mismo plugin coexisten: no se pisan.** Si un marketplace renombra sus plugins, el nombre viejo y el nuevo pueden quedar instalados a la vez y **cada uno aporta sus skills**. Dos skills con el mismo nombre y la misma descripción, distinto prefijo de plugin, **no tienen ganador definido**: el modelo elige. Por eso migrar exige desinstalar, y desinstalar lo retirado **no se puede deshacer** — el marketplace ya no ofrece ese nombre, así que no hay forma de reinstalarlo.
 

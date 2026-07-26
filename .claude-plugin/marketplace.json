@@ -4,7 +4,7 @@
     "name": "jllarens",
     "email": "jllarens@gmail.com"
   },
-  "description": "Setup estándar del Agente Multipropósito (AMP): un plugin transversal 'amp' (inicializar · planificar · info · actualizar) + un plugin por subsistema con skill de operación (amp-memoria, amp-conocimiento, amp-decisiones, amp-preferencias, amp-planes, amp-semantica). Instalás 'amp' y el bundle completo entra por dependencias (project scope).",
+  "description": "Setup estándar del Agente Multipropósito (AMP): un plugin transversal 'amp' (inicializar · planificar · info · actualizar) + un plugin por subsistema con skill de operación (amp-memoria, amp-conocimiento, amp-decisiones, amp-preferencias, amp-planes, amp-semantica). Instalás 'amp' y el bundle completo entra por dependencias (alcance local: la declaración queda en settings.local.json, fuera del control de versiones).",
   "plugins": [
     {
       "name": "amp",
