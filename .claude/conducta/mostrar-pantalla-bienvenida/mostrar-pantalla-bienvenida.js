@@ -26,7 +26,12 @@ const fs = require('fs');
 const path = require('path');
 const { spawnSync } = require('child_process');
 
-const REPO = path.resolve(__dirname, '..', '..', '..');
+// El repo es el DIRECTORIO DE TRABAJO, no la ubicacion del script. Deducirlo desde __dirname
+// hacia arriba funciona solo mientras el script viva adentro del repo que describe: corrido desde
+// otra copia —el marketplace bajado, una prueba, un repo apuntado— pinta la Pantalla del repo
+// equivocado sin avisar. Se acepta una ruta por argumento para inspeccionar otro repo a proposito.
+const RUTA_ARG = process.argv.slice(2).find(a => !a.startsWith('--'));
+const REPO = RUTA_ARG ? path.resolve(RUTA_ARG) : process.cwd();
 const CLAUDE_DIR = path.join(REPO, '.claude');
 const SIN_LINT = process.argv.slice(2).includes('--sin-lint');
 const HOOK = process.argv.slice(2).includes('--hook');
@@ -138,10 +143,13 @@ function correrLint(lintPath) {
 }
 
 // --- Identidad del Agente: Título + Propósito (tolerante a indefinido) ---
+// Sin Propósito definido el repo todavia NO es un Agente con Proposito: es el Agente
+// Multiproposito a secas, esperando el Proposito que lo hace nacer. Por eso la falta no se
+// informa como un dato mas: se pide (ver pedidoDeIdentidad).
+const SIN = '<sin definir>';
 function leerIdentidad() {
   const p = path.join(CLAUDE_DIR, 'identidad.md');
   const txt = leer(p);
-  const SIN = '<sin definir>';
   if (!txt.trim()) return { titulo: SIN, proposito: SIN };
   const titulo = (txt.match(/^#\s+(.+)$/m) || [])[1] || SIN;
   const proposito = (txt.match(/^[*\s>]*Prop[óo]sito[*\s]*:\s*(.+)$/mi) || [])[1] || SIN;
@@ -207,6 +215,12 @@ cuerpo.push('Agente Multipropósito');
 cuerpo.push('');  // aire: despega la identidad de los campos del repo
 cuerpo.push(...envolver('Título: ' + titulo, WRAP, '   '));
 cuerpo.push(...envolver('Propósito: ' + proposito, WRAP, '   '));
+// Un campo vacio no pide nada por si solo. Cuando falta la Identidad, la Pantalla lo dice con
+// todas las letras: es lo unico que el usuario mira al arrancar.
+if (titulo === SIN || proposito === SIN) {
+  cuerpo.push('');
+  cuerpo.push(...envolver('⚠ Sin Propósito, este repo es el Agente Multipropósito a secas: los subsistemas no saben hacia dónde acumular. Decile al agente qué querés lograr acá y lo asienta.', WRAP, '   '));
+}
 cuerpo.push('__SEP__');
 cuerpo.push(`Subsistemas: ${subs.length}      Lint: ${lintGlobal}`);
 const anchoNom = Math.max(...filas.map(f => f.nombre.length), 0);
@@ -232,9 +246,32 @@ const box = boxLines.join('\n');
 // --hook: emitir JSON {"systemMessage": <caja>} → único campo que la terminal del usuario
 // pinta en SessionStart (sin cerca ```: los backticks saldrían literales). Sin --hook:
 // caja envuelta en cerca de código para el transcript (skill amp:info + corridas a mano).
+// Si falta la Identidad, no alcanza con mostrar «<sin definir>» al usuario: `systemMessage` va a
+// la terminal y el modelo NO lo ve, asi que nadie queda a cargo de resolverlo y el repo se queda
+// para siempre sin Proposito. El pedido va por `additionalContext`, que si entra al contexto del
+// modelo, para que sea el agente quien lo levante en el primer turno.
+function pedidoDeIdentidad() {
+  const faltaTitulo = titulo === SIN, faltaProposito = proposito === SIN;
+  if (!faltaTitulo && !faltaProposito) return null;
+  const que = faltaTitulo && faltaProposito ? 'el Titulo y el Proposito'
+            : faltaTitulo ? 'el Titulo' : 'el Proposito';
+  return `Este repo todavia no tiene ${que} definido en \`.claude/identidad.md\`. `
+    + 'Sin Proposito no es un Agente con Proposito: es el Agente Multiproposito a secas, y los '
+    + 'subsistemas no tienen hacia donde acumular. En tu primera respuesta de esta sesion, '
+    + `preguntale al usuario ${que} del repo —una linea cada uno— y asentalo en ese archivo `
+    + '(titulo como encabezado `# <Titulo>`, y una linea `**Proposito:** <una oracion>`). '
+    + 'No lo inventes ni lo infieras del contenido del repo sin confirmarlo: es la definicion '
+    + 'que gobierna todo lo que el Agente acumula despues.';
+}
+
 if (HOOK) {
   // Salto inicial: separa la caja del prefijo "SessionStart:… says:" que antepone el CLI.
-  process.stdout.write(JSON.stringify({ systemMessage: '\n' + box }));
+  const salida = { systemMessage: '\n' + box };
+  const pedido = pedidoDeIdentidad();
+  if (pedido) salida.hookSpecificOutput = { hookEventName: 'SessionStart', additionalContext: pedido };
+  process.stdout.write(JSON.stringify(salida));
 } else {
   process.stdout.write('```\n' + box + '\n```\n');
+  const pedido = pedidoDeIdentidad();
+  if (pedido) process.stdout.write('\n' + pedido + '\n');
 }
