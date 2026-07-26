@@ -42,12 +42,17 @@ claude plugin marketplace add XelNagah/personal-claude-harness
 ### 2. Instalar el plugin transversal
 
 ```bash
-claude plugin install amp@xelnagah-harness -s project
+claude plugin install amp@xelnagah-harness -s local
 ```
 
 Los seis `amp-<sub>` entran solos por dependencias: es **una instalación por repo**, no siete.
 
-El alcance (*scope*) es **`project`** a propósito: el harness aplica a los repos que lo usan, no a todos. Instalarlo a nivel usuario le pondría estas skills a cualquier repo que abras, incluidos los que no tienen `.claude/` de Agente Multipropósito.
+El alcance (*scope*) es **`local`** a propósito, y las dos mitades de esa elección tienen su motivo:
+
+- **No `user`**, porque el harness aplica a los repos que lo usan, no a todos: a nivel usuario le pondría estas skills a cualquier repo que abras, incluidos los que no tienen `.claude/` de Agente Multipropósito.
+- **No `project`**, porque no cumple lo que promete. El menú lo ofrece como *"install for all collaborators on this repository"*, pero lo único que viaja en el repo es la declaración en `.claude/settings.json`: **quien lo clone igual tiene que instalar el plugin a mano**. Se midió — una sesión abierta en un repo que declaraba `amp@xelnagah-harness` sin tenerlo instalado no tenía la skill, y nada se instaló solo. O sea que `project` deja configuración de máquina dentro de un archivo versionado sin dar nada a cambio.
+
+Con `local`, la declaración va a `.claude/settings.local.json`, que no se commitea.
 
 ### 3. Reiniciar la sesión
 
@@ -118,10 +123,12 @@ Y normalmente **ni siquiera hace falta**: `amp:actualizar` la busca sola —prim
 claude plugin marketplace update xelnagah-harness
 
 # 2. Actualizar el plugin (arrastra los 6 amp-<sub> por dependencias)
-claude plugin update amp@xelnagah-harness --scope project
+claude plugin update amp@xelnagah-harness --scope local
 ```
 
-⚠️ **Las dos partes del segundo comando son obligatorias.** Con el nombre pelado (`claude plugin update amp`) falla con *Plugin "amp" not found*, y sin `--scope project` lo busca en el alcance de usuario, donde no está — el Agente Multipropósito se instala con alcance de proyecto. El mensaje de error es el mismo en los dos casos y no dice cuál de las dos cosas falta. Por eso conviene usar la Herramienta y no los comandos sueltos.
+⚠️ **Las dos partes del segundo comando son obligatorias.** Con el nombre pelado (`claude plugin update amp`) falla con *Plugin "amp" not found*, y sin `--scope` lo busca en el alcance de usuario, donde no está. El mensaje de error es el mismo en los dos casos y no dice cuál de las dos cosas falta.
+
+⚠️ **Y el alcance tiene que ser el que corresponde a esa instalación**, que no siempre es el actual: un repo instalado antes del 26/07/2026 tiene el conjunto en `project`, y uno instalado después en `local`. Con el alcance equivocado el comando **no encuentra el plugin y no toca nada**, sin error claro. Por eso conviene usar la Herramienta —que informa el alcance de cada plugin— y no los comandos sueltos de memoria.
 
 **Verificar que aplicó:** `claude plugin list` tiene que mostrar la versión nueva. Si querés confirmarlo contra el origen, la versión que corre es el nombre de la carpeta en `~/.claude/plugins/cache/xelnagah-harness/<plugin>/<version>/`.
 
@@ -144,7 +151,7 @@ Es una **migración, no una actualización**: `actualizar-plugins --aplicar` no 
 claude plugin marketplace update xelnagah-harness
 
 # 2. Instalar el conjunto nuevo (trae los 6 amp-<sub> por dependencias)
-claude plugin install amp@xelnagah-harness -s project
+claude plugin install amp@xelnagah-harness -s local
 
 # 3. Recién ahora, sacar los nombres viejos de todos los alcances donde estén
 for p in memoria-local preferencias-trabajo gestion-de-planes conocimiento \
@@ -170,7 +177,7 @@ foreach ($p in @('memoria-local','preferencias-trabajo','gestion-de-planes','con
 
 > **`claude plugin prune` no sirve para limpiar acá.** Solo mira el alcance de usuario: con seis dependencias huérfanas instaladas en alcance de proyecto contesta `Nothing to prune (no auto-installed plugins at user scope)`. Las dependencias de proyecto se sacan a mano, una por una.
 
-> **Desinstalar un plugin no arrastra sus dependencias.** `claude plugin uninstall amp@xelnagah-harness -s project` saca **solo** `amp` y deja los seis `amp-<sub>` instalados y habilitados. Si alguna vez necesitás sacar el conjunto entero, van los siete nombres, uno por uno.
+> **Desinstalar un plugin no arrastra sus dependencias.** `claude plugin uninstall amp@xelnagah-harness -s <alcance>` saca **solo** `amp` y deja los seis `amp-<sub>` instalados y habilitados. Si alguna vez necesitás sacar el conjunto entero, van los siete nombres, uno por uno.
 
 **Verificar que quedó bien.** Lo que carga de verdad no es lo que lista `claude plugin list`, sino el campo `enabledPlugins` de `settings.json` — el del repo (`.claude/settings.json`) y el del usuario (`~/.claude/settings.json`). Ahí tienen que estar los siete nombres nuevos y ninguno viejo. Si `plugin list` sigue mostrando nombres viejos marcados como deshabilitados pero no están en `enabledPlugins`, son restos de la caché: no cargan y no molestan.
 

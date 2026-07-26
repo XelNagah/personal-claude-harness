@@ -1663,7 +1663,7 @@ function diagnosticar() {
       const t = new Date(inst.lastUpdated);
       if (!isNaN(t.getTime()) && t > ARRANQUE) sinCargar = true;
     }
-    filas.push({ id, nombre, marketplace, estado, detalle, sinCargar, scope: (inst && inst.scope) || 'project' });
+    filas.push({ id, nombre, marketplace, estado, detalle, sinCargar, scope: (inst && inst.scope) || 'local' });
   }
   return filas;
 }
@@ -1698,9 +1698,9 @@ function imprimir(filas) {
 // El CLI exige el identificador COMPLETO (plugin@marketplace) y el alcance: con el nombre pelado
 // o con el alcance por omision falla con el mismo mensaje, `Plugin "x" not found`.
 function aplicar(filas) {
-  // `--scope project` significa "el proyecto del directorio donde corre el comando", asi que TODO
-  // spawn va con `cwd: REPO`. Sin eso, apuntar la Herramienta a otro repo diagnosticaria alla y
-  // escribiria aca — el mismo error de confundir un repo con otro que corrige `instalado()`.
+  // `--scope project` y `--scope local` significan los dos "el repo del directorio donde corre el
+  // comando", asi que TODO spawn va con `cwd: REPO`. Sin eso, apuntar la Herramienta a otro repo
+  // diagnosticaria alla y escribiria aca — el mismo error que corrige `instalado()`.
   const correr = args => {
     const r = spawnSync('claude', args, { cwd: REPO, encoding: 'utf8', shell: true, timeout: 180000 });
     return ((r.stdout || r.stderr || '').trim().split('\n').pop() || 'sin salida');

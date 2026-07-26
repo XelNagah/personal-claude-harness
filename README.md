@@ -92,7 +92,7 @@ El camino cómodo, con Claude Code, parado en la raíz del repo a inicializar:
 claude plugin marketplace add XelNagah/personal-claude-harness
 
 # 2. Instalar el plugin transversal (trae los 6 por subsistema como dependencias)
-claude plugin install amp@xelnagah-harness -s project
+claude plugin install amp@xelnagah-harness -s local
 
 # 3. Reiniciar la sesión y, en el repo a inicializar, invocar la skill
 amp:inicializar
