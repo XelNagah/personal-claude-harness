@@ -89,7 +89,7 @@ node .claude/herramientas/actualizar-plugins/actualizar-plugins.js            # 
 node .claude/herramientas/actualizar-plugins/actualizar-plugins.js --aplicar  # actualiza
 ```
 
-Los plugins **no se actualizan solos**: el marketplace se sirve de un clon del repo en GitHub, así que hasta que no traigas la versión nueva seguís corriendo la que instalaste el primer día. Sin `--aplicar` la Herramienta solo diagnostica, así que se puede correr sin miedo para ver cómo está la instalación.
+Sin `--aplicar` la Herramienta solo diagnostica, así que se puede correr sin miedo para ver cómo está la instalación. Chequea **dos desfases distintos**: los que falta traer del marketplace (se arreglan con `--aplicar`) y los que ya se trajeron pero la sesión no tomó, porque arrancó antes de que llegaran — esos aparecen como `[SIN CARGAR]` y **se arreglan reiniciando, no actualizando**. El segundo es el que engaña: `claude plugin list` muestra la versión nueva mientras la sesión ejecuta la vieja.
 
 **Después: reiniciar la sesión.** Hasta entonces seguís con la versión vieja cargada. `/reload-plugins` **no** sirve para esto: recarga los plugins que ya están, en la versión que ya tenían.
 

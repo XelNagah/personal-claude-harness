@@ -18,7 +18,7 @@ Las que instala el harness (origen **Base**). El nivelador reemplaza **esta secc
 
 | Herramienta | Tipo | Qué hace | Cómo se invoca | Estado |
 |-------------|------|----------|----------------|--------|
-| [actualizar-plugins](actualizar-plugins/) | script | Pone al día los plugins del Agente Multipropósito en esta máquina y detecta el desfase entre lo que corre y lo publicado; marca aparte los plugins `RETIRADO` (nombres que el marketplace dejó de ofrecer ⇒ migración, no actualización). Sin `--aplicar` solo diagnostica; acepta ruta para apuntarlo a otro repo | `node .claude/herramientas/actualizar-plugins/actualizar-plugins.js [--aplicar] [rutaRepo]` | vigente |
+| [actualizar-plugins](actualizar-plugins/) | script | Pone al día los plugins del Agente Multipropósito en esta máquina y detecta los dos desfases: el que falta traer y el silencioso —traído pero no cargado, porque la sesión arrancó antes—; marca aparte los plugins `RETIRADO` (nombres que el marketplace dejó de ofrecer ⇒ migración, no actualización). Sin `--aplicar` solo diagnostica; acepta ruta para apuntarlo a otro repo | `node .claude/herramientas/actualizar-plugins/actualizar-plugins.js [--aplicar] [rutaRepo]` | vigente |
 
 ## Herramientas del Propósito
 

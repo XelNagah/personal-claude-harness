@@ -12,6 +12,10 @@ De esa decisión se sigue un costo que se acepta, no un problema a resolver: el 
 
 **Nada compara la versión que corre contra la que está en disco**, así que el harness puede quedar atrás sin que nadie se entere.
 
+> **Corregido 25/07/2026, probándolo en vivo.** El diagnóstico de más abajo —"los plugins no se actualizan solos"— resultó **falso**: sí se traen solos en segundo plano. Lo que no pasa es que la **sesión viva** tome la versión nueva; carga sus plugins al arrancar y se queda con esos. Evidencia: publicada la 0.6.5, el registro pasó a 0.6.5 a las 00:12 sin que nadie corriera nada, y la sesión —arrancada 19:34— siguió ejecutando la 0.6.3, cargando la skill desde la carpeta vieja de la caché. O sea que son **dos desfases**: *falta traer* (se arregla actualizando) y *traído pero no cargado* (se arregla reiniciando). El segundo es el silencioso, porque `claude plugin list` muestra la versión nueva.
+>
+> La Herramienta `actualizar-plugins` ya cubre los dos: deduce lo cargado comparando el `lastUpdated` de cada plugin contra la hora de arranque del proceso de la sesión, y marca `[SIN CARGAR]` lo que llegó después. Lo que sigue abierto es el resto de esta página.
+
 Pasó, y en silencio: el 25/07/2026 el plugin `amp` corría **0.6.2** con **0.6.3** en disco, clavado seis commits atrás. La 0.6.3 traía la preferencia Base nueva (pedir una decisión por vez): la regla estaba escrita en el repo y **ausente de la skill que se ejecutaba**. Si en ese lapso alguien hubiera corrido `amp:inicializar` desde esta máquina, habría sembrado las preferencias Base viejas en un repo nuevo. Se descubrió de casualidad, mirando otra cosa.
 
 El dato para detectarlo está a la vista y no hace falta adivinarlo: la versión que corre es el **nombre de la carpeta** en `~/.claude/plugins/cache/<marketplace>/<plugin>/<version>/`, y la de disco es el campo `version` del `plugin.json`. Compararlas es una resta.

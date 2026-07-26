@@ -1265,7 +1265,7 @@ Las que instala el harness (origen **Base**). El nivelador reemplaza **esta secc
 
 | Herramienta | Tipo | Qué hace | Cómo se invoca | Estado |
 |-------------|------|----------|----------------|--------|
-| [actualizar-plugins](actualizar-plugins/) | script | Pone al día los plugins del Agente Multipropósito en esta máquina y detecta el desfase entre lo que corre y lo publicado; marca aparte los plugins `RETIRADO` (nombres que el marketplace dejó de ofrecer ⇒ migración, no actualización). Sin `--aplicar` solo diagnostica; acepta ruta para apuntarlo a otro repo | `node .claude/herramientas/actualizar-plugins/actualizar-plugins.js [--aplicar] [rutaRepo]` | vigente |
+| [actualizar-plugins](actualizar-plugins/) | script | Pone al día los plugins del Agente Multipropósito en esta máquina y detecta los dos desfases: el que falta traer y el silencioso —traído pero no cargado, porque la sesión arrancó antes—; marca aparte los plugins `RETIRADO` (nombres que el marketplace dejó de ofrecer ⇒ migración, no actualización). Sin `--aplicar` solo diagnostica; acepta ruta para apuntarlo a otro repo | `node .claude/herramientas/actualizar-plugins/actualizar-plugins.js [--aplicar] [rutaRepo]` | vigente |
 
 ## Herramientas del Propósito
 
@@ -1406,9 +1406,12 @@ Contenido exacto (Node, sin dependencias, sin red):
 #!/usr/bin/env node
 // actualizar-plugins.js — pone al dia los PLUGINS del Agente Multiproposito en esta maquina.
 //
-// Los plugins se sirven de un clon del repo del marketplace, asi que no se actualizan solos: la
-// version que CORRE es la que quedo en el cache el dia que se instalo. Este script compara lo que
-// corre contra lo que hay disponible y, con --aplicar, corre los comandos del CLI que lo nivelan.
+// Los plugins se sirven de un clon del repo del marketplace y PUEDEN traerse solos en segundo plano,
+// pero la SESION VIVA usa la version que cargo al arrancar: si el plugin se actualizo despues, la
+// sesion sigue con la vieja hasta que se reinicie. Por eso este script mira dos desfases distintos:
+//   1) instalado <-> disponible  (falta traer la version nueva)   -> se arregla con --aplicar
+//   2) instalado <-> cargado     (se trajo pero la sesion no la tomo) -> se arregla REINICIANDO
+// El (2) es el silencioso: `claude plugin list` dice la version nueva mientras corre la vieja.
 //
 //   node .claude/herramientas/actualizar-plugins/actualizar-plugins.js            (solo diagnostica)
 //   node .claude/herramientas/actualizar-plugins/actualizar-plugins.js --aplicar  (actualiza)
@@ -1423,6 +1426,7 @@ const os = require('os');
 const { spawnSync } = require('child_process');
 
 const APLICAR = process.argv.includes('--aplicar');
+let ARRANQUE = null;   // se completa abajo, una sola vez (consultar el proceso cuesta ~150 ms)
 // Acepta una ruta de repo como argumento (para apuntarlo a otro Agente Multiproposito de la maquina);
 // por omision, el propio.
 const RUTA_ARG = process.argv.slice(2).find(a => !a.startsWith('--'));
@@ -1431,6 +1435,27 @@ const PLUGINS_DIR = path.join(os.homedir(), '.claude', 'plugins');
 
 function leerJson(p) {
   try { return JSON.parse(fs.readFileSync(p, 'utf8')); } catch (e) { return null; }
+}
+
+// -- cuando arranco esta sesion: los plugins que se actualizaron DESPUES no estan cargados --
+// El harness expone el pid de la sesion en CLAUDE_PID. Si no se puede averiguar (otro agente, otro
+// sistema), devuelve null y el chequeo de "cargado" se omite en vez de mentir.
+function arranqueSesion() {
+  const pid = process.env.CLAUDE_PID;
+  if (!pid || !/^\d+$/.test(pid)) return null;
+  try {
+    let r;
+    if (process.platform === 'win32') {
+      r = spawnSync('powershell', ['-NoProfile', '-Command',
+        `(Get-Process -Id ${pid}).StartTime.ToUniversalTime().ToString("o")`], { encoding: 'utf8', timeout: 10000 });
+    } else {
+      r = spawnSync('ps', ['-o', 'lstart=', '-p', pid], { encoding: 'utf8', timeout: 10000 });
+    }
+    const t = (r.stdout || '').trim();
+    if (!t) return null;
+    const d = new Date(t);
+    return isNaN(d.getTime()) ? null : d;
+  } catch (e) { return null; }
 }
 
 // -- que plugins usa este repo: enabledPlugins del settings del repo + el del usuario --
@@ -1513,7 +1538,13 @@ function diagnosticar() {
       estado = 'SIN DATO';
       detalle = 'no se pudo determinar la version disponible';
     }
-    filas.push({ id, nombre, marketplace, estado, detalle, scope: (inst && inst.scope) || 'project' });
+    // Segundo desfase: se trajo la version nueva DESPUES de que arranco la sesion => no esta cargada.
+    let sinCargar = false;
+    if (ARRANQUE && inst && inst.lastUpdated) {
+      const t = new Date(inst.lastUpdated);
+      if (!isNaN(t.getTime()) && t > ARRANQUE) sinCargar = true;
+    }
+    filas.push({ id, nombre, marketplace, estado, detalle, sinCargar, scope: (inst && inst.scope) || 'project' });
   }
   return filas;
 }
@@ -1521,7 +1552,8 @@ function diagnosticar() {
 function imprimir(filas) {
   const ancho = Math.max(...filas.map(f => f.id.length), 10);
   for (const f of filas) {
-    console.log(`  ${f.id.padEnd(ancho)}  ${f.estado.padEnd(15)} ${f.detalle}`);
+    const marca = f.sinCargar ? ' [SIN CARGAR]' : '';
+    console.log(`  ${f.id.padEnd(ancho)}  ${f.estado.padEnd(15)} ${f.detalle}${marca}`);
   }
 }
 
@@ -1552,6 +1584,7 @@ function aplicar(filas) {
 // ---------------------------------------------------------------------------
 console.log(`== ACTUALIZAR PLUGINS: ${REPO} ==`);
 
+ARRANQUE = arranqueSesion();
 let filas = diagnosticar();
 if (!filas.length) {
   console.log('\nNingun plugin habilitado para este repo (enabledPlugins vacio o ausente).');
@@ -1572,8 +1605,19 @@ if (!filas.length) {
   } else if (desfasados.length) {
     console.log(`\n${desfasados.length} plugin(s) con desfase. Para nivelarlos:`);
     console.log('  node .claude/herramientas/actualizar-plugins/actualizar-plugins.js --aplicar');
-  } else if (!retirados.length) {
+  } else if (!retirados.length && !filas.some(f => f.sinCargar)) {
     console.log('\nTODO AL DIA.');
+  }
+
+  // Desfase silencioso: la version esta instalada pero la sesion arranco antes de traerla.
+  const sinCargar = filas.filter(f => f.sinCargar);
+  if (sinCargar.length) {
+    console.log(`\n${sinCargar.length} plugin(s) SIN CARGAR: se actualizaron despues de que arranco esta`);
+    console.log('sesion, asi que segui corriendo la version vieja aunque el registro diga la nueva.');
+    console.log('REINICIAR LA SESION para tomarlos.');
+    console.log('  ' + sinCargar.map(f => `${f.id} (traido ${f.detalle.replace(/^.*disponible /, '')})`).join('\n  '));
+  } else if (!ARRANQUE) {
+    console.log('\n(No se pudo determinar cuando arranco la sesion: el chequeo de "sin cargar" se omitio.)');
   }
 
   // Los retirados no se arreglan actualizando: son nombres que el marketplace dejo de ofrecer.
@@ -1606,9 +1650,17 @@ node .claude/herramientas/actualizar-plugins/actualizar-plugins.js "D:/Proyectos
 
 ## Por qué hace falta
 
-Los plugins **no se actualizan solos**: el marketplace se sirve de un clon del repo remoto, así que la versión que corre es la que quedó en la caché el día que se instaló. Un cambio publicado no llega hasta que alguien lo trae, y hasta entonces nada avisa.
+Hay **dos desfases distintos**, y el segundo es el que engaña:
 
-Pasó el 25/07/2026: el plugin `amp` corría la 0.6.2 con la 0.6.3 publicada, seis commits atrás. La versión vieja no tenía una preferencia Base que sí estaba escrita en el repo, así que el instalador habría sembrado preferencias viejas en un repo nuevo. Se descubrió de casualidad.
+1. **Instalado ↔ disponible** — se publicó una versión nueva y esta máquina todavía no la trajo. Se arregla con `--aplicar`.
+2. **Instalado ↔ cargado** — se trajo, pero la **sesión viva** sigue con la versión que cargó al arrancar. Se arregla **reiniciando**, y es el silencioso: `claude plugin list` muestra la versión nueva mientras la sesión corre la vieja.
+
+Los dos pasaron el 25/07/2026, con horas de diferencia:
+
+- Por la tarde, `amp` corría la 0.6.2 con la 0.6.3 publicada seis commits atrás. La versión vieja no tenía una preferencia Base que sí estaba escrita en el repo, así que el instalador habría sembrado preferencias viejas en un repo nuevo.
+- A la noche, después de publicar la 0.6.5, el plugin **se trajo solo en segundo plano** (registro actualizado 00:12) pero la sesión —arrancada a las 19:34— siguió ejecutando la 0.6.3. La skill se cargó desde la carpeta vieja de la caché sin que nada lo indicara.
+
+De ahí sale el chequeo de arranque: la Herramienta compara la hora en que se actualizó cada plugin contra la hora en que arrancó la sesión (por `CLAUDE_PID`). Si el plugin es más nuevo, lo marca `[SIN CARGAR]`. Si no puede averiguar el arranque —otro agente, otro sistema— lo dice y omite ese chequeo, en vez de dar por buena una comparación que no hizo.
 
 ## Qué compara
 
@@ -1622,8 +1674,15 @@ Por cada plugin habilitado para el repo (`enabledPlugins` de `.claude/settings.j
 | `NO INSTALADO` | Habilitado en `settings` pero sin entrada instalada |
 | `SIN DATO` | El plugin se sirve de un origen propio, o el catálogo no se pudo leer |
 
-- **Lo que corre** sale de `installed_plugins.json`, prefiriendo la entrada de este repo sobre la de alcance usuario.
+Y una marca aparte, que se suma a cualquiera de esos estados:
+
+| Marca | Qué significa |
+|-------|---------------|
+| `[SIN CARGAR]` | El plugin se actualizó **después** de que arrancó esta sesión: está instalado pero la sesión sigue con la versión vieja. No se arregla con `--aplicar` — hay que **reiniciar** |
+
+- **Lo instalado** sale de `installed_plugins.json`, prefiriendo la entrada de este repo sobre la de alcance usuario.
 - **Lo disponible** sale del `plugin.json` dentro del clon del marketplace. Si ese manifiesto no declara `version`, el plugin se versiona por commit y se comparan los sha.
+- **Lo cargado** no se lee: se deduce comparando el `lastUpdated` de cada plugin contra la hora de arranque del proceso de la sesión (`CLAUDE_PID`). Si el plugin es posterior, no está cargado.
 
 Es genérico: no hardcodea nombres de plugin ni de marketplace, así que también reporta los plugins ajenos al harness que el repo tenga habilitados.
 

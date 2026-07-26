@@ -1,9 +1,12 @@
 #!/usr/bin/env node
 // actualizar-plugins.js — pone al dia los PLUGINS del Agente Multiproposito en esta maquina.
 //
-// Los plugins se sirven de un clon del repo del marketplace, asi que no se actualizan solos: la
-// version que CORRE es la que quedo en el cache el dia que se instalo. Este script compara lo que
-// corre contra lo que hay disponible y, con --aplicar, corre los comandos del CLI que lo nivelan.
+// Los plugins se sirven de un clon del repo del marketplace y PUEDEN traerse solos en segundo plano,
+// pero la SESION VIVA usa la version que cargo al arrancar: si el plugin se actualizo despues, la
+// sesion sigue con la vieja hasta que se reinicie. Por eso este script mira dos desfases distintos:
+//   1) instalado <-> disponible  (falta traer la version nueva)   -> se arregla con --aplicar
+//   2) instalado <-> cargado     (se trajo pero la sesion no la tomo) -> se arregla REINICIANDO
+// El (2) es el silencioso: `claude plugin list` dice la version nueva mientras corre la vieja.
 //
 //   node .claude/herramientas/actualizar-plugins/actualizar-plugins.js            (solo diagnostica)
 //   node .claude/herramientas/actualizar-plugins/actualizar-plugins.js --aplicar  (actualiza)
@@ -18,6 +21,7 @@ const os = require('os');
 const { spawnSync } = require('child_process');
 
 const APLICAR = process.argv.includes('--aplicar');
+let ARRANQUE = null;   // se completa abajo, una sola vez (consultar el proceso cuesta ~150 ms)
 // Acepta una ruta de repo como argumento (para apuntarlo a otro Agente Multiproposito de la maquina);
 // por omision, el propio.
 const RUTA_ARG = process.argv.slice(2).find(a => !a.startsWith('--'));
@@ -26,6 +30,27 @@ const PLUGINS_DIR = path.join(os.homedir(), '.claude', 'plugins');
 
 function leerJson(p) {
   try { return JSON.parse(fs.readFileSync(p, 'utf8')); } catch (e) { return null; }
+}
+
+// -- cuando arranco esta sesion: los plugins que se actualizaron DESPUES no estan cargados --
+// El harness expone el pid de la sesion en CLAUDE_PID. Si no se puede averiguar (otro agente, otro
+// sistema), devuelve null y el chequeo de "cargado" se omite en vez de mentir.
+function arranqueSesion() {
+  const pid = process.env.CLAUDE_PID;
+  if (!pid || !/^\d+$/.test(pid)) return null;
+  try {
+    let r;
+    if (process.platform === 'win32') {
+      r = spawnSync('powershell', ['-NoProfile', '-Command',
+        `(Get-Process -Id ${pid}).StartTime.ToUniversalTime().ToString("o")`], { encoding: 'utf8', timeout: 10000 });
+    } else {
+      r = spawnSync('ps', ['-o', 'lstart=', '-p', pid], { encoding: 'utf8', timeout: 10000 });
+    }
+    const t = (r.stdout || '').trim();
+    if (!t) return null;
+    const d = new Date(t);
+    return isNaN(d.getTime()) ? null : d;
+  } catch (e) { return null; }
 }
 
 // -- que plugins usa este repo: enabledPlugins del settings del repo + el del usuario --
@@ -108,7 +133,13 @@ function diagnosticar() {
       estado = 'SIN DATO';
       detalle = 'no se pudo determinar la version disponible';
     }
-    filas.push({ id, nombre, marketplace, estado, detalle, scope: (inst && inst.scope) || 'project' });
+    // Segundo desfase: se trajo la version nueva DESPUES de que arranco la sesion => no esta cargada.
+    let sinCargar = false;
+    if (ARRANQUE && inst && inst.lastUpdated) {
+      const t = new Date(inst.lastUpdated);
+      if (!isNaN(t.getTime()) && t > ARRANQUE) sinCargar = true;
+    }
+    filas.push({ id, nombre, marketplace, estado, detalle, sinCargar, scope: (inst && inst.scope) || 'project' });
   }
   return filas;
 }
@@ -116,7 +147,8 @@ function diagnosticar() {
 function imprimir(filas) {
   const ancho = Math.max(...filas.map(f => f.id.length), 10);
   for (const f of filas) {
-    console.log(`  ${f.id.padEnd(ancho)}  ${f.estado.padEnd(15)} ${f.detalle}`);
+    const marca = f.sinCargar ? ' [SIN CARGAR]' : '';
+    console.log(`  ${f.id.padEnd(ancho)}  ${f.estado.padEnd(15)} ${f.detalle}${marca}`);
   }
 }
 
@@ -147,6 +179,7 @@ function aplicar(filas) {
 // ---------------------------------------------------------------------------
 console.log(`== ACTUALIZAR PLUGINS: ${REPO} ==`);
 
+ARRANQUE = arranqueSesion();
 let filas = diagnosticar();
 if (!filas.length) {
   console.log('\nNingun plugin habilitado para este repo (enabledPlugins vacio o ausente).');
@@ -167,8 +200,19 @@ if (!filas.length) {
   } else if (desfasados.length) {
     console.log(`\n${desfasados.length} plugin(s) con desfase. Para nivelarlos:`);
     console.log('  node .claude/herramientas/actualizar-plugins/actualizar-plugins.js --aplicar');
-  } else if (!retirados.length) {
+  } else if (!retirados.length && !filas.some(f => f.sinCargar)) {
     console.log('\nTODO AL DIA.');
+  }
+
+  // Desfase silencioso: la version esta instalada pero la sesion arranco antes de traerla.
+  const sinCargar = filas.filter(f => f.sinCargar);
+  if (sinCargar.length) {
+    console.log(`\n${sinCargar.length} plugin(s) SIN CARGAR: se actualizaron despues de que arranco esta`);
+    console.log('sesion, asi que segui corriendo la version vieja aunque el registro diga la nueva.');
+    console.log('REINICIAR LA SESION para tomarlos.');
+    console.log('  ' + sinCargar.map(f => `${f.id} (traido ${f.detalle.replace(/^.*disponible /, '')})`).join('\n  '));
+  } else if (!ARRANQUE) {
+    console.log('\n(No se pudo determinar cuando arranco la sesion: el chequeo de "sin cargar" se omitio.)');
   }
 
   // Los retirados no se arreglan actualizando: son nombres que el marketplace dejo de ofrecer.

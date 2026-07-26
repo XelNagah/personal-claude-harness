@@ -15,9 +15,17 @@ node .claude/herramientas/actualizar-plugins/actualizar-plugins.js "D:/Proyectos
 
 ## Por qué hace falta
 
-Los plugins **no se actualizan solos**: el marketplace se sirve de un clon del repo remoto, así que la versión que corre es la que quedó en la caché el día que se instaló. Un cambio publicado no llega hasta que alguien lo trae, y hasta entonces nada avisa.
+Hay **dos desfases distintos**, y el segundo es el que engaña:
 
-Pasó el 25/07/2026: el plugin `amp` corría la 0.6.2 con la 0.6.3 publicada, seis commits atrás. La versión vieja no tenía una preferencia Base que sí estaba escrita en el repo, así que el instalador habría sembrado preferencias viejas en un repo nuevo. Se descubrió de casualidad.
+1. **Instalado ↔ disponible** — se publicó una versión nueva y esta máquina todavía no la trajo. Se arregla con `--aplicar`.
+2. **Instalado ↔ cargado** — se trajo, pero la **sesión viva** sigue con la versión que cargó al arrancar. Se arregla **reiniciando**, y es el silencioso: `claude plugin list` muestra la versión nueva mientras la sesión corre la vieja.
+
+Los dos pasaron el 25/07/2026, con horas de diferencia:
+
+- Por la tarde, `amp` corría la 0.6.2 con la 0.6.3 publicada seis commits atrás. La versión vieja no tenía una preferencia Base que sí estaba escrita en el repo, así que el instalador habría sembrado preferencias viejas en un repo nuevo.
+- A la noche, después de publicar la 0.6.5, el plugin **se trajo solo en segundo plano** (registro actualizado 00:12) pero la sesión —arrancada a las 19:34— siguió ejecutando la 0.6.3. La skill se cargó desde la carpeta vieja de la caché sin que nada lo indicara.
+
+De ahí sale el chequeo de arranque: la Herramienta compara la hora en que se actualizó cada plugin contra la hora en que arrancó la sesión (por `CLAUDE_PID`). Si el plugin es más nuevo, lo marca `[SIN CARGAR]`. Si no puede averiguar el arranque —otro agente, otro sistema— lo dice y omite ese chequeo, en vez de dar por buena una comparación que no hizo.
 
 ## Qué compara
 
@@ -31,8 +39,15 @@ Por cada plugin habilitado para el repo (`enabledPlugins` de `.claude/settings.j
 | `NO INSTALADO` | Habilitado en `settings` pero sin entrada instalada |
 | `SIN DATO` | El plugin se sirve de un origen propio, o el catálogo no se pudo leer |
 
-- **Lo que corre** sale de `installed_plugins.json`, prefiriendo la entrada de este repo sobre la de alcance usuario.
+Y una marca aparte, que se suma a cualquiera de esos estados:
+
+| Marca | Qué significa |
+|-------|---------------|
+| `[SIN CARGAR]` | El plugin se actualizó **después** de que arrancó esta sesión: está instalado pero la sesión sigue con la versión vieja. No se arregla con `--aplicar` — hay que **reiniciar** |
+
+- **Lo instalado** sale de `installed_plugins.json`, prefiriendo la entrada de este repo sobre la de alcance usuario.
 - **Lo disponible** sale del `plugin.json` dentro del clon del marketplace. Si ese manifiesto no declara `version`, el plugin se versiona por commit y se comparan los sha.
+- **Lo cargado** no se lee: se deduce comparando el `lastUpdated` de cada plugin contra la hora de arranque del proceso de la sesión (`CLAUDE_PID`). Si el plugin es posterior, no está cargado.
 
 Es genérico: no hardcodea nombres de plugin ni de marketplace, así que también reporta los plugins ajenos al harness que el repo tenga habilitados.
 
