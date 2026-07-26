@@ -45,14 +45,17 @@ claude plugin marketplace add XelNagah/personal-claude-harness
 claude plugin install amp@xelnagah-harness -s local
 ```
 
-Los seis `amp-<sub>` entran solos por dependencias: es **una instalación por repo**, no siete.
+Los seis `amp-<sub>` entran solos por dependencias: es **una instalación por repo**, no siete. Si lo hacés desde la sesión con `/plugin install` y te pregunta el alcance, elegí **local**.
 
-El alcance (*scope*) es **`local`** a propósito, y las dos mitades de esa elección tienen su motivo:
+<details>
+<summary>Por qué <code>local</code> y no las otras dos opciones</summary>
 
-- **No `user`**, porque el harness aplica a los repos que lo usan, no a todos: a nivel usuario le pondría estas skills a cualquier repo que abras, incluidos los que no tienen `.claude/` de Agente Multipropósito.
-- **No `project`**, porque no cumple lo que promete. El menú lo ofrece como *"install for all collaborators on this repository"*, pero lo único que viaja en el repo es la declaración en `.claude/settings.json`: **quien lo clone igual tiene que instalar el plugin a mano**. Se midió — una sesión abierta en un repo que declaraba `amp@xelnagah-harness` sin tenerlo instalado no tenía la skill, y nada se instaló solo. O sea que `project` deja configuración de máquina dentro de un archivo versionado sin dar nada a cambio.
+**No `user`**, porque el harness aplica a los repos que lo usan, no a todos: a nivel usuario le pondría estas skills a cualquier repo que abras.
 
-Con `local`, la declaración va a `.claude/settings.local.json`, que no se commitea.
+**No `project`**, porque no cumple lo que promete. El menú lo ofrece como *"install for all collaborators on this repository"*, pero lo único que viaja en el repo es la declaración en `.claude/settings.json`: **quien lo clone igual tiene que instalar el plugin a mano**. Se midió el 26/07/2026 — una sesión abierta en un repo que declaraba `amp@xelnagah-harness` sin tenerlo instalado no tenía la skill, y nada se instaló solo. Así que `project` deja configuración de máquina en un archivo versionado sin dar nada a cambio.
+
+Con `local` esa declaración va a `.claude/settings.local.json`, que no se commitea.
+</details>
 
 ### 3. Reiniciar la sesión
 
@@ -80,123 +83,61 @@ Muestra el Título y el Propósito del repo más las métricas de cada subsistem
 
 ## Actualizar una instalación existente
 
-Poner al día un Agente con Propósito es un **proceso de dos fases**, y cada una tiene su ejecutor. Las dos actualizan lo mismo —el Agente Multipropósito que el repo tiene adentro— por dos vías distintas:
+Tres pasos. Los dos primeros se tipean; el tercero lo hace el agente.
 
-| Fase | Qué pone al día | Quién la ejecuta |
-|------|-----------------|------------------|
-| **1. Plugins** | Los plugins instalados en la máquina: nombres, versiones, alcance | La Herramienta `actualizar-plugins` |
-| **2. Archivos** | El contenido de `.claude/` en el repo: lints, manifiestos, estructura | La skill `amp:actualizar` |
+### 1. Traer la versión nueva
 
-**El orden de ejecución es plugins primero, después archivos**, con un reinicio en el medio. El motivo: los archivos los escribe una skill que viaja *adentro* del plugin, así que si nivelás los archivos antes, te los pone al día una versión vieja del instalador.
+En la sesión abierta en el repo:
 
-### Fase 1 — los plugins
-
-```bash
-node .claude/herramientas/actualizar-plugins/actualizar-plugins.js            # diagnostica
-node .claude/herramientas/actualizar-plugins/actualizar-plugins.js --aplicar  # actualiza
+```
+/plugin marketplace update xelnagah-harness
+/plugin update amp@xelnagah-harness
 ```
 
-Sin `--aplicar` la Herramienta solo diagnostica, así que se puede correr sin miedo para ver cómo está la instalación. Chequea **tres desfases distintos**:
+Si te pregunta el alcance, elegí **local**.
 
-1. **El marketplace bajado** (la copia que Claude Code clona en tu máquina) todavía no trajo lo publicado. Engaña porque todo lo demás se compara contra eso: si está viejo, un plugin atrasado se informa `ACTUALIZADO`. Aparece en el bloque `MARKETPLACES BAJADOS` como `ACTUALIZAR` y se arregla con `--aplicar`.
-2. **Los plugins que falta traer** de lo bajado. Se arreglan con `--aplicar`.
-3. **Los que ya se trajeron pero la sesión no tomó**, porque arrancó antes de que llegaran. Aparecen como `[SIN CARGAR]` y **se arreglan reiniciando, no actualizando**; también engaña, porque `claude plugin list` muestra la versión nueva mientras la sesión ejecuta la vieja.
+### 2. Reiniciar la sesión
 
-**Después: reiniciar la sesión.** Hasta entonces seguís con la versión vieja cargada. `/reload-plugins` **no** sirve para esto: recarga los plugins que ya están, en la versión que ya tenían.
+Claude Code carga los plugins al arrancar y se queda con esos, así que hasta reiniciar seguís ejecutando la versión anterior. `/reload-plugins` **no** alcanza: recarga lo que ya está, en la versión que ya tenía.
 
-Aparte de esos tres desfases, la Herramienta marca `RETIRADO` a los plugins habilitados cuyo nombre el marketplace ya no ofrece. Esos **no los arregla `--aplicar`**: son una migración y van por [su propia sección](#si-aparecen-nombres-de-plugin-retirados).
-
-#### Si el repo todavía no tiene la Herramienta
-
-Un repo instalado antes de que `actualizar-plugins` existiera no la tiene en su `.claude/`. **Igual se puede usar**: agregar o actualizar un marketplace clona el repo entero en la máquina, así que la Herramienta está ahí desde antes de instalar cualquier plugin.
-
-```bash
-node ~/.claude/plugins/marketplaces/xelnagah-harness/.claude/herramientas/actualizar-plugins/actualizar-plugins.js
-```
-
-En Windows, `~` es `%USERPROFILE%`. Diagnostica el repo donde se corre, no el del marketplace.
-
-Y normalmente **ni siquiera hace falta**: `amp:actualizar` la busca sola —primero en el repo, después en el marketplace bajado— y hace la fase 1 él mismo. Los comandos del CLI de acá abajo son para cuando se quiere hacer a mano:
-
-```bash
-# 1. Traer el catálogo nuevo desde GitHub
-claude plugin marketplace update xelnagah-harness
-
-# 2. Actualizar el plugin (arrastra los 6 amp-<sub> por dependencias)
-claude plugin update amp@xelnagah-harness --scope local
-```
-
-⚠️ **Las dos partes del segundo comando son obligatorias.** Con el nombre pelado (`claude plugin update amp`) falla con *Plugin "amp" not found*, y sin `--scope` lo busca en el alcance de usuario, donde no está. El mensaje de error es el mismo en los dos casos y no dice cuál de las dos cosas falta.
-
-⚠️ **Y el alcance tiene que ser el que corresponde a esa instalación**, que no siempre es el actual: un repo instalado antes del 26/07/2026 tiene el conjunto en `project`, y uno instalado después en `local`. Con el alcance equivocado el comando **no encuentra el plugin y no toca nada**, sin error claro. Por eso conviene usar la Herramienta —que informa el alcance de cada plugin— y no los comandos sueltos de memoria.
-
-**Verificar que aplicó:** `claude plugin list` tiene que mostrar la versión nueva. Si querés confirmarlo contra el origen, la versión que corre es el nombre de la carpeta en `~/.claude/plugins/cache/xelnagah-harness/<plugin>/<version>/`.
-
-#### Si aparecen nombres de plugin retirados
-
-Si instalaste el Agente Multipropósito antes de la consolidación en 7 plugins, tenés hasta 10 plugins con nombres viejos (`memoria-local`, `gestion-de-planes`, `preferencias-trabajo`, `conocimiento`, `semantica`, `decisiones`, `herramientas`, `conducta`, `planificar`, `amp-actualizar`). Hay que poner el conjunto nuevo y sacar esos.
-
-**Sacarlos no es opcional.** La generación vieja y la nueva no se pisan: **coexisten**. `memoria-local` y `amp-memoria` traen las dos una skill `registrar-memoria`, con la misma descripción y distinto prefijo de plugin, y no hay ganador definido — el modelo elige cuál usa. Mientras convivan, cada tarea puede caer en la versión vieja sin que te enteres.
-
-**La hace `amp:actualizar`.** Pedísela y ejecuta la migración completa —instalar lo nuevo, desinstalar lo viejo con el alcance de cada uno, pedirte el reinicio— previa confirmación tuya, porque desinstalar no se puede deshacer: esos nombres ya no se publican, así que no hay forma de reinstalarlos desde el marketplace. Los comandos de abajo son para hacerlo a mano.
-
-Es una **migración, no una actualización**: `actualizar-plugins --aplicar` no la ejecuta por su cuenta; marca los plugins como `RETIRADO` e imprime los comandos, cada uno con **su** alcance.
-
-⚠️ **Los alcances pueden ser distintos entre generaciones.** Es normal que los viejos estén en `project` y los nuevos en `local`. Con el alcance equivocado el comando no encuentra nada y no borra nada, sin error claro — por eso conviene tomar los comandos de la Herramienta y no escribirlos de memoria.
-
-⚠️ **El orden es obligatorio: instalar lo nuevo → desinstalar lo viejo → reiniciar.** Nunca al revés: entre medio el repo se queda sin las skills que todavía usa.
-
-```bash
-# 1. Traer la lista nueva de plugins desde GitHub
-claude plugin marketplace update xelnagah-harness
-
-# 2. Instalar el conjunto nuevo (trae los 6 amp-<sub> por dependencias)
-claude plugin install amp@xelnagah-harness -s local
-
-# 3. Recién ahora, sacar los nombres viejos de todos los alcances donde estén
-for p in memoria-local preferencias-trabajo gestion-de-planes conocimiento \
-         semantica decisiones herramientas conducta planificar amp-actualizar; do
-  for s in project local user; do
-    claude plugin uninstall "$p@xelnagah-harness" -s "$s" -y 2>/dev/null
-  done
-done
-```
-
-En PowerShell, el paso 3 es:
-
-```powershell
-foreach ($p in @('memoria-local','preferencias-trabajo','gestion-de-planes','conocimiento',
-                 'semantica','decisiones','herramientas','conducta','planificar','amp-actualizar')) {
-  foreach ($s in @('project','local','user')) {
-    claude plugin uninstall "$p@xelnagah-harness" -s $s -y
-  }
-}
-```
-
-**Después: reiniciar la sesión.** Los plugins nuevos no cargan hasta entonces.
-
-> **`claude plugin prune` no sirve para limpiar acá.** Solo mira el alcance de usuario: con seis dependencias huérfanas instaladas en alcance de proyecto contesta `Nothing to prune (no auto-installed plugins at user scope)`. Las dependencias de proyecto se sacan a mano, una por una.
-
-> **Desinstalar un plugin no arrastra sus dependencias.** `claude plugin uninstall amp@xelnagah-harness -s <alcance>` saca **solo** `amp` y deja los seis `amp-<sub>` instalados y habilitados. Si alguna vez necesitás sacar el conjunto entero, van los siete nombres, uno por uno.
-
-**Verificar que quedó bien.** Lo que carga de verdad no es lo que lista `claude plugin list`, sino el campo `enabledPlugins` de `settings.json` — el del repo (`.claude/settings.json`) y el del usuario (`~/.claude/settings.json`). Ahí tienen que estar los siete nombres nuevos y ninguno viejo. Si `plugin list` sigue mostrando nombres viejos marcados como deshabilitados pero no están en `enabledPlugins`, son restos de la caché: no cargan y no molestan.
-
-### Fase 2 — los archivos del `.claude/`
-
-Ya con los plugins nuevos cargados, adentro de la sesión:
+### 3. Pedir el nivelado
 
 ```
 amp:actualizar
 ```
 
-Converge la estructura del repo contra la plantilla nueva. En concreto:
+Y listo. Esa skill se encarga del resto:
 
-- **Lo Base** (el mecanismo del harness: lints, manifiestos, estructura, cableado del hook) se **pisa**, respaldando antes la versión vieja en `.claude/.respaldo-amp/<fecha>/`. El respaldo importa porque `.claude/` suele estar fuera del control de versiones, así que no hay red abajo.
-- **Lo aprendido** (el contenido que el repo acumuló: tus memorias, planes, decisiones, términos) **no se toca nunca**.
-- **Los renombres conocidos** se aplican solos (`glosario/` → `semantica/`) y los subsistemas que falten se instalan.
-- **Lo dudoso se pregunta**: si algo del acomodo viejo puede enredar contenido aprendido, frena y consulta antes.
+- **Chequea los plugins** antes de tocar archivos, y si algo quedó atrasado lo pone al día y te pide otro reinicio. Si el repo viene de la generación de nombres vieja, **hace la migración él mismo** —instalar lo nuevo, desinstalar lo viejo con el alcance que le toca a cada uno— previa confirmación tuya, porque desinstalar no se puede deshacer.
+- **Nivela el `.claude/`** contra la plantilla nueva: pisa lo Base (mecanismo del harness) y **no toca nunca** lo aprendido — tus memorias, planes, decisiones, términos, y las Herramientas y reglas de tu Propósito.
+- **Respalda solo si hace falta**: si `.claude/` está versionado en git, lo omite (git ya es la red); si no, deja la copia fuera del repo y te dice dónde.
+- **Trae vista previa** y pregunta ante cualquier cosa dudosa antes de escribirla.
 
-Trae vista previa: te muestra qué va a hacer antes de hacerlo.
+### Verificar
+
+```
+amp:info
+```
+
+Muestra el Título, el Propósito y las métricas de cada subsistema. Si el repo todavía no tiene Propósito definido, la pantalla de arranque te lo va a pedir sola.
+
+### Si algo no cierra
+
+Para ver el estado de los plugins sin tocar nada:
+
+```bash
+node .claude/herramientas/actualizar-plugins/actualizar-plugins.js
+```
+
+Diagnostica **el repo donde se corre**. Sin `--aplicar` no escribe nada, así que se puede correr sin miedo; con `--aplicar` pone al día lo que esté atrasado.
+
+Si el repo es anterior a que esa Herramienta existiera y no la tiene, está igual en la máquina —agregar un marketplace clona el repo entero—:
+
+```bash
+node ~/.claude/plugins/marketplaces/xelnagah-harness/.claude/herramientas/actualizar-plugins/actualizar-plugins.js
+```
+
+> La mecánica de fondo —por qué una versión puede estar publicada y no corriendo, qué mira cada comando del CLI y dónde engaña— está en la página de conocimiento `despliegue-de-plugins-claude-code.md`. No hace falta para actualizar; sirve cuando algo no da lo esperado.
 
 ---
 
@@ -222,15 +163,15 @@ El punto de entrada de instrucciones es `AGENTS.md` en la raíz del repo, que es
 
 ## Problemas frecuentes
 
-**Las skills no aparecen después de instalar.** Falta reiniciar la sesión. Si ya reiniciaste, revisá `enabledPlugins` en `.claude/settings.json`.
+**Las skills no aparecen después de instalar.** Falta reiniciar la sesión. Si ya reiniciaste, pedile `amp:actualizar`, que diagnostica los plugins antes de tocar nada.
 
 **`claude plugin list` muestra nombres viejos.** Si no están en `enabledPlugins`, no cargan — son restos de la caché. Se pueden sacar con `claude plugin uninstall <viejo>@xelnagah-harness -s <alcance> -y`.
 
 **La misma skill aparece dos veces.** Dos causas posibles:
 
 - **Enlace y plugin conviviendo.** Elegí uno: borrá el enlace de `~/.claude/skills/<skill>` o desinstalá el plugin.
-- **Generación vieja y nueva conviviendo** — `registrar-memoria` aparece con prefijo `memoria-local:` y con `amp-memoria:`. No hay ganador definido, el modelo elige. Se arregla desinstalando los nombres viejos (ver [Si aparecen nombres de plugin retirados](#si-aparecen-nombres-de-plugin-retirados)).
+- **Generación vieja y nueva conviviendo** — `registrar-memoria` aparece con prefijo `memoria-local:` y con `amp-memoria:`. No hay ganador definido, el modelo elige. Lo resuelve `amp:actualizar`: detecta los nombres retirados y hace la migración.
 
-**Edité una skill en el repo y la sesión sigue comportándose igual.** Si la consumís por plugin, estás corriendo la copia de la caché, que se sirve de GitHub: el cambio no llega hasta que lo commiteás, lo pusheás y corrés la fase 1. Editar el repo local no alcanza, y `/reload-plugins` tampoco. Si estás escribiendo skills a menudo, conviene consumirlas por enlace (ver la sección de otros agentes) en vez de por plugin.
+**Edité una skill en el repo y la sesión sigue comportándose igual.** Si la consumís por plugin, estás corriendo la copia de la caché, que se sirve de GitHub: el cambio no llega hasta que lo commiteás, lo pusheás y actualizás el plugin. Editar el repo local no alcanza, y `/reload-plugins` tampoco. Si estás escribiendo skills a menudo, conviene consumirlas por enlace (ver la sección de otros agentes) en vez de por plugin.
 
 **`amp:inicializar` no pisó algo que yo quería actualizar.** Es a propósito: cuando encuentra algo divergente lo reporta en vez de pisarlo. Para converger contra la plantilla nueva usá `amp:actualizar`, que sí pisa lo Base (con respaldo).

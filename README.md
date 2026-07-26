@@ -85,22 +85,27 @@ La integridad tiene dos capas: la **mecánica** (los lints, obligatoria para tod
 
 ## Cómo se usa
 
-El camino cómodo, con Claude Code, parado en la raíz del repo a inicializar:
+Con Claude Code, parado en el repo que querés inicializar:
 
 ```shell
-# 1. Registrar el marketplace (una vez)
+# 1. Registrar el marketplace (una vez por máquina)
 claude plugin marketplace add XelNagah/personal-claude-harness
 
 # 2. Instalar el plugin transversal (trae los 6 por subsistema como dependencias)
 claude plugin install amp@xelnagah-harness -s local
+```
 
-# 3. Reiniciar la sesión y, en el repo a inicializar, invocar la skill
+Reiniciás la sesión y le pedís al agente:
+
+```
 amp:inicializar
 ```
 
-A partir de ahí, trabajás normal: al arrancar la sesión el agente ve el estado del repo y sus manifiestos, y escribe lo aprendido a medida que aparece.
+Te va a preguntar qué querés lograr en ese repo, y arma el `.claude/` completo. A partir de ahí trabajás normal: al arrancar la sesión el agente ve el estado del repo y sus manifiestos, y escribe lo aprendido a medida que aparece.
 
-📄 **[Manual de instalación completo](docs/INSTALAR.md)** — instalación de cero paso a paso, cómo actualizar un repo que ya tiene el Agente Multipropósito (incluidas las versiones con nombres de plugin viejos), instalación para Codex / Cursor / Gemini, y problemas frecuentes.
+**Para actualizar** un repo que ya lo tiene, son los mismos dos comandos con `marketplace update` / `plugin update`, reiniciar, y pedirle `amp:actualizar` — esa skill se ocupa del resto, incluido migrar instalaciones viejas.
+
+📄 **[Manual de instalación completo](docs/INSTALAR.md)** — paso a paso, actualización, instalación para Codex / Cursor / Gemini, y problemas frecuentes.
 
 El catálogo completo de funcionalidades, dependencias y nombres de skill está en [REGISTRO.md](REGISTRO.md).
 
