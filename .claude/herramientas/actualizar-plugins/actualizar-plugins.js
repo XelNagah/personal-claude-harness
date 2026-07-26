@@ -28,8 +28,17 @@ let ARRANQUE = null;   // se completa abajo, una sola vez (consultar el proceso 
 // Acepta una ruta de repo como argumento (para apuntarlo a otro Agente Multiproposito de la maquina);
 // por omision, el propio.
 const RUTA_ARG = process.argv.slice(2).find(a => !a.startsWith('--'));
-const REPO = RUTA_ARG ? path.resolve(RUTA_ARG) : path.resolve(__dirname, '..', '..', '..');
+// Sin argumento, el repo es el DIRECTORIO DE TRABAJO, no la ubicacion del script. La diferencia
+// importa: la Herramienta tambien se corre desde el marketplace bajado (que es un clon del repo
+// que la publica) cuando el repo destino todavia no la tiene. Deducir el repo desde __dirname
+// hacia arriba daba, en ese caso, el marketplace bajado — y entonces diagnostica y ACTUALIZA el
+// repo equivocado, en silencio y con salida tranquilizadora.
+const REPO = RUTA_ARG ? path.resolve(RUTA_ARG) : process.cwd();
 const PLUGINS_DIR = path.join(os.homedir(), '.claude', 'plugins');
+// El comando que se sugiere es el que se acaba de invocar: la Herramienta se corre tanto desde el
+// repo (.claude/herramientas/...) como desde el marketplace bajado, y sugerir la ruta fija manda a
+// un archivo que en el repo destino puede no existir.
+const COMANDO_APLICAR = '  node ' + JSON.stringify(process.argv[1]) + (RUTA_ARG ? ' ' + JSON.stringify(RUTA_ARG) : '') + ' --aplicar';
 
 function leerJson(p) {
   try { return JSON.parse(fs.readFileSync(p, 'utf8')); } catch (e) { return null; }
@@ -63,11 +72,11 @@ function hace(iso) {
 // El harness expone el pid de la sesion en CLAUDE_PID. Si no se puede averiguar (otro agente, otro
 // sistema), devuelve null y el chequeo de "cargado" se omite en vez de mentir.
 function arranqueSesion() {
-  // `CLAUDE_PID` es de la sesion que corre ESTE script, que vive en su propio repo. Si se apunto la
-  // Herramienta a otro repo, alla no hay sesion abierta que conocer: comparar contra el arranque de
-  // la propia marcaria "sin cargar" plugins que ninguna sesion tenia que haber cargado.
-  const PROPIO = path.resolve(__dirname, '..', '..', '..');
-  if (REPO !== PROPIO) return null;
+  // `CLAUDE_PID` es de la sesion que corre ESTE script, y esa sesion esta parada en el directorio
+  // de trabajo. Si se apunto la Herramienta a OTRO repo (ruta por argumento), alla no hay sesion
+  // abierta que conocer: comparar contra el arranque de la propia marcaria "sin cargar" plugins
+  // que ninguna sesion tenia que haber cargado.
+  if (RUTA_ARG) return null;
   const pid = process.env.CLAUDE_PID;
   if (!pid || !/^\d+$/.test(pid)) return null;
   try {
@@ -346,11 +355,11 @@ if (!filas.length) {
     console.log('(`/reload-plugins` no alcanza: recarga los plugins en la version que ya tenian.)');
   } else if (desfasados.length) {
     console.log(`\n${desfasados.length} plugin(s) con desfase. Para nivelarlos:`);
-    console.log('  node .claude/herramientas/actualizar-plugins/actualizar-plugins.js --aplicar');
+    console.log(COMANDO_APLICAR);
   } else if (catalogoDudoso.length) {
     console.log('\nCADA PLUGIN COINCIDE CON LO BAJADO, PERO EL MARKETPLACE HAY QUE ACTUALIZARLO');
     console.log('(esta atrasado, o no se pudo verificar que no lo este). Refrescarlo y volver a comparar:');
-    console.log('  node .claude/herramientas/actualizar-plugins/actualizar-plugins.js --aplicar');
+    console.log(COMANDO_APLICAR);
   } else if (!retirados.length && !filas.some(f => f.sinCargar)) {
     console.log('\nTODO ACTUALIZADO.');
   }
