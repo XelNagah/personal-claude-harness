@@ -40,6 +40,7 @@ El prefijo `plugin:skill` de 0013 **solo aplica a skills que son plugin**. Las s
 
 - **Codex/Cursor/Gemini:** instalan por junction (Agent Skills), sin mecanismo de prefijo ⇒ nombres pelados. La segmentación es hoy Claude-Code-only y rompe la paridad 0010 a propósito.
 - **Renombre del marketplace** `xelnagah-harness` (eje 1, pendiente): ruptura para consumidores ya instalados.
+- **Renombre de `lint-harness`** (Javier, 26/07/2026): el nombre usa el alias en lugar del nombre, contra la preferencia Base. Candidatos que planteó: el lint **general**, el **del Agente Multipropósito** o el **de los subsistemas** — a definir con lo que el lint efectivamente valida hoy (coherencia entre lo publicado, el catálogo y el registro; estructura de los manifiestos; terminología de lo publicado). Misma población que el del marketplace: es un identificador, no texto.
 - Relación con `Restaurar la portabilidad copiar y pegar del orquestador` y con `Revisar la nomenclatura de los subsistemas`.
 
 ## Notas

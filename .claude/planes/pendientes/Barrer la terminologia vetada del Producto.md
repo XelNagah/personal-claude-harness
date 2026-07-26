@@ -1,6 +1,6 @@
 # Barrer la terminología vetada del Producto
 
-**Estado: Nuevo · Creado 26-07-26.** Origen: sesión de `planificar` sobre el rework de memoria (26/07/2026). Javier: *"es que confunde que sigas llamándole harness. Referite con terminología del repo"*. Al medir el alcance apareció un segundo frente, más grande.
+**Estado: En curso · Creado 26-07-26.** Origen: sesión de `planificar` sobre el rework de memoria (26/07/2026). Javier: *"es que confunde que sigas llamándole harness. Referite con terminología del repo"*. Al medir el alcance apareció un segundo frente, más grande.
 
 ## Frente A — el Producto nunca se barrió
 
@@ -27,6 +27,20 @@ O sea: el Producto no puede quedar fuera del control. Dos piezas:
 
 1. **Que falle, no que informe.** Un término vetado en `.claude/` lo lee el autor; uno en la Plantilla lo hereda cada Agente con Propósito. Candidato: `lint-harness` —que ya mira `funcionalidades/`— falla ante vetados en el Producto, mientras `lint-semantica` los sigue reportando como información para el repo.
 2. **Revisar la cobertura del resto.** `lint-semantica` llega a la raíz; `lint-planes` y `lint-preferencias` no la miran para nada, y `lint-decisiones`, `lint-conocimiento`, `lint-memoria` y `lint-conducta` apenas. Hay que verificar cuáles **deberían** mirarla y hoy no lo hacen.
+
+## Ejecutado del Frente A (26/07/2026)
+
+`lint-harness` ganó el chequeo **terminología vetada en el texto que viaja**: lee los términos de `TERMINOLOGIA-FARLOPA.md`, barre `funcionalidades/` y **cuenta como hallazgo**, así que el control de cierre se pone rojo (verificado con un archivo de prueba: 2 hallazgos, control rojo, `lint-semantica` sigue en verde e informativo). Detalle en el README de la Herramienta.
+
+**Las 41 apariciones eran 14 reales.** El resto no era texto: la medición original usaba la clasificación de `lint-semantica`, que trata todo lo que está entre backticks como código y —al revés— no distingue el bloque ` ```markdown ` de la PLANTILLA, que **es** el texto literal que se escribe en el repo destino. Clasificando por lenguaje de bloque y separando identificadores (backticks, destino de link, campo `name` del frontmatter), quedaron 14 para reescribir y 2 usos que el propio registro de farlopa declara legítimos (`capa mecánica`/`capa semántica`, además vocabulario de la decisión 0003 y de 4 planes vivos), que van en la lista `USOS_LEGITIMOS` del lint.
+
+Barridas: `prosa` → *texto plano* (7), `capa` `.codex/` → *carpeta* (3), `cruce` → *encuentre* (Base de preferencias).
+
+**Se descartó un marcador en el archivo** (`<!-- vetado-ok -->`) para eximir citas deliberadas: el único caso que lo pedía —el párrafo de la PLANTILLA que citaba las Bases viejas para reconocerlas— se resolvió **reescribiendo el párrafo**, que ahora identifica la versión por el encabezado y dejó de envejecer con cada Base nueva. Criterio del autor (26/07/2026): antes de agregar una excepción a un control, corregir el texto que la pide.
+
+De paso, la Base pasa a **v6**: entra la preferencia de mostrar el texto exacto antes de asentar en un registro canónico. Versiones subidas: `amp` 0.6.17, `amp-semantica` 0.5.1 (falta publicar y actualizar).
+
+**Lo que queda del Frente A:** la cobertura del resto de los lints sobre la raíz. Medición del 26/07/2026: la raíz de este repo (`README.md`, `REGISTRO.md`, `AGENTS.md`, `docs/`) está **limpia**, salvo 6 apariciones de `ciclo-de-plan`, que es el nombre vigente de la habilidad hasta que se ejecute `Partir las mega-skills en habilidades de un verbo`.
 
 ## Frente B — el alias «harness» ocupa el lugar del nombre
 
