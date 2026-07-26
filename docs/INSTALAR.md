@@ -98,7 +98,16 @@ Si te pregunta el alcance, elegí **local**.
 
 ### 2. Reiniciar la sesión
 
-Claude Code carga los plugins al arrancar y se queda con esos, así que hasta reiniciar seguís ejecutando la versión anterior. `/reload-plugins` **no** alcanza: recarga lo que ya está, en la versión que ya tenía.
+Claude Code carga los plugins al arrancar y se queda con esos, así que hasta reiniciar seguís ejecutando la versión anterior.
+
+**Reiniciar significa cerrar la ventana y abrir `claude` de nuevo.** Ni `/clear` ni `/reload-plugins` alcanzan, y ninguno de los dos avisa:
+
+- `/clear` vacía la conversación pero **no termina el proceso**, y los plugins se cargan cuando el proceso arranca ⇒ seguís con las versiones que estaban al abrir la ventana.
+- `/reload-plugins` recarga lo que ya está, en la versión que ya tenía.
+
+Por qué importa: la versión vieja de `amp:inicializar` escribe la Base de preferencias y los textos de **su** momento. Si quedó atrasada, siembra en el repo vocabulario y reglas que el Agente Multipropósito ya cambió, y nada lo marca como error.
+
+Para confirmar que el reinicio tomó, pedile a cualquier agente del repo que corra la Herramienta Base `actualizar-plugins`: si sigue listando algo como `SIN CARGAR`, la ventana no se reinició de verdad.
 
 ### 3. Pedir el nivelado
 
