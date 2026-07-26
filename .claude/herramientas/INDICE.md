@@ -10,7 +10,7 @@ Registro de las **Herramientas** del repo: las *tools* que el **Propósito** del
 - **Cómo se invoca** — el comando (`script`), el nombre de skill que dispara el modelo (`skill`), o cómo se conecta y qué tool-calls expone (`mcp`).
 - **Estado** — `vigente`, `experimental` u `obsoleto` (los obsoletos se pueden depurar).
 
-> **Origen del contenido:** las Herramientas se separan por origen en dos secciones — **Herramientas Base** (las manda el harness; el nivelador `amp:actualizar` reemplaza esa sección entera al poner al día un Agente Multipropósito) y **Herramientas del Propósito** (las suma cada repo; el nivelador no las toca). Mismo molde que `conducta/INDICE.md` y que Base/Adaptaciones en `PREFERENCIAS.md`.
+> **Origen del contenido:** las Herramientas se separan por origen en dos secciones — **Herramientas Base** (las manda el Agente Multipropósito; el nivelador `amp:actualizar` reemplaza esa sección entera al poner al día un Agente con Propósito) y **Herramientas del Propósito** (las suma cada repo; el nivelador no las toca). Mismo molde que `conducta/INDICE.md` y que Base/Adaptaciones en `PREFERENCIAS.md`.
 
 ## Herramientas Base
 
@@ -18,7 +18,7 @@ Las que instala el harness (origen **Base**). El nivelador reemplaza **esta secc
 
 | Herramienta | Tipo | Qué hace | Cómo se invoca | Estado |
 |-------------|------|----------|----------------|--------|
-| [actualizar-plugins](actualizar-plugins/) | script | Pone al día los plugins del Agente Multipropósito en esta máquina y detecta los dos desfases: el que falta traer y el silencioso —traído pero no cargado, porque la sesión arrancó antes—; marca aparte los plugins `RETIRADO` (nombres que el marketplace dejó de ofrecer ⇒ migración, no actualización). Sin `--aplicar` solo diagnostica; acepta ruta para apuntarlo a otro repo | `node .claude/herramientas/actualizar-plugins/actualizar-plugins.js [--aplicar] [rutaRepo]` | vigente |
+| [actualizar-plugins](actualizar-plugins/) | script | Pone al día los plugins que este Agente con Propósito tiene habilitados en esta máquina —los que le traen su Agente Multipropósito— y detecta los tres desfases: el marketplace bajado que no trajo lo publicado, el plugin que falta traer, y el silencioso —traído pero no cargado, porque la sesión arrancó antes—; marca aparte los plugins `RETIRADO` (nombres que el marketplace dejó de ofrecer ⇒ migración, no actualización). Sin `--aplicar` solo diagnostica; acepta ruta para apuntarlo a otro repo | `node .claude/herramientas/actualizar-plugins/actualizar-plugins.js [--aplicar] [rutaRepo]` | vigente |
 
 ## Herramientas del Propósito
 

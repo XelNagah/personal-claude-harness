@@ -1,21 +1,21 @@
 ---
 name: actualizar
-description: Nivela el .claude/ de un repo con el Agente Multipropósito ya instalado contra la plantilla nueva del harness. Converge por estructura, sin guardar versión: pisa lo Base (mecanismo del harness) respaldándolo antes en .claude/.respaldo-amp/<fecha>/, nunca toca lo aprendido (contenido del repo), y pregunta antes de reacomodar formas viejas. Aplica renombres conocidos (glosario→semantica) e instala subsistemas faltantes (conducta), delegando en el instalador consolidado amp:inicializar. Arranca chequeando los plugins de la máquina y, si están atrasados, los pone al día y pide reiniciar antes de tocar archivos. Trae vista previa. Use when el usuario dice "nivelá el Agente Multipropósito", "actualizá el harness del repo", "poné al día el .claude", "amp:actualizar", o al detectar un repo con el harness viejo.
+description: Nivela el .claude/ de un Agente con Propósito ya instalado, poniendo al día el Agente Multipropósito que tiene adentro contra la plantilla nueva. Converge por estructura, sin guardar versión: pisa lo Base (mecanismo del harness) respaldándolo antes en .claude/.respaldo-amp/<fecha>/, nunca toca el Aprendizaje (las entradas que el repo acumuló persiguiendo su Propósito), y pregunta antes de reacomodar formas viejas. Aplica renombres conocidos (glosario→semantica) e instala subsistemas faltantes (conducta), delegando en el instalador consolidado amp:inicializar. Arranca chequeando los plugins de la máquina y, si están atrasados, los pone al día y pide reiniciar antes de tocar archivos. Trae vista previa. Use when el usuario dice "nivelá el Agente Multipropósito", "actualizá el harness del repo", "poné al día el .claude", "amp:actualizar", o al detectar un Agente con Propósito cuyo Agente Multipropósito quedó viejo.
 ---
 
 # amp:actualizar — nivelador del harness
 
-Pone al día el `.claude/` de un repo que **ya** tiene el Agente Multipropósito instalado, contra la plantilla nueva. **No** es para arrancar un repo de cero (para eso está `amp:inicializar`): es para uno vivo, sin romperle lo que aprendió. Diseño en la decisión 0028; se apoya en la separación Base/aprendido (decisión 0027).
+Pone al día el `.claude/` de un **Agente con Propósito**: actualiza el Agente Multipropósito que tiene adentro contra la plantilla nueva, sin tocar su Aprendizaje. **No** es para arrancar un repo de cero (para eso está `amp:inicializar`, que es donde un Agente con Propósito nace): es para uno vivo, sin romperle lo que aprendió. Diseño en la decisión 0028; se apoya en la separación Base/aprendido (decisión 0027) y en la composición de la decisión 0034.
 
 ## Principio (qué se pisa y qué no)
 
-La separación por origen **disuelve** el problema de "qué puedo pisar sin borrar lo aprendido":
+Un Agente con Propósito son dos cosas superpuestas, y la separación por origen **disuelve** el problema de "qué puedo pisar sin borrar lo aprendido":
 
-- **Base** = mecanismo del harness (lint, `MANIFIESTO`, estructura, `MOMENTOS`, secciones `## Reglas Base`, cableado del hook) → **se pisa**, respaldando antes.
-- **Aprendido** = contenido del repo (términos del glosario, memorias, planes, decisiones, conocimiento, `## Reglas del Propósito`) → **no se toca nunca**.
-- **Reacomodo legacy** (formas viejas anteriores a 0027 que puedan enredar contenido aprendido) → **se pregunta antes**, bloqueante.
+- **Base** = el **Agente Multipropósito** que tiene adentro (lint, `MANIFIESTO`, estructura, `MOMENTOS`, secciones `## Reglas Base`, cableado del hook) → **se pisa**, respaldando antes. Es lo único que esta skill actualiza.
+- **Aprendizaje** = las entradas que acumuló persiguiendo su Propósito (términos del glosario, memorias, planes, decisiones, conocimiento, `## Reglas del Propósito`) → **no se toca nunca**.
+- **Reacomodo legacy** (formas viejas anteriores a 0027 que puedan enredar el Aprendizaje) → **se pregunta antes**, bloqueante.
 
-**Primera corrida sobre un repo viejo = migración** (instala `conducta`, renombra `glosario`→`semantica` preservando términos, mete el corte Base/Propósito). Las siguientes = reconcile limpio (todo "ya estaba").
+**Primera corrida sobre un Agente con Propósito viejo = migración** (instala `conducta`, renombra `glosario`→`semantica` preservando términos, mete el corte Base/Propósito). Las siguientes = reconcile limpio (todo "ya estaba").
 
 ## Reparto de trabajo (skill ↔ script)
 
@@ -34,9 +34,10 @@ Por eso lo primero de todo, antes de la vista previa, es diagnosticar los plugin
 node .claude/herramientas/actualizar-plugins/actualizar-plugins.js
 ```
 
-- **Si reporta `TODO AL DIA`** → seguir con el flujo de abajo.
-- **Si reporta `DESACTUALIZADO`** → resolverlo acá y **frenar**: correr la Herramienta con `--aplicar`, avisarle al usuario que **reinicie la sesión** y que vuelva a pedir `amp:actualizar` al volver. No seguir con los archivos en esta corrida: la skill que los escribiría sigue siendo la vieja hasta el reinicio.
-- **Si reporta `RETIRADO`** → el repo quedó con nombres de plugin que el marketplace ya no ofrece. Eso **no se arregla actualizando**: es una migración (desinstalar los viejos, instalar el conjunto nuevo). Reportarlo y remitir al manual de instalación; tampoco seguir.
+- **Si reporta `TODO ACTUALIZADO`** → seguir con el flujo de abajo.
+- **Si reporta `ACTUALIZAR` en algún plugin, o el marketplace bajado en `ACTUALIZAR`** → resolverlo acá y **frenar**: correr la Herramienta con `--aplicar`, avisarle al usuario que **reinicie la sesión** y que vuelva a pedir `amp:actualizar` al volver. No seguir con los archivos en esta corrida: la skill que los escribiría sigue siendo la vieja hasta el reinicio.
+- **Si reporta `NO INSTALADO`** → el repo declara un plugin en `settings` que **no llegó a instalarse**: los archivos pueden estar al día y las skills no. Mismo tratamiento que el anterior —`--aplicar`, reiniciar, volver a pedir la skill— y **frenar igual**. Es el estado típico de una migración que quedó por la mitad, y seguir nivelando archivos acá los pondría al día con las skills viejas.
+- **Si reporta `RETIRADO`** → el repo quedó con nombres de plugin que el marketplace ya no ofrece. Eso **no se arregla actualizando**: es una migración. La Herramienta imprime el comando de desinstalación y el orden (instalar lo nuevo → desinstalar lo viejo → reiniciar); pasárselo al usuario, remitir al manual de instalación y **no seguir**. Ojo: mientras conviven, el plugin viejo y el nuevo **no se pisan, coexisten** —dos skills con la misma descripción y distinto prefijo—, así que el paso de desinstalar no es opcional.
 - **Si la Herramienta no existe** en el repo (instalación anterior a que existiera) → decirlo y remitir al manual: esa primera pasada se hace con los comandos del CLI, una sola vez, y después la Herramienta queda instalada.
 
 Se recuerda un solo nombre —`amp:actualizar`— y el orden lo garantiza esta skill.

@@ -1257,7 +1257,7 @@ Registro de las **Herramientas** del repo: las *tools* que el **Propósito** del
 - **Cómo se invoca** — el comando (`script`), el nombre de skill que dispara el modelo (`skill`), o cómo se conecta y qué tool-calls expone (`mcp`).
 - **Estado** — `vigente`, `experimental` u `obsoleto` (los obsoletos se pueden depurar).
 
-> **Origen del contenido:** las Herramientas se separan por origen en dos secciones — **Herramientas Base** (las manda el harness; el nivelador `amp:actualizar` reemplaza esa sección entera al poner al día un Agente Multipropósito) y **Herramientas del Propósito** (las suma cada repo; el nivelador no las toca). Mismo molde que `conducta/INDICE.md` y que Base/Adaptaciones en `PREFERENCIAS.md`.
+> **Origen del contenido:** las Herramientas se separan por origen en dos secciones — **Herramientas Base** (las manda el Agente Multipropósito; el nivelador `amp:actualizar` reemplaza esa sección entera al poner al día un Agente con Propósito) y **Herramientas del Propósito** (las suma cada repo; el nivelador no las toca). Mismo molde que `conducta/INDICE.md` y que Base/Adaptaciones en `PREFERENCIAS.md`.
 
 ## Herramientas Base
 
@@ -1265,7 +1265,7 @@ Las que instala el harness (origen **Base**). El nivelador reemplaza **esta secc
 
 | Herramienta | Tipo | Qué hace | Cómo se invoca | Estado |
 |-------------|------|----------|----------------|--------|
-| [actualizar-plugins](actualizar-plugins/) | script | Pone al día los plugins del Agente Multipropósito en esta máquina y detecta los dos desfases: el que falta traer y el silencioso —traído pero no cargado, porque la sesión arrancó antes—; marca aparte los plugins `RETIRADO` (nombres que el marketplace dejó de ofrecer ⇒ migración, no actualización). Sin `--aplicar` solo diagnostica; acepta ruta para apuntarlo a otro repo | `node .claude/herramientas/actualizar-plugins/actualizar-plugins.js [--aplicar] [rutaRepo]` | vigente |
+| [actualizar-plugins](actualizar-plugins/) | script | Pone al día los plugins que este Agente con Propósito tiene habilitados en esta máquina —los que le traen su Agente Multipropósito— y detecta los tres desfases: el marketplace bajado que no trajo lo publicado, el plugin que falta traer, y el silencioso —traído pero no cargado, porque la sesión arrancó antes—; marca aparte los plugins `RETIRADO` (nombres que el marketplace dejó de ofrecer ⇒ migración, no actualización). Sin `--aplicar` solo diagnostica; acepta ruta para apuntarlo a otro repo | `node .claude/herramientas/actualizar-plugins/actualizar-plugins.js [--aplicar] [rutaRepo]` | vigente |
 
 ## Herramientas del Propósito
 
@@ -1398,20 +1398,23 @@ if (!refsRotas.length) console.log('    (ninguna)');
 
 ## §Script — actualizar-plugins — `.claude/herramientas/actualizar-plugins/actualizar-plugins.js`
 
-Herramienta **Base** del subsistema `herramientas` (va en la sección `## Herramientas Base` del registro). Pone al día los plugins del Agente Multipropósito en esta máquina: los plugins se sirven de un clon del repo del marketplace, así que la versión que corre es la que quedó en la caché el día que se instaló y nada avisa cuando hay una nueva.
+Herramienta **Base** del subsistema `herramientas` (va en la sección `## Herramientas Base` del registro). Pone al día los plugins que traen el Agente Multipropósito a este repo: se sirven de una copia local del catálogo, y entre lo publicado, lo que tiene esa copia, lo instalado y lo que la sesión cargó al arrancar puede haber tres desfases distintos, ninguno de los cuales se anuncia solo.
 
-Contenido exacto (Node, sin dependencias, sin red):
+Contenido exacto (Node, sin dependencias; consulta el commit publicado con `git ls-remote`, y sin salida a red estima con lo que hay en disco):
 
 ```js
 #!/usr/bin/env node
 // actualizar-plugins.js — pone al dia los PLUGINS del Agente Multiproposito en esta maquina.
 //
-// Los plugins se sirven de un clon del repo del marketplace y PUEDEN traerse solos en segundo plano,
-// pero la SESION VIVA usa la version que cargo al arrancar: si el plugin se actualizo despues, la
-// sesion sigue con la vieja hasta que se reinicie. Por eso este script mira dos desfases distintos:
-//   1) instalado <-> disponible  (falta traer la version nueva)   -> se arregla con --aplicar
-//   2) instalado <-> cargado     (se trajo pero la sesion no la tomo) -> se arregla REINICIANDO
-// El (2) es el silencioso: `claude plugin list` dice la version nueva mientras corre la vieja.
+// Un cambio viaja por varias paradas y CADA UNA guarda su copia: se publica en el repo remoto, de ahi
+// se baja el MARKETPLACE (una carpeta por marketplace en la maquina), de ahi se INSTALA el plugin para
+// un repo, y la SESION carga lo instalado al arrancar. Entre parada y parada puede haber desfase:
+//   1) publicado <-> bajado      (el marketplace bajado no trajo lo ultimo)  -> se arregla con --aplicar
+//   2) bajado    <-> instalado   (falta traer la version nueva)              -> se arregla con --aplicar
+//   3) instalado <-> cargado     (se trajo pero la sesion no la tomo)        -> se arregla REINICIANDO
+// El (1) y el (3) son los silenciosos: el (1) porque lo "disponible" sale del marketplace bajado, asi
+// que uno viejo da ACTUALIZADO sobre datos viejos; el (3) porque `claude plugin list` dice la version
+// nueva mientras la sesion corre la vieja.
 //
 //   node .claude/herramientas/actualizar-plugins/actualizar-plugins.js            (solo diagnostica)
 //   node .claude/herramientas/actualizar-plugins/actualizar-plugins.js --aplicar  (actualiza)
@@ -1435,6 +1438,30 @@ const PLUGINS_DIR = path.join(os.homedir(), '.claude', 'plugins');
 
 function leerJson(p) {
   try { return JSON.parse(fs.readFileSync(p, 'utf8')); } catch (e) { return null; }
+}
+
+// git de una linea: devuelve la salida o null si el comando falla, no existe el repo o vence.
+function gitEn(dir, args, timeout = 5000) {
+  const r = spawnSync('git', args, { cwd: dir, encoding: 'utf8', timeout });
+  if (!r || r.status !== 0) return null;
+  return (r.stdout || '').trim() || null;
+}
+
+// Dos URLs de git apuntan al mismo repo: se compara <duenio>/<repo>, sin .git ni protocolo,
+// para que "https://github.com/X/Y.git", "git@github.com:X/Y" y "X/Y" den todos lo mismo.
+function mismoRemoto(a, b) {
+  const cola = s => (s || '').trim().toLowerCase().replace(/\.git$/, '').replace(/\/+$/, '')
+    .split(/[/:]/).filter(Boolean).slice(-2).join('/');
+  return !!a && !!b && cola(a) === cola(b) && cola(a).includes('/');
+}
+
+function hace(iso) {
+  const t = new Date(iso);
+  if (isNaN(t.getTime())) return null;
+  const min = Math.round((Date.now() - t.getTime()) / 60000);
+  if (min < 60) return `hace ${min} min`;
+  if (min < 60 * 48) return `hace ${Math.round(min / 60)} h`;
+  return `hace ${Math.round(min / 1440)} dias`;
 }
 
 // -- cuando arranco esta sesion: los plugins que se actualizaron DESPUES no estan cargados --
@@ -1478,35 +1505,112 @@ function plugesHabilitados() {
 function instalado(id) {
   const j = leerJson(path.join(PLUGINS_DIR, 'installed_plugins.json'));
   const entradas = (j && j.plugins && j.plugins[id]) || [];
-  // preferir la entrada de este repo; si no hay, la de alcance usuario
+  // El registro guarda UNA ENTRADA POR REPO (`projectPath`): dos repos de la misma maquina pueden
+  // correr versiones distintas del mismo plugin. Asi que vale la entrada de ESTE repo, la de alcance
+  // usuario (aplica a todos) o una sin repo declarado — NUNCA la de otro repo: dar por instalado acá
+  // lo que esta instalado allá es el modo de falla que este script existe para no cometer.
   const propia = entradas.find(e => e.projectPath && path.resolve(e.projectPath) === REPO);
   const usuario = entradas.find(e => e.scope === 'user');
-  return propia || usuario || entradas[0] || null;
+  const sinRepo = entradas.find(e => !e.projectPath);
+  return propia || usuario || sinRepo || null;
 }
 
-// -- version DISPONIBLE: la del clon del marketplace, leyendo el plugin.json que apunta el catalogo --
-function disponible(nombre, marketplace) {
+function marketplaceRegistrado(marketplace) {
   const mkts = leerJson(path.join(PLUGINS_DIR, 'known_marketplaces.json')) || {};
-  const mkt = mkts[marketplace];
-  if (!mkt || !mkt.installLocation) return { error: 'marketplace no registrado' };
-  const catalogo = leerJson(path.join(mkt.installLocation, '.claude-plugin', 'marketplace.json'));
+  return mkts[marketplace] || null;
+}
+
+// -- version que declara un marketplace: sirve para el bajado y para el repo que lo publica --
+// `raiz` es la carpeta que contiene `.claude-plugin/marketplace.json`; ese archivo apunta con
+// `source` a la carpeta de cada plugin, y ahi vive el `plugin.json` con la version.
+function versionDe(raiz, nombre) {
+  const catalogo = leerJson(path.join(raiz, '.claude-plugin', 'marketplace.json'));
   if (!catalogo || !Array.isArray(catalogo.plugins)) return { error: 'catalogo ilegible' };
   const fila = catalogo.plugins.find(p => p.name === nombre);
   // Habilitado pero ausente del catalogo = el marketplace ya no lo ofrece (renombrado o dado de baja).
   // No es "sin dato": es un plugin colgado, y actualizarlo no lo arregla — hay que migrar los nombres.
   if (!fila) return { retirado: true };
-  // `source` es una ruta relativa dentro del clon ("./funcionalidades/amp"). Algunos marketplaces
-  // lo declaran como objeto (origen remoto propio): ahi el manifiesto no esta en este clon.
+  // `source` es una ruta relativa dentro del marketplace ("./funcionalidades/amp"). Algunos marketplaces
+  // lo declaran como objeto (origen remoto propio): ahi el manifiesto no esta en la carpeta bajada.
   const origen = fila.source === undefined ? '.' : fila.source;
-  if (typeof origen !== 'string') return { error: 'el plugin se sirve de un origen propio, no del clon' };
-  const manifiesto = leerJson(path.join(mkt.installLocation, origen, '.claude-plugin', 'plugin.json'));
+  if (typeof origen !== 'string') return { error: 'el plugin se sirve de un origen propio, no del marketplace bajado' };
+  const manifiesto = leerJson(path.join(raiz, origen, '.claude-plugin', 'plugin.json'));
   if (!manifiesto) return { error: 'plugin.json ilegible' };
-  // Sin campo `version` el plugin se versiona por commit: se compara el sha del clon.
-  if (!manifiesto.version) {
-    const r = spawnSync('git', ['rev-parse', 'HEAD'], { cwd: mkt.installLocation, encoding: 'utf8' });
-    return { version: null, sha: (r.stdout || '').trim() || null };
-  }
+  // Sin campo `version` el plugin se versiona por commit: se compara el sha del arbol.
+  if (!manifiesto.version) return { version: null, sha: gitEn(raiz, ['rev-parse', 'HEAD']) };
   return { version: manifiesto.version, sha: null };
+}
+
+// -- version DISPONIBLE: la del marketplace bajado, leyendo el plugin.json que apunta su catalogo --
+function disponible(nombre, marketplace) {
+  const mkt = marketplaceRegistrado(marketplace);
+  if (!mkt || !mkt.installLocation) return { error: 'marketplace no registrado' };
+  return versionDe(mkt.installLocation, nombre);
+}
+
+// -- primer desfase: el MARKETPLACE BAJADO atrasado respecto de lo PUBLICADO --
+// Todo lo "disponible" de mas abajo sale del marketplace bajado, que se refresca solo en segundo plano:
+// entre que se publica una version y el bajado la trae, la comparacion diria ACTUALIZADO sobre datos viejos.
+// Se pregunta al remoto (barato, ~0.6 s, y no toca lo bajado: `ls-remote` no trae ni escribe nada) y,
+// si no hay salida a red, se estima con lo que hay en disco en vez de dar por bueno lo no verificado.
+//
+// El estado es la ACCION que corresponde, no el diagnostico: `ACTUALIZADO` (verificado, no hay nada que
+// hacer) o `ACTUALIZAR` (esta atrasado, o no se pudo verificar que no lo este). Los dos casos se
+// resuelven igual y refrescar de mas sale casi nada — se comparan las versiones, no difieren, sigue.
+// El motivo puntual queda en el detalle, que se lee solo si interesa.
+function estadoCatalogo(marketplace, nombres) {
+  const mkt = marketplaceRegistrado(marketplace);
+  if (!mkt || !mkt.installLocation) return { estado: 'SIN DATO', detalle: 'marketplace no registrado' };
+  const bajado = mkt.installLocation;
+  const local = gitEn(bajado, ['rev-parse', 'HEAD']);
+  // Un marketplace servido de una carpeta de la maquina no tiene "publicado" contra que comparar.
+  if (!local) return { estado: 'N/A', detalle: 'no se trae de un repo git (marketplace servido de una carpeta)' };
+
+  const publicado = (gitEn(bajado, ['ls-remote', 'origin', 'HEAD']) || '').split(/\s+/)[0] || null;
+  if (publicado) {
+    if (publicado === local) return { estado: 'ACTUALIZADO', detalle: `bajado ${local.slice(0, 12)} = publicado` };
+    return {
+      estado: 'ACTUALIZAR',
+      detalle: `bajado ${local.slice(0, 12)} · publicado ${publicado.slice(0, 12)}`,
+      versiones: versionesQueFaltan(marketplace, mkt, bajado, nombres),
+    };
+  }
+
+  // Sin red: estimar. Si este repo es el que PUBLICA el marketplace, su arbol es la mejor referencia
+  // que hay en disco — y es justo el caso del autor, que acaba de publicar y todavia no le llego.
+  const origenRepo = gitEn(REPO, ['remote', 'get-url', 'origin'], 3000);
+  const declarado = (mkt.source && (mkt.source.repo || mkt.source.url)) || null;
+  if (mismoRemoto(origenRepo, declarado)) {
+    const headRepo = gitEn(REPO, ['rev-parse', 'HEAD']);
+    if (headRepo && headRepo !== local) return {
+      estado: 'ACTUALIZAR',
+      detalle: `sin red: bajado ${local.slice(0, 12)} · este repo (lo publica) ${headRepo.slice(0, 12)}`,
+      versiones: versionesQueFaltan(marketplace, mkt, bajado, nombres),
+    };
+    if (headRepo) return { estado: 'ACTUALIZADO', detalle: `sin red: bajado ${local.slice(0, 12)} = este repo, que lo publica` };
+  }
+  const edad = mkt.lastUpdated ? hace(mkt.lastUpdated) : null;
+  return {
+    estado: 'ACTUALIZAR',
+    detalle: `sin salida a red · el marketplace se bajo ${edad || 'en fecha desconocida'}`,
+  };
+}
+
+// Cuando el marketplace bajado quedo atras, decir QUE cambia: se comparan las versiones que declara
+// lo bajado contra las del repo que lo publica, si esta en esta maquina. Sin ese repo no se
+// puede saber (leer el arbol del remoto exigiria traerlo, que es lo que hace `--aplicar`).
+function versionesQueFaltan(marketplace, mkt, bajado, nombres) {
+  const origenRepo = gitEn(REPO, ['remote', 'get-url', 'origin'], 3000);
+  const declarado = (mkt.source && (mkt.source.repo || mkt.source.url)) || null;
+  if (!mismoRemoto(origenRepo, declarado)) return null;
+  const cambios = [];
+  for (const n of nombres) {
+    const enCatalogo = versionDe(bajado, n);
+    const enRepo = versionDe(REPO, n);
+    if (!enCatalogo.version || !enRepo.version) continue;
+    if (enCatalogo.version !== enRepo.version) cambios.push(`${n}: bajado ${enCatalogo.version} · este repo ${enRepo.version}`);
+  }
+  return cambios.length ? cambios : null;
 }
 
 // -- diagnostico: una fila por plugin habilitado --
@@ -1528,11 +1632,11 @@ function diagnosticar() {
       estado = 'SIN DATO';
       detalle = disp.error;
     } else if (disp.version) {
-      estado = inst.version === disp.version ? 'AL DIA' : 'DESACTUALIZADO';
+      estado = inst.version === disp.version ? 'ACTUALIZADO' : 'ACTUALIZAR';
       detalle = `corre ${inst.version} · disponible ${disp.version}`;
     } else if (disp.sha) {
       const igual = (inst.gitCommitSha || '').startsWith(disp.sha.slice(0, 12));
-      estado = igual ? 'AL DIA' : 'DESACTUALIZADO';
+      estado = igual ? 'ACTUALIZADO' : 'ACTUALIZAR';
       detalle = `versiona por commit · corre ${(inst.gitCommitSha || '?').slice(0, 12)} · disponible ${disp.sha.slice(0, 12)}`;
     } else {
       estado = 'SIN DATO';
@@ -1547,6 +1651,24 @@ function diagnosticar() {
     filas.push({ id, nombre, marketplace, estado, detalle, sinCargar, scope: (inst && inst.scope) || 'project' });
   }
   return filas;
+}
+
+// Una linea por marketplace en juego (no por plugin): lo bajado es compartido por todos sus plugins.
+function imprimirCatalogos(filas) {
+  const nombresPorMkt = new Map();
+  for (const f of filas) {
+    if (!nombresPorMkt.has(f.marketplace)) nombresPorMkt.set(f.marketplace, []);
+    nombresPorMkt.get(f.marketplace).push(f.nombre);
+  }
+  const salida = [];
+  for (const [m, nombres] of nombresPorMkt) salida.push({ marketplace: m, ...estadoCatalogo(m, nombres) });
+  const ancho = Math.max(...salida.map(c => c.marketplace.length), 10);
+  console.log('\nMARKETPLACES BAJADOS (de donde sale lo "disponible" de arriba)\n');
+  for (const c of salida) {
+    console.log(`  ${c.marketplace.padEnd(ancho)}  ${c.estado.padEnd(15)} ${c.detalle}`);
+    for (const v of (c.versiones || [])) console.log(`  ${' '.repeat(ancho)}  ${' '.repeat(15)} ${v}`);
+  }
+  return salida;
 }
 
 function imprimir(filas) {
@@ -1569,7 +1691,7 @@ function aplicar(filas) {
   }
 
   // Releer: refrescar el catalogo puede haber cambiado que esta desactualizado.
-  const pendientes = diagnosticar().filter(f => f.estado === 'DESACTUALIZADO' || f.estado === 'NO INSTALADO');
+  const pendientes = diagnosticar().filter(f => f.estado === 'ACTUALIZAR' || f.estado === 'NO INSTALADO');
   if (!pendientes.length) {
     console.log('\nNada que actualizar despues de refrescar el catalogo.');
     return;
@@ -1592,8 +1714,12 @@ if (!filas.length) {
   console.log('');
   imprimir(filas);
 
-  const desfasados = filas.filter(f => f.estado === 'DESACTUALIZADO' || f.estado === 'NO INSTALADO');
+  const desfasados = filas.filter(f => f.estado === 'ACTUALIZAR' || f.estado === 'NO INSTALADO');
   const retirados = filas.filter(f => f.estado === 'RETIRADO');
+
+  // Estado de lo bajado: sin esto, lo "disponible" de la tabla de arriba no se puede creer.
+  const catalogos = imprimirCatalogos(filas);
+  const catalogoDudoso = catalogos.filter(c => c.estado === 'ACTUALIZAR');
 
   if (APLICAR) {
     aplicar(filas);
@@ -1605,8 +1731,12 @@ if (!filas.length) {
   } else if (desfasados.length) {
     console.log(`\n${desfasados.length} plugin(s) con desfase. Para nivelarlos:`);
     console.log('  node .claude/herramientas/actualizar-plugins/actualizar-plugins.js --aplicar');
+  } else if (catalogoDudoso.length) {
+    console.log('\nCADA PLUGIN COINCIDE CON LO BAJADO, PERO EL MARKETPLACE HAY QUE ACTUALIZARLO');
+    console.log('(esta atrasado, o no se pudo verificar que no lo este). Refrescarlo y volver a comparar:');
+    console.log('  node .claude/herramientas/actualizar-plugins/actualizar-plugins.js --aplicar');
   } else if (!retirados.length && !filas.some(f => f.sinCargar)) {
-    console.log('\nTODO AL DIA.');
+    console.log('\nTODO ACTUALIZADO.');
   }
 
   // Desfase silencioso: la version esta instalada pero la sesion arranco antes de traerla.
@@ -1621,11 +1751,19 @@ if (!filas.length) {
   }
 
   // Los retirados no se arreglan actualizando: son nombres que el marketplace dejo de ofrecer.
+  // Se imprime el comando y NO se ejecuta, ni siquiera con --aplicar: desinstalar es destructivo y
+  // NO es reversible desde el marketplace (esos nombres ya no estan ahi para volver a instalarlos).
+  // Ademas, sacar lo viejo antes de que entre lo nuevo deja el repo sin skills — de ahi el orden.
   if (retirados.length) {
     console.log(`\n${retirados.length} plugin(s) RETIRADO(S): este repo quedo en una generacion de nombres`);
-    console.log('que el marketplace ya no ofrece. Actualizar no los arregla — hay que desinstalar los');
-    console.log('nombres viejos e instalar el conjunto nuevo (migracion, no actualizacion).');
-    console.log('  ' + retirados.map(f => f.id).join('\n  '));
+    console.log('que el marketplace ya no ofrece. Actualizar no los arregla: hay que instalar el conjunto');
+    console.log('nuevo y recien despues sacar estos (migracion, no actualizacion).');
+    console.log('\nORDEN: 1) instalar lo nuevo  2) desinstalar lo viejo  3) reiniciar la sesion.');
+    console.log('Nunca al reves: entre medio el repo se queda sin las skills que todavia usa.');
+    console.log('\nPara el paso 2, cuando lo nuevo ya este instalado:');
+    for (const f of retirados) console.log(`  claude plugin uninstall ${f.id} --scope ${f.scope}`);
+    console.log('\nY sacar tambien su linea de `enabledPlugins` en el settings donde este declarado.');
+    console.log('(`claude plugin prune --dry-run` lista que dependencias quedarian sin dueno, sin tocar nada.)');
   }
 }
 ```
@@ -1635,7 +1773,7 @@ Ficha `.claude/herramientas/actualizar-plugins/README.md`:
 ````markdown
 # actualizar-plugins
 
-Pone al día los **plugins** del Agente Multipropósito en esta máquina, y sirve de control de desfase.
+Pone al día los **plugins** que este Agente con Propósito tiene habilitados en esta máquina —los que le traen su Agente Multipropósito—, y sirve de control de desfase.
 
 ```bash
 # diagnostica, no toca nada
@@ -1650,17 +1788,22 @@ node .claude/herramientas/actualizar-plugins/actualizar-plugins.js "D:/Proyectos
 
 ## Por qué hace falta
 
-Hay **dos desfases distintos**, y el segundo es el que engaña:
+Hay **tres desfases distintos**, y el primero y el tercero son los que engañan:
 
-1. **Instalado ↔ disponible** — se publicó una versión nueva y esta máquina todavía no la trajo. Se arregla con `--aplicar`.
-2. **Instalado ↔ cargado** — se trajo, pero la **sesión viva** sigue con la versión que cargó al arrancar. Se arregla **reiniciando**, y es el silencioso: `claude plugin list` muestra la versión nueva mientras la sesión corre la vieja.
+1. **Publicado ↔ bajado** — el marketplace bajado todavía no trajo lo último. Engaña porque *todo lo demás se compara contra lo bajado*: si está viejo, un plugin atrasado se informa `ACTUALIZADO`. Se arregla con `--aplicar`.
+2. **Bajado ↔ instalado** — el marketplace bajado tiene una versión nueva que esta máquina no instaló. Se arregla con `--aplicar`.
+3. **Instalado ↔ cargado** — se instaló, pero la **sesión viva** sigue con la versión que cargó al arrancar. Se arregla **reiniciando**, y es silencioso: `claude plugin list` muestra la versión nueva mientras la sesión corre la vieja.
 
-Los dos pasaron el 25/07/2026, con horas de diferencia:
+Los tres pasaron el 25/07/2026:
 
 - Por la tarde, `amp` corría la 0.6.2 con la 0.6.3 publicada seis commits atrás. La versión vieja no tenía una preferencia Base que sí estaba escrita en el repo, así que el instalador habría sembrado preferencias viejas en un repo nuevo.
 - A la noche, después de publicar la 0.6.5, el plugin **se trajo solo en segundo plano** (registro actualizado 00:12) pero la sesión —arrancada a las 19:34— siguió ejecutando la 0.6.3. La skill se cargó desde la carpeta vieja de la caché sin que nada lo indicara.
+- Más tarde, publicada la 0.6.6, el marketplace bajado se había refrescado **doce minutos antes** del push. La Herramienta informó `TODO ACTUALIZADO` sobre un catálogo que no tenía la versión nueva: lo instalado coincidía con lo bajado, y lo bajado estaba viejo.
 
-De ahí sale el chequeo de arranque: la Herramienta compara la hora en que se actualizó cada plugin contra la hora en que arrancó la sesión (por `CLAUDE_PID`). Si el plugin es más nuevo, lo marca `[SIN CARGAR]`. Si no puede averiguar el arranque —otro agente, otro sistema— lo dice y omite ese chequeo, en vez de dar por buena una comparación que no hizo.
+De ahí salen los dos chequeos que no se leen de un archivo:
+
+- **Cargado**: se compara la hora en que se actualizó cada plugin contra la hora en que arrancó la sesión (por `CLAUDE_PID`). Si el plugin es más nuevo, lo marca `[SIN CARGAR]`. Si no puede averiguar el arranque —otro agente, otro sistema— lo dice y omite ese chequeo, en vez de dar por buena una comparación que no hizo.
+- **Catálogo**: se le pregunta al remoto por el commit publicado con `git ls-remote` (~0,6 s, y no toca lo bajado: no trae ni escribe nada). Sin salida a red hay una reserva, abajo.
 
 ## Qué compara
 
@@ -1668,8 +1811,8 @@ Por cada plugin habilitado para el repo (`enabledPlugins` de `.claude/settings.j
 
 | Estado | Qué significa |
 |--------|---------------|
-| `AL DIA` | Lo que corre coincide con lo disponible |
-| `DESACTUALIZADO` | Hay versión nueva sin traer |
+| `ACTUALIZADO` | Lo que corre coincide con lo disponible |
+| `ACTUALIZAR` | Hay versión nueva sin traer |
 | `RETIRADO` | Está habilitado pero el marketplace ya no lo ofrece — el repo quedó en una generación de nombres vieja. **Actualizar no lo arregla**: es una migración (desinstalar los nombres viejos, instalar el conjunto nuevo) |
 | `NO INSTALADO` | Habilitado en `settings` pero sin entrada instalada |
 | `SIN DATO` | El plugin se sirve de un origen propio, o el catálogo no se pudo leer |
@@ -1681,8 +1824,29 @@ Y una marca aparte, que se suma a cualquiera de esos estados:
 | `[SIN CARGAR]` | El plugin se actualizó **después** de que arrancó esta sesión: está instalado pero la sesión sigue con la versión vieja. No se arregla con `--aplicar` — hay que **reiniciar** |
 
 - **Lo instalado** sale de `installed_plugins.json`, prefiriendo la entrada de este repo sobre la de alcance usuario.
-- **Lo disponible** sale del `plugin.json` dentro del clon del marketplace. Si ese manifiesto no declara `version`, el plugin se versiona por commit y se comparan los sha.
+- **Lo disponible** sale del `plugin.json` dentro del marketplace bajado. Si ese manifiesto no declara `version`, el plugin se versiona por commit y se comparan los sha.
 - **Lo cargado** no se lee: se deduce comparando el `lastUpdated` de cada plugin contra la hora de arranque del proceso de la sesión (`CLAUDE_PID`). Si el plugin es posterior, no está cargado.
+
+## El estado de los marketplaces bajados
+
+Una línea por marketplace, no por plugin: lo bajado es compartido por todos los plugins que sirve, y de ahí sale la columna *disponible*.
+
+La columna dice **la acción que corresponde**, no el diagnóstico:
+
+| Estado | Qué significa |
+|--------|---------------|
+| `ACTUALIZADO` | Verificado: lo bajado está en el mismo commit que lo publicado. No hay nada que hacer |
+| `ACTUALIZAR` | Lo bajado está atrasado, **o** no se pudo verificar que no lo esté. Los dos casos se resuelven igual, y refrescar de más sale casi nada: se comparan las versiones, no difieren, sigue. El motivo puntual queda en el detalle de al lado |
+| `N/A` | El marketplace se sirve de una carpeta de la máquina: no hay "publicado" contra qué comparar |
+
+Se averigua por dos vías, en orden:
+
+1. **Por red** — `git ls-remote origin HEAD` sobre el marketplace bajado devuelve el commit publicado sin traer nada. Es la vía normal: **0,6 s**.
+2. **Sin red, por estimación** — si la consulta falla o vence (5 s), se compara contra el **repo que publica el marketplace**, cuando ese repo es justamente desde donde se corre la Herramienta (se detecta comparando el `origin` del repo contra el que declara el catálogo). Es el caso del autor, que acaba de publicar y todavía no le llegó. Si el repo no publica ese marketplace, no hay con qué estimar: queda `ACTUALIZAR` y el detalle dice hace cuánto se bajó.
+
+Cuando lo bajado está en `ACTUALIZAR` **y** el repo desde donde se corre es el que publica, se listan además las versiones que cambian (`amp: bajado 0.6.5 · este repo 0.6.6`). Desde un consumidor eso no se puede saber: leer el árbol del remoto exigiría traerlo, que es lo que hace `--aplicar`.
+
+⚠️ Con un marketplace en `ACTUALIZAR`, la Herramienta **no dice `TODO ACTUALIZADO`** aunque cada plugin coincida con lo bajado: avisa que la comparación se hizo contra datos que pueden estar viejos y remite a `--aplicar`.
 
 Es genérico: no hardcodea nombres de plugin ni de marketplace, así que también reporta los plugins ajenos al harness que el repo tenga habilitados.
 
@@ -1703,7 +1867,25 @@ Refresca el catálogo primero y **vuelve a diagnosticar** antes de actualizar: t
 
 - **No escribe el handoff.** Un script no sabe en qué venías trabajando; eso lo redacta el agente antes de llamarlo.
 - **No toca los archivos de `.claude/`.** Esa es la otra fase, y la pone al día `amp:actualizar`.
-- **No migra los nombres viejos.** Los detecta y los reporta; el procedimiento está en `docs/INSTALAR.md`.
+- **No desinstala los nombres retirados.** Imprime el comando exacto y el orden; ejecutarlo es tuyo (ver abajo).
+
+## Los nombres retirados
+
+Un `RETIRADO` no se arregla actualizando: el nombre ya no está en el marketplace, así que no hay versión nueva que traer. Es una migración, y **el orden importa**:
+
+1. **Instalar el conjunto nuevo.**
+2. **Desinstalar los viejos** — la Herramienta imprime una línea por cada uno, con el alcance que corresponde:
+   ```
+   claude plugin uninstall <plugin>@<marketplace> --scope <alcance>
+   ```
+   Y sacar además su línea de `enabledPlugins` del `settings` donde esté declarado.
+3. **Reiniciar la sesión.**
+
+**Al revés no**: entre el paso 2 y el 1 el repo se queda sin las skills que todavía usa. Y desinstalar **no es reversible desde el marketplace** — esos nombres ya no están ahí para volver a instalarlos.
+
+Por eso la Herramienta **imprime el comando pero no lo ejecuta**, ni siquiera con `--aplicar`. Para ver qué dependencias quedarían sin dueño sin tocar nada: `claude plugin prune --dry-run`.
+
+⚠️ Mientras conviven, **el viejo y el nuevo no se pisan: coexisten**. `memoria-local` y `amp-memoria` traen los dos una skill `registrar-memoria`, con la misma descripción y distinto prefijo de plugin. No hay ganador definido — el modelo elige. De ahí que el paso 2 no sea opcional.
 
 Sin `process.exit(1)`: reporta, no frena — es capa mecánica, el juicio queda del lado del agente.
 ````
@@ -1747,11 +1929,11 @@ Registro de las **reglas de conducta** del repo: cada fila ata un **momento** (d
 - **Contenido** — el texto a inyectar (`inyectar`), la Herramienta a correr (`correr`) o la condición de bloqueo (`bloquear`).
 - **Estado** — `vigente` (se entrega) · `pendiente` (declarada, su momento aún no tiene repartidor) · `obsoleto` (no se entrega; se puede depurar).
 
-> **Origen del contenido:** las reglas se separan por origen en dos secciones — **Reglas Base** (las manda el harness; el nivelador `amp-actualizar` las reemplaza enteras al poner al día un Agente Multipropósito) y **Reglas del Propósito** (las suma cada repo; el nivelador no las toca). Hoy tienen repartidor los momentos `al arrancar la sesión` (`SessionStart`, clase `correr`), `cada turno` (`UserPromptSubmit`) y `al escribir` (`PreToolUse`); la regla de momento `al cerrar tarea` (`Stop`) queda en `pendiente` (honesta, sin entregar) hasta que se sume su repartidor.
+> **Origen del contenido:** las reglas se separan por origen en dos secciones — **Reglas Base** (las manda el Agente Multipropósito; el nivelador `amp:actualizar` las reemplaza enteras al poner al día un Agente con Propósito) y **Reglas del Propósito** (las suma cada repo; el nivelador no las toca). Hoy tienen repartidor los momentos `al arrancar la sesión` (`SessionStart`, clase `correr`), `cada turno` (`UserPromptSubmit`) y `al escribir` (`PreToolUse`); la regla de momento `al cerrar tarea` (`Stop`) queda en `pendiente` (honesta, sin entregar) hasta que se sume su repartidor.
 
 ## Reglas Base
 
-Las que instala el harness (origen **Base**). El nivelador `amp-actualizar` reemplaza **esta sección entera** al poner al día un Agente Multipropósito; nunca abre la de abajo.
+Las que instala el Agente Multipropósito (origen **Base**). El nivelador `amp:actualizar` reemplaza **esta sección entera** al poner al día un Agente con Propósito; nunca abre la de abajo.
 
 | Regla | Momento | Clase | Contenido | Estado |
 |-------|---------|-------|-----------|--------|

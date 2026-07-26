@@ -5,6 +5,8 @@ Manual de instalación y actualización del **Agente Multipropósito** en un rep
 - [Instalar de cero](#instalar-de-cero) — repo que todavía no tiene el harness.
 - [Actualizar una instalación existente](#actualizar-una-instalación-existente) — repo que lo tiene, con nombres de plugin viejos o con archivos desactualizados.
 
+Dos nombres que conviene tener claros antes de empezar, porque el manual los usa todo el tiempo: el **Agente Multipropósito** es lo que se instala — el mecanismo sin propósito, y lo único que tiene versión. Cuando le definís un **Propósito** al repo, nace un **Agente con Propósito**: ese repo, persiguiendo su objetivo, con lo que va aprendiendo guardado en sus subsistemas. Actualizar significa siempre poner al día el Agente Multipropósito **que está adentro** de un Agente con Propósito, sin tocar lo que aprendió.
+
 El Agente Multipropósito se distribuye como **marketplace de plugins de Claude Code** y, en paralelo, como skills en el estándar abierto [Agent Skills](https://agentskills.io/) (`SKILL.md`) para Codex CLI, Cursor y Gemini CLI. La instalación por marketplace de abajo es la de Claude Code; para los otros agentes ver [Otros agentes](#otros-agentes-codex-cursor-gemini).
 
 ---
@@ -73,7 +75,7 @@ Muestra el Título y el Propósito del repo más las métricas de cada subsistem
 
 ## Actualizar una instalación existente
 
-Poner al día un repo es un **proceso de dos fases**, y cada una tiene su ejecutor:
+Poner al día un Agente con Propósito es un **proceso de dos fases**, y cada una tiene su ejecutor. Las dos actualizan lo mismo —el Agente Multipropósito que el repo tiene adentro— por dos vías distintas:
 
 | Fase | Qué pone al día | Quién la ejecuta |
 |------|-----------------|------------------|
@@ -89,7 +91,11 @@ node .claude/herramientas/actualizar-plugins/actualizar-plugins.js            # 
 node .claude/herramientas/actualizar-plugins/actualizar-plugins.js --aplicar  # actualiza
 ```
 
-Sin `--aplicar` la Herramienta solo diagnostica, así que se puede correr sin miedo para ver cómo está la instalación. Chequea **dos desfases distintos**: los que falta traer del marketplace (se arreglan con `--aplicar`) y los que ya se trajeron pero la sesión no tomó, porque arrancó antes de que llegaran — esos aparecen como `[SIN CARGAR]` y **se arreglan reiniciando, no actualizando**. El segundo es el que engaña: `claude plugin list` muestra la versión nueva mientras la sesión ejecuta la vieja.
+Sin `--aplicar` la Herramienta solo diagnostica, así que se puede correr sin miedo para ver cómo está la instalación. Chequea **tres desfases distintos**:
+
+1. **El marketplace bajado** (la copia que Claude Code clona en tu máquina) todavía no trajo lo publicado. Engaña porque todo lo demás se compara contra eso: si está viejo, un plugin atrasado se informa `ACTUALIZADO`. Aparece en el bloque `MARKETPLACES BAJADOS` como `ACTUALIZAR` y se arregla con `--aplicar`.
+2. **Los plugins que falta traer** de lo bajado. Se arreglan con `--aplicar`.
+3. **Los que ya se trajeron pero la sesión no tomó**, porque arrancó antes de que llegaran. Aparecen como `[SIN CARGAR]` y **se arreglan reiniciando, no actualizando**; también engaña, porque `claude plugin list` muestra la versión nueva mientras la sesión ejecuta la vieja.
 
 **Después: reiniciar la sesión.** Hasta entonces seguís con la versión vieja cargada. `/reload-plugins` **no** sirve para esto: recarga los plugins que ya están, en la versión que ya tenían.
 
