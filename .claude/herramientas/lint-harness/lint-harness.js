@@ -3,8 +3,9 @@
 // funcionalidades vs marketplace vs REGISTRO, archivos clave por funcionalidad, junctions de skills
 // (dos tandas: ~/.claude/skills y ~/.agents/skills), divergencia de bloques verbatim entre PLANTILLAs,
 // tamaño de los MANIFIESTO.md de subsistema (dec. 0017: breves, siempre en contexto) y su estructura
-// minima (dec. 0019 + 0023: campos obligatorios incl. Skills + coherencia carga<->@INDICE) y citas a
-// decisiones del harness en archivos distribuibles (dec. 0024). Sin LLM, sin red.
+// minima (dec. 0019 + 0023: campos obligatorios incl. Skills + coherencia carga<->@INDICE), citas a
+// decisiones del harness en archivos distribuibles (dec. 0024) y terminologia vetada en el texto que
+// viaja (funcionalidades/: lo que se escribe en cada Agente con Propósito). Sin LLM, sin red.
 // Uso: node lint-harness.js [--quiet]   (correr desde la raiz del repo del harness)
 const fs = require('fs'), path = require('path'), os = require('os'), crypto = require('crypto');
 const quiet = process.argv.includes('--quiet');
@@ -323,6 +324,126 @@ for (const js of buscarLints(path.join(repo, '.claude'), [])) {
   escanearCitas(js);
 }
 
+// -- [10] terminologia vetada en el Producto ------------------------------
+// El Producto (funcionalidades/) es lo que viaja: un termino vetado en .claude/ lo lee el autor,
+// uno en una PLANTILLA lo hereda cada Agente con Propósito que se inicialice. Por eso el hallazgo
+// vive aca y CUENTA, mientras lint-semantica lo sigue reportando como informacion para el repo.
+//
+// La clasificacion NO puede ser la de lint-semantica (todo lo que esta entre backticks es codigo):
+// en una PLANTILLA los bloques ```markdown son justamente el texto literal que se escribe en el
+// repo destino. Se clasifica por LENGUAJE del bloque: markdown/md/text (y el texto sin bloque) es
+// texto que viaja y falla; js/json/bash/powershell es codigo y queda informativo.
+//
+// Una sola exclusion automatica: el registro de Terminologia Farlopa embebido en la PLANTILLA,
+// que contiene los vetados por definicion.
+const farlopaPath = path.join(repo, '.claude', 'semantica', 'TERMINOLOGIA-FARLOPA.md');
+const vetadosProducto = [];
+try {
+  for (const line of fs.readFileSync(farlopaPath, 'utf8').split('\n')) {
+    const t = line.trim();
+    if (!t.startsWith('|')) continue;
+    const cells = t.split('|').slice(1, -1).map(c => c.trim());
+    if (cells.length < 3) continue;
+    const c0 = cells[0].replace(/[*`\s]/g, '');
+    if (/^:?-{2,}:?$/.test(c0) || /^t[eé]rmino$/i.test(c0)) continue;
+    for (const v of cells[0].replace(/`/g, '').split(/[,;/]/).map(x => x.trim()).filter(x => x && x !== '—' && x !== '-')) {
+      vetadosProducto.push(v.toLowerCase());
+    }
+  }
+} catch (e) { /* sin registro de farlopa: no hay nada contra que barrer */ }
+
+// Los bloques SIN lenguaje son arboles de estructura y salidas de consola: nombres de archivo,
+// no texto para reescribir. El texto que se escribe literal en el repo destino siempre viene
+// marcado ```markdown, que es lo que el instalador copia.
+const LENG_TEXTO = new Set(['markdown', 'md', 'text', 'txt']);
+// Unica via de excepcion: apariciones que el propio registro de farlopa declara legitimas, porque
+// el veto es sobre la relacion termino->significado y el lint solo ve el termino. Se identifican
+// por un fragmento del texto, no por linea. Lo demas NO se exime: se corrige el texto.
+const USOS_LEGITIMOS = [
+  { term: 'capa', fragmento: 'capa mecánica', motivo: 'nivel de integridad mecánica/semántica, legítimo por el propio registro' },
+  { term: 'capa', fragmento: 'capa semántica', motivo: 'nivel de integridad mecánica/semántica, legítimo por el propio registro' },
+];
+const escRe = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+const vetadosProductoTerms = [...new Set(vetadosProducto)];
+const vetadoEnProducto = [];      // texto que viaja: cuenta como hallazgo
+let vetadoEnCodigoProducto = 0;   // bloques de codigo y .js/.json: informativo
+function barrerProducto(archivo) {
+  let txt; try { txt = fs.readFileSync(archivo, 'utf8'); } catch (e) { return; }
+  const rel = path.relative(repo, archivo).replace(/\\/g, '/');
+  const esMd = path.extname(archivo).toLowerCase() === '.md';
+  const lineas = txt.split(/\r?\n/);
+  let cerco = null;        // { largo, viaja } del bloque abierto
+  let bloque = [];         // lineas del bloque abierto, para decidir si es el registro de farlopa
+  let inicioBloque = 0;
+  // un termino entre backticks es un identificador (nombre de skill, de archivo, de campo):
+  // tocarlo es refactor con refs por ruta de por medio, no reescritura. Va a informativo aunque
+  // este adentro del texto que viaja.
+  // Tambien son identificadores el destino de un link markdown —](ruta)— y el campo `name` del
+  // frontmatter de un SKILL.md, que ES el nombre con el que se invoca la habilidad.
+  const spansDeLinea = l => {
+    const runs = []; let m; const re = /`+/g;
+    while ((m = re.exec(l))) runs.push([m.index, m[0].length]);
+    const spans = [];
+    for (let i = 0; i < runs.length; ) {
+      const [open, largo] = runs[i]; let j = i + 1;
+      while (j < runs.length && runs[j][1] !== largo) j++;
+      if (j < runs.length) { spans.push([open, runs[j][0] + runs[j][1]]); i = j + 1; } else i++;
+    }
+    const link = /\]\(([^)]*)\)/g;
+    while ((m = link.exec(l))) spans.push([m.index, m.index + m[0].length]);
+    if (/^name:\s*\S/.test(l)) spans.push([0, l.length]);
+    return spans;
+  };
+  const emitir = (linea, nro, viaja) => {
+    const spans = esMd ? spansDeLinea(linea) : null;
+    for (const term of vetadosProductoTerms) {
+      const re = new RegExp('\\b' + escRe(term) + '\\b', 'gi');
+      let m;
+      while ((m = re.exec(linea))) {
+        const identificador = spans && spans.some(([s, e]) => m.index >= s && m.index < e);
+        const legitimo = USOS_LEGITIMOS.some(u => u.term === term.toLowerCase() && linea.includes(u.fragmento));
+        if (viaja && !identificador && !legitimo) vetadoEnProducto.push(`${rel}:${nro}  "${term}"`);
+        else vetadoEnCodigoProducto++;
+      }
+    }
+  };
+  const volcar = () => {
+    // el registro de Terminologia Farlopa embebido lista los vetados por definicion
+    const esFarlopa = bloque.some(l => /Terminolog[íi]a Farlopa|Relaciones vetadas/.test(l));
+    if (esFarlopa) return;
+    bloque.forEach((l, i) => emitir(l, inicioBloque + i, cerco.viaja));
+  };
+  for (let i = 0; i < lineas.length; i++) {
+    const linea = lineas[i], nro = i + 1;
+    if (!esMd) { emitir(linea, nro, false); continue; }
+    if (cerco) {
+      const cierre = /^(`{3,})\s*$/.exec(linea);
+      if (cierre && cierre[1].length >= cerco.largo) { volcar(); cerco = null; bloque = []; }
+      else bloque.push(linea);
+      continue;
+    }
+    const apertura = /^(`{3,})\s*([\w-]*)/.exec(linea);
+    if (apertura) {
+      cerco = { largo: apertura[1].length, viaja: LENG_TEXTO.has(apertura[2].toLowerCase()) };
+      bloque = []; inicioBloque = nro + 1;
+      continue;
+    }
+    emitir(linea, nro, true);
+  }
+  if (cerco) volcar();   // bloque sin cerrar: se juzga igual
+}
+if (vetadosProductoTerms.length && fs.existsSync(funcDir)) {
+  const EXT_PRODUCTO = new Set(['.md', '.js', '.json', '.mjs', '.cjs', '.sh', '.ps1']);
+  (function recorrer(dir) {
+    for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
+      if (e.name === 'node_modules' || e.name === '.git') continue;
+      const full = path.join(dir, e.name);
+      if (e.isDirectory()) recorrer(full);
+      else if (EXT_PRODUCTO.has(path.extname(e.name).toLowerCase())) barrerProducto(full);
+    }
+  })(funcDir);
+}
+
 // -- salida --------------------------------------------------------------
 const secciones = [
   ['PUNTO DE ENTRADA (AGENTS.md + adaptador CLAUDE.md)', entrada],
@@ -339,6 +460,7 @@ const secciones = [
   [`MANIFIESTOS QUE ENGORDARON (> ${LIMITE_MANIFIESTO} palabras)`, manifiestosLargos],
   ['MANIFIESTOS SIN CAMPOS MINIMOS (dec. 0019)', manifiestosSinCampos],
   ['CITAS A DECISIONES DEL HARNESS EN DISTRIBUIBLES (dec. 0024)', refsDecision],
+  ['TERMINOLOGIA VETADA EN EL TEXTO QUE VIAJA (funcionalidades/)', vetadoEnProducto],
 ];
 const total = secciones.reduce((n, [, items]) => n + items.length, 0);
 if (quiet && total === 0) process.exit(0);
@@ -351,4 +473,9 @@ for (const [titulo, items] of secciones) {
   console.log(`[${titulo}] (${items.length})`);
   items.forEach(i => console.log(`    ${i}`));
   if (!quiet && !items.length) console.log('    (ninguno)');
+}
+// informativo: no es hallazgo (tocar un identificador en codigo es refactor, con refs por ruta de
+// por medio). Se imprime sin el formato "(N)" para que el control de cierre no lo cuente.
+if (!quiet && vetadoEnCodigoProducto) {
+  console.log(`\ninformativo: ${vetadoEnCodigoProducto} aparicion(es) de vetados en bloques de codigo e identificadores del Producto — refactor, no reescritura.`);
 }

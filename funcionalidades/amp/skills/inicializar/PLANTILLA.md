@@ -13,12 +13,13 @@ Contenido inicial de `.claude/preferencias/PREFERENCIAS.md`:
 
 Reglas de conducta del agente en este repo. Siempre en contexto (importado desde AGENTS.md). La sección **Base** viene del harness y se actualiza al nivelar (no editarla acá: los ajustes de este repo van en **Adaptaciones**, que el nivelado nunca toca).
 
-## Base (harness v5)
+## Base (harness v6)
 
 **Comunicación:**
 
 - Al preguntar por una decisión o analizar alternativas, dar SIEMPRE ejemplos concretos de cada postura (numéricos si aplica): cómo es ahora vs. cómo quedaría y por qué, encadenando consecuencias ("A ⇒ B; si no fuera B ⇒ no A porque X"). Objetivo: ubicar inmediatamente al lector en la mecánica relevante sin que tenga que reconstruir contexto.
 - Al pedir una decisión al usuario, **el contexto va en el texto de la respuesta**, nunca comprimido dentro de las opciones de una pregunta. Y **de a una decisión por vez**, aunque sean independientes entre sí. Única excepción: una cola de confirmaciones donde la respuesta esperada es "sí" a todas puede ir junta, con la recomendada visible.
+- Antes de escribir en un **registro canónico** (glosario, decisiones, preferencias, Terminología Farlopa), mostrar el **texto exacto** que se va a asentar y esperar el visto bueno. Un "sí" a *"¿lo registro?"* aprueba la **acción** de registrar, nunca el **contenido**: lo que el usuario no leyó, no lo ratificó.
 - Ante un informe o visualización de **formato nuevo**: mostrar primero el esqueleto con datos de juguete marcados como DUMMY, acordar la representación, recién después calcular en serio. **Nunca re-producir completo un formato rechazado**: volver al esqueleto y realinear.
 - Tareas en background: esperar la notificación de finalización; no reportar ni consultar estado a cada rato — solo ante sospecha de cuelgue.
 
@@ -29,7 +30,7 @@ Reglas de conducta del agente en este repo. Siempre en contexto (importado desde
 - Nomenclatura en español para el dominio; inglés solo para infraestructura técnica.
 - Cero invención de datos: lo que no salga de una fuente verificada se marca como faltante o como interpretación propia.
 - Terminología: no acuñar términos del dominio por cuenta propia; preferir las palabras del usuario. **Español corriente en todo**: nada de palabras inventadas o raras (aunque suenen técnicas), ni en texto plano ni en diagramas — no solo en los registros. **Control duro en registros canónicos** (glosario, decisiones): ningún término acuñado por el agente se asienta sin ratificación del usuario. En texto plano/diagramas se puede usar, marcado como propuesto.
-- **La sigla nunca sola en lo que queda escrito.** En documentación, registros, comentarios y textos que viajan a otros repos, el nombre del dominio va **completo**. La sigla puede **acompañarlo** —`Agente Multipropósito (AMP)`— y conviene presentarla así en la primera mención, para que el lector la reconozca cuando la cruce; lo que no se hace es usarla **en lugar** del nombre. En la conversación es libre. Que un alias esté registrado en el glosario dice qué significa ese término, **no** autoriza a sustituir el nombre por él en el texto escrito.
+- **La sigla nunca sola en lo que queda escrito.** En documentación, registros, comentarios y textos que viajan a otros repos, el nombre del dominio va **completo**. La sigla puede **acompañarlo** —`Agente Multipropósito (AMP)`— y conviene presentarla así en la primera mención, para que el lector la reconozca cuando la encuentre; lo que no se hace es usarla **en lugar** del nombre. En la conversación es libre. Que un alias esté registrado en el glosario dice qué significa ese término, **no** autoriza a sustituir el nombre por él en el texto escrito.
 
 ## Adaptaciones de este repo
 
@@ -54,11 +55,11 @@ node .claude/preferencias/lint-preferencias/lint-preferencias.js
 
 (El lint `lint-preferencias.js` está más abajo, en §Script — lint-preferencias; y `lint-memoria.js` en §Script — lint-memoria.)
 
-**Bases anteriores** (para la reconciliación): la v0 eran dos secciones inline en CLAUDE.md — "Preferencias de comunicación" (el primer bullet de Comunicación, como cita) y "Principios de trabajo" (los cuatro bullets). Textualmente iguales → migrar sin preguntar (borrar de CLAUDE.md, dejar el import); con diferencias → las diferencias van a Adaptaciones y se reporta. La **v2** difiere de la v3 solo en el bullet de Terminología (decía "**Gate duro** en registros canónicos" y "ni en prosa ni en diagramas", donde la v3 dice "**Control duro**" y "ni en texto plano ni en diagramas") y en el encabezado ("al levelear / el leveleo" → "al nivelar / el nivelado"): reemplazar la Base entera por la v3 sin preguntar.
+**Bases anteriores** (para la reconciliación): la v0 eran dos secciones inline en CLAUDE.md — "Preferencias de comunicación" (el primer bullet de Comunicación, como cita) y "Principios de trabajo" (los cuatro bullets). Textualmente iguales → migrar sin preguntar (borrar de CLAUDE.md, dejar el import); con diferencias → las diferencias van a Adaptaciones y se reporta. **De la v1 en adelante la Base lleva su versión en el encabezado** (`## Base (harness vN)`): cualquiera anterior a la actual se reemplaza **entera y sin preguntar** — las diferencias entre versiones son de redacción, y lo propio del repo vive en Adaptaciones, que no se toca.
 
 ## §Subsistemas — bloque `## Subsistemas` en `AGENTS.md`
 
-Reemplaza el viejo "Mapa del repo" **y** las secciones de prosa por-subsistema. La primera funcionalidad de subsistema que se instala crea la sección; cada una la asegura y agrega su propia línea `@.claude/<sub>/MANIFIESTO.md`. Cada manifiesto declara si su índice se carga (incluyendo o no `@INDICE.md`), así que la carga de datos ya no se decide acá.
+Reemplaza el viejo "Mapa del repo" **y** las secciones de texto plano por-subsistema. La primera funcionalidad de subsistema que se instala crea la sección; cada una la asegura y agrega su propia línea `@.claude/<sub>/MANIFIESTO.md`. Cada manifiesto declara si su índice se carga (incluyendo o no `@INDICE.md`), así que la carga de datos ya no se decide acá.
 
 ```markdown
 ## Subsistemas (manifiestos siempre cargados)
@@ -652,7 +653,7 @@ Hook — **registro doble**: el mismo script se registra en los dos formatos —
 }
 ```
 
-> Codex carga hooks de proyecto solo si la capa `.codex/` del repo está **trusted** (revisar con `/hooks`), y con `features.hooks` habilitado en su config. Avisarle al usuario al instalar.
+> Codex carga hooks de proyecto solo si la carpeta `.codex/` del repo está **trusted** (revisar con `/hooks`), y con `features.hooks` habilitado en su config. Avisarle al usuario al instalar.
 
 `.claude/planes/lint-planes/README.md`:
 
@@ -2557,7 +2558,7 @@ Cableado del repartidor — **registro doble**: el mismo script se registra en t
 ```
 
 > En Codex el momento `al arrancar la sesión` **corre igual el repartidor** (mismo `SessionStart`), pero Codex **no soporta `SessionStart` → `systemMessage`** de la misma forma que Claude Code: la caja de la Pantalla de bienvenida sale solo si el agente pinta `systemMessage`; si no, degrada sin caja (la corrida no falla).
-> Codex carga hooks de proyecto solo si la capa `.codex/` del repo está **trusted** (revisar con `/hooks`) y con `features.hooks` habilitado en su config. Avisarle al usuario al instalar.
+> Codex carga hooks de proyecto solo si la carpeta `.codex/` del repo está **trusted** (revisar con `/hooks`) y con `features.hooks` habilitado en su config. Avisarle al usuario al instalar.
 
 Lint `.claude/conducta/lint-conducta/lint-conducta.js` (Node, sin dependencias, sin red):
 

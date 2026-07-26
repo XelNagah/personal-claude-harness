@@ -41,7 +41,7 @@ El subsistema separa lo **legítimo** de lo **vetado** en dos tablas.
 - **El veto es la relación término→significado, no el término.** El mismo término con otro significado puede ser legítimo: `plomería`=cañerías es válido en un repo de fontanería, `plomería`=infraestructura de software es farlopa. Por eso la columna del medio. El **lint marca por término**; el **agente juzga el significado** al leer la marca.
 - **Términos por estado (glosario):** `Alias` (formas válidas, ratificadas, para mapear "birra/chela = cerveza") y `Propuestos` (los que el agente *sugiere* pero no usa hasta que el usuario los ratifica a Alias o los veta a Terminología Farlopa). El glosario **no tiene columna de vetados**: todo veto es una relación y vive en el registro par.
 - **El agente propone; el usuario ratifica y veta.** El agente **nunca** ratifica un alias ni veta por su cuenta: solo *propone* en `Propuestos`. El agente **nunca usa** un término propuesto ni uno vetado en el significado que la farlopa prohíbe. Preferir las palabras del usuario a acuñar nuevas — registro canónico, control duro.
-- **Lint** — sobre el glosario: links de detalle, huérfanos, colisiones de alias, propuestos pendientes; sobre la farlopa: contradicciones (un término alias/concepto y a la vez vetado) y apariciones de vetados en el texto vivo (prosa accionable / código informativo). Mecánico y gratis; al cerrar tareas que tocaron la semántica.
+- **Lint** — sobre el glosario: links de detalle, huérfanos, colisiones de alias, propuestos pendientes; sobre la farlopa: contradicciones (un término alias/concepto y a la vez vetado) y apariciones de vetados en el texto vivo (texto plano accionable / código informativo). Mecánico y gratis; al cerrar tareas que tocaron la semántica.
 
 ## Dependencias
 
