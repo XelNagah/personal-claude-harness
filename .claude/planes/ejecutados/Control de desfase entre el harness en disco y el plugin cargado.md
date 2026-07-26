@@ -1,6 +1,6 @@
 # Control de desfase entre el harness en disco y el plugin cargado
 
-**Estado: Nuevo · Creado 26-07-25.** Origen: [Modelo de distribución y empaquetado del harness](../ejecutados/Modelo%20de%20distribucion%20y%20empaquetado%20del%20harness.md), sección "Abierto" — heredado como *"refresco de autoría, hueco de 0013"* y **acotado el mismo día**: la parte de "qué modo usar" no estaba abierta, ya la fijaron 0010, 0013 y 0029. Lo que queda es que el desfase **avise**.
+**Estado: Ejecutado · Creado 26-07-25 · Cerrado 26-07-26.** Origen: [Modelo de distribución y empaquetado del harness](Modelo%20de%20distribucion%20y%20empaquetado%20del%20harness.md), sección "Abierto" — heredado como *"refresco de autoría, hueco de 0013"* y **acotado el mismo día**: la parte de "qué modo usar" no estaba abierta, ya la fijaron 0010, 0013 y 0029. Lo que queda es que el desfase **avise**.
 
 ## Lo que NO está en discusión
 
@@ -37,3 +37,17 @@ El dato para detectarlo está a la vista y no hace falta adivinarlo: la versión
 - `/reload-plugins` **no** trae versión nueva: recarga los plugins ya instalados en la versión que ya tenían. Sirve después de actualizar, no en lugar de actualizar.
 - `claude plugin update` exige identificador completo **y** alcance: `claude plugin update amp@xelnagah-harness --scope project`. Con el nombre pelado falla, y con el alcance por omisión (usuario) también, con el **mismo** mensaje —*Plugin "amp" not found*— que no distingue cuál de los dos falta. Documentado en `docs/INSTALAR.md`, fase 1.
 - **`skills-dir` existe pero no se persigue.** `claude plugin init` crea plugins en `~/.claude/skills/<nombre>/` que se auto-cargan como `<nombre>@skills-dir`. Daría edición en vivo conservando el prefijo, pero es un modo de consumo distinto del decidido; se anota para no re-descubrirlo, no como camino a tomar.
+
+## Notas de implementación
+
+**Ejecutado 26/07/2026** (commit `8e5914a`). Los tres puntos de "Qué falta" quedaron cubiertos en una sola pasada sobre `lint-harness`, porque son el mismo dato visto por dos lados: **el modo de consumo de la máquina**.
+
+- **El modo se detecta, no se configura.** El lint cruza dos fuentes: los enlaces de las dos tandas que apunten a este repo, y el registro `installed_plugins.json` filtrado por el marketplace de este repo y por este `projectPath`. De ahí salen cuatro modos —`enlace`, `plugin`, `mixto`, `sin consumo`— y el modo se imprime en la cabecera junto con los hallazgos.
+- **Cada modo chequea lo suyo.** En `enlace`, que estén los enlaces y apunten acá. En `plugin`, que la versión de cada `plugin.json` coincida con la instalada. En `mixto`, las dos cosas **más un hallazgo propio**: las dos vías exponen la misma skill con el mismo nombre y no hay ganador definido, el modelo elige.
+- **Los 22 enlaces faltantes dejaron de ser hallazgo** en modo `plugin`, que era el punto: un hallazgo permanente que nunca corresponde entrena a ignorar la salida entera del lint.
+
+**Desvío consciente respecto de lo planificado:** el plan pedía comparar contra lo **cargado** (`amp: disco 0.6.3, cargado 0.6.2`) y el lint compara contra lo **instalado**. El motivo: lo cargado —que la sesión arrancó antes de que llegara la versión nueva— ya lo diagnostica la Herramienta `actualizar-plugins`, deduciéndolo contra la hora de arranque del proceso; duplicar esa lógica en el lint era redundante. El reparto quedó: **lint-harness** ve `disco ↔ instalado`, **actualizar-plugins** ve `publicado ↔ bajado ↔ instalado ↔ cargado`. El episodio que originó el plan (disco 0.6.3 corriendo 0.6.2) cae del lado del lint y se detecta.
+
+**Probado en vivo al implementarlo:** con el repo en 0.6.10 y la caché en 0.6.8, el lint pasó de reportar 22 hallazgos falsos a reportar uno solo y verdadero — `amp: disco 0.6.10, instalado 0.6.8`. Se resolvió actualizando, y quedó verde.
+
+**Queda afuera, para otro plan:** el conocimiento del despliegue de plugins se asentó el mismo día en `conocimiento/despliegue-de-plugins-claude-code.md` (las seis paradas, los tres desfases, las mecánicas del CLI que sorprenden), así que las "Notas de lo verificado" de arriba dejaron de ser el único lugar donde vivían.
