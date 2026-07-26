@@ -77,6 +77,14 @@ Cuando lo bajado está en `ACTUALIZAR` **y** el repo desde donde se corre es el 
 
 Es genérico: no hardcodea nombres de plugin ni de marketplace, así que también reporta los plugins ajenos al harness que el repo tenga habilitados.
 
+## Apuntarla a otro repo
+
+Pasándole una ruta diagnostica —y con `--aplicar`, arregla— **otro** Agente con Propósito de la máquina, sin abrir una sesión ahí. Tres cosas cambian respecto de correrla sobre el propio, y las tres son casos donde antes contestaba de más:
+
+- **Lo instalado es por repo.** `installed_plugins.json` guarda una entrada por `projectPath`: dos repos de la misma máquina pueden correr versiones distintas del mismo plugin. Sin entrada propia (ni de alcance usuario) el plugin está `NO INSTALADO` — nunca se toma la entrada de otro repo.
+- **Los comandos corren en el repo apuntado.** `--scope project` significa "el proyecto del directorio donde corre el comando", así que todo se lanza con ese directorio como raíz. Sin eso, diagnosticaría allá y escribiría acá.
+- **El chequeo de `[SIN CARGAR]` se omite.** Se deduce del arranque de la sesión que ejecuta el script, y en el repo apuntado no hay ninguna sesión que mirar. Se dice explícitamente en vez de marcar plugins que nadie tenía que haber cargado.
+
 ## Qué corre con `--aplicar`
 
 ```

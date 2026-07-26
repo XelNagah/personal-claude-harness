@@ -1468,6 +1468,11 @@ function hace(iso) {
 // El harness expone el pid de la sesion en CLAUDE_PID. Si no se puede averiguar (otro agente, otro
 // sistema), devuelve null y el chequeo de "cargado" se omite en vez de mentir.
 function arranqueSesion() {
+  // `CLAUDE_PID` es de la sesion que corre ESTE script, que vive en su propio repo. Si se apunto la
+  // Herramienta a otro repo, alla no hay sesion abierta que conocer: comparar contra el arranque de
+  // la propia marcaria "sin cargar" plugins que ninguna sesion tenia que haber cargado.
+  const PROPIO = path.resolve(__dirname, '..', '..', '..');
+  if (REPO !== PROPIO) return null;
   const pid = process.env.CLAUDE_PID;
   if (!pid || !/^\d+$/.test(pid)) return null;
   try {
@@ -1683,23 +1688,39 @@ function imprimir(filas) {
 // El CLI exige el identificador COMPLETO (plugin@marketplace) y el alcance: con el nombre pelado
 // o con el alcance por omision falla con el mismo mensaje, `Plugin "x" not found`.
 function aplicar(filas) {
+  // `--scope project` significa "el proyecto del directorio donde corre el comando", asi que TODO
+  // spawn va con `cwd: REPO`. Sin eso, apuntar la Herramienta a otro repo diagnosticaria alla y
+  // escribiria aca — el mismo error de confundir un repo con otro que corrige `instalado()`.
+  const correr = args => {
+    const r = spawnSync('claude', args, { cwd: REPO, encoding: 'utf8', shell: true, timeout: 180000 });
+    return ((r.stdout || r.stderr || '').trim().split('\n').pop() || 'sin salida');
+  };
+
   const marketplaces = [...new Set(filas.map(f => f.marketplace))];
   for (const m of marketplaces) {
-    console.log(`\n> Refrescando el catalogo de ${m}...`);
-    const r = spawnSync('claude', ['plugin', 'marketplace', 'update', m], { encoding: 'utf8', shell: true, timeout: 180000 });
-    console.log('  ' + ((r.stdout || r.stderr || '').trim().split('\n').pop() || 'sin salida'));
+    console.log(`\n> Refrescando el marketplace ${m}...`);
+    console.log('  ' + correr(['plugin', 'marketplace', 'update', m]));
   }
 
-  // Releer: refrescar el catalogo puede haber cambiado que esta desactualizado.
+  // Releer: refrescar el marketplace puede haber cambiado que esta desactualizado.
   const pendientes = diagnosticar().filter(f => f.estado === 'ACTUALIZAR' || f.estado === 'NO INSTALADO');
   if (!pendientes.length) {
-    console.log('\nNada que actualizar despues de refrescar el catalogo.');
+    console.log('\nNada que actualizar despues de refrescar el marketplace.');
     return;
   }
   for (const f of pendientes) {
-    console.log(`\n> Actualizando ${f.id} (alcance ${f.scope})...`);
-    const r = spawnSync('claude', ['plugin', 'update', f.id, '--scope', f.scope], { encoding: 'utf8', shell: true, timeout: 180000 });
-    console.log('  ' + ((r.stdout || r.stderr || '').trim().split('\n').pop() || 'sin salida'));
+    // Lo que no esta se INSTALA; lo que esta y quedo atras se ACTUALIZA. `update` sobre un plugin
+    // ausente falla con "not found", que se lee como si el nombre estuviera mal.
+    // Y se relee el estado en cada vuelta: instalar un plugin con dependencias arrastra las suyas,
+    // asi que las que venian pendientes pueden haber entrado solas.
+    const yaEsta = instalado(f.id);
+    if (f.estado === 'NO INSTALADO' && yaEsta) {
+      console.log(`\n> ${f.id}: entro como dependencia, no hace falta instalarlo aparte.`);
+      continue;
+    }
+    const accion = yaEsta ? 'update' : 'install';
+    console.log(`\n> ${accion === 'install' ? 'Instalando' : 'Actualizando'} ${f.id} (alcance ${f.scope})...`);
+    console.log('  ' + correr(['plugin', accion, f.id, '--scope', f.scope]));
   }
 }
 
@@ -1747,7 +1768,9 @@ if (!filas.length) {
     console.log('REINICIAR LA SESION para tomarlos.');
     console.log('  ' + sinCargar.map(f => `${f.id} (traido ${f.detalle.replace(/^.*disponible /, '')})`).join('\n  '));
   } else if (!ARRANQUE) {
-    console.log('\n(No se pudo determinar cuando arranco la sesion: el chequeo de "sin cargar" se omitio.)');
+    console.log(RUTA_ARG
+      ? '\n(Chequeo de "sin cargar" omitido: se apunto a otro repo, y alla no hay sesion que mirar.)'
+      : '\n(No se pudo determinar cuando arranco la sesion: el chequeo de "sin cargar" se omitio.)');
   }
 
   // Los retirados no se arreglan actualizando: son nombres que el marketplace dejo de ofrecer.
@@ -1849,6 +1872,14 @@ Cuando lo bajado está en `ACTUALIZAR` **y** el repo desde donde se corre es el 
 ⚠️ Con un marketplace en `ACTUALIZAR`, la Herramienta **no dice `TODO ACTUALIZADO`** aunque cada plugin coincida con lo bajado: avisa que la comparación se hizo contra datos que pueden estar viejos y remite a `--aplicar`.
 
 Es genérico: no hardcodea nombres de plugin ni de marketplace, así que también reporta los plugins ajenos al harness que el repo tenga habilitados.
+
+## Apuntarla a otro repo
+
+Pasándole una ruta diagnostica —y con `--aplicar`, arregla— **otro** Agente con Propósito de la máquina, sin abrir una sesión ahí. Tres cosas cambian respecto de correrla sobre el propio, y las tres son casos donde antes contestaba de más:
+
+- **Lo instalado es por repo.** `installed_plugins.json` guarda una entrada por `projectPath`: dos repos de la misma máquina pueden correr versiones distintas del mismo plugin. Sin entrada propia (ni de alcance usuario) el plugin está `NO INSTALADO` — nunca se toma la entrada de otro repo.
+- **Los comandos corren en el repo apuntado.** `--scope project` significa "el proyecto del directorio donde corre el comando", así que todo se lanza con ese directorio como raíz. Sin eso, diagnosticaría allá y escribiría acá.
+- **El chequeo de `[SIN CARGAR]` se omite.** Se deduce del arranque de la sesión que ejecuta el script, y en el repo apuntado no hay ninguna sesión que mirar. Se dice explícitamente en vez de marcar plugins que nadie tenía que haber cargado.
 
 ## Qué corre con `--aplicar`
 

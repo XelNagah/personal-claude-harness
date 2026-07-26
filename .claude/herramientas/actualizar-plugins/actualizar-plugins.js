@@ -63,6 +63,11 @@ function hace(iso) {
 // El harness expone el pid de la sesion en CLAUDE_PID. Si no se puede averiguar (otro agente, otro
 // sistema), devuelve null y el chequeo de "cargado" se omite en vez de mentir.
 function arranqueSesion() {
+  // `CLAUDE_PID` es de la sesion que corre ESTE script, que vive en su propio repo. Si se apunto la
+  // Herramienta a otro repo, alla no hay sesion abierta que conocer: comparar contra el arranque de
+  // la propia marcaria "sin cargar" plugins que ninguna sesion tenia que haber cargado.
+  const PROPIO = path.resolve(__dirname, '..', '..', '..');
+  if (REPO !== PROPIO) return null;
   const pid = process.env.CLAUDE_PID;
   if (!pid || !/^\d+$/.test(pid)) return null;
   try {
@@ -278,23 +283,39 @@ function imprimir(filas) {
 // El CLI exige el identificador COMPLETO (plugin@marketplace) y el alcance: con el nombre pelado
 // o con el alcance por omision falla con el mismo mensaje, `Plugin "x" not found`.
 function aplicar(filas) {
+  // `--scope project` significa "el proyecto del directorio donde corre el comando", asi que TODO
+  // spawn va con `cwd: REPO`. Sin eso, apuntar la Herramienta a otro repo diagnosticaria alla y
+  // escribiria aca — el mismo error de confundir un repo con otro que corrige `instalado()`.
+  const correr = args => {
+    const r = spawnSync('claude', args, { cwd: REPO, encoding: 'utf8', shell: true, timeout: 180000 });
+    return ((r.stdout || r.stderr || '').trim().split('\n').pop() || 'sin salida');
+  };
+
   const marketplaces = [...new Set(filas.map(f => f.marketplace))];
   for (const m of marketplaces) {
-    console.log(`\n> Refrescando el catalogo de ${m}...`);
-    const r = spawnSync('claude', ['plugin', 'marketplace', 'update', m], { encoding: 'utf8', shell: true, timeout: 180000 });
-    console.log('  ' + ((r.stdout || r.stderr || '').trim().split('\n').pop() || 'sin salida'));
+    console.log(`\n> Refrescando el marketplace ${m}...`);
+    console.log('  ' + correr(['plugin', 'marketplace', 'update', m]));
   }
 
-  // Releer: refrescar el catalogo puede haber cambiado que esta desactualizado.
+  // Releer: refrescar el marketplace puede haber cambiado que esta desactualizado.
   const pendientes = diagnosticar().filter(f => f.estado === 'ACTUALIZAR' || f.estado === 'NO INSTALADO');
   if (!pendientes.length) {
-    console.log('\nNada que actualizar despues de refrescar el catalogo.');
+    console.log('\nNada que actualizar despues de refrescar el marketplace.');
     return;
   }
   for (const f of pendientes) {
-    console.log(`\n> Actualizando ${f.id} (alcance ${f.scope})...`);
-    const r = spawnSync('claude', ['plugin', 'update', f.id, '--scope', f.scope], { encoding: 'utf8', shell: true, timeout: 180000 });
-    console.log('  ' + ((r.stdout || r.stderr || '').trim().split('\n').pop() || 'sin salida'));
+    // Lo que no esta se INSTALA; lo que esta y quedo atras se ACTUALIZA. `update` sobre un plugin
+    // ausente falla con "not found", que se lee como si el nombre estuviera mal.
+    // Y se relee el estado en cada vuelta: instalar un plugin con dependencias arrastra las suyas,
+    // asi que las que venian pendientes pueden haber entrado solas.
+    const yaEsta = instalado(f.id);
+    if (f.estado === 'NO INSTALADO' && yaEsta) {
+      console.log(`\n> ${f.id}: entro como dependencia, no hace falta instalarlo aparte.`);
+      continue;
+    }
+    const accion = yaEsta ? 'update' : 'install';
+    console.log(`\n> ${accion === 'install' ? 'Instalando' : 'Actualizando'} ${f.id} (alcance ${f.scope})...`);
+    console.log('  ' + correr(['plugin', accion, f.id, '--scope', f.scope]));
   }
 }
 
@@ -342,7 +363,9 @@ if (!filas.length) {
     console.log('REINICIAR LA SESION para tomarlos.');
     console.log('  ' + sinCargar.map(f => `${f.id} (traido ${f.detalle.replace(/^.*disponible /, '')})`).join('\n  '));
   } else if (!ARRANQUE) {
-    console.log('\n(No se pudo determinar cuando arranco la sesion: el chequeo de "sin cargar" se omitio.)');
+    console.log(RUTA_ARG
+      ? '\n(Chequeo de "sin cargar" omitido: se apunto a otro repo, y alla no hay sesion que mirar.)'
+      : '\n(No se pudo determinar cuando arranco la sesion: el chequeo de "sin cargar" se omitio.)');
   }
 
   // Los retirados no se arreglan actualizando: son nombres que el marketplace dejo de ofrecer.
