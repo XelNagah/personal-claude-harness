@@ -32,7 +32,7 @@ El prefijo de skill **es** el nombre del plugin (`amp-planes:ciclo-de-plan` ≠ 
 
 > **Instalar en otra PC:** `/plugin marketplace add <owner>/<repo>` y después `/plugin install amp@xelnagah-harness` — trae los 6 `amp-<sub>` por dependencias (ver [README](README.md#instalación-en-otra-pc-marketplace-de-plugins)).
 > **En esta máquina** los skills están enlazados por junction (autoría/edición en vivo). No mezclar junction + plugin del mismo skill en una misma máquina.
-> **Agentes no-Claude** (Codex/Cursor/Gemini): las skills se leen desde `~/.agents/skills/` — clonar el repo y correr `node .claude/herramientas/instalar-junctions/instalar-junctions.js`; no necesitan marketplace.
+> **Codex CLI por marketplace:** Codex no resuelve `dependencies`; después de registrar el marketplace, desde el repo destino correr `node <checkout-harness>/.claude/herramientas/instalar-plugins-codex/instalar-plugins-codex.js --aplicar`. **Cursor/Gemini y Codex por skills:** clonar el repo y correr `node .claude/herramientas/instalar-junctions/instalar-junctions.js`.
 > **Nota:** dentro de `amp`, `planificar` y `actualizar` son **operacionales** (no instalan estructura propia): `planificar` analiza sin escribir; `actualizar` es el nivelador, contraparte de `inicializar`. `inicializar` es el instalador consolidado — absorbe los ex `inicializar-<sub>` individuales, es la fuente única de todo el setup.
 
 ## Cómo agregar una funcionalidad nueva
