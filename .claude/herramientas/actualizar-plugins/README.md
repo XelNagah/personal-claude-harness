@@ -1,17 +1,26 @@
 # actualizar-plugins
 
-Pone al día los **plugins** que este Agente con Propósito tiene habilitados en esta máquina —los que le traen su Agente Multipropósito—, y sirve de control de desfase.
+Prepara el marketplace y los **plugins** que este Agente con Propósito usa en Claude Code o Codex antes de nivelar sus archivos. Evita diagnosticar un agente mirando la configuración del otro.
 
 ```bash
 # diagnostica, no toca nada
-node .claude/herramientas/actualizar-plugins/actualizar-plugins.js
+node .claude/herramientas/actualizar-plugins/actualizar-plugins.js --agente claude
+
+# diagnostica Codex, sin tocar nada
+node .claude/herramientas/actualizar-plugins/actualizar-plugins.js --agente codex
 
 # actualiza lo que esté atrás y vuelve a verificar
-node .claude/herramientas/actualizar-plugins/actualizar-plugins.js --aplicar
+node .claude/herramientas/actualizar-plugins/actualizar-plugins.js --agente codex --aplicar
 
 # apuntarlo a otro repo de la máquina
-node .claude/herramientas/actualizar-plugins/actualizar-plugins.js "D:/Proyectos/otro-repo"
+node .claude/herramientas/actualizar-plugins/actualizar-plugins.js --agente claude "D:/Proyectos/otro-repo"
 ```
+
+`amp:actualizar` elige el agente y ejecuta esta Herramienta con el argumento correspondiente; quien la usa no tiene que recordarlo. Si se corre el script a mano y no recibe `--agente`, solo acepta una detección inequívoca del proceso; ante duda pide el argumento en vez de revisar el estado equivocado.
+
+## Claude Code y Codex
+
+Los dos agentes guardan marketplaces y plugins en configuraciones distintas. Con `--agente claude`, la Herramienta conserva el diagnóstico por repo, los alcances y las versiones instaladas de Claude Code. Con `--agente codex`, verifica el marketplace `xelnagah-harness`; `--aplicar` lo agrega si falta, lo actualiza y reinstala `amp` junto con todas sus dependencias. En ambos casos termina pidiendo reiniciar la sesión antes de tocar archivos.
 
 ## Por qué hace falta
 

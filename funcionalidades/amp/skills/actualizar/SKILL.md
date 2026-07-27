@@ -28,13 +28,13 @@ Lo mecánico y determinista lo hace el script `amp-actualizar.js` (decisión 000
 
 Poner al día un repo son **dos fases** y esta skill ejecuta la segunda. La primera —los plugins de la máquina— va **antes**, porque esta misma skill viaja adentro del plugin: si se nivelan los archivos con los plugins atrasados, el repo queda puesto al día por una versión vieja del instalador.
 
-Por eso lo primero de todo, antes de la vista previa, es diagnosticar los plugins con la **Herramienta Base `actualizar-plugins`**:
+Por eso lo primero de todo, antes de la vista previa, es diagnosticar los plugins con la **Herramienta Base `actualizar-plugins`**. La skill elige el agente que está ejecutando el flujo: `claude` para Claude Code y `codex` para Codex CLI. Nunca consulta la configuración de Claude Code mientras trabaja en Codex, ni al revés.
 
 ```bash
-node .claude/herramientas/actualizar-plugins/actualizar-plugins.js
+node .claude/herramientas/actualizar-plugins/actualizar-plugins.js --agente <claude|codex>
 ```
 
-**Si ese archivo no existe** —repo instalado antes de que la Herramienta existiera— usar la del **marketplace bajado**, que siempre está: agregar un marketplace clona el repo entero en la máquina, así que la Herramienta llega ahí antes que cualquier plugin.
+**Si ese archivo no existe** —repo instalado antes de que la Herramienta existiera— usar la del **marketplace bajado**, que siempre está. En Codex, si tampoco está registrado el marketplace, la Herramienta distribuida conoce su origen y `--aplicar` lo agrega antes de resolver el paquete completo.
 
 ```bash
 node ~/.claude/plugins/marketplaces/<marketplace>/.claude/herramientas/actualizar-plugins/actualizar-plugins.js
@@ -45,7 +45,7 @@ En Windows, `~` es `%USERPROFILE%`. El `<marketplace>` es el que sirve este plug
 Según lo que reporte:
 
 - **`TODO ACTUALIZADO`** → seguir con el flujo de abajo.
-- **`ACTUALIZAR` en algún plugin, o el marketplace bajado en `ACTUALIZAR`** → resolverlo acá y **frenar**: correr la Herramienta con `--aplicar`, avisarle al usuario que **reinicie la sesión** y que vuelva a pedir `amp:actualizar` al volver. No seguir con los archivos en esta corrida: la skill que los escribiría sigue siendo la vieja hasta el reinicio.
+- **`ACTUALIZAR` en algún plugin, marketplace faltante, o el marketplace bajado en `ACTUALIZAR`** → resolverlo acá y **frenar**: correr la Herramienta con `--aplicar`, avisarle al usuario que **reinicie la sesión** y que vuelva a pedir `amp:actualizar` al volver. En Codex, `--aplicar` primero asegura el marketplace y después instala el paquete completo por dependencias. No seguir con los archivos en esta corrida: la skill que los escribiría sigue siendo la vieja hasta el reinicio.
 - **`NO INSTALADO`** → el repo declara un plugin en `settings` que **no llegó a instalarse**: los archivos pueden estar al día y las skills no. Mismo tratamiento que el anterior —`--aplicar`, reiniciar, volver a pedir la skill— y **frenar igual**. Es el estado típico de una migración que quedó por la mitad, y seguir nivelando archivos acá los pondría al día con las skills viejas.
 - **`RETIRADO`** → migración de nombres: ver abajo.
 

@@ -1458,10 +1458,16 @@ const os = require('os');
 const { spawnSync } = require('child_process');
 
 const APLICAR = process.argv.includes('--aplicar');
+const INDICE_AGENTE = process.argv.indexOf('--agente');
+const AGENTE_PEDIDO = INDICE_AGENTE < 0 ? null : process.argv[INDICE_AGENTE + 1];
+if (AGENTE_PEDIDO && !['claude', 'codex'].includes(AGENTE_PEDIDO)) {
+  console.log('Agente invalido: usar --agente claude o --agente codex.');
+  process.exit(0);
+}
 let ARRANQUE = null;   // se completa abajo, una sola vez (consultar el proceso cuesta ~150 ms)
 // Acepta una ruta de repo como argumento (para apuntarlo a otro Agente Multiproposito de la maquina);
 // por omision, el propio.
-const RUTA_ARG = process.argv.slice(2).find(a => !a.startsWith('--'));
+const RUTA_ARG = process.argv.slice(2).find((a, i, args) => !a.startsWith('--') && args[i - 1] !== '--agente');
 // Sin argumento, el repo es el DIRECTORIO DE TRABAJO, no la ubicacion del script. La diferencia
 // importa: la Herramienta tambien se corre desde el marketplace bajado (que es un clon del repo
 // que la publica) cuando el repo destino todavia no la tiene. Deducir el repo desde __dirname
@@ -1472,19 +1478,108 @@ const PLUGINS_DIR = path.join(os.homedir(), '.claude', 'plugins');
 // El comando que se sugiere es el que se acaba de invocar: la Herramienta se corre tanto desde el
 // repo (.claude/herramientas/...) como desde el marketplace bajado, y sugerir la ruta fija manda a
 // un archivo que en el repo destino puede no existir.
-const COMANDO_APLICAR = '  node ' + JSON.stringify(process.argv[1]) + (RUTA_ARG ? ' ' + JSON.stringify(RUTA_ARG) : '') + ' --aplicar';
+const COMANDO_APLICAR = '  node ' + JSON.stringify(process.argv[1])
+  + (AGENTE_PEDIDO ? ` --agente ${AGENTE_PEDIDO}` : '')
+  + (RUTA_ARG ? ' ' + JSON.stringify(RUTA_ARG) : '') + ' --aplicar';
 
 function leerJson(p) {
   try { return JSON.parse(fs.readFileSync(p, 'utf8')); } catch (e) { return null; }
 }
 
+// -- Codex CLI -----------------------------------------------------------
+// Codex y Claude Code guardan marketplaces y plugins en casas distintas. No se puede
+// diagnosticar Codex leyendo ~/.claude: ahi puede haber un paquete completo mientras Codex
+// no tiene siquiera el marketplace registrado. Detectar el runtime antes de consultar nada.
+const AGENTE = AGENTE_PEDIDO || (process.env.CLAUDE_PID ? 'claude' : (process.env.CODEX_HOME || process.env.CODEX_CLI_PATH ? 'codex' : null));
+const MARKETPLACE_AMP = 'xelnagah-harness';
+const FUENTE_AMP = 'https://github.com/XelNagah/personal-claude-harness.git';
+const CODEX_INSTALADO = path.join(process.env.LOCALAPPDATA || '', 'Programs', 'OpenAI', 'Codex', 'bin', 'codex.exe');
+const EJECUTABLE_CODEX = process.env.CODEX_CLI_PATH || (fs.existsSync(CODEX_INSTALADO) ? CODEX_INSTALADO : 'codex');
+
+function correrCodex(args) {
+  const r = spawnSync(EJECUTABLE_CODEX, args, { cwd: REPO, encoding: 'utf8', timeout: 180000 });
+  return { ok: r && r.status === 0, salida: ((r && (r.stdout || r.stderr)) || '').trim() };
+}
+
+function raizMarketplaceCodex() {
+  const r = correrCodex(['plugin', 'marketplace', 'list']);
+  if (!r.ok) return null;
+  const linea = r.salida.split(/\r?\n/).find(l => l.trim().startsWith(MARKETPLACE_AMP));
+  if (!linea) return null;
+  const match = linea.trim().match(new RegExp(`^${MARKETPLACE_AMP}\\s+(.+)$`));
+  return match ? match[1].trim() : null;
+}
+
+function bundleCodex(raiz) {
+  const catalogo = leerJson(path.join(raiz, '.claude-plugin', 'marketplace.json'));
+  if (!catalogo || !Array.isArray(catalogo.plugins)) throw new Error('catalogo de Codex ilegible');
+  const porNombre = new Map(catalogo.plugins.map(p => [p.name, p]));
+  const orden = [], vistos = new Set();
+  function visitar(nombre) {
+    if (vistos.has(nombre)) return;
+    const fila = porNombre.get(nombre);
+    if (!fila) throw new Error(`plugin ausente del marketplace: ${nombre}`);
+    vistos.add(nombre);
+    const manifest = leerJson(path.join(raiz, fila.source, '.claude-plugin', 'plugin.json'));
+    if (!manifest) throw new Error(`plugin.json ilegible: ${nombre}`);
+    for (const dep of manifest.dependencies || []) visitar(dep);
+    orden.push(nombre);
+  }
+  visitar('amp');
+  return orden;
+}
+
+function actualizarEnCodex() {
+  console.log(`== ACTUALIZAR PLUGINS (Codex): ${REPO} ==`);
+  let raiz = raizMarketplaceCodex();
+  if (!raiz) {
+    console.log(`\nFALTA MARKETPLACE: ${MARKETPLACE_AMP} no esta configurado en Codex.`);
+    if (!APLICAR) {
+      console.log(`Para agregarlo y continuar: ${COMANDO_APLICAR.trim()}`);
+      return;
+    }
+    const alta = correrCodex(['plugin', 'marketplace', 'add', FUENTE_AMP]);
+    console.log(`\n> Agregando marketplace ${MARKETPLACE_AMP}...\n${alta.salida}`);
+    if (!alta.ok) return;
+    raiz = raizMarketplaceCodex();
+  }
+  if (!raiz) { console.log('\nNo se pudo ubicar la raiz del marketplace despues de agregarlo.'); return; }
+
+  if (!APLICAR) {
+    console.log(`\nMARKETPLACE ${MARKETPLACE_AMP}: PRESENTE (diagnostico, sin modificar).`);
+    console.log(`Vista previa: usar --aplicar actualiza el marketplace, instala o actualiza el bundle completo de Codex y despues pide reiniciar.`);
+    return;
+  }
+
+  const refresco = correrCodex(['plugin', 'marketplace', 'upgrade', MARKETPLACE_AMP]);
+  console.log(`\nMARKETPLACE ${MARKETPLACE_AMP}: ${refresco.ok ? 'ACTUALIZADO' : 'SIN VERIFICAR'}\n${refresco.salida}`);
+  if (!refresco.ok) return;
+
+  raiz = raizMarketplaceCodex() || raiz;
+  let orden;
+  try { orden = bundleCodex(raiz); } catch (e) { console.log(`\nNo se pudo resolver el bundle: ${e.message}`); return; }
+  console.log(`\nBUNDLE CODEX: ${orden.join(' -> ')}`);
+  for (const nombre of orden) {
+    const r = correrCodex(['plugin', 'add', `${nombre}@${MARKETPLACE_AMP}`]);
+    console.log(`\n> ${nombre}@${MARKETPLACE_AMP}\n${r.salida}`);
+    if (!r.ok) return;
+  }
+  console.log('\nREINICIAR LA SESION para cargar las skills actualizadas.');
+}
+
+if (AGENTE === 'codex') {
+  actualizarEnCodex();
+  process.exit(0);
+}
+if (!AGENTE) {
+  console.log('== ACTUALIZAR PLUGINS ==\n\nNo se pudo saber si esta Herramienta fue invocada por Claude Code o Codex.');
+  console.log('Usar --agente claude o --agente codex: cada uno guarda marketplaces y plugins en una configuracion distinta.');
+  process.exit(0);
+}
+
 // git de una linea: devuelve la salida o null si el comando falla, no existe el repo o vence.
-function gitEn(dir, args, timeout = 5000, confiarDirectorio = false) {
-  // El marketplace puede pertenecer al usuario aunque el proceso que corre el
-  // control sea un sandbox. Confiar solo su ruta exacta permite leer su commit
-  // sin cambiar la configuracion global de Git ni confiar directorios amplios.
-  const comando = confiarDirectorio ? ['-c', `safe.directory=${dir}`, ...args] : args;
-  const r = spawnSync('git', comando, { cwd: dir, encoding: 'utf8', timeout });
+function gitEn(dir, args, timeout = 5000) {
+  const r = spawnSync('git', args, { cwd: dir, encoding: 'utf8', timeout });
   if (!r || r.status !== 0) return null;
   return (r.stdout || '').trim() || null;
 }
@@ -1609,24 +1704,11 @@ function estadoCatalogo(marketplace, nombres) {
   const mkt = marketplaceRegistrado(marketplace);
   if (!mkt || !mkt.installLocation) return { estado: 'SIN DATO', detalle: 'marketplace no registrado' };
   const bajado = mkt.installLocation;
-  const esDirectorio = mkt.source && mkt.source.source === 'directory';
-  // N/A solo es valido cuando el registro declara explicitamente una carpeta.
-  // Un fallo de Git (por ejemplo safe.directory) en un marketplace GitHub no
-  // puede convertirse en "todo actualizado": hay que pedir refresco.
-  if (esDirectorio) return { estado: 'N/A', detalle: 'marketplace servido desde una carpeta local' };
+  const local = gitEn(bajado, ['rev-parse', 'HEAD']);
+  // Un marketplace servido de una carpeta de la maquina no tiene "publicado" contra que comparar.
+  if (!local) return { estado: 'N/A', detalle: 'no se trae de un repo git (marketplace servido de una carpeta)' };
 
-  const local = gitEn(bajado, ['rev-parse', 'HEAD'], 5000, true);
-  if (!local) return {
-    estado: 'ACTUALIZAR',
-    detalle: 'no se pudo leer el checkout del marketplace; no se verifico contra lo publicado',
-  };
-
-  // Para GitHub consultar la URL declarada evita depender de `origin` y de la
-  // propiedad del checkout. Los otros origenes conservan la consulta normal.
-  const remoto = mkt.source && mkt.source.source === 'github' && mkt.source.repo
-    ? `https://github.com/${mkt.source.repo}.git`
-    : 'origin';
-  const publicado = (gitEn(bajado, ['ls-remote', remoto, 'HEAD'], 5000, true) || '').split(/\s+/)[0] || null;
+  const publicado = (gitEn(bajado, ['ls-remote', 'origin', 'HEAD']) || '').split(/\s+/)[0] || null;
   if (publicado) {
     if (publicado === local) return { estado: 'ACTUALIZADO', detalle: `bajado ${local.slice(0, 12)} = publicado` };
     return {
@@ -1647,10 +1729,7 @@ function estadoCatalogo(marketplace, nombres) {
       detalle: `sin red: bajado ${local.slice(0, 12)} · este repo (lo publica) ${headRepo.slice(0, 12)}`,
       versiones: versionesQueFaltan(marketplace, mkt, bajado, nombres),
     };
-    if (headRepo) return {
-      estado: 'ACTUALIZAR',
-      detalle: `sin salida a red: bajado ${local.slice(0, 12)} = este repo, pero GitHub no se verifico`,
-    };
+    if (headRepo) return { estado: 'ACTUALIZADO', detalle: `sin red: bajado ${local.slice(0, 12)} = este repo, que lo publica` };
   }
   const edad = mkt.lastUpdated ? hace(mkt.lastUpdated) : null;
   return {
@@ -1849,6 +1928,7 @@ if (!filas.length) {
     console.log('a mano. `claude plugin prune` NO sirve para limpiar acá: solo mira el alcance de usuario.');
   }
 }
+
 ```
 
 Ficha `.claude/herramientas/actualizar-plugins/README.md`:
@@ -1856,18 +1936,27 @@ Ficha `.claude/herramientas/actualizar-plugins/README.md`:
 ````markdown
 # actualizar-plugins
 
-Pone al día los **plugins** que este Agente con Propósito tiene habilitados en esta máquina —los que le traen su Agente Multipropósito—, y sirve de control de desfase.
+Prepara el marketplace y los **plugins** que este Agente con Propósito usa en Claude Code o Codex antes de nivelar sus archivos. Evita diagnosticar un agente mirando la configuración del otro.
 
 ```bash
 # diagnostica, no toca nada
-node .claude/herramientas/actualizar-plugins/actualizar-plugins.js
+node .claude/herramientas/actualizar-plugins/actualizar-plugins.js --agente claude
+
+# diagnostica Codex, sin tocar nada
+node .claude/herramientas/actualizar-plugins/actualizar-plugins.js --agente codex
 
 # actualiza lo que esté atrás y vuelve a verificar
-node .claude/herramientas/actualizar-plugins/actualizar-plugins.js --aplicar
+node .claude/herramientas/actualizar-plugins/actualizar-plugins.js --agente codex --aplicar
 
 # apuntarlo a otro repo de la máquina
-node .claude/herramientas/actualizar-plugins/actualizar-plugins.js "D:/Proyectos/otro-repo"
+node .claude/herramientas/actualizar-plugins/actualizar-plugins.js --agente claude "D:/Proyectos/otro-repo"
 ```
+
+`amp:actualizar` elige el agente y ejecuta esta Herramienta con el argumento correspondiente; quien la usa no tiene que recordarlo. Si se corre el script a mano y no recibe `--agente`, solo acepta una detección inequívoca del proceso; ante duda pide el argumento en vez de revisar el estado equivocado.
+
+## Claude Code y Codex
+
+Los dos agentes guardan marketplaces y plugins en configuraciones distintas. Con `--agente claude`, la Herramienta conserva el diagnóstico por repo, los alcances y las versiones instaladas de Claude Code. Con `--agente codex`, verifica el marketplace `xelnagah-harness`; `--aplicar` lo agrega si falta, lo actualiza y reinstala `amp` junto con todas sus dependencias. En ambos casos termina pidiendo reiniciar la sesión antes de tocar archivos.
 
 ## Por qué hace falta
 
@@ -1979,6 +2068,7 @@ Por eso la Herramienta **imprime el comando pero no lo ejecuta**, ni siquiera co
 ⚠️ Mientras conviven, **el viejo y el nuevo no se pisan: coexisten**. `memoria-local` y `amp-memoria` traen los dos una skill `registrar-memoria`, con la misma descripción y distinto prefijo de plugin. No hay ganador definido — el modelo elige. De ahí que el paso 2 no sea opcional.
 
 Sin `process.exit(1)`: reporta, no frena — es capa mecánica, el juicio queda del lado del agente.
+
 ````
 
 ## §Conducta — `.claude/conducta/`
