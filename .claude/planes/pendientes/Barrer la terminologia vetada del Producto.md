@@ -86,15 +86,75 @@ Los planes **ejecutados** y **descartados** son registro de lo que pasó, con la
 - Si conviene un control que impida la reincidencia. Marcar cada aparición como hallazgo es ruidoso —el uso genérico es legítimo—; el candidato es una regla de conducta en el momento de escribir, no un lint.
 - El orden: la Plantilla primero (es lo que viaja), el resto después.
 
-## El momento de escribir no cubre lo que se publica
+## Frente C — el momento de escribir no cubre lo que se publica
 
-Apareció al verificar el Frente A el 26/07/2026, y no lo cubre ningún plan. La regla Base de conducta que actúa en el momento `al escribir` arranca diciendo *"Acabás de escribir un `.md` del harness (`.claude/`)"*: **nombra solo el Agente Multipropósito instalado acá y no menciona lo que este repo publica**, que es por donde entró toda la terminología vetada. La regla se entrega igual —el hook la dispara al escribir cualquier `.md`—, pero el texto que llega le señala al agente el lugar equivocado.
+Apareció al verificar el Frente A el 26/07/2026. **Analizado con `amp:planificar` el 26/07/2026; diseño acordado**, incluida la prioridad que Javier fijó en el medio: *"lo siguiente más importante para mí es que todo funcione con Codex"*.
 
-Falta además la acción `bloquear` que la decisión 0025 previó para términos vetados conocidos: hoy la única clase implementada en ese momento es `inyectar`.
+### La regla no se entrega: el momento no dispara
 
-Consecuencia: el control nuevo agarra el término **después** de escrito, cuando corre el control de cierre. En el momento de escribirlo no hay cobertura. Es el frente que conviene encarar primero, porque los otros dos barren texto que se va a volver a escribir.
+Este plan afirmaba que *"la regla se entrega igual, el hook la dispara al escribir cualquier `.md`"* y que el problema era el texto. **Es falso.** La condición vive en `establecer-conducta.js:43` y exige `.md` **bajo `.claude/`**: escribir `PLANTILLA.md` devuelve `null` y **no entrega ninguna regla**. `MOMENTOS.md` lo declara igual, así que registro y código coinciden: el hueco es de **condición**, no de redacción. Reescribir el texto no habría cambiado nada — nunca llega.
 
-Se cruza con `Crecer el subsistema conducta`, que es el dueño de las clases de acción que faltan.
+### Lo acordado
+
+1. **Alcance:** la condición Base pasa de `.md` bajo `.claude/` a **`.md` en cualquier lado del repo**, salvo `tmp/`. Vale para todo Agente con Propósito: en un repo de contabilidad cubre también el informe al cliente, donde la terminología farlopa hace más daño que adentro de `.claude/`.
+2. **Se bloquea, en dos velocidades.** Javier lo ratificó el 26/07/2026: *"mi intención es que se bloquee"*. Una regla de clase **`correr`** chequea el contenido contra `TERMINOLOGIA-FARLOPA.md` **antes** de que el archivo exista, y reparte según el término:
+   - **Bloquea** (`deny` + motivo) los términos **sin uso legítimo posible** — anglicismos puros como `levelear`, `dogfooding`, `staleness`, `feasibility`. No hay caso donde valgan, así que el falso positivo sí es imposible y se cumple el criterio de la columna `Clase`. El agente recibe el motivo, corrige y reescribe: forzado, no recitado.
+   - **Informa** (`additionalContext` con los términos hallados) los que **sí** tienen uso legítimo — `capa`, `prosa`, `harness`. Ahí la máquina marca y el agente juzga el significado, que es el reparto de la 0026.
+   - **Exime** los archivos de `semantica/`: el registro de vetados contiene los vetados por definición, y bloquearlo lo volvería inescribible.
+3. **El repartidor combina clases en un mismo momento:** junta el texto de las reglas `inyectar` con la salida de las `correr` cuando ambas producen `additionalContext` (`PreToolUse`, `UserPromptSubmit`); `SessionStart` sigue reenviando la salida tal cual. Hoy `correr` corta el despacho (`establecer-conducta.js:112`), así que sumar la detección **apagaría** el recordatorio existente. Se descartó que un solo script arme todo el mensaje: mudaría el texto de la Regla Base del registro al código, donde deja de leerse y de nivelarse.
+4. **Texto de la regla:** se reescribe — dice *"del harness (`.claude/`)"*, que nombra el lugar equivocado **y** usa el alias en lugar del nombre (Base v6).
+
+### Por qué el bloqueo va por lista corta y no por término vetado
+
+La 0025 previó *vetado conocido → `bloquear`*, a secas. Medido, eso frena escrituras legítimas:
+
+- **Dos de cada tres bloqueos serían falsos.** La columna `Clase` admite `bloquear` *"solo donde el falso positivo es imposible"*; el Frente A midió **41 detectadas, 14 reales** — el resto eran identificadores, destinos de enlace y usos que el propio registro declara legítimos (`capa mecánica`, `capa semántica`).
+- **El registro de vetados contiene los vetados.** Bloquear por término dejaría `TERMINOLOGIA-FARLOPA.md` inescribible, y también los planes que documentan el barrido: este mismo cita `wedge` y `churn` para explicarlo.
+
+Por eso el bloqueo se acota a los términos sin uso legítimo posible y el resto informa. La intención se cumple —lo que no debe existir no llega a escribirse— sin trabar el repo.
+
+⇒ **Modifica el punto (a) de la decisión 0025**, que sigue vigente en todo lo demás: el bloqueo deja de ser por *vetado conocido* y pasa a ser por *vetado sin uso legítimo posible*, con el resto en aviso.
+
+**Pendiente de ratificación:** dónde vive la marca de qué término bloquea y cuál avisa. Propuesta: una columna nueva en `TERMINOLOGIA-FARLOPA.md` (`Control`: `bloquea` / `avisa`), que es el dato semántico y ya lo lee el lint — pero toca un registro canónico, así que el texto exacto va al usuario antes de escribirse. La alternativa es una lista adentro del script, más barata y menos visible.
+
+### Codex: el momento sí es realizable, el bloqueo no
+
+`MOMENTOS.md` declara `al escribir` como **activo (Claude)** porque *"el `PreToolUse` de Codex intercepta solo Bash"*. **Ese dato quedó viejo** (era `openai/codex#16732`, cerrado el 22/04/2026). Verificado el 26/07/2026 y asentado en el conocimiento [hooks de Codex CLI](../../conocimiento/hooks-codex-cli.md):
+
+- `apply_patch` **sí** dispara `PreToolUse` y **matchea como `apply_patch`, `Edit` o `Write`** ⇒ el matcher que ya usa Claude sirve sin tocarlo.
+- Los datos llegan en **`tool_input.command`** (el texto del parche), no en `file_path`. El repartidor lee `file_path`: en Codex recibiría vacío y **contestaría que la condición no se cumple**, sin fallar.
+- Un parche toca **varias rutas de una** ⇒ la condición pregunta por *alguna* ruta, no por *la* ruta.
+- El **`deny` no se aplica** a las escrituras (`#27833`, abierto, reconfirmado el 06/07/2026): el archivo se escribe con el contenido denegado. La doc oficial: *"tratá los hooks de herramienta como una barrera útil, no como una frontera de cumplimiento completa"*. **El `deny` se emite igual**: hoy en Codex queda como aviso, y el día que arreglen el bug empieza a frenar sin tocar nada acá. Vía a probar si urge: `updatedInput` —soportado para `apply_patch`, que exige un campo `command` de texto— permitiría reescribir el parche en vez de rechazarlo, pero hay reportes de que el runtime lo rechaza en varios caminos (`#18491`).
+- Un hook de Codex **no corre hasta que se le da confianza a mano** (`/hooks`), y la confianza se pierde cada vez que cambia su texto ⇒ toca a `amp:inicializar` y a cada actualización.
+
+### Ejecutado del Frente C (26/07/2026)
+
+Todo lo de la tabla de abajo, más la propagación al Producto. Verificado:
+
+- **El momento dispara donde no disparaba.** Comprobado en vivo durante la propia ejecución: al editar `funcionalidades/…/PLANTILLA.md` el recordatorio llegó, cosa que antes no pasaba.
+- **El control frena y distingue.** Siete casos probados: término `bloquea` desnudo → `deny`; el mismo entre comillas simples invertidas → nada; término `avisa` → aviso combinado con el recordatorio; archivo de `semantica/` → exento; `.md` en `tmp/` → exento; archivo que no es `.md` → nada; parche de Codex con dos rutas → `deny`.
+- **Sin regresión** en `cada turno` ni en `al arrancar la sesión` (la Pantalla sigue saliendo).
+- **Los siete embebidos son idénticos** a los archivos vivos (comparación carácter a carácter).
+- **Dos apariciones legítimas cayeron en el control nuevo** —el README del control cita `capa` para explicar la diferencia— y se resolvieron **corrigiendo el texto**, no exceptuando el archivo: las citas pasaron a comillas simples invertidas y el ejemplo copiable usa `<termino>`. Mismo criterio que el Frente A.
+- **Defecto preexistente encontrado y arreglado:** `lint-conducta.js --quiet` tomaba `--quiet` como si fuera la ruta y reportaba que faltaban `MOMENTOS.md` e `INDICE.md`.
+
+Versiones: `amp` 0.6.18, `amp-semantica` 0.5.2 (falta publicar y actualizar).
+
+### Qué hay que tocar
+
+| Pieza | Cambio |
+|---|---|
+| `establecer-conducta.js` | condición del momento (todo `.md` salvo `tmp/`); leer `tool_input.command` de `apply_patch` y extraer todas las rutas; combinar `inyectar` + `correr` |
+| `.codex/hooks.json` | cablear `PreToolUse` con matcher `Write\|Edit` |
+| `conducta/MOMENTOS.md` | condición nueva; corregir la nota de paridad (Codex pasa a activo) |
+| `conducta/INDICE.md` | reescribir el texto de la regla `al escribir` + sumar la regla `correr` |
+| Herramienta de detección | co-ubicada con `conducta`, como la Pantalla de bienvenida (0030/0008); emite `deny` o `additionalContext` según el término |
+| `TERMINOLOGIA-FARLOPA.md` | columna `Control` (`bloquea` / `avisa`), si se ratifica |
+| `PLANTILLA.md` + versiones | propagar las cinco piezas y subir versión |
+
+Pendiente de ratificación: el **texto exacto** de las dos reglas, antes de asentarlas.
+
+Se cruza con `Crecer el subsistema conducta` (dueño de las clases de acción) y con `Excluir tmp del barrido de los lints de subsistema` (misma exclusión, otro alcance).
 
 ## Cruces
 

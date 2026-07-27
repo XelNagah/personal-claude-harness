@@ -54,7 +54,7 @@ for (const line of txt.split('\n')) {
   });
 }
 
-// parsear filas de TERMINOLOGIA-FARLOPA.md: | Termino | Significado vetado | Como decirlo |
+// parsear filas de TERMINOLOGIA-FARLOPA.md: | Termino | Significado vetado | Como decirlo | Control |
 // Solo interesa la primera columna (los terminos vetados); el significado lo juzga el agente.
 const vetados = [];   // termino pelado, en minuscula
 for (const line of farlTxt.split('\n')) {

@@ -141,7 +141,7 @@ node .claude/conocimiento/lint-conocimiento/lint-conocimiento.js
 ````markdown
 # Semántica — manifiesto de subsistema
 
-El subsistema `semántica` mantiene la coherencia semántica del dominio en el tiempo. Vive en este directorio (`semantica/`) con **dos registros pares**, ninguno cargado en contexto siempre: `GLOSARIO.md` (terminología legítima —concepto → definición, con alias y propuestos—) y `TERMINOLOGIA-FARLOPA.md` (relaciones vetadas, columnas `Término | Significado vetado | Cómo decirlo`). **Lo vetado es la relación término→significado, no el término**: el mismo término con otro significado puede ser legítimo; por eso la columna del medio, y por eso nada vetado se queda en el glosario.
+El subsistema `semántica` mantiene la coherencia semántica del dominio en el tiempo. Vive en este directorio (`semantica/`) con **dos registros pares**, ninguno cargado en contexto siempre: `GLOSARIO.md` (terminología legítima —concepto → definición, con alias y propuestos—) y `TERMINOLOGIA-FARLOPA.md` (relaciones vetadas, columnas `Término | Significado vetado | Cómo decirlo | Control`). **Lo vetado es la relación término→significado, no el término**: el mismo término con otro significado puede ser legítimo; por eso la columna del medio, y por eso nada vetado se queda en el glosario.
 
 **Disparador:** consultar ambos registros al planificar y analizar; no acuñar términos propios, preferir los del usuario. Proponer una entrada (columna `Propuestos` del glosario) al detectar un término del dominio sin registrar. El agente solo **propone**: ratificar (a alias) y vetar (a Terminología Farlopa) son potestad del usuario.
 
@@ -202,13 +202,15 @@ Convención en la memoria `feedback_herramientas.md`.
 ````markdown
 # Conducta — manifiesto de subsistema
 
-El subsistema `conducta` asegura comportamientos del tipo "cuando hagas X, asegurate de Y": ata **momentos** del flujo (evento de hook + condición sin juicio) a **acciones** (inyectar un texto, correr una Herramienta, bloquear). Vive en este directorio (`conducta/`): el registro de reglas en `INDICE.md`, el vocabulario de momentos en `MOMENTOS.md`, y el hook repartidor `establecer-conducta/`, que entrega en cada momento la regla que corresponde. Viene con una **Base** instalada (respetar preferencias, contrastar al escribir, registrar cambios) y admite reglas del Propósito de cada repo. Modelo completo en la memoria `feedback_conducta.md`.
+El subsistema `conducta` asegura comportamientos del tipo "cuando hagas X, asegurate de Y": ata **momentos** del flujo (evento de hook + condición sin juicio) a **acciones** (inyectar un texto, correr una Herramienta, bloquear). Vive acá: las reglas en `INDICE.md`, los momentos en `MOMENTOS.md`, y el hook repartidor `establecer-conducta/`, que entrega en cada momento la regla que corresponde. Trae una **Base** y admite reglas del Propósito. Modelo completo en la memoria `feedback_conducta.md`.
 
-**Disparador:** en el flujo normal el agente **no** consulta este registro a mano — lo entrega el hook. Se edita al **agregar, modificar o dar de baja una regla**; toda regla nueva que toque terminología o decisiones pasa por el usuario (el agente propone; ratificar es potestad del usuario).
+Al escribir un `.md` de cualquier parte del repo, el control `detectar-terminologia-vetada/` **rechaza** el texto con un término vetado sin uso legítimo posible e **informa** los que dependen del significado: citarlo no se frena, usarlo sí.
 
-**Skills:** ninguna de operación aún — las entrega el hook repartidor `establecer-conducta`; instalación con `inicializar-conducta`.
+**Disparador:** el agente **no** consulta este registro a mano — lo entrega el hook. Se edita al **agregar, modificar o dar de baja una regla**; toda regla nueva que toque terminología o decisiones pasa por el usuario (el agente propone; ratificar es potestad del usuario).
 
-**Índice: NO se carga siempre**: cargar las reglas al arranque es el modo de falla que este subsistema corrige (una regla cargada al inicio se recita, no se obedece — conocimiento `modos-de-falla-ante-reglas-escritas`). El registro se consulta a demanda solo para gestionarlo. Al cerrar una tarea que tocó `conducta`, correr el lint desde la raíz del repo:
+**Skills:** ninguna de operación; instalación con `inicializar-conducta`.
+
+**Índice: NO se carga siempre**: cargar las reglas al arranque es el modo de falla que este subsistema corrige — una regla cargada al inicio se recita, no se obedece (conocimiento `modos-de-falla-ante-reglas-escritas`). Se consulta solo para gestionarlo. Al cerrar una tarea que tocó `conducta`, correr el lint desde la raíz:
 
 ```bash
 node .claude/conducta/lint-conducta/lint-conducta.js
@@ -361,8 +363,8 @@ metadata:
 El subsistema `conducta` asegura comportamientos del tipo **"cuando hagas X, asegurate de Y"**: ata **momentos** del flujo a **acciones**. Vive en `.claude/conducta/`:
 
 - `INDICE.md` — el **registro de reglas**: cada fila ata un momento a una acción (`Regla | Momento | Clase | Contenido | Estado`). Separado por origen en dos secciones: **Reglas Base** (las manda el harness; el nivelador las reemplaza enteras) y **Reglas del Propósito** (las suma cada repo; el nivelador no las toca).
-- `MOMENTOS.md` — el **vocabulario de momentos**: un momento es un **evento de hook + una condición que la máquina evalúa sin juicio** (`cada turno` = `UserPromptSubmit`; `al escribir` = `PreToolUse` sobre un `.md` bajo `.claude/`; `al cerrar tarea` = `Stop`, aún sin repartidor).
-- `establecer-conducta/` — el **hook repartidor**: un mismo script sirve a varios eventos; resuelve qué momento realiza el evento que lo disparó, lee el registro **vivo** y emite el `Contenido` de las reglas `inyectar` `vigente` de ese momento como `additionalContext`. Agregar o cambiar una regla **no toca el hook**.
+- `MOMENTOS.md` — el **vocabulario de momentos**: un momento es un **evento de hook + una condición que la máquina evalúa sin juicio** (`cada turno` = `UserPromptSubmit`; `al escribir` = `PreToolUse` sobre un `.md` de **cualquier parte del repo** salvo `tmp/`; `al cerrar tarea` = `Stop`, aún sin repartidor).
+- `establecer-conducta/` — el **hook repartidor**: un mismo script sirve a varios eventos; resuelve qué momento realiza el evento que lo disparó, lee el registro **vivo** y despacha las reglas `vigente` de ese momento según su clase, **combinando** el texto de las `inyectar` con lo que midan las `bloquear`. Agregar o cambiar una regla **no toca el hook**.
 - `lint-conducta/` — valida que toda regla apunte a un momento existente, con clase/estado válidos, y que ninguna regla `vigente` cuelgue de un momento sin repartidor.
 
 **Clases de acción:** `inyectar` (el agente lee un texto y actúa con su juicio) · `correr` (una Herramienta lo resuelve sin juicio) · `bloquear` (se frena la acción; solo donde Y es sin juicio y el falso positivo es imposible).
@@ -653,7 +655,7 @@ Hook — **registro doble**: el mismo script se registra en los dos formatos —
 }
 ```
 
-> Codex carga hooks de proyecto solo si la carpeta `.codex/` del repo está **trusted** (revisar con `/hooks`), y con `features.hooks` habilitado en su config. Avisarle al usuario al instalar.
+> Codex carga hooks de proyecto solo si la carpeta `.codex/` del repo es **de confianza** (revisar con `/hooks`), y con `features.hooks` habilitado en su config. La confianza se registra contra el texto del hook: si el hook cambia, hay que aprobarlo de nuevo. Avisarle al usuario al instalar.
 
 `.claude/planes/lint-planes/README.md`:
 
@@ -844,10 +846,19 @@ Registro par `.claude/semantica/TERMINOLOGIA-FARLOPA.md` (tabla vacía):
 
 El **lint marca por término** (lo mecánico: encuentra la palabra en el texto vivo); **el agente juzga el significado** al leer la marca (¿está usada en el sentido vetado o en uno legítimo?). El registro se calibra por repo: un anglicismo es farlopa para un lector hispanohablante y puede no serlo para uno angloparlante.
 
+## La columna `Control`
+
+Dice qué hace el control del momento `al escribir` cuando encuentra el término **antes** de que el archivo exista:
+
+- **`bloquea`** — la palabra está mal **siempre**, sin importar la frase, así que la escritura se rechaza y hay que corregirla antes. Son los anglicismos puros: `levelear` no tiene ningún uso válido en español.
+- **`avisa`** — la misma palabra puede estar bien o mal según qué signifique (`capa de configuración` es legítimo; `la segunda capa del proceso` está vetado). La máquina no puede decidirlo: informa los términos hallados y el agente juzga.
+
+Vacío se lee como `avisa`. **El bloqueo mira solo las apariciones fuera de comillas simples invertidas**, así que citar un término para hablar de él —como hace esta misma tabla— nunca se frena; se frena usarlo.
+
 **Gobernanza:** vetar es potestad del usuario; el agente solo propone. El agente **nunca usa** un término en el significado que este registro veta.
 
-| Término | Significado vetado | Cómo decirlo |
-|---------|--------------------|--------------|
+| Término | Significado vetado | Cómo decirlo | Control |
+|---------|--------------------|--------------|---------|
 ```
 
 Memoria `.claude/memoria/feedback_semantica.md`:
@@ -863,7 +874,7 @@ metadata:
 El subsistema `semántica` mantiene la coherencia semántica del dominio en el tiempo. Vive en `.claude/semantica/` con **dos registros pares**, ninguno cargado en contexto siempre:
 
 - `GLOSARIO.md` — terminología **legítima**: una tabla donde cada fila es un concepto (nombre canónico, definición corta, `Alias`, `Propuestos`, `Detalle`). Los conceptos complejos tienen su propia página `.claude/semantica/<nombre>.md`.
-- `TERMINOLOGIA-FARLOPA.md` — relaciones **vetadas**: `Término | Significado vetado | Cómo decirlo`. **Lo vetado es la relación término→significado, no el término**: el mismo término con otro significado puede ser legítimo. El lint **marca por término**; el agente **juzga el significado** al leer la marca.
+- `TERMINOLOGIA-FARLOPA.md` — relaciones **vetadas**: `Término | Significado vetado | Cómo decirlo | Control`. **Lo vetado es la relación término→significado, no el término**: el mismo término con otro significado puede ser legítimo. El lint **marca por término**; el agente **juzga el significado** al leer la marca. La columna `Control` dice si el término, al escribirlo, **frena** la escritura (`bloquea`: no tiene uso legítimo posible) o solo la **informa** (`avisa`, el default).
 
 **Términos por estado (glosario):** `Alias` (formas válidas, ratificadas), `Propuestos` (sugeridos por el agente, sin usar hasta ratificar). El glosario **NO tiene columna de vetados**: todo veto es una relación y vive en el registro par de Terminología Farlopa.
 
@@ -939,7 +950,7 @@ for (const line of txt.split('\n')) {
   });
 }
 
-// parsear filas de TERMINOLOGIA-FARLOPA.md: | Termino | Significado vetado | Como decirlo |
+// parsear filas de TERMINOLOGIA-FARLOPA.md: | Termino | Significado vetado | Como decirlo | Control |
 // Solo interesa la primera columna (los terminos vetados); el significado lo juzga el agente.
 const vetados = [];   // termino pelado, en minuscula
 for (const line of farlTxt.split('\n')) {
@@ -1958,10 +1969,10 @@ Vocabulario de los **momentos** válidos a los que una regla de conducta puede a
 |---------|----------------|----------------|----------------|
 | al arrancar la sesión | Al iniciar la sesión, sin condición. Su realización corre una Herramienta y reenvía su salida; hoy muestra la Pantalla de bienvenida (bloque de estado → `systemMessage`, visible al usuario). | `SessionStart` | activo |
 | cada turno | Antes de cada respuesta del agente, sin condición. | `UserPromptSubmit` | activo |
-| al escribir | Al escribir o editar un `.md` bajo `.claude/` (registros y docs del harness). El `additionalContext` llega **junto al resultado** de la tool: es un recordatorio posterior a la escritura, no un aviso previo. | `PreToolUse` sobre `Write`\|`Edit`, condición: `file_path` es `.md` bajo `.claude/` | activo (Claude) |
+| al escribir | Al escribir o editar un `.md` de **cualquier parte del repo** — lo que el repo publica incluido, no solo los registros del Agente Multipropósito—, salvo el directorio de borradores `tmp/`. El `additionalContext` llega **junto al resultado** de la tool: es un recordatorio posterior a la escritura. El `deny`, en cambio, **sí** es previo: frena la escritura antes de que el archivo exista. | `PreToolUse` sobre `Write`\|`Edit`\|`apply_patch`, condición: **alguna** ruta tocada es `.md` fuera de `tmp/` | activo |
 | al cerrar tarea | Al terminar de responder una tarea. | `Stop` | declarado |
 
-> Paridad: `cada turno` (`UserPromptSubmit` + `additionalContext`) tiene paridad plena Claude Code ↔ Codex (conocimiento `hooks-claude-code`). `al arrancar la sesión` (`SessionStart` → `systemMessage`) anda en Claude Code, Codex y Gemini; Cursor no tiene banner nativo y degrada sin caja. `al escribir` es **Claude-first**: el `PreToolUse` de Codex intercepta solo Bash, así que ese momento **no es realizable** en Codex sin desviar por Bash — degradación explícita, no rota en silencio. Los momentos `declarado` esperan su repartidor.
+> Paridad: `cada turno` (`UserPromptSubmit` + `additionalContext`) tiene paridad plena Claude Code ↔ Codex (conocimiento `hooks-claude-code`). `al arrancar la sesión` (`SessionStart` → `systemMessage`) anda en Claude Code, Codex y Gemini; Cursor no tiene banner nativo y degrada sin caja. `al escribir` **también corre en Codex** desde abril de 2026: toda edición pasa por `apply_patch`, que dispara `PreToolUse` y matchea como `apply_patch`, `Edit` o `Write` (conocimiento `hooks-codex-cli`; hasta entonces solo disparaba para Bash y el momento figuraba acá como Claude-first). Con una salvedad: **el `deny` todavía no frena en Codex** —el archivo se escribe igual, bug abierto del CLI—, así que ahí una regla `bloquear` degrada a aviso hasta que lo arreglen; se emite igual para que empiece a frenar sola el día que ocurra. Los momentos `declarado` esperan su repartidor.
 ````
 
 Contenido inicial de `.claude/conducta/INDICE.md` (registro de reglas; `## Reglas Base` poblada por el harness, `## Reglas del Propósito` vacía para que la llene cada repo):
@@ -1989,7 +2000,8 @@ Las que instala el Agente Multipropósito (origen **Base**). El nivelador `amp:a
 | Respetar las preferencias cargadas | cada turno | inyectar | Antes de responder, respetá las preferencias ya cargadas (PREFERENCIAS.md). | vigente |
 | No acuñar terminología del dominio | cada turno | inyectar | No acuñes términos del dominio (usá el glosario, proponé en Propuestos, nunca uses vetados). Antes de una palabra de origen inglés, aplicá el test: ¿la diría tal cual un desarrollador hispanohablante en una charla en español (`commit`, `deploy`, `parsear`, `hardcodear`, `bug`) o es una metáfora o modismo del inglés (`churn`, `wedge`, `dogfooding`, `staleness`, `feasibility`)? Lo segundo → traducilo, le resulta raro al usuario. Ante la duda, traducí. | vigente |
 | Preguntar antes de redefinir o remover algo canónico | cada turno | inyectar | Antes de **remover, renombrar o redefinir** algo canónico (una definición del glosario, una decisión) o con dependientes: proponé y esperá la ratificación del usuario. El agente propone; ratificar, vetar y redefinir son potestad del usuario. Aplica también a **definiciones y remociones**, no solo al alta de un término. | vigente |
-| Contrastar contra la sabiduría del repo al escribir | al escribir | inyectar | Acabás de escribir un `.md` del harness (`.claude/`): contrastá lo escrito contra el test de demarcación, el glosario y las decisiones — ¿va en este subsistema?, ¿contradice algo asentado?, ¿usaste un término vetado o inventado? Corregí si hace falta. | vigente |
+| Contrastar contra la sabiduría del repo al escribir | al escribir | inyectar | Acabás de escribir un `.md`. Si es de `.claude/`, contrastalo contra el test de demarcación (¿va en este subsistema?); si es de lo que el repo publica, acordate de que ese texto lo hereda quien lo instale. En los dos casos: ¿contradice algo asentado?, ¿usaste un término vetado o inventado? Corregí si hace falta. | vigente |
+| Frenar la terminología vetada antes de que se escriba | al escribir | bloquear | conducta/detectar-terminologia-vetada/detectar-terminologia-vetada.js | vigente |
 | Registrar en el subsistema cuando algo cambia | al cerrar tarea | inyectar | Si en esta tarea cambió algo que otro subsistema debe saber (memoria, decisión, conocimiento, semántica, herramientas), registralo antes de cerrar. | pendiente |
 
 ## Reglas del Propósito
@@ -2010,16 +2022,25 @@ Hook repartidor `.claude/conducta/establecer-conducta/establecer-conducta.js` �
 //
 // Eventos que realiza hoy (la realizacion del momento es agente-especifica):
 //   - UserPromptSubmit         -> momento `cada turno`            (sin condicion)      [clase inyectar]
-//   - PreToolUse Write|Edit .md bajo .claude/ -> momento `al escribir` (condicion sin juicio) [clase inyectar]
+//   - PreToolUse Write|Edit|apply_patch de un .md -> momento `al escribir` (condicion sin juicio)
+//                                                   [clases inyectar + bloquear, combinadas]
 //   - SessionStart             -> momento `al arrancar la sesion` (sin condicion)     [clase correr]
 // El vocabulario de momentos vive en ../MOMENTOS.md; aca vive COMO se realiza cada uno.
 //
-// Dos clases de despacho (la tercera, `bloquear`, todavia no se implementa):
+// Tres clases de despacho:
 //   - inyectar: arma un texto y lo emite como additionalContext (llega al modelo).
 //   - correr:   ejecuta la Herramienta cuya ruta es el Contenido de la regla y REENVIA su stdout
-//               verbatim (ej. la Pantalla de bienvenida emite {systemMessage} en SessionStart:
-//               ese campo es el unico que pinta la terminal del usuario). Un momento es hoy de un
-//               solo tipo (SessionStart es correr-only): inyectar y correr no se combinan en el mismo momento.
+//               tal cual (ej. la Pantalla de bienvenida emite {systemMessage} en SessionStart:
+//               ese campo es el unico que pinta la terminal del usuario). No se combina: es para
+//               momentos donde la salida del hijo ES la respuesta del hook.
+//   - bloquear: ejecuta la Herramienta cuya ruta es el Contenido y LEE su respuesta. Si trae
+//               permissionDecision 'deny', se emite ese deny solo (frena la accion; el
+//               additionalContext se descartaria igual). Si trae additionalContext, se COMBINA
+//               con el texto de las reglas `inyectar` del mismo momento.
+//
+// Combinacion: en un mismo momento conviven reglas `inyectar` (texto fijo, vive en el registro y lo
+// nivela el harness) y `bloquear` (datos medidos, los produce un programa). Se emiten juntas, una
+// abajo de la otra. `correr` sigue sin combinarse (su salida no es additionalContext).
 //
 // Contrato de hook (conocimiento hooks-claude-code): stdin = JSON del harness; stdout = JSON.
 //   UserPromptSubmit/PreToolUse: { hookSpecificOutput: { hookEventName, additionalContext } }
@@ -2034,6 +2055,22 @@ const { execSync } = require('child_process');
 const idxPath = path.resolve(__dirname, '..', 'INDICE.md');
 const repoRoot = path.resolve(__dirname, '..', '..', '..');   // .../conducta/establecer-conducta -> repo
 
+// -- rutas que toca una escritura ---------------------------------------
+// Dos formas, segun el agente:
+//   Claude Code -> tool_input.file_path, una sola ruta.
+//   Codex       -> apply_patch manda el parche entero en tool_input.command y puede tocar VARIAS
+//                  rutas de una (`*** Update File: <ruta>`), asi que la condicion pregunta por
+//                  ALGUNA ruta, no por LA ruta. Leer file_path ahi devuelve vacio y la condicion
+//                  contestaria que no se cumple, sin fallar: el momento no se entregaria nunca.
+function rutasDe(ti) {
+  if (!ti) return [];
+  if (ti.file_path) return [String(ti.file_path).replace(/\\/g, '/')];
+  if (typeof ti.command === 'string')
+    return [...ti.command.matchAll(/^\*\*\*\s+(?:Add|Update|Delete) File:\s*(.+)$/gm)]
+      .map(m => m[1].trim().replace(/\\/g, '/'));
+  return [];
+}
+
 // -- que momento realiza cada evento, con su condicion sin juicio -------
 // Devuelve el nombre del momento a entregar, o null si el evento+datos no realiza ninguno.
 function momentoDe(data) {
@@ -2042,10 +2079,13 @@ function momentoDe(data) {
   if (ev === 'SessionStart') return 'al arrancar la sesión';
   if (ev === 'PreToolUse') {
     const tool = data.tool_name || '';
-    const fp = ((data.tool_input && data.tool_input.file_path) || '').replace(/\\/g, '/');
-    // condicion `al escribir`: escribir/editar un .md bajo .claude/ (registros y docs del harness)
-    if ((tool === 'Write' || tool === 'Edit') && /\.md$/i.test(fp) && /(^|\/)\.claude\//.test(fp)) return 'al escribir';
-    return null;
+    if (tool !== 'Write' && tool !== 'Edit' && tool !== 'apply_patch') return null;
+    // condicion `al escribir`: escribir/editar un .md de cualquier parte del repo (lo que se
+    // publica incluido, que es por donde entra la terminologia ajena), salvo el directorio de
+    // borradores tmp/, que el repo gitignorea y es material descartable.
+    const rutas = rutasDe(data.tool_input);
+    if (!rutas.some(r => /\.md$/i.test(r) && !/(^|\/)tmp\//.test(r))) return null;
+    return 'al escribir';
   }
   return null;
 }
@@ -2088,19 +2128,42 @@ function construir(momento) {
   return `Recordatorio de conducta — momento «${momento}» (subsistema conducta):\n${bullets}`;
 }
 
-// -- correr: ejecutar la Herramienta y reenviar su stdout verbatim ------
+// -- ejecutar la Herramienta de una regla y devolver su stdout ----------
 // El Contenido es la ruta del script relativa a .claude/ (con sus flags), ej.
 // `conducta/mostrar-pantalla-bienvenida/mostrar-pantalla-bienvenida.js --hook`.
+function ejecutar(regla, input) {
+  try {
+    return execSync('node .claude/' + regla.contenido, { cwd: repoRoot, input, encoding: 'utf8', timeout: 20000 });
+  } catch (e) { return ''; }   // no romper el turno: el hijo fallo, se ignora
+}
+
+// -- correr: reenviar el stdout del hijo tal cual (no se combina) -------
 function correr(momento, input) {
   const reglas = reglasDe(momento, 'correr');
   if (!reglas.length) return false;
   for (const r of reglas) {
-    try {
-      const out = execSync('node .claude/' + r.contenido, { cwd: repoRoot, input, encoding: 'utf8', timeout: 20000 });
-      if (out && out.trim()) process.stdout.write(out);   // reenvio verbatim (JSON valido del hijo)
-    } catch (e) { /* no romper el turno: el hijo fallo, se ignora */ }
+    const out = ejecutar(r, input);
+    if (out && out.trim()) process.stdout.write(out);   // reenvio tal cual (JSON valido del hijo)
   }
   return true;
+}
+
+// -- bloquear: leer la respuesta del hijo -------------------------------
+// Devuelve { deny: <motivo> } si alguna regla frena la accion, o { contexto: <texto> } con lo que
+// haya que sumarle a las reglas `inyectar` del mismo momento. El deny gana: si la escritura no va a
+// ocurrir, el recordatorio sobra (y Claude Code descarta el additionalContext en un deny).
+function bloquear(momento, input) {
+  const partes = [];
+  for (const r of reglasDe(momento, 'bloquear')) {
+    const out = ejecutar(r, input);
+    if (!out || !out.trim()) continue;
+    let hs = null;
+    try { hs = JSON.parse(out).hookSpecificOutput; } catch (e) { continue; }
+    if (!hs) continue;
+    if (hs.permissionDecision === 'deny') return { deny: hs.permissionDecisionReason || 'bloqueado por una regla de conducta' };
+    if (hs.additionalContext) partes.push(hs.additionalContext);
+  }
+  return { contexto: partes.join('\n\n') };
 }
 
 // Se drena stdin (contrato del hook) y se despacha segun el evento y la clase.
@@ -2112,14 +2175,25 @@ process.stdin.on('end', () => {
   let momento = null;
   try { momento = momentoDe(data); } catch (e) { momento = null; }
 
-  // clase `correr` primero (SessionStart): ejecuta y reenvia; no se combina con inyectar.
-  try { if (correr(momento, input)) return process.exit(0); } catch (e) { /* sigue a inyectar */ }
+  const ev = data.hook_event_name === 'PreToolUse' ? 'PreToolUse' : 'UserPromptSubmit';
 
-  // clase `inyectar` (cada turno / al escribir): additionalContext para el modelo.
+  // clase `correr` primero (SessionStart): ejecuta y reenvia; no se combina.
+  try { if (correr(momento, input)) return process.exit(0); } catch (e) { /* sigue */ }
+
+  // clase `bloquear`: si alguna frena, se emite el deny solo y no se sigue.
+  let medido = { contexto: '' };
+  try { medido = bloquear(momento, input); } catch (e) { medido = { contexto: '' } }
+  if (medido.deny) {
+    process.stdout.write(JSON.stringify({ hookSpecificOutput: {
+      hookEventName: ev, permissionDecision: 'deny', permissionDecisionReason: medido.deny } }));
+    return process.exit(0);
+  }
+
+  // clase `inyectar` (cada turno / al escribir), combinada con lo que midio `bloquear`.
   let ctx = '';
   try { ctx = construir(momento); } catch (e) { ctx = ''; }   // ante error, no romper el turno
+  if (medido.contexto) ctx = ctx ? ctx + '\n' + medido.contexto : medido.contexto;
   if (ctx) {
-    const ev = data.hook_event_name === 'PreToolUse' ? 'PreToolUse' : 'UserPromptSubmit';
     // PreToolUse: se OMITE permissionDecision a proposito (=> 'defer'): inyecta sin auto-aprobar.
     process.stdout.write(JSON.stringify({ hookSpecificOutput: { hookEventName: ev, additionalContext: ctx } }));
   }
@@ -2137,35 +2211,228 @@ Hook del subsistema `conducta`. **No es una Herramienta** (los hooks van afuera 
 
 ## Qué hace
 
-Un mismo script sirve a varios eventos. Según el evento que lo dispara, resuelve qué **momento** realiza (con su condición, sin juicio), lee el registro **vivo** `../INDICE.md`, filtra las reglas de clase `inyectar`, estado `vigente` y ese momento, y emite su `Contenido` como `additionalContext` para el modelo. Agregar o cambiar una regla **no toca este script**: lee el registro en cada disparo. El vocabulario de momentos vive en `../MOMENTOS.md`; acá vive **cómo** se realiza cada uno.
+Un mismo script sirve a varios eventos. Según el evento que lo dispara, resuelve qué **momento** realiza (con su condición, sin juicio), lee el registro **vivo** `../INDICE.md` y despacha las reglas `vigente` de ese momento según su clase. Agregar o cambiar una regla **no toca este script**: lee el registro en cada disparo. El vocabulario de momentos vive en `../MOMENTOS.md`; acá vive **cómo** se realiza cada uno.
 
 Eventos que realiza hoy:
 
+- **`SessionStart`** → momento `al arrancar la sesión` (sin condición).
 - **`UserPromptSubmit`** → momento `cada turno` (sin condición). El recordatorio en cada turno.
-- **`PreToolUse`** con `Write`/`Edit` de un `.md` bajo `.claude/` → momento `al escribir`. El `additionalContext` llega **junto al resultado** de la tool (post-ejecución): es un recordatorio posterior a la escritura, no un aviso previo.
+- **`PreToolUse`** con `Write`/`Edit`/`apply_patch` cuando **alguna** ruta tocada es un `.md` fuera de `tmp/` → momento `al escribir`.
+
+## Las tres clases
+
+| Clase | Qué hace | Se combina |
+|-------|----------|------------|
+| `inyectar` | Emite el `Contenido` de la regla como `additionalContext` | sí |
+| `correr` | Ejecuta la Herramienta cuya ruta es el `Contenido` y **reenvía su salida tal cual** (la Pantalla de bienvenida emite `systemMessage`, el único campo que pinta la terminal) | no: su salida **es** la respuesta del hook |
+| `bloquear` | Ejecuta la Herramienta y **lee su respuesta**: un `deny` frena la acción y se emite solo; un `additionalContext` se suma al de las reglas `inyectar` | sí |
+
+En un mismo momento conviven el texto fijo de las `inyectar` —que vive en el registro y lo nivela el Agente Multipropósito— y los datos medidos de las `bloquear`, que produce un programa. Se emiten juntos, uno abajo del otro.
 
 ## Contrato
 
-- **Entrada:** el JSON del harness por stdin (se lee `hook_event_name`, y para `PreToolUse` `tool_name` + `tool_input.file_path`).
-- **Salida:** por stdout, `{ "hookSpecificOutput": { "hookEventName": …, "additionalContext": "…" } }`.
-- **`PreToolUse` sin efecto de lado:** se **omite** `permissionDecision` (= `defer`, verificado 2026-07-23): inyecta el texto y deja el flujo de permisos intacto — **no** auto-aprueba la tool. (`allow` auto-aprobaría; `deny` descartaría el `additionalContext`.)
+- **Entrada:** el JSON del agente por stdin. Se lee `hook_event_name`, y para `PreToolUse` `tool_name` + las rutas, que llegan de dos formas: `tool_input.file_path` (Claude Code) o adentro del parche de `tool_input.command` (Codex, `apply_patch`, que puede tocar **varias** rutas de una).
+- **Salida:** por stdout, `{ "hookSpecificOutput": { "hookEventName": …, "additionalContext": "…" } }`, o el `deny` con su `permissionDecisionReason`.
+- **`PreToolUse` sin efecto de lado:** cuando no hay bloqueo se **omite** `permissionDecision` (= `defer`, verificado 2026-07-23): inyecta el texto y deja el flujo de permisos intacto — **no** auto-aprueba la tool. (`allow` auto-aprobaría; `deny` descarta el `additionalContext`, por eso el bloqueo se emite solo.)
 - **Nunca rompe el turno:** ante cualquier error o registro vacío sale con código 0 sin emitir nada.
 
-Mecánica y capacidades de hooks: conocimiento `hooks-claude-code`. Latencia (~65 ms, Node): conocimiento `latencia-hooks`.
+Mecánica y capacidades de hooks: conocimiento `hooks-claude-code` (Claude Code) y `hooks-codex-cli` (Codex). Latencia (~65 ms, Node): conocimiento `latencia-hooks`.
 
 ## Cableado
 
-- **Claude Code (`.claude/settings.json`):** `UserPromptSubmit` (sin matcher) + `PreToolUse` (matcher `Write|Edit`).
-- **Codex (`.codex/hooks.json`):** solo `UserPromptSubmit` (paridad del momento `cada turno`). El momento `al escribir` es **Claude-first**: el `PreToolUse` de Codex intercepta solo Bash, no es realizable ahí — degradación documentada en `../MOMENTOS.md`.
+- **Claude Code (`.claude/settings.json`):** `SessionStart` + `UserPromptSubmit` (sin matcher) + `PreToolUse` (matcher `Write|Edit`).
+- **Codex (`.codex/hooks.json`):** los mismos tres. El matcher `Write|Edit` alcanza igual: toda edición de Codex pasa por `apply_patch`, que matchea como `apply_patch`, `Edit` o `Write`. ⚠️ Un hook de Codex **no corre hasta que se lo revisa y se le da confianza** con `/hooks`, y la confianza se pierde cada vez que cambia su texto.
 
 ## Probar a mano
 
 ```bash
-echo {"hook_event_name":"UserPromptSubmit"} | node .claude/conducta/establecer-conducta/establecer-conducta.js
-echo {"hook_event_name":"PreToolUse","tool_name":"Write","tool_input":{"file_path":".claude/semantica/GLOSARIO.md"}} | node .claude/conducta/establecer-conducta/establecer-conducta.js
+node -e 'process.stdout.write(JSON.stringify({hook_event_name:"UserPromptSubmit"}))' | node .claude/conducta/establecer-conducta/establecer-conducta.js
+node -e 'process.stdout.write(JSON.stringify({hook_event_name:"PreToolUse",tool_name:"Write",tool_input:{file_path:"README.md",content:"texto"}}))' | node .claude/conducta/establecer-conducta/establecer-conducta.js
 ```
 
 Emiten el JSON con las reglas vigentes de ese momento, o nada si no aplica.
+````
+
+
+Control del momento `al escribir` `.claude/conducta/detectar-terminologia-vetada/detectar-terminologia-vetada.js` — lo corre la Regla Base clase `bloquear`; tampoco es una Herramienta. Contenido exacto:
+
+```js
+#!/usr/bin/env node
+// Control del momento `al escribir` del subsistema conducta: chequea el contenido que se esta por
+// escribir contra el registro de relaciones vetadas (../../semantica/TERMINOLOGIA-FARLOPA.md) ANTES
+// de que el archivo exista, y responde segun la columna Control de cada termino:
+//
+//   bloquea -> permissionDecision 'deny' + motivo (la palabra esta mal siempre: `levelear`)
+//   avisa   -> additionalContext con los terminos hallados (la palabra puede ser legitima segun el
+//              significado: `capa de configuracion` es valido, `la segunda capa del proceso` no)
+//
+// El bloqueo mira solo las apariciones FUERA de comillas simples invertidas y de bloques de codigo:
+// citar un termino para hablar de el (esta tabla, la Base de preferencias, un plan que documenta el
+// barrido) nunca se frena; se frena usarlo. Sin esa distincion el control volveria inescribibles a
+// los propios archivos que documentan el veto.
+//
+// Lo invoca el hook repartidor `establecer-conducta` como Contenido de una regla clase `bloquear`.
+// No es una Herramienta (no va al registro de Herramientas): es infra del subsistema, co-ubicada.
+//
+// Entrada: el JSON del hook por stdin. Se leen tool_name y tool_input, en las dos formas:
+//   Claude Code -> Write: {content, file_path} | Edit: {new_string, file_path}
+//   Codex       -> apply_patch: {command} (el texto del parche, con las rutas adentro)
+// Salida: JSON de hook por stdout, o nada si no aplica. Nunca rompe el turno (siempre exit 0).
+//
+// Uso a mano (probar):
+//   echo {"tool_name":"Write","tool_input":{"file_path":"README.md","content":"hay mucho churn"}} | node detectar-terminologia-vetada.js
+const fs = require('fs'), path = require('path');
+const registro = path.resolve(__dirname, '..', '..', 'semantica', 'TERMINOLOGIA-FARLOPA.md');
+
+// Subsistema exento: el registro de vetados contiene los vetados por definicion.
+const EXENTOS = [/(^|\/)\.claude\/semantica\//];
+
+// -- registro: [{variantes:[...], comoDecirlo, control}] -----------------
+function leerRegistro() {
+  if (!fs.existsSync(registro)) return [];
+  const out = [];
+  const lineas = fs.readFileSync(registro, 'utf8').split('\n').map(l => l.trim()).filter(l => l.startsWith('|'));
+  let cols = null;
+  for (const l of lineas) {
+    const celdas = l.split('|').slice(1, -1).map(c => c.trim());
+    const norm = celdas.map(c => c.toLowerCase().replace(/\*/g, ''));
+    if (!cols) {
+      if (norm.includes('término') && norm.includes('cómo decirlo')) {
+        cols = { termino: norm.indexOf('término'), como: norm.indexOf('cómo decirlo'), control: norm.indexOf('control') };
+      }
+      continue;
+    }
+    if (/^:?-{2,}:?$/.test(celdas[0].replace(/\s/g, ''))) continue;
+    // las variantes del termino vienen entre comillas simples invertidas, separadas por /
+    const variantes = (celdas[cols.termino].match(/`([^`]+)`/g) || []).map(v => v.slice(1, -1).trim()).filter(Boolean);
+    if (!variantes.length) continue;
+    const control = (cols.control >= 0 && cols.control < celdas.length ? celdas[cols.control] : '').toLowerCase();
+    out.push({ variantes, comoDecirlo: celdas[cols.como] || '', control: control === 'bloquea' ? 'bloquea' : 'avisa' });
+  }
+  return out;
+}
+
+// -- texto en el que se busca: sin bloques de codigo ni tramos citados ---
+// Se reemplaza por espacios (no se borra) para no pegar palabras que estaban separadas.
+function textoDesnudo(txt) {
+  return txt
+    .replace(/```[\s\S]*?```/g, m => ' '.repeat(m.length))     // bloques de codigo
+    .replace(/`[^`\n]*`/g, m => ' '.repeat(m.length))          // tramos entre comillas simples invertidas
+    .replace(/^\s{4,}\S.*$/gm, m => ' '.repeat(m.length));     // bloques indentados
+}
+
+// Limites de palabra propios: \b es ASCII y falla con acentos (`plomería`).
+const LETRA = 'A-Za-zÁÉÍÓÚÜÑáéíóúüñ0-9_';
+function apariciones(texto, termino) {
+  const esc = termino.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/\s+/g, '\\s+');
+  const re = new RegExp(`(^|[^${LETRA}])(${esc})(?=[^${LETRA}]|$)`, 'gi');
+  const lineas = texto.split('\n');
+  const hits = [];
+  for (let i = 0; i < lineas.length; i++) { re.lastIndex = 0; if (re.test(lineas[i])) hits.push(i + 1); }
+  return hits;
+}
+
+// -- que se esta por escribir: contenido + rutas -------------------------
+// Codex manda el parche entero en tool_input.command y puede tocar VARIAS rutas de una.
+function loQueSeEscribe(data) {
+  const ti = data.tool_input || {};
+  const tool = data.tool_name || '';
+  if (tool === 'apply_patch' || (!ti.file_path && typeof ti.command === 'string')) {
+    const patch = ti.command || '';
+    const rutas = [...patch.matchAll(/^\*\*\*\s+(?:Add|Update|Delete) File:\s*(.+)$/gm)].map(m => m[1].trim());
+    const agregado = patch.split('\n').filter(l => l.startsWith('+')).map(l => l.slice(1)).join('\n');
+    return { rutas, contenido: agregado };
+  }
+  const contenido = typeof ti.content === 'string' ? ti.content
+                  : typeof ti.new_string === 'string' ? ti.new_string : '';
+  return { rutas: ti.file_path ? [ti.file_path] : [], contenido };
+}
+
+let input = '';
+process.stdin.on('data', c => { input += c; });
+process.stdin.on('end', () => {
+  try {
+    const data = JSON.parse(input || '{}');
+    const { rutas, contenido } = loQueSeEscribe(data);
+    if (!contenido.trim()) return process.exit(0);
+
+    const normal = rutas.map(r => r.replace(/\\/g, '/'));
+    if (!normal.some(r => /\.md$/i.test(r))) return process.exit(0);            // solo .md
+    if (normal.some(r => EXENTOS.some(re => re.test(r)))) return process.exit(0); // subsistema exento
+
+    const desnudo = textoDesnudo(contenido);
+    const bloquear = [], avisar = [];
+    for (const fila of leerRegistro()) {
+      for (const v of fila.variantes) {
+        const hits = apariciones(desnudo, v);
+        if (!hits.length) continue;
+        const item = `\`${v}\` (${hits.length === 1 ? 'línea ' : 'líneas '}${hits.slice(0, 5).join(', ')}) → ${fila.comoDecirlo}`;
+        (fila.control === 'bloquea' ? bloquear : avisar).push(item);
+      }
+    }
+
+    if (bloquear.length) {
+      const motivo = 'Escritura rechazada: terminología vetada sin uso legítimo posible.\n- '
+        + bloquear.join('\n- ')
+        + '\nCorregí el texto y volvé a escribir. El veto está en .claude/semantica/TERMINOLOGIA-FARLOPA.md.';
+      process.stdout.write(JSON.stringify({
+        hookSpecificOutput: { hookEventName: 'PreToolUse', permissionDecision: 'deny', permissionDecisionReason: motivo }
+      }));
+      return process.exit(0);
+    }
+    if (avisar.length) {
+      const texto = 'Términos vetados detectados en lo que acabás de escribir (pueden ser legítimos según el significado — juzgá cada uno):\n- '
+        + avisar.join('\n- ');
+      process.stdout.write(JSON.stringify({
+        hookSpecificOutput: { hookEventName: 'PreToolUse', additionalContext: texto }
+      }));
+    }
+  } catch (e) { /* nunca romper el turno */ }
+  process.exit(0);
+});
+process.stdin.on('error', () => process.exit(0));
+```
+
+`.claude/conducta/detectar-terminologia-vetada/README.md`:
+
+````markdown
+# detectar-terminologia-vetada — control del momento `al escribir`
+
+Infra co-ubicada del subsistema `conducta`. **No es una Herramienta** (no va al registro de Herramientas): la ejecuta el hook repartidor `establecer-conducta`, no el agente.
+
+## Qué hace
+
+Chequea el contenido que se está por escribir contra `../../semantica/TERMINOLOGIA-FARLOPA.md` **antes de que el archivo exista**, y responde según la columna `Control` del término encontrado:
+
+| Control | Respuesta | Cuándo |
+|---------|-----------|--------|
+| `bloquea` | `permissionDecision: "deny"` con el motivo | La palabra está mal **siempre**: `levelear` no tiene uso válido en español |
+| `avisa` | `additionalContext` con los términos y sus líneas | La palabra puede ser legítima según el significado: `capa de configuración` sí, `la segunda capa del proceso` no |
+
+Con `avisa`, la máquina marca y **el agente juzga el significado** — el reparto que fija el subsistema `semantica`. Con `bloquea` no hay nada que juzgar, por eso frena.
+
+## Qué no mira
+
+- **Lo que está citado.** Las apariciones dentro de comillas simples invertidas, de bloques de código y de bloques indentados se ignoran. Hablar de un término vetado es legítimo y frecuente: esta misma tabla lo hace, la Base de preferencias lo hace al dar ejemplos, y los planes que documentan un barrido también. Sin esa distinción el control volvería inescribibles a los archivos que documentan el veto.
+- **El subsistema `semantica`.** Exento: es el registro de los vetados.
+- **Lo que no es `.md`.** El filtro por extensión y la exclusión del directorio de borradores `tmp/` los aplica el repartidor, en la condición del momento.
+
+## Contrato
+
+- **Entrada:** el JSON del hook por `stdin`. Lee `tool_name` y `tool_input` en las dos formas — `Write` (`content` + `file_path`), `Edit` (`new_string` + `file_path`) y `apply_patch` de Codex (`command`, el parche entero, del que saca las rutas y las líneas agregadas).
+- **Salida:** JSON de hook por `stdout`, o nada si no aplica.
+- **Nunca rompe el turno:** ante cualquier error sale con código 0 sin emitir nada.
+
+## Probar a mano
+
+Reemplazá `<termino>` por cualquiera marcado `bloquea` en el registro:
+
+```bash
+node -e 'process.stdout.write(JSON.stringify({tool_name:"Write",tool_input:{file_path:"README.md",content:"Hay mucho <termino> en el repo."}}))' \
+  | node .claude/conducta/detectar-terminologia-vetada/detectar-terminologia-vetada.js
+```
+
+Devuelve el `deny`. Con el mismo término entre comillas simples invertidas no devuelve nada.
 ````
 
 Script de la Pantalla de bienvenida `.claude/conducta/mostrar-pantalla-bienvenida/mostrar-pantalla-bienvenida.js` — lo corre la Regla Base `correr` del momento `al arrancar la sesión` (y la skill `amp:info` a demanda). Contenido exacto:
@@ -2528,7 +2795,7 @@ Cableado del repartidor — **registro doble**: el mismo script se registra en t
 }
 ```
 
-**Codex CLI** — merge en `.codex/hooks.json` del repo (`SessionStart` + `UserPromptSubmit`; el momento `al escribir` es Claude-first, no se cablea en Codex):
+**Codex CLI** — merge en `.codex/hooks.json` del repo (los mismos tres eventos que en Claude Code):
 
 ```json
 {
@@ -2552,13 +2819,25 @@ Cableado del repartidor — **registro doble**: el mismo script se registra en t
           }
         ]
       }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node .claude/conducta/establecer-conducta/establecer-conducta.js"
+          }
+        ]
+      }
     ]
   }
 }
 ```
 
+> El matcher `Write|Edit` alcanza igual en Codex: toda edición de archivos pasa por `apply_patch`, que dispara `PreToolUse` y matchea como `apply_patch`, `Edit` o `Write`. La salvedad es el `deny`, que **hoy no frena** la escritura en Codex (bug abierto del CLI): ahí una regla `bloquear` degrada a aviso. Conocimiento `hooks-codex-cli`.
 > En Codex el momento `al arrancar la sesión` **corre igual el repartidor** (mismo `SessionStart`), pero Codex **no soporta `SessionStart` → `systemMessage`** de la misma forma que Claude Code: la caja de la Pantalla de bienvenida sale solo si el agente pinta `systemMessage`; si no, degrada sin caja (la corrida no falla).
-> Codex carga hooks de proyecto solo si la carpeta `.codex/` del repo está **trusted** (revisar con `/hooks`) y con `features.hooks` habilitado en su config. Avisarle al usuario al instalar.
+> ⚠️ Codex carga hooks de proyecto solo si la carpeta `.codex/` del repo es de **confianza** (revisar con `/hooks`) y con `features.hooks` habilitado en su config. La confianza se registra contra el texto del hook, así que **cada actualización que lo cambie lo vuelve a frenar hasta que se lo apruebe de nuevo**. Avisarle al usuario al instalar y al nivelar.
 
 Lint `.claude/conducta/lint-conducta/lint-conducta.js` (Node, sin dependencias, sin red):
 
@@ -2569,7 +2848,9 @@ Lint `.claude/conducta/lint-conducta/lint-conducta.js` (Node, sin dependencias, 
 // propio subsistema (por eso no comparte el fragmento repoRoot de los otros lints).
 // Uso: node lint-conducta.js [<carpeta conducta>]   (default: .claude/conducta)
 const fs = require('fs'), path = require('path');
-const root = path.resolve(process.argv[2] || '.claude/conducta');
+// La ruta es el primer argumento que NO sea una bandera: con `--quiet` primero, tomarlo por
+// posicion daba una carpeta inexistente y el lint reportaba que faltaban MOMENTOS.md e INDICE.md.
+const root = path.resolve(process.argv.slice(2).find(a => !a.startsWith('--')) || '.claude/conducta');
 const quiet = process.argv.includes('--quiet');
 
 const CLASES = ['inyectar', 'correr', 'bloquear'];      // las tres clases de accion, cerradas

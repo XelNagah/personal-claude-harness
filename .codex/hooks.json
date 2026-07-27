@@ -26,6 +26,18 @@
           }
         ]
       }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node .claude/conducta/establecer-conducta/establecer-conducta.js",
+            "statusMessage": "Estableciendo conducta"
+          }
+        ]
+      }
     ]
   }
 }

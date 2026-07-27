@@ -4,7 +4,9 @@
 // propio subsistema (por eso no comparte el fragmento repoRoot de los otros lints).
 // Uso: node lint-conducta.js [<carpeta conducta>]   (default: .claude/conducta)
 const fs = require('fs'), path = require('path');
-const root = path.resolve(process.argv[2] || '.claude/conducta');
+// La ruta es el primer argumento que NO sea una bandera: con `--quiet` primero, tomarlo por
+// posicion daba una carpeta inexistente y el lint reportaba que faltaban MOMENTOS.md e INDICE.md.
+const root = path.resolve(process.argv.slice(2).find(a => !a.startsWith('--')) || '.claude/conducta');
 const quiet = process.argv.includes('--quiet');
 
 const CLASES = ['inyectar', 'correr', 'bloquear'];      // las tres clases de accion, cerradas

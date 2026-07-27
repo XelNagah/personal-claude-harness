@@ -8,7 +8,7 @@ metadata:
 El subsistema `semántica` mantiene la coherencia semántica del dominio en el tiempo. Vive en `.claude/semantica/` con **dos registros pares**, ninguno cargado en contexto siempre:
 
 - `GLOSARIO.md` — terminología **legítima**: una tabla donde cada fila es un concepto (nombre canónico, definición corta, `Alias`, `Propuestos`, `Detalle`). Los conceptos complejos tienen su propia página `.claude/semantica/<nombre>.md`.
-- `TERMINOLOGIA-FARLOPA.md` — relaciones **vetadas**: `Término | Significado vetado | Cómo decirlo`. **Lo vetado es la relación término→significado, no el término**: el mismo término con otro significado puede ser legítimo (`plomería`=cañerías es válido; `plomería`=infra interna es farlopa). El lint **marca por término**; el agente **juzga el significado** al leer la marca.
+- `TERMINOLOGIA-FARLOPA.md` — relaciones **vetadas**: `Término | Significado vetado | Cómo decirlo | Control`. **Lo vetado es la relación término→significado, no el término**: el mismo término con otro significado puede ser legítimo (`plomería`=cañerías es válido; `plomería`=infra interna es farlopa). El lint **marca por término**; el agente **juzga el significado** al leer la marca. La columna `Control` dice si al escribirlo **frena** la escritura (`bloquea`: sin uso legítimo posible) o solo la **informa** (`avisa`, el default).
 
 **Términos por estado (glosario):** `Alias` (formas válidas, ratificadas), `Propuestos` (sugeridos por el agente, sin usar hasta ratificar). El glosario **NO tiene columna de vetados**: todo veto es una relación término→significado y vive en el registro par de Terminología Farlopa.
 
