@@ -9,7 +9,7 @@
     {
       "name": "amp",
       "source": "./funcionalidades/amp",
-      "description": "Plugin transversal del AMP: inicializar (arma el .claude completo), planificar, info (estado) y actualizar (nivelador). Trae los 6 amp-<sub> por dependencias."
+      "description": "Plugin transversal del Agente Multipropósito: inicializar (arma el .claude completo), planificar, info (estado) y actualizar (nivelador). Trae los 7 amp-<sub> por dependencias."
     },
     {
       "name": "amp-memoria",
