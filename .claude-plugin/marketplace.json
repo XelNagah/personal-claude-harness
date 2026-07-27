@@ -17,6 +17,11 @@
       "description": "Memoria local persistida: memoria/ + índice MEMORIA.md + memorias tipadas. Skill registrar-memoria. Infraestructura base."
     },
     {
+      "name": "amp-subsistemas",
+      "source": "./funcionalidades/amp-subsistemas",
+      "description": "Catálogo de subsistemas y coordinación de la reubicación del Aprendizaje."
+    },
+    {
       "name": "amp-preferencias",
       "source": "./funcionalidades/amp-preferencias",
       "description": "Preferencias de trabajo versionadas (Base + Adaptaciones). Skill registrar-preferencia."

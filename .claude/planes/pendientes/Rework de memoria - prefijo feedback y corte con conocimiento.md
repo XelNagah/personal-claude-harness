@@ -1,6 +1,6 @@
 # Rework de memoria — prefijo feedback y corte con conocimiento
 
-**Estado: Nuevo · Creado 26-07-24 · Analizado con `planificar` el 26/07/2026.** Idea de Javier 26-07-24, en la sesión del plan de distribución marketplace.
+**Estado: En curso · Creado 26-07-24 · Analizado con `planificar` el 26/07/2026.** Ejecución iniciada el 2026-07-27: decisión 0040 ratifica habilidades dueñas por subsistema y `amp-subsistemas:reubicar-aprendizaje` como coordinadora. Idea de Javier 26-07-24, en la sesión del plan de distribución marketplace.
 
 > El título quedó viejo: el prefijo y el corte con conocimiento se resuelven **por disolución** — memoria deja de existir, así que no hay prefijo que arreglar ni corte que escribir. Se conserva el nombre del archivo por la regla de nombre estable.
 

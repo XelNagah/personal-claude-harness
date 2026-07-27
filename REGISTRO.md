@@ -8,6 +8,7 @@ Catálogo de las funcionalidades que este repo instala para armar un agente de *
 |---------------|----------|-----------|---------|
 | **amp** | Plugin transversal. Skills: `inicializar` (arma el `.claude` completo con los 9 subsistemas, instalador consolidado idempotente), `planificar` (interroga un plan contra la sabiduría del repo y lo critica; operacional, no escribe estructura), `info` (pantalla de estado a demanda), `actualizar` (nivelador: pone al día un `.claude` ya instalado contra la plantilla nueva; pisa lo Base respaldándolo, no toca lo aprendido). | las 6 `amp-<sub>` | [`amp/`](funcionalidades/amp/) |
 | **amp-memoria** | Sistema de memoria local: `memoria/` + índice `MEMORIA.md` + memorias tipadas + bloque "Mapa del repo" (`@imports` en CLAUDE.md) + lint (`memoria/lint-memoria/`). Skill de operación `registrar-memoria`. Infraestructura base. | — | [`amp-memoria/`](funcionalidades/amp-memoria/) |
+| **amp-subsistemas** | Catálogo de subsistemas y coordinación de la reubicación del Aprendizaje. Skills: `agregar-subsistema` y `reubicar-aprendizaje`. | — | [`amp-subsistemas/`](funcionalidades/amp-subsistemas/) |
 | **amp-preferencias** | Preferencias versionadas en `preferencias/PREFERENCIAS.md` (Base del harness + Adaptaciones del repo), importadas siempre vía `@`, + lint estructural. Skill de operación `registrar-preferencia`. | — | [`amp-preferencias/`](funcionalidades/amp-preferencias/) |
 | **amp-planes** | Ciclo de planes `pendientes/ejecutados/descartados` + registro `PLANES.md` + `lint-planes` + hook SessionStart. Skill de operación `ciclo-de-plan`. | amp-memoria | [`amp-planes/`](funcionalidades/amp-planes/) |
 | **amp-conocimiento** | Base de conocimiento en carpeta única `conocimiento/` + lint de integridad. Skills de operación `registrar-conocimiento` y `buscar-conocimiento`. | amp-memoria | [`amp-conocimiento/`](funcionalidades/amp-conocimiento/) |
@@ -24,6 +25,7 @@ El prefijo de skill **es** el nombre del plugin (`amp-planes:ciclo-de-plan` ≠ 
 |---------------|--------|-------|
 | amp | `amp@xelnagah-harness` | `inicializar`, `planificar`, `actualizar` |
 | amp-memoria | `amp-memoria@xelnagah-harness` | `registrar-memoria` |
+| amp-subsistemas | `amp-subsistemas@xelnagah-harness` | `agregar-subsistema`, `reubicar-aprendizaje` |
 | amp-preferencias | `amp-preferencias@xelnagah-harness` | `registrar-preferencia` |
 | amp-planes | `amp-planes@xelnagah-harness` | `ciclo-de-plan` |
 | amp-conocimiento | `amp-conocimiento@xelnagah-harness` | `registrar-conocimiento`, `buscar-conocimiento` |
