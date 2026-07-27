@@ -46,6 +46,56 @@ const SUBSISTEMAS = ['memoria', 'planes', 'conocimiento', 'semantica', 'decision
 // cada repo y el nivelador nunca toca.
 const HERRAMIENTAS_BASE = ['actualizar-plugins'];
 
+// -- contenido Base: comparar el archivo instalado contra la PLANTILLA -----
+// Chequear que la pieza EXISTA no alcanza: un consumidor que ya tiene el script en su version vieja
+// se lo queda para siempre y nunca recibe una mejora. La fuente del contenido es la PLANTILLA de
+// `amp:inicializar`, que viaja en el mismo plugin que este script — por eso se resuelve desde
+// __dirname y no desde el repo: la plantilla es del Producto, el repo es el destino.
+const PLANTILLA = path.resolve(__dirname, '..', 'inicializar', 'PLANTILLA.md');
+
+// Bloques ```js de la plantilla, con el contenido de cada script Base embebido.
+let _bloques = null;
+function bloquesJs() {
+  if (_bloques) return _bloques;
+  const t = leer(PLANTILLA);
+  _bloques = [...t.matchAll(/```js\n([\s\S]*?)\n```/g)].map(m => m[1]);
+  return _bloques;
+}
+// El bloque se ubica por un ancla: una linea del propio script que no aparece en ningun otro.
+function bloqueCon(ancla) {
+  return bloquesJs().find(b => b.includes(ancla)) || null;
+}
+const normalizar = s => s.replace(/\r\n/g, '\n').trimEnd();
+
+// Scripts Base cuyo contenido tiene que coincidir con la plantilla. El ancla es un tramo de la
+// primera linea de comentario del script, que lo identifica sin ambiguedad dentro de la plantilla.
+const CONTENIDO_BASE = [
+  ['conducta/establecer-conducta/establecer-conducta.js', '// Hook repartidor del subsistema conducta.'],
+  ['conducta/detectar-terminologia-vetada/detectar-terminologia-vetada.js', '// Control del momento `al escribir` del subsistema conducta'],
+  ['conducta/mostrar-pantalla-bienvenida/mostrar-pantalla-bienvenida.js', '// mostrar-pantalla-bienvenida.js —'],
+  ['herramientas/actualizar-plugins/actualizar-plugins.js', '// actualizar-plugins.js —'],
+  ['memoria/lint-memoria/lint-memoria.js', '// Lint de la memoria local:'],
+  ['planes/lint-planes/lint-planes.js', '// Lint del ciclo de planes:'],
+  ['conocimiento/lint-conocimiento/lint-conocimiento.js', '// Lint de la base de conocimiento:'],
+  ['semantica/lint-semantica/lint-semantica.js', '// Lint de semantica:'],
+  ['decisiones/lint-decisiones/lint-decisiones.js', '// Lint del registro de decisiones:'],
+  ['herramientas/lint-herramientas/lint-herramientas.js', '// Lint del registro de Herramientas:'],
+  ['conducta/lint-conducta/lint-conducta.js', '// Lint del subsistema conducta:'],
+];
+
+function chequearContenido(add) {
+  for (const [rel, ancla] of CONTENIDO_BASE) {
+    const destino = path.join(claude, rel);
+    if (!existe(destino)) continue;                 // la ausencia ya la reporta el chequeo de piezas
+    const bloque = bloqueCon(ancla);
+    // Sin fuente no se puede comparar — pero callarse deja el repo informado "al dia" sin haberlo
+    // mirado, que es justo el modo de falla que este chequeo viene a cerrar. Se reporta.
+    if (!bloque) { add('divergente', '?', rel, 'no se pudo comparar: el ancla no ubica el bloque en la PLANTILLA (revisar a mano)'); continue; }
+    if (normalizar(leer(destino)) !== normalizar(bloque))
+      add('base', '~', rel, 'contenido viejo: la version instalada difiere de la del Agente Multiproposito');
+  }
+}
+
 // Campos minimos de un MANIFIESTO (mismo criterio que lint-harness): titulo, Disparador, Skills,
 // declaracion de carga del indice, comando de lint del propio subsistema.
 function manifiestoCompleto(txt, sub) {
@@ -170,6 +220,9 @@ function clasificar() {
     const faltan = [!cableadoCodex.ses && 'SessionStart', !cableadoCodex.ups && 'UserPromptSubmit', !cableadoCodex.pre && 'PreToolUse Write|Edit'].filter(Boolean).join(' + ');
     add('base', '~', '.codex/hooks.json', `hook establecer-conducta sin cablear en Codex (${faltan}): agregar por merge`);
   }
+
+  // [5] contenido de los scripts Base ya instalados: existir no es estar al dia.
+  chequearContenido(add);
 }
 
 // cuenta filas de datos de la primera tabla markdown (descarta header y separador)

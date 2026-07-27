@@ -23,6 +23,14 @@ Lo que agrava el caso frente a las dos veces anteriores: acá **el mitigante de 
 
 **Arreglado a mano** (`amp` 0.6.19): las cuatro piezas se sumaron al detector, y de paso se cerró un hueco que no era de esta lista — el nivelador **nunca miraba `.codex/hooks.json`**, así que el cableado de Codex no se nivelaba en ningún consumidor. Verificado con un fixture en el estado anterior: pasó de 0 hallazgos a 4.
 
+## Cuarta vez, 27/07/2026 — y el defecto de fondo era otro
+
+Con `amp` 0.6.19 el Coordinador **volvió a decir «nada para nivelar»**, y el agente de allá dio con la causa real: *«el script solo chequea que las piezas **existan**, no que su contenido esté al día»*. Es un defecto distinto y más grande que el de esta lista: el detector usaba `existe()` para **todos** los scripts Base, así que un consumidor que ya tenía `establecer-conducta.js` en su versión vieja se lo quedaba para siempre. **Ningún consumidor recibía nunca una mejora a un script ya instalado** — solo piezas nuevas. Por eso el Coordinador tenía las piezas (se las había instalado la corrida anterior) y seguía sin lo de esta sesión.
+
+**Arreglado** (`amp` 0.6.20): el detector compara el **contenido** de los once scripts Base contra el bloque de la PLANTILLA, que es la fuente, ubicándolo por un ancla. Verificado con fixture: un repartidor con una línea cambiada y un lint con una línea de menos salen como `contenido viejo`.
+
+De paso apareció una lección para esta lista: **seis de las once anclas no ubicaban su bloque, y el chequeo se salteaba en silencio** — el mismo modo de falla, un nivel más adentro. Ahora, cuando no encuentra la fuente, lo reporta como divergente en vez de callarse. **La regla que sale de las cuatro veces: un chequeo que no puede mirar tiene que decirlo, nunca devolver cero.**
+
 ## Mientras tanto
 
 El cierre del 26/07/2026 mitiga el síntoma: `amp:inicializar` **no puede reportar sin correr el detector** y exigir cero pendientes. Eso ata las dos piezas por comportamiento, pero la duplicación del dato sigue —y la tercera vez probó que el mitigante no cubre al nivelador, donde el cero del detector **es** la conclusión.

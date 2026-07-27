@@ -68,6 +68,8 @@ El repo quedó con nombres de plugin que el marketplace ya no ofrece. **No se ar
    node <ruta-de-esta-skill>/amp-actualizar.js --vista-previa
    ```
    Muestra el plan en cuatro grupos: **Base** (instalar/pisar), **Renombres legacy**, **Divergente** (requiere ok) y **Ya estaba**. Presentárselo al usuario.
+
+   ⚠️ **«Nada para nivelar» no se reporta sin mirar.** El detector compara el **contenido** de los scripts Base contra la PLANTILLA, no solo su presencia — pero la lista de piezas que conoce está escrita a mano en su código, así que una pieza nueva que nadie haya agregado ahí **no se busca y no aparece**. Si el repo tiene el Agente Multipropósito de una versión anterior y el detector devuelve cero, desconfiar: contrastar a mano las piezas de `conducta/` y los tres eventos de hook en los dos archivos de cableado antes de declararlo al día.
 2. **Si el usuario pidió solo la vista previa → terminar acá.** Nada se escribió.
 3. **Confirmar el plan.** Los **Divergentes** se preguntan uno por uno (son bloqueantes): no se toca nada de ese grupo sin ok explícito. Ejemplo típico: `conducta/INDICE.md` con reglas pero sin el corte Base/Propósito — repartirlas exige decidir cuáles son Base y cuáles del Propósito; eso lo decide el usuario.
 4. **Respaldo.** Antes de escribir una sola pieza Base:
@@ -83,6 +85,7 @@ El repo quedó con nombres de plugin que el marketplace ya no ofrece. **No se ar
 5. **Aplicar Base** (el grupo Base del plan). La fuente canónica es la PLANTILLA única de `amp:inicializar` (una sección por subsistema). Para cada ítem:
    - **Subsistema ausente** (p. ej. `conducta/`) → correr `amp:inicializar` (idempotente: instala los subsistemas ausentes desde su PLANTILLA consolidada y preserva lo que ya está).
    - **`MANIFIESTO`/lint/estructura vieja** → tomar el contenido canónico de la sección del subsistema en la PLANTILLA de `amp:inicializar` y **pisar** el archivo Base. (A diferencia de la reconciliación normal de `amp:inicializar`, que preserva lo existente, acá el archivo Base **se pisa** — es del harness. El contenido aprendido del mismo subsistema no se toca.)
+   - **`contenido viejo`** (un script Base instalado que difiere del de la PLANTILLA) → **pisarlo con el bloque de la PLANTILLA**, entero y tal cual. Es el caso más frecuente al poner al día un repo que ya tenía el Agente Multipropósito: la pieza está, pero en la versión de cuando se instaló. No hay nada que preservar — los scripts Base no se ajustan por repo; lo que el repo aprendió vive en sus registros, no en el código del harness.
    - **Hook sin cablear** → merge del bloque de cableado de `conducta` en `.claude/settings.json` (y `.codex/hooks.json`), sin pisar hooks existentes.
    - **`conducta/INDICE.md` sin las secciones** (y sin reglas propias que repartir) → agregar `## Reglas Base` (con las reglas Base actuales) y `## Reglas del Propósito` (vacía).
 6. **Aplicar Renombres** (el caso con más juicio — preservar lo aprendido):
