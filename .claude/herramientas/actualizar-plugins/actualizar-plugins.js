@@ -61,9 +61,18 @@ const MARKETPLACE_AMP = 'xelnagah-harness';
 const FUENTE_AMP = 'https://github.com/XelNagah/personal-claude-harness.git';
 const CODEX_INSTALADO = path.join(process.env.LOCALAPPDATA || '', 'Programs', 'OpenAI', 'Codex', 'bin', 'codex.exe');
 const EJECUTABLE_CODEX = process.env.CODEX_CLI_PATH || (fs.existsSync(CODEX_INSTALADO) ? CODEX_INSTALADO : 'codex');
+// El sandbox de Codex reemplaza el CODEX_HOME del proceso hijo por un perfil vacio
+// (CodexSandboxOffline). Fijar la casa real evita diagnosticar ese perfil aislado
+// como si fuera la configuracion de la persona que invoco la Herramienta.
+const CODEX_HOME_REAL = process.env.CODEX_HOME || path.join(os.homedir(), '.codex');
 
 function correrCodex(args) {
-  const r = spawnSync(EJECUTABLE_CODEX, args, { cwd: REPO, encoding: 'utf8', timeout: 180000 });
+  const r = spawnSync(EJECUTABLE_CODEX, args, {
+    cwd: REPO,
+    encoding: 'utf8',
+    timeout: 180000,
+    env: { ...process.env, CODEX_HOME: CODEX_HOME_REAL },
+  });
   return { ok: r && r.status === 0, salida: ((r && (r.stdout || r.stderr)) || '').trim() };
 }
 
@@ -95,6 +104,43 @@ function bundleCodex(raiz) {
   return orden;
 }
 
+// `codex plugin list` es la fuente de verdad de lo que esta instalado y habilitado.
+// `plugin add` es idempotente pero no informa si realmente cambio algo, por lo que no puede
+// usarse como diagnostico: hacerlo para todo el bundle provocaba reinicios falsos.
+function pluginsInstaladosCodex() {
+  const r = correrCodex(['plugin', 'list']);
+  if (!r.ok) return null;
+  const filas = new Map();
+  for (const linea of r.salida.split(/\r?\n/)) {
+    const m = linea.match(/^\s*(\S+@xelnagah-harness)\s+(installed, enabled|not installed)\s*(\S*)/);
+    if (m) filas.set(m[1], { instalado: m[2] === 'installed, enabled', version: m[3] || null });
+  }
+  return filas;
+}
+
+function pendientesCodex(raiz, orden) {
+  const instalados = pluginsInstaladosCodex();
+  if (!instalados) return { error: 'no se pudo leer `codex plugin list`', pendientes: [] };
+  const pendientes = [];
+  for (const nombre of orden) {
+    const manifiesto = leerJson(path.join(raiz, 'funcionalidades', nombre, '.claude-plugin', 'plugin.json'));
+    if (!manifiesto) return { error: `plugin.json ilegible: ${nombre}`, pendientes: [] };
+    const actual = instalados.get(`${nombre}@${MARKETPLACE_AMP}`);
+    // Los plugins del harness llevan version. Si algun dia uno se versiona por commit,
+    // su presencia alcanza: no inventar una desigualdad que fuerce reinstalaciones eternas.
+    if (!actual || !actual.instalado || (manifiesto.version && actual.version !== manifiesto.version)) {
+      pendientes.push({ nombre, esperada: manifiesto.version || 'por commit', actual: actual && actual.version });
+    }
+  }
+  return { pendientes };
+}
+
+function imprimirPendientesCodex(pendientes) {
+  for (const p of pendientes) {
+    console.log(`  ${p.nombre}@${MARKETPLACE_AMP}: ${p.actual || 'no instalado'} -> ${p.esperada}`);
+  }
+}
+
 function actualizarEnCodex() {
   console.log(`== ACTUALIZAR PLUGINS (Codex): ${REPO} ==`);
   let raiz = raizMarketplaceCodex();
@@ -111,9 +157,19 @@ function actualizarEnCodex() {
   }
   if (!raiz) { console.log('\nNo se pudo ubicar la raiz del marketplace despues de agregarlo.'); return; }
 
+  let orden;
+  try { orden = bundleCodex(raiz); } catch (e) { console.log(`\nNo se pudo resolver el bundle: ${e.message}`); return; }
+
   if (!APLICAR) {
-    console.log(`\nMARKETPLACE ${MARKETPLACE_AMP}: PRESENTE (diagnostico, sin modificar).`);
-    console.log(`Vista previa: usar --aplicar actualiza el marketplace, instala o actualiza el bundle completo de Codex y despues pide reiniciar.`);
+    const diagnostico = pendientesCodex(raiz, orden);
+    if (diagnostico.error) { console.log(`\nSIN VERIFICAR: ${diagnostico.error}`); return; }
+    if (!diagnostico.pendientes.length) {
+      console.log(`\nTODO ACTUALIZADO: marketplace y bundle de Codex coinciden.`);
+    } else {
+      console.log(`\nACTUALIZAR (${diagnostico.pendientes.length}):`);
+      imprimirPendientesCodex(diagnostico.pendientes);
+      console.log(`\nPara aplicar: ${COMANDO_APLICAR.trim()}`);
+    }
     return;
   }
 
@@ -122,15 +178,26 @@ function actualizarEnCodex() {
   if (!refresco.ok) return;
 
   raiz = raizMarketplaceCodex() || raiz;
-  let orden;
   try { orden = bundleCodex(raiz); } catch (e) { console.log(`\nNo se pudo resolver el bundle: ${e.message}`); return; }
-  console.log(`\nBUNDLE CODEX: ${orden.join(' -> ')}`);
-  for (const nombre of orden) {
+  const diagnostico = pendientesCodex(raiz, orden);
+  if (diagnostico.error) { console.log(`\nSIN VERIFICAR: ${diagnostico.error}`); return; }
+  if (!diagnostico.pendientes.length) {
+    console.log('\nTODO ACTUALIZADO: no se modifico ningun plugin; no hace falta reiniciar.');
+    return;
+  }
+  console.log(`\nBUNDLE CODEX A ACTUALIZAR: ${diagnostico.pendientes.map(p => p.nombre).join(' -> ')}`);
+  for (const { nombre } of diagnostico.pendientes) {
     const r = correrCodex(['plugin', 'add', `${nombre}@${MARKETPLACE_AMP}`]);
     console.log(`\n> ${nombre}@${MARKETPLACE_AMP}\n${r.salida}`);
     if (!r.ok) return;
   }
-  console.log('\nREINICIAR LA SESION para cargar las skills actualizadas.');
+  const despues = pendientesCodex(raiz, orden);
+  if (despues.error || despues.pendientes.length) {
+    console.log(`\nACTUALIZACION INCOMPLETA: ${despues.error || 'todavia quedan plugins por actualizar.'}`);
+    if (despues.pendientes.length) imprimirPendientesCodex(despues.pendientes);
+    return;
+  }
+  console.log('\nPLUGINS ACTUALIZADOS. REINICIAR LA SESION para cargar las skills nuevas.');
 }
 
 if (AGENTE === 'codex') {
