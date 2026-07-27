@@ -120,7 +120,8 @@ function clasificar() {
   const cond = path.join(claude, 'conducta');
   if (esDir(cond)) {
     for (const pieza of [['MOMENTOS.md', 'archivo'], ['establecer-conducta', 'hook'], ['lint-conducta', 'lint'],
-                         ['mostrar-pantalla-bienvenida', 'Herramienta de la Pantalla de bienvenida']]) {
+                         ['mostrar-pantalla-bienvenida', 'Herramienta de la Pantalla de bienvenida'],
+                         ['detectar-terminologia-vetada', 'control de terminologia del momento «al escribir»']]) {
       if (!existe(path.join(cond, pieza[0]))) add('base', '~', `conducta/${pieza[0]}`, `${pieza[1]} ausente: instalar`);
     }
     // El momento "al arrancar la sesion" es lo que dispara la Pantalla; sin el, la regla no se entrega.
@@ -139,7 +140,13 @@ function clasificar() {
         add('base', '~', 'conducta/INDICE.md', 'sin secciones Reglas Base / Reglas del Proposito: poner al dia');
       if (!/mostrar-pantalla-bienvenida/.test(t))
         add('base', '~', 'conducta/INDICE.md', 'sin la Regla Base que muestra la Pantalla de bienvenida al arrancar: agregar la fila');
+      if (!/detectar-terminologia-vetada/.test(t))
+        add('base', '~', 'conducta/INDICE.md', 'sin la Regla Base que frena la terminologia vetada al escribir: agregar la fila');
     }
+    // La condicion del momento «al escribir» se amplio a todo .md del repo (antes solo `.claude/`):
+    // un MOMENTOS.md con la condicion vieja deja sin cubrir lo que el repo publica.
+    if (existe(momentos) && /`file_path` es `\.md` bajo `\.claude\//.test(leer(momentos)))
+      add('base', '~', 'conducta/MOMENTOS.md', 'el momento «al escribir» todavia se limita a `.claude/`: ampliar a todo .md del repo salvo tmp/');
   }
 
   // [3b] identidad del repo: Titulo + Proposito. Sin este archivo, la Pantalla de bienvenida y
@@ -154,6 +161,14 @@ function clasificar() {
   if (!cableado.ups || !cableado.pre || !cableado.ses) {
     const faltan = [!cableado.ses && 'SessionStart', !cableado.ups && 'UserPromptSubmit', !cableado.pre && 'PreToolUse Write|Edit'].filter(Boolean).join(' + ');
     add('base', '~', 'settings.json', `hook establecer-conducta sin cablear (${faltan}): agregar por merge`);
+  }
+  // Registro doble: el mismo repartidor se cablea en Codex. Los tres eventos valen alla tambien
+  // (toda edicion pasa por apply_patch, que matchea como Edit/Write).
+  const hooksCodex = path.join(repo, '.codex', 'hooks.json');
+  const cableadoCodex = revisarHook(hooksCodex);
+  if (!cableadoCodex.ups || !cableadoCodex.pre || !cableadoCodex.ses) {
+    const faltan = [!cableadoCodex.ses && 'SessionStart', !cableadoCodex.ups && 'UserPromptSubmit', !cableadoCodex.pre && 'PreToolUse Write|Edit'].filter(Boolean).join(' + ');
+    add('base', '~', '.codex/hooks.json', `hook establecer-conducta sin cablear en Codex (${faltan}): agregar por merge`);
   }
 }
 
