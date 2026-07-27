@@ -87,12 +87,16 @@ for (const r of rows) {
   if (estados.size && estados.has(r.estado) && !enDisco.has(rel) && !colgadas.includes(rel)) colgadas.push(rel);
 }
 
+// Una sección de implementación puede venir de un plan legacy con título abreviado.
+// Solo se reconocen encabezados explícitos; texto que menciona commits no alcanza.
+const tieneNotasDeImplementacion = txt => /^#{1,6}\s+(?:Notas?\s+de\s+)?implementaci[oó]n\b/im.test(txt);
+
 // contenido: pendientes con marcador de resolucion; ejecutados sin notas de implementacion
 const resueltosSinMover = [], ejecSinNotas = [];
 for (const [rel, carpeta] of enDisco) {
   const txt = fs.readFileSync(path.join(root, rel), 'utf8');
-  if (carpeta === 'pendientes' && (/\bRESUELTO\b/.test(txt) || /##\s*Notas de implementación/i.test(txt))) resueltosSinMover.push(rel);
-  if (carpeta === 'ejecutados' && !/## Notas de implementación/i.test(txt)) ejecSinNotas.push(rel);
+  if (carpeta === 'pendientes' && (/\bRESUELTO\b/.test(txt) || tieneNotasDeImplementacion(txt))) resueltosSinMover.push(rel);
+  if (carpeta === 'ejecutados' && !tieneNotasDeImplementacion(txt)) ejecSinNotas.push(rel);
 }
 
 // activos envejecidos (estado vigilado, p. ej. "En curso", con Creado viejo)
@@ -116,7 +120,7 @@ const secciones = [
   ['PENDIENTES CON MARCADOR DE RESUELTO (¿mover a ejecutados?)', resueltosSinMover],
   ['CIERRES A MEDIAS', cierreAMedias.map(([r, w]) => `${r}  [${w}]`)],
   ['DESCARTADOS SIN MOTIVO', sinMotivo],
-  ['EJECUTADOS SIN "## Notas de implementación"', ejecSinNotas],
+  ['EJECUTADOS SIN SECCIÓN DE IMPLEMENTACIÓN', ejecSinNotas],
   [`ACTIVOS ENVEJECIDOS (> ${MAX_DIAS} dias en curso: ¿sigue/diferido/descartado?)`, viejos.map(([r, d]) => `${r}  (${d} dias)`)],
 ];
 const total = secciones.reduce((n, [, items]) => n + items.length, 0);

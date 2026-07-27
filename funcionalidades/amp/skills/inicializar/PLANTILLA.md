@@ -254,12 +254,14 @@ Persistir y gestionar planes bajo `.claude/planes/` con tres subcarpetas: `pendi
 
 1. **Al crear un plan:** copiar a `.claude/planes/pendientes/<slug-estable>.md` (sin fecha en el nombre) y agregar su fila en `PLANES.md`: Estado (de `ESTADOS.md`), Creado, Origen si se desprende de otro plan.
 2. **Cada actualización al plan** se replica en la versión persistida — es la fuente de verdad, no el archivo del plans-folder del harness. Los cambios de estado se reflejan en `PLANES.md`, y el archivo se mueve a la carpeta que el estado indica.
-3. **Al detectar evidencia de implementación** (commit, mensaje del user, código verificado, otro agente): pasar a `Ejecutado` y mover a `ejecutados/` **sin renombrar**, completar `Cerrado` en el registro y agregar sección **`## Notas de implementación`** (cómo se implementó vs planificado, hash de commit, cosas notables).
+3. **Al detectar evidencia de implementación** (commit, mensaje del user, código verificado, otro agente): pasar a `Ejecutado` y mover a `ejecutados/` **sin renombrar**, completar `Cerrado` en el registro y revisar primero los encabezados. Si ya hay una sección de implementación (`## Implementación` o `## Notas de implementación`, con cualquier nivel), conservar su contenido y normalizar solo el título a **`## Notas de implementación`** si corresponde; solo si no existe, agregarla (cómo se implementó vs planificado, hash de commit, cosas notables). Nunca crear una sección vacía que duplique notas legacy.
 4. **Descartar es un cierre válido:** `Descartado`, mover a `descartados/`, completar `Cerrado` y una línea de motivo en Notas (p. ej. "superseded por <plan>").
 5. **Reparar referencias entrantes** si las hubiera (el nombre estable minimiza esto; preferir enlazar planes vía `PLANES.md`).
 6. **Al cerrar** una tarea que tocó planes, correr el lint: `node .claude/planes/lint-planes/lint-planes.js`.
 
 Importante: borrar el archivo de `pendientes/` al moverlo — no duplicar. Un plan puede persistirse antes de arrancar la ejecución (p. ej. para cortar una sesión larga de diseño): Estado `Nuevo` o `Diferido` en el registro y bloque al tope con los pendientes para retomar.
+
+**Partir un plan a medias:** cuando un plan queda `En curso` con el núcleo hecho pero un cacho pendiente, **partirlo** en vez de arrastrarlo. Cerrar como `Ejecutado` el alcance ya logrado (con sus `## Notas de implementación`) y **desprender el resto como plan nuevo** — `Nuevo` si se retoma pronto, `Diferido` si la espera es a propósito (p. ej. dejar correr una medición unas sesiones) — con `Origen` apuntando al cerrado y la condición de reanudación anotada si es Diferido. Mantiene el registro honesto (`Ejecutado` = ejecutado de verdad, `En curso` = de verdad ejecutándose) y evita planes zombis que dicen "en curso" mientras en realidad esperan. Aplica igual cuando un plan cubre dos mitades separables aunque ninguna esté a medias: cerrar la resuelta, desprender la otra.
 
 Relacionado: [[archivo-de-estado]] (estado vivo de una exploración dentro del plan).
 ```
@@ -764,12 +766,16 @@ for (const r of rows) {
   if (estados.size && estados.has(r.estado) && !enDisco.has(rel) && !colgadas.includes(rel)) colgadas.push(rel);
 }
 
+// Una sección de implementación puede venir de un plan legacy con título abreviado.
+// Solo se reconocen encabezados explícitos; texto que menciona commits no alcanza.
+const tieneNotasDeImplementacion = txt => /^#{1,6}\s+(?:Notas?\s+de\s+)?implementaci[oó]n\b/im.test(txt);
+
 // contenido: pendientes con marcador de resolucion; ejecutados sin notas de implementacion
 const resueltosSinMover = [], ejecSinNotas = [];
 for (const [rel, carpeta] of enDisco) {
   const txt = fs.readFileSync(path.join(root, rel), 'utf8');
-  if (carpeta === 'pendientes' && (/\bRESUELTO\b/.test(txt) || /##\s*Notas de implementación/i.test(txt))) resueltosSinMover.push(rel);
-  if (carpeta === 'ejecutados' && !/## Notas de implementación/i.test(txt)) ejecSinNotas.push(rel);
+  if (carpeta === 'pendientes' && (/\bRESUELTO\b/.test(txt) || tieneNotasDeImplementacion(txt))) resueltosSinMover.push(rel);
+  if (carpeta === 'ejecutados' && !tieneNotasDeImplementacion(txt)) ejecSinNotas.push(rel);
 }
 
 // activos envejecidos (estado vigilado, p. ej. "En curso", con Creado viejo)
@@ -793,7 +799,7 @@ const secciones = [
   ['PENDIENTES CON MARCADOR DE RESUELTO (¿mover a ejecutados?)', resueltosSinMover],
   ['CIERRES A MEDIAS', cierreAMedias.map(([r, w]) => `${r}  [${w}]`)],
   ['DESCARTADOS SIN MOTIVO', sinMotivo],
-  ['EJECUTADOS SIN "## Notas de implementación"', ejecSinNotas],
+  ['EJECUTADOS SIN SECCIÓN DE IMPLEMENTACIÓN', ejecSinNotas],
   [`ACTIVOS ENVEJECIDOS (> ${MAX_DIAS} dias en curso: ¿sigue/diferido/descartado?)`, viejos.map(([r, d]) => `${r}  (${d} dias)`)],
 ];
 const total = secciones.reduce((n, [, items]) => n + items.length, 0);

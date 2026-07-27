@@ -20,7 +20,7 @@ Opera el ciclo de planes (`.claude/planes/`) sin dejar el registro y el disco de
 1. **Confirmar la transición** con `ESTADOS.md`: estado nuevo válido y su carpeta. Si el estado es terminal, el plan se cierra.
 2. **Mover el archivo** a la carpeta del estado nuevo **sin renombrar** (mover = borrar de la carpeta vieja; nunca duplicar).
 3. **Actualizar la fila** en `PLANES.md`: estado, link (la ruta cambió de carpeta), `Cerrado` si es terminal, Notas.
-   - **Ejecutado**: completar Cerrado + agregar al documento la sección `## Notas de implementación` (cómo se implementó vs. lo planificado, hash de commit, cosas notables).
+   - **Ejecutado**: completar Cerrado + revisar antes los encabezados del documento. Si ya hay una sección de implementación (`## Implementación` o `## Notas de implementación`, con cualquier nivel de encabezado), conservar su contenido y normalizar solo el título a `## Notas de implementación` si corresponde. Solo si no existe, agregar esa sección (cómo se implementó vs. lo planificado, hash de commit, cosas notables); nunca crear una sección vacía que duplique notas legacy.
    - **Descartado**: completar Cerrado + motivo **obligatorio** en Notas (p. ej. "superseded por <plan>").
 4. **Actualizar el encabezado** del documento (`**Estado: ...**`) para que no contradiga al registro.
 5. **Reparar referencias entrantes** si las hubiera (el nombre estable minimiza esto; preferir enlazar planes vía `PLANES.md`).
