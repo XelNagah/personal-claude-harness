@@ -280,7 +280,7 @@ function respaldar() {
     return;
   }
   const destino = carpetaRespaldo();
-  const EXCL = new Set(['.respaldo-amp', 'node_modules', '.git']);
+  const EXCL = new Set(['.respaldo-amp', 'node_modules', '.git', 'tmp']);
   fs.mkdirSync(destino, { recursive: true });
   let copiados = 0;
   for (const entrada of fs.readdirSync(claude)) {

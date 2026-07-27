@@ -37,6 +37,7 @@ const INFRA = new Set([
   'settings.json', 'settings.local.json', // config Claude Code
   'skills', 'commands', 'agents', 'hooks', // carpetas estándar Claude Code
   'identidad.md', // Identidad del Agente (harness)
+  'tmp', // material de trabajo descartable, gitignoreado por el harness
 ]);
 
 function existe(p) { try { return fs.existsSync(p); } catch { return false; } }

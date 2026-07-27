@@ -1,6 +1,6 @@
 # Excluir tmp del barrido de los lints de subsistema
 
-**Estado: Nuevo · Creado 26-07-26.** Origen: reporte del Agente-Coordinador del 26/07/2026, con evidencia de su propio repo (corriendo `amp` 0.6.16, 3 de 5 apariciones del vetado `estacionar` que reportó `lint-semantica` salían de un handoff en `.claude/tmp/`). El arreglo es de este repo: el defecto está en la plantilla de `amp:inicializar`, la corrección viaja a todos los consumidores por el plugin y la versión la sube el harness.
+**Estado: Ejecutado · Creado 26-07-26 · Cerrado 26-07-27.** Origen: reporte del Agente-Coordinador del 26/07/2026, con evidencia de su propio repo (corriendo `amp` 0.6.16, 3 de 5 apariciones del vetado `estacionar` que reportó `lint-semantica` salían de un handoff en `.claude/tmp/`). El arreglo es de este repo: el defecto está en la plantilla de `amp:inicializar`, la corrección viaja a todos los consumidores por el plugin y la versión la sube el harness.
 
 ## El problema
 
@@ -77,3 +77,8 @@ Detectadas al analizar; se resuelven con este plan o se dejan asentadas al cerra
 2. `node .claude/memoria/lint-memoria/lint-memoria.js` y `node .claude/conocimiento/lint-conocimiento/lint-conocimiento.js` — salida sin cambios.
 3. `node .claude/herramientas/lint-harness/lint-harness.js` — sin divergencias nuevas.
 4. `claude plugin validate .` — limpio.
+
+## Notas de implementación
+
+- **26-07-27** — `tmp` quedó excluido en los lints vivos de memoria, conocimiento y semántica, y en sus tres copias distribuidas. El inventario lo reconoce como infraestructura y el nivelador no lo incluye en respaldos. `amp` sube a `0.6.22`.
+- **Verificación:** `lint-semantica` no informa rutas bajo `.claude/tmp/`; memoria, conocimiento e inventario dan salida limpia; los tres lints embebidos coinciden byte a byte con sus fuentes. El control de cierre queda sin divergencias, salvo los plugins locales instalados en versiones anteriores.

@@ -396,7 +396,10 @@ const fs = require('fs'), path = require('path');
 const root = path.resolve(process.argv[2] || '.claude/conocimiento');
 // '.respaldo-amp' son copias congeladas de .claude/ que dejaron corridas viejas del nivelador:
 // sus hallazgos ya no se pueden corregir y duplican el diagnostico real. No se barren.
-const EXCLUDE = new Set(['.git', 'node_modules', '.respaldo-amp', 'exports', 'pdfs']);
+// 'tmp' es material de trabajo descartable (handoffs, notas, borradores) que el propio harness
+// gitignorea: sus hallazgos no se corrigen, se borra la carpeta. Excluye por NOMBRE, en
+// cualquier nivel del repo, no solo `.claude/tmp/`.
+const EXCLUDE = new Set(['.git', 'node_modules', '.respaldo-amp', 'tmp', 'exports', 'pdfs']);
 
 function walk(dir, acc) {
   for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
@@ -1021,7 +1024,10 @@ for (const r of rows) for (const p of splitTerms(r.propuestos)) propuestos.push(
 // Reusa walk()+EXCLUDE de lint-conocimiento. Dos grupos: prosa (accion inmediata) y codigo (informativo).
 // '.respaldo-amp' son copias congeladas de .claude/ que dejaron corridas viejas del nivelador:
 // sus hallazgos ya no se pueden corregir y duplican el diagnostico real. No se barren.
-const EXCLUDE = new Set(['.git', 'node_modules', '.respaldo-amp', 'exports', 'pdfs']);
+// 'tmp' es material de trabajo descartable (handoffs, notas, borradores) que el propio harness
+// gitignorea: sus hallazgos no se corrigen, se borra la carpeta. Excluye por NOMBRE, en
+// cualquier nivel del repo, no solo `.claude/tmp/`.
+const EXCLUDE = new Set(['.git', 'node_modules', '.respaldo-amp', 'tmp', 'exports', 'pdfs']);
 // Autoexclusiones obligatorias: el registro de semantica contiene los vetados por definicion; el
 // historico congelado de planes no se reescribe (falsearia el registro).
 const AUTOEXCL = [
@@ -2961,7 +2967,10 @@ const fs = require('fs'), path = require('path');
 const root = path.resolve(process.argv[2] || '.claude/memoria');
 // '.respaldo-amp' son copias congeladas de .claude/ que dejaron corridas viejas del nivelador:
 // sus hallazgos ya no se pueden corregir y duplican el diagnostico real. No se barren.
-const EXCLUDE = new Set(['.git', 'node_modules', '.respaldo-amp']);
+// 'tmp' es material de trabajo descartable (handoffs, notas, borradores) que el propio harness
+// gitignorea: sus hallazgos no se corrigen, se borra la carpeta. Excluye por NOMBRE, en
+// cualquier nivel del repo, no solo `.claude/tmp/`.
+const EXCLUDE = new Set(['.git', 'node_modules', '.respaldo-amp', 'tmp']);
 const TYPES = new Set(['user', 'feedback', 'project', 'reference']);
 
 function walk(dir, acc) {
