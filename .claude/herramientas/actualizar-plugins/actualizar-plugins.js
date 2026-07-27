@@ -45,8 +45,12 @@ function leerJson(p) {
 }
 
 // git de una linea: devuelve la salida o null si el comando falla, no existe el repo o vence.
-function gitEn(dir, args, timeout = 5000) {
-  const r = spawnSync('git', args, { cwd: dir, encoding: 'utf8', timeout });
+function gitEn(dir, args, timeout = 5000, confiarDirectorio = false) {
+  // El marketplace puede pertenecer al usuario aunque el proceso que corre el
+  // control sea un sandbox. Confiar solo su ruta exacta permite leer su commit
+  // sin cambiar la configuracion global de Git ni confiar directorios amplios.
+  const comando = confiarDirectorio ? ['-c', `safe.directory=${dir}`, ...args] : args;
+  const r = spawnSync('git', comando, { cwd: dir, encoding: 'utf8', timeout });
   if (!r || r.status !== 0) return null;
   return (r.stdout || '').trim() || null;
 }
@@ -171,11 +175,24 @@ function estadoCatalogo(marketplace, nombres) {
   const mkt = marketplaceRegistrado(marketplace);
   if (!mkt || !mkt.installLocation) return { estado: 'SIN DATO', detalle: 'marketplace no registrado' };
   const bajado = mkt.installLocation;
-  const local = gitEn(bajado, ['rev-parse', 'HEAD']);
-  // Un marketplace servido de una carpeta de la maquina no tiene "publicado" contra que comparar.
-  if (!local) return { estado: 'N/A', detalle: 'no se trae de un repo git (marketplace servido de una carpeta)' };
+  const esDirectorio = mkt.source && mkt.source.source === 'directory';
+  // N/A solo es valido cuando el registro declara explicitamente una carpeta.
+  // Un fallo de Git (por ejemplo safe.directory) en un marketplace GitHub no
+  // puede convertirse en "todo actualizado": hay que pedir refresco.
+  if (esDirectorio) return { estado: 'N/A', detalle: 'marketplace servido desde una carpeta local' };
 
-  const publicado = (gitEn(bajado, ['ls-remote', 'origin', 'HEAD']) || '').split(/\s+/)[0] || null;
+  const local = gitEn(bajado, ['rev-parse', 'HEAD'], 5000, true);
+  if (!local) return {
+    estado: 'ACTUALIZAR',
+    detalle: 'no se pudo leer el checkout del marketplace; no se verifico contra lo publicado',
+  };
+
+  // Para GitHub consultar la URL declarada evita depender de `origin` y de la
+  // propiedad del checkout. Los otros origenes conservan la consulta normal.
+  const remoto = mkt.source && mkt.source.source === 'github' && mkt.source.repo
+    ? `https://github.com/${mkt.source.repo}.git`
+    : 'origin';
+  const publicado = (gitEn(bajado, ['ls-remote', remoto, 'HEAD'], 5000, true) || '').split(/\s+/)[0] || null;
   if (publicado) {
     if (publicado === local) return { estado: 'ACTUALIZADO', detalle: `bajado ${local.slice(0, 12)} = publicado` };
     return {
@@ -196,7 +213,10 @@ function estadoCatalogo(marketplace, nombres) {
       detalle: `sin red: bajado ${local.slice(0, 12)} · este repo (lo publica) ${headRepo.slice(0, 12)}`,
       versiones: versionesQueFaltan(marketplace, mkt, bajado, nombres),
     };
-    if (headRepo) return { estado: 'ACTUALIZADO', detalle: `sin red: bajado ${local.slice(0, 12)} = este repo, que lo publica` };
+    if (headRepo) return {
+      estado: 'ACTUALIZAR',
+      detalle: `sin salida a red: bajado ${local.slice(0, 12)} = este repo, pero GitHub no se verifico`,
+    };
   }
   const edad = mkt.lastUpdated ? hace(mkt.lastUpdated) : null;
   return {

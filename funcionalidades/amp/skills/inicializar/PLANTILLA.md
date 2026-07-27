@@ -1479,8 +1479,12 @@ function leerJson(p) {
 }
 
 // git de una linea: devuelve la salida o null si el comando falla, no existe el repo o vence.
-function gitEn(dir, args, timeout = 5000) {
-  const r = spawnSync('git', args, { cwd: dir, encoding: 'utf8', timeout });
+function gitEn(dir, args, timeout = 5000, confiarDirectorio = false) {
+  // El marketplace puede pertenecer al usuario aunque el proceso que corre el
+  // control sea un sandbox. Confiar solo su ruta exacta permite leer su commit
+  // sin cambiar la configuracion global de Git ni confiar directorios amplios.
+  const comando = confiarDirectorio ? ['-c', `safe.directory=${dir}`, ...args] : args;
+  const r = spawnSync('git', comando, { cwd: dir, encoding: 'utf8', timeout });
   if (!r || r.status !== 0) return null;
   return (r.stdout || '').trim() || null;
 }
@@ -1605,11 +1609,24 @@ function estadoCatalogo(marketplace, nombres) {
   const mkt = marketplaceRegistrado(marketplace);
   if (!mkt || !mkt.installLocation) return { estado: 'SIN DATO', detalle: 'marketplace no registrado' };
   const bajado = mkt.installLocation;
-  const local = gitEn(bajado, ['rev-parse', 'HEAD']);
-  // Un marketplace servido de una carpeta de la maquina no tiene "publicado" contra que comparar.
-  if (!local) return { estado: 'N/A', detalle: 'no se trae de un repo git (marketplace servido de una carpeta)' };
+  const esDirectorio = mkt.source && mkt.source.source === 'directory';
+  // N/A solo es valido cuando el registro declara explicitamente una carpeta.
+  // Un fallo de Git (por ejemplo safe.directory) en un marketplace GitHub no
+  // puede convertirse en "todo actualizado": hay que pedir refresco.
+  if (esDirectorio) return { estado: 'N/A', detalle: 'marketplace servido desde una carpeta local' };
 
-  const publicado = (gitEn(bajado, ['ls-remote', 'origin', 'HEAD']) || '').split(/\s+/)[0] || null;
+  const local = gitEn(bajado, ['rev-parse', 'HEAD'], 5000, true);
+  if (!local) return {
+    estado: 'ACTUALIZAR',
+    detalle: 'no se pudo leer el checkout del marketplace; no se verifico contra lo publicado',
+  };
+
+  // Para GitHub consultar la URL declarada evita depender de `origin` y de la
+  // propiedad del checkout. Los otros origenes conservan la consulta normal.
+  const remoto = mkt.source && mkt.source.source === 'github' && mkt.source.repo
+    ? `https://github.com/${mkt.source.repo}.git`
+    : 'origin';
+  const publicado = (gitEn(bajado, ['ls-remote', remoto, 'HEAD'], 5000, true) || '').split(/\s+/)[0] || null;
   if (publicado) {
     if (publicado === local) return { estado: 'ACTUALIZADO', detalle: `bajado ${local.slice(0, 12)} = publicado` };
     return {
@@ -1630,7 +1647,10 @@ function estadoCatalogo(marketplace, nombres) {
       detalle: `sin red: bajado ${local.slice(0, 12)} · este repo (lo publica) ${headRepo.slice(0, 12)}`,
       versiones: versionesQueFaltan(marketplace, mkt, bajado, nombres),
     };
-    if (headRepo) return { estado: 'ACTUALIZADO', detalle: `sin red: bajado ${local.slice(0, 12)} = este repo, que lo publica` };
+    if (headRepo) return {
+      estado: 'ACTUALIZAR',
+      detalle: `sin salida a red: bajado ${local.slice(0, 12)} = este repo, pero GitHub no se verifico`,
+    };
   }
   const edad = mkt.lastUpdated ? hace(mkt.lastUpdated) : null;
   return {
@@ -1900,12 +1920,12 @@ La columna dice **la acción que corresponde**, no el diagnóstico:
 |--------|---------------|
 | `ACTUALIZADO` | Verificado: lo bajado está en el mismo commit que lo publicado. No hay nada que hacer |
 | `ACTUALIZAR` | Lo bajado está atrasado, **o** no se pudo verificar que no lo esté. Los dos casos se resuelven igual, y refrescar de más sale casi nada: se comparan las versiones, no difieren, sigue. El motivo puntual queda en el detalle de al lado |
-| `N/A` | El marketplace se sirve de una carpeta de la máquina: no hay "publicado" contra qué comparar |
+| `N/A` | El registro declara un marketplace servido desde una carpeta local: no hay "publicado" contra qué comparar |
 
 Se averigua por dos vías, en orden:
 
 1. **Por red** — `git ls-remote origin HEAD` sobre el marketplace bajado devuelve el commit publicado sin traer nada. Es la vía normal: **0,6 s**.
-2. **Sin red, por estimación** — si la consulta falla o vence (5 s), se compara contra el **repo que publica el marketplace**, cuando ese repo es justamente desde donde se corre la Herramienta (se detecta comparando el `origin` del repo contra el que declara el catálogo). Es el caso del autor, que acaba de publicar y todavía no le llegó. Si el repo no publica ese marketplace, no hay con qué estimar: queda `ACTUALIZAR` y el detalle dice hace cuánto se bajó.
+2. **Sin red** — si la consulta falla o vence (5 s), queda `ACTUALIZAR`: no hay evidencia de qué commit tiene GitHub. Si la Herramienta corre desde el repo que publica el marketplace, compara además ese commit con el checkout bajado para explicar el desfase, pero nunca lo convierte en `ACTUALIZADO` sin consultar el remoto.
 
 Cuando lo bajado está en `ACTUALIZAR` **y** el repo desde donde se corre es el que publica, se listan además las versiones que cambian (`amp: bajado 0.6.5 · este repo 0.6.6`). Desde un consumidor eso no se puede saber: leer el árbol del remoto exigiría traerlo, que es lo que hace `--aplicar`.
 
