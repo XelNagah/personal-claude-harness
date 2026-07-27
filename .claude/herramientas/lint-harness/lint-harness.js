@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 // Lint de coherencia del harness: punto de entrada (AGENTS.md + adaptador CLAUDE.md, decision 0010),
-// funcionalidades vs marketplace vs REGISTRO, archivos clave por funcionalidad, junctions de skills
-// (dos tandas: ~/.claude/skills y ~/.agents/skills), divergencia de bloques verbatim entre PLANTILLAs,
+// funcionalidades vs marketplace vs REGISTRO, archivos clave por funcionalidad, divergencia de bloques textuales entre PLANTILLAs,
 // tamaño de los MANIFIESTO.md de subsistema (dec. 0017: breves, siempre en contexto) y su estructura
 // minima (dec. 0019 + 0023: campos obligatorios incl. Skills + coherencia carga<->@INDICE), citas a
 // decisiones del harness en archivos distribuibles (dec. 0024) y terminologia vetada en el texto que
@@ -49,20 +48,6 @@ for (const f of enDisco) {
   if (faltan.length) incompletas.push(`${f}/  [faltan: ${faltan.join(', ')}]`);
 }
 
-// -- [3] modo de consumo del harness en esta maquina ---------------------
-// El harness se consume de DOS formas, y no pueden convivir (colisionan por nombre de skill):
-//   ENLACE  - junction/symlink a funcionalidades/*/skills/*, para editar en vivo (autoria)
-//   PLUGIN  - instalado desde el marketplace, servido de la cache (consumo)
-// Cada modo tiene su propio desfase posible y el chequeo del OTRO modo no significa nada:
-// en una maquina que consume por plugin no faltan enlaces, se decidio no tenerlos. Por eso
-// se detecta el modo primero y despues se chequea solo lo que aplica. Un hallazgo permanente
-// que nunca corresponde entrena a ignorar la salida entera del lint, y el dia que aparezca
-// uno real cae en la misma pila que ya se saltea.
-const tandas = [
-  path.join(os.homedir(), '.claude', 'skills'),   // la ve Claude Code
-  path.join(os.homedir(), '.agents', 'skills'),   // la ven Codex/Cursor/Gemini (estandar Agent Skills)
-];
-
 // nombre del marketplace que publica este repo (para no mirar plugins de otros)
 let mktName = '';
 try { mktName = JSON.parse(fs.readFileSync(path.join(repo, '.claude-plugin', 'marketplace.json'), 'utf8')).name || ''; } catch (e) { /* ya reportado */ }
@@ -81,57 +66,20 @@ try {
   }
 } catch (e) { /* sin registro: se trata como "no instalado" */ }
 
-const sinJunction = [], junctionAjeno = [];
-let enlacesPresentes = 0, skillsTotal = 0;
-for (const f of enDisco) {
-  const skillsDir = path.join(funcDir, f, 'skills');
-  if (!fs.existsSync(skillsDir)) continue;
-  for (const s of fs.readdirSync(skillsDir)) {
-    const target = path.join(skillsDir, s);
-    if (!fs.existsSync(path.join(target, 'SKILL.md'))) continue;
-    skillsTotal++;
-    for (const tanda of tandas) {
-      const link = path.join(tanda, s);
-      const donde = path.basename(path.dirname(tanda)); // .claude | .agents
-      if (!fs.existsSync(link)) { sinJunction.push(`${s} [~/${donde}/skills]  (instalar-junctions -> ${path.relative(repo, target)})`); continue; }
-      try {
-        const real = fs.realpathSync(link);
-        if (path.resolve(real) !== path.resolve(target)) junctionAjeno.push(`${s} [~/${donde}/skills]  apunta a ${real}`);
-        else enlacesPresentes++;
-      } catch (e) { junctionAjeno.push(`${s} [~/${donde}/skills]  [irresoluble: ${e.code || e.message}]`); }
-    }
-  }
-}
-
-const modo = enlacesPresentes && instalados.size ? 'mixto'
-           : instalados.size ? 'plugin'
-           : enlacesPresentes ? 'enlace'
-           : 'sin consumo';
-
-// El modo mixto es un problema en si mismo: las dos vias exponen la misma skill con el
-// mismo nombre y no hay ganador definido, el modelo elige cual usa.
-const modoMixto = modo === 'mixto'
-  ? [`el harness se consume por enlace Y por plugin a la vez (${enlacesPresentes} enlace(s), ${instalados.size} plugin(s)): las skills colisionan por nombre y no hay ganador definido. Elegir una via.`]
-  : [];
-
-// [3a] enlaces faltantes: solo tiene sentido si esta maquina consume por enlace.
-const enlacesFaltan = (modo === 'enlace' || modo === 'mixto') ? sinJunction : [];
-
-// [3b] version en disco vs version instalada: solo si consume por plugin. Es el desfase que
+// -- [3] version en disco vs version instalada ---------------------------
+// Es el desfase que
 // paso en silencio el 25/07/2026 (disco 0.6.3, corriendo 0.6.2, seis commits atras): la
 // version que corre es la carpeta de la cache, la de disco es el campo version del plugin.json.
 // Lo "traido pero no cargado" (la sesion arranco antes) no se mira aca: lo cubre la Herramienta
 // actualizar-plugins, que compara contra la hora de arranque del proceso de la sesion.
 const versionDesfasada = [];
-if (modo === 'plugin' || modo === 'mixto') {
-  for (const f of enDisco) {
-    const instalada = instalados.get(f);
-    if (!instalada) continue; // no instalado para este repo: lo diagnostica actualizar-plugins
-    let enDiscoVer = '';
-    try { enDiscoVer = JSON.parse(fs.readFileSync(path.join(funcDir, f, '.claude-plugin', 'plugin.json'), 'utf8')).version || ''; } catch (e) { continue; }
-    if (!enDiscoVer) continue; // sin version fija: auto-versiona por commit, no hay resta que hacer
-    if (enDiscoVer !== instalada) versionDesfasada.push(`${f}: disco ${enDiscoVer}, instalado ${instalada}  (publicar y actualizar, o se consume una version vieja)`);
-  }
+for (const f of enDisco) {
+  const instalada = instalados.get(f);
+  if (!instalada) continue; // no instalado para este repo: lo diagnostica actualizar-plugins
+  let enDiscoVer = '';
+  try { enDiscoVer = JSON.parse(fs.readFileSync(path.join(funcDir, f, '.claude-plugin', 'plugin.json'), 'utf8')).version || ''; } catch (e) { continue; }
+  if (!enDiscoVer) continue; // sin version fija: auto-versiona por commit, no hay resta que hacer
+  if (enDiscoVer !== instalada) versionDesfasada.push(`${f}: disco ${enDiscoVer}, instalado ${instalada}  (publicar y actualizar, o se consume una version vieja)`);
 }
 
 // -- [5] punto de entrada (AGENTS.md fuente + CLAUDE.md adaptador) -------
@@ -451,9 +399,6 @@ const secciones = [
   ['FANTASMAS (catalogadas pero sin carpeta)', fantasmas],
   ['SOURCES DEL MARKETPLACE QUE NO RESUELVEN', srcRotos],
   ['FUNCIONALIDADES INCOMPLETAS (archivos clave)', incompletas],
-  ['EL HARNESS SE CONSUME POR LAS DOS VIAS A LA VEZ', modoMixto],
-  ['SKILLS SIN ENLACE (tandas ~/.claude/skills y ~/.agents/skills)', enlacesFaltan],
-  ['ENLACES QUE APUNTAN A OTRO LADO', junctionAjeno],
   ['VERSION EN DISCO DISTINTA DE LA INSTALADA', versionDesfasada],
   ['BLOQUES VERBATIM DIVERGENTES ENTRE PLANTILLAS', divergentes],
   ['BASE DE PREFERENCIAS DIVERGENTE (PREFERENCIAS.md vs PLANTILLAS)', baseDivergente],
@@ -466,8 +411,7 @@ const total = secciones.reduce((n, [, items]) => n + items.length, 0);
 if (quiet && total === 0) process.exit(0);
 console.log(`== LINT HARNESS: ${repo} ==`);
 console.log(`funcionalidades: ${enDisco.length} | plugins en marketplace: ${plugins.length} | filas en REGISTRO: ${enRegistro.length} | hallazgos: ${total}`);
-const detalleModo = { plugin: `${instalados.size} plugin(s) instalado(s) para este repo`, enlace: `${enlacesPresentes} enlace(s) al repo`, mixto: `${instalados.size} plugin(s) + ${enlacesPresentes} enlace(s)`, 'sin consumo': 'ni plugins instalados ni enlaces: el harness no se consume en esta maquina' }[modo];
-console.log(`modo de consumo: ${modo} (${detalleModo}) — se chequea lo que aplica a ese modo\n`);
+console.log(`plugins instalados para este repo: ${instalados.size}\n`);
 for (const [titulo, items] of secciones) {
   if (quiet && !items.length) continue;
   console.log(`[${titulo}] (${items.length})`);

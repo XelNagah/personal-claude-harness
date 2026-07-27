@@ -1,6 +1,6 @@
 # 0010 — Arquitectura multiagente del harness
 
-**Fecha:** 2026-07-19 · **Estado:** vigente
+**Fecha:** 2026-07-19 · **Estado:** vigente (el punto 4 fue reemplazado por 0039)
 
 ## Contexto
 
@@ -13,7 +13,7 @@ La investigación de estándares (2026-07-19, fuentes primarias) cambió el tabl
 1. **`AGENTS.md` en la raíz = fuente única de instrucciones**; `CLAUDE.md` en la raíz = adaptador de una línea (`@AGENTS.md`). Los imports del mapa del repo quedan como líneas doble-propósito ("cargá `@.claude/...`"): Claude las expande, los demás agentes las ejecutan como instrucción.
 2. **Los subsistemas quedan en `.claude/`** como casa de datos única para todos los agentes (el nombre es cosmético; mudarlo costaba migrar todos los consumidores y cada ref por ruta, sin ganar funcionalidad).
 3. **`SKILL.md` es el formato único de skills** (estándar Agent Skills); se retiran los `prompt.md` — su placeholder `<config>` (una casa de datos por agente) quedó conceptualmente obsoleto con (2), y su rol de "versión agnóstica" lo absorbe el estándar. Muere el invariante "divergentes en forma, no en contenido".
-4. **Distribución de skills a nivel usuario**: junctions dobles `~/.claude/skills/` (Claude) y `~/.agents/skills/` (Codex/Cursor/Gemini) hacia las mismas carpetas fuente del harness. El marketplace de plugins se mantiene como canal Claude multi-máquina.
+4. **Distribución de skills a nivel usuario**: junctions dobles `~/.claude/skills/` (Claude) y `~/.agents/skills/` (Codex/Cursor/Gemini) hacia las mismas carpetas fuente del harness. El marketplace de plugins se mantiene como canal Claude multi-máquina. **Reemplazado por 0039:** Claude Code y Codex CLI instalan Plugins del marketplace; ya no se usan enlaces de directorio.
 5. **Hooks con registro doble**: el mismo script registrado en `.claude/settings.json` (Claude) y en el formato de hooks de Codex.
 
 ## Alternativas descartadas

@@ -41,7 +41,8 @@ Los términos **vetados no viven acá**: un veto es sobre la relación término�
 | Textual | Copia que debe mantenerse idéntica carácter a carácter entre la fuente y sus duplicados (los textos de funcionalidades embebidos en el orquestador). | literal, carácter a carácter | — | — |
 | Control | Chequeo que frena el avance si no se cumple (ratificación del usuario antes de asentar un término, verificación completa antes de cerrar un plan). | — | — | — |
 | Skill | Flujo empaquetado que el agente invoca por nombre, definido por el estándar abierto Agent Skills (`SKILL.md`); uno de los tipos de Herramienta. | habilidad | — | — |
-| Punto de entrada | Archivo de instrucciones que un agente carga al abrir el repo. En el harness: `AGENTS.md` en la raíz es la fuente (la leen Codex/Cursor/Gemini/Copilot nativo) y `CLAUDE.md` es el adaptador de una línea (`@AGENTS.md`) para Claude Code. | entry point | — | — |
+| Plugin | Paquete instalable para un agente que reúne una o más Habilidades y su configuración. | — | — | — |
+| Punto de entrada | Archivo de instrucciones que un agente carga al abrir el repo. En el harness: `AGENTS.md` en la raíz es la fuente para Codex CLI y `CLAUDE.md` es el adaptador de una línea (`@AGENTS.md`) para Claude Code. | entry point | — | — |
 | Skill de Subsistema | Skill operativa que trabaja sobre un subsistema concreto; viaja en el plugin de la funcionalidad de ese subsistema. | — | — | — |
 | Skill del Agente Multipropósito | Skill transversal sin subsistema dueño (hoy: `planificar`); se empaqueta como funcionalidad propia. | — | — | — |
 | Texto plano | Texto corriente en lenguaje natural dentro de los `.md`, por oposición a código (cercas, backticks, identificadores, rutas y nombres de archivo). | — | — | — |

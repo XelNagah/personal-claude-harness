@@ -7,7 +7,7 @@ Manual de instalación y actualización del **Agente Multipropósito** en un rep
 
 Dos nombres que conviene tener claros antes de empezar, porque el manual los usa todo el tiempo: el **Agente Multipropósito** es lo que se instala — el mecanismo sin propósito, y lo único que tiene versión. Cuando le definís un **Propósito** al repo, nace un **Agente con Propósito**: ese repo, persiguiendo su objetivo, con lo que va aprendiendo guardado en sus subsistemas. Actualizar significa siempre poner al día el Agente Multipropósito **que está adentro** de un Agente con Propósito, sin tocar lo que aprendió.
 
-El Agente Multipropósito se distribuye como **marketplace de plugins de Claude Code** y, en paralelo, como skills en el estándar abierto [Agent Skills](https://agentskills.io/) (`SKILL.md`) para Codex CLI, Cursor y Gemini CLI. La instalación por marketplace de abajo es la de Claude Code; para los otros agentes ver [Otros agentes](#otros-agentes-codex-cursor-gemini).
+El Agente Multipropósito se distribuye como Plugins para Claude Code y Codex CLI. La instalación principal de abajo es la de Claude Code; la de Codex CLI está en [Codex CLI](#codex-cli).
 
 ---
 
@@ -150,23 +150,15 @@ node ~/.claude/plugins/marketplaces/xelnagah-harness/.claude/herramientas/actual
 
 ---
 
-## Otros agentes: Codex, Cursor, Gemini
+## Codex CLI
 
-No hay marketplace para ellos. Las skills se enlazan a la ubicación estándar de Agent Skills:
+Codex CLI usa el mismo marketplace. Después de registrarlo, corré desde el repo destino:
 
 ```bash
-git clone https://github.com/XelNagah/personal-claude-harness.git
-cd personal-claude-harness
-node .claude/herramientas/instalar-junctions/instalar-junctions.js
+node <checkout-harness>/.claude/herramientas/instalar-plugins-codex/instalar-plugins-codex.js --aplicar
 ```
 
-Eso crea enlaces (junctions en Windows) desde `~/.agents/skills/` —donde miran Codex, Cursor y Gemini— hacia las skills de este repo, y desde `~/.claude/skills/` para Claude Code. Es idempotente: repara lo que falte y no pisa lo que apunte a otro lado.
-
-> ⚠️ **No mezclar enlace y plugin de la misma skill en una máquina**: colisionan por nombre. El enlace sirve para editar las skills en vivo (autoría); el plugin instalado, para consumirlas.
-
-El punto de entrada de instrucciones es `AGENTS.md` en la raíz del repo, que esos agentes leen de forma nativa. Claude Code no lee `AGENTS.md`, por eso hay un `CLAUDE.md` de una línea que lo importa.
-
-**Límite conocido:** el prefijo `amp:` / `amp-<sub>:` que separa las skills por subsistema es un mecanismo de Claude Code. Con enlaces, las skills se ven con el nombre pelado (`registrar-memoria` en vez de `amp-memoria:registrar-memoria`).
+El instalador agrega cada dependencia antes del Plugin `amp`, porque `codex plugin add` no las instala automáticamente. El punto de entrada de instrucciones es `AGENTS.md`; Claude Code lo recibe mediante `CLAUDE.md`.
 
 ---
 
@@ -176,11 +168,8 @@ El punto de entrada de instrucciones es `AGENTS.md` en la raíz del repo, que es
 
 **`claude plugin list` muestra nombres viejos.** Si no están en `enabledPlugins`, no cargan — son restos de la caché. Se pueden sacar con `claude plugin uninstall <viejo>@xelnagah-harness -s <alcance> -y`.
 
-**La misma skill aparece dos veces.** Dos causas posibles:
+**La misma skill aparece dos veces.** Hay una generación vieja y otra nueva conviviendo: `registrar-memoria` aparece con prefijo `memoria-local:` y con `amp-memoria:`. No hay ganador definido, el modelo elige. Lo resuelve `amp:actualizar`: detecta los nombres retirados y hace la migración.
 
-- **Enlace y plugin conviviendo.** Elegí uno: borrá el enlace de `~/.claude/skills/<skill>` o desinstalá el plugin.
-- **Generación vieja y nueva conviviendo** — `registrar-memoria` aparece con prefijo `memoria-local:` y con `amp-memoria:`. No hay ganador definido, el modelo elige. Lo resuelve `amp:actualizar`: detecta los nombres retirados y hace la migración.
-
-**Edité una skill en el repo y la sesión sigue comportándose igual.** Si la consumís por plugin, estás corriendo la copia de la caché, que se sirve de GitHub: el cambio no llega hasta que lo commiteás, lo pusheás y actualizás el plugin. Editar el repo local no alcanza, y `/reload-plugins` tampoco. Si estás escribiendo skills a menudo, conviene consumirlas por enlace (ver la sección de otros agentes) en vez de por plugin.
+**Edité una skill en el repo y la sesión sigue comportándose igual.** Estás corriendo la copia instalada del Plugin: el cambio no llega hasta que lo commiteás, lo pusheás y actualizás el Plugin. Editar el repo local no alcanza, y `/reload-plugins` tampoco.
 
 **`amp:inicializar` no pisó algo que yo quería actualizar.** Es a propósito: cuando encuentra algo divergente lo reporta en vez de pisarlo. Para converger contra la plantilla nueva usá `amp:actualizar`, que sí pisa lo Base (con respaldo).

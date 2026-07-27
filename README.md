@@ -134,25 +134,14 @@ El detalle de cada funcionalidad vive en su `funcionalidades/<nombre>/README.md`
 
 _Las dos secciones que siguen son de uso avanzado — saltalas si solo querés instalar y usar._
 
-## Con otro agente (no Claude Code)
+## Claude Code y Codex CLI
 
-El harness es **multiagente**:
-
-- **Instrucciones** — `AGENTS.md` en la raíz de cada repo instalado: lo leen nativo Codex CLI, Cursor, Gemini CLI y Copilot (estándar de la Linux Foundation). Claude Code entra por el adaptador `CLAUDE.md` (`@AGENTS.md`).
-- **Skills** — `SKILL.md` usa el estándar abierto [Agent Skills](https://agentskills.io/), que esos mismos agentes leen desde `~/.agents/skills/`. En una máquina nueva: clonar este repo y correr `node .claude/herramientas/instalar-junctions/instalar-junctions.js` (crea las dos tandas de enlaces: `~/.claude/skills` y `~/.agents/skills`).
-
-Un agente futuro que adopte cualquiera de los dos estándares queda soportado sin tocar el repo.
-
-**Límite conocido:** el prefijo `amp:` / `amp-<sub>:` que deja visible de qué subsistema es cada skill es un mecanismo de Claude Code. Con enlaces, las skills se ven con el nombre pelado.
+El harness soporta **Claude Code** y **Codex CLI**. Ambos leen `AGENTS.md`; Claude Code entra por el adaptador `CLAUDE.md` (`@AGENTS.md`). Las Habilidades se instalan como Plugins del marketplace. Claude Code instala `amp` y sus dependencias; Codex usa el instalador incluido porque su comando no resuelve dependencias.
 
 ## Uso avanzado
 
 - **El conjunto entra completo** — no se instalan piezas sueltas: `amp` trae los seis `amp-<sub>` por dependencias, en alcance `project`. Es a propósito — el harness aplica a los repos que lo usan, no a todos los que abras.
-- **Desarrollo local (enlaces / symlinks)** — para editar las skills en vivo sin pasar por la caché de plugins, se enlazan por **junction** (NTFS) en dos tandas (`~/.claude/skills/` y `~/.agents/skills/`) hacia cada `funcionalidades/<n>/skills/<skill>`. En Linux/macOS el equivalente es `ln -s`. No mezclar enlace + plugin de la misma skill en una máquina (colisionan por nombre). Crear/reparar todo:
-
-  ```bash
-  node .claude/herramientas/instalar-junctions/instalar-junctions.js
-  ```
+- **Codex CLI** — después de registrar el marketplace, ejecutar `node <checkout-harness>/.claude/herramientas/instalar-plugins-codex/instalar-plugins-codex.js --aplicar` para instalar el paquete completo.
 
 - **Actualización automática** — el install es un `git clone` por debajo. Este repo es público, así que no hace falta autenticación; si lo forkeás en privado, exportá `GITHUB_TOKEN` con alcance `repo` para que la actualización en segundo plano funcione.
 - **Mantenimiento** — cómo agregar una funcionalidad, propagar un cambio y validar el marketplace: en [REGISTRO.md](REGISTRO.md) y [`AGENTS.md`](AGENTS.md).

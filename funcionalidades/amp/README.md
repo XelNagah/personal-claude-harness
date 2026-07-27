@@ -1,6 +1,6 @@
 # Setup completo (orquestador)
 
-Instala de una sola pasada el **setup estándar completo** del usuario, orquestando las ocho funcionalidades de convención en orden. Conserva el skill histórico `inicializar-custom` y sus junctions homónimos (dos tandas: `~/.claude/skills` y `~/.agents/skills`).
+Instala de una sola pasada el **setup estándar completo** del usuario, orquestando las ocho funcionalidades de convención en orden.
 
 Es la forma cómoda de arrancar un repo nuevo. Cada funcionalidad también se puede instalar suelta desde su propia carpeta.
 
@@ -68,4 +68,4 @@ Dependencias: 4–8 dependen de `memoria-local` (guardan memorias en `memoria/`)
 |---------|---------|
 | Skill (Claude Code) | [`skills/inicializar-custom/SKILL.md`](skills/inicializar-custom/SKILL.md) + [`PLANTILLA.md`](skills/inicializar-custom/PLANTILLA.md) |
 
-> **Duplicación intencional:** tanto por la isolation del junction como por el cache de plugins (cada plugin se copia y no puede leer afuera de su carpeta), el skill del orquestador no puede leer las carpetas de las piezas en ejecución, así que repite los textos literales (memorias y bloques de preferencias). Al cambiar un texto, actualizar **la pieza y este orquestador**.
+> **Duplicación intencional:** cada Plugin se instala como una copia y no puede leer fuera de su carpeta; por eso la Habilidad del orquestador repite los textos literales. Al cambiar un texto, actualizar **la pieza y este orquestador**.
