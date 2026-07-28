@@ -1,6 +1,6 @@
 # Rework de memoria — prefijo feedback y corte con conocimiento
 
-**Estado: En curso · Creado 26-07-24 · Analizado con `planificar` el 26/07/2026.** Ejecución iniciada el 2026-07-27: decisión 0040 ratifica habilidades dueñas por subsistema y `amp-subsistemas:reubicar-aprendizaje` como coordinadora. Idea de Javier 26-07-24, en la sesión del plan de distribución marketplace.
+**Estado: Ejecutado · Creado 26-07-24 · Cerrado 26-07-27 · Analizado con `planificar` el 26/07/2026.** La decisión 0040 ratificó habilidades dueñas por subsistema y `amp-subsistemas:reubicar-aprendizaje` como coordinadora.
 
 > El título quedó viejo: el prefijo y el corte con conocimiento se resuelven **por disolución** — memoria deja de existir, así que no hay prefijo que arreglar ni corte que escribir. Se conserva el nombre del archivo por la regla de nombre estable.
 
@@ -108,9 +108,9 @@ Se disuelven las **cuatro dependencias** de `amp-planes`, `amp-conocimiento`, `a
 - **0029** cambia en dos cláusulas: la cuenta de plugins y las cuatro dependencias sobre `amp-memoria`.
 - **0023** se cumple mejor, no se contradice: el detalle sigue siendo on-demand, pero el brazo `feedback` se reemplaza por el `README` del propio subsistema.
 
-## Pendiente de ratificación del usuario
+## Fuera de este cierre
 
-- La fila **Subsistema** del glosario define el concepto enumerando *"(memoria, conocimiento, semántica, decisiones, planes, herramientas)"*. Esa lista queda vieja. **Propuesta:** sacar la enumeración y dejar la definición por el Patrón, que es lo que de verdad define el concepto — más ahora que un repo puede crear los suyos con `agregar-subsistema`.
+- La redacción canónica de la fila **Subsistema** del glosario no se modificó sin ratificación textual. Su revisión pertenece al plan `Revisar la nomenclatura de los subsistemas`; no bloquea la migración estructural ni el actualizador.
 
 ## Lo que este rework NO resuelve
 
@@ -124,3 +124,11 @@ Se disuelven las **cuatro dependencias** de `amp-planes`, `amp-conocimiento`, `a
 - `Subsistema de Registros genérico como parte de Conocimiento` — dónde viven documentos vs hechos.
 - `Separar origen Base y aprendido en los subsistemas`: las `feedback_<sub>` son memorias de **Base**; mismo eje de origen.
 - `Habilidad para poblar subsistemas desde un repo existente` (Diferido) — su nota dice que queda "glosario/decisiones/memoria"; la parte de memoria la absorbe el punto 6 de acá.
+
+## Notas de implementación
+
+- `.claude/memoria/` fue retirada y su Aprendizaje se repartió entre los README de subsistema, Preferencias, Conducta y Conocimiento.
+- `amp-memoria` fue retirado; entraron `amp-subsistemas`, `amp-herramientas` y `amp-conducta`. El paquete quedó en nueve plugins.
+- `amp:actualizar` detecta la generación vieja, instala la Base nueva, coordina la reubicación pieza por pieza y no informa “al día” mientras exista `memoria/`.
+- Prueba completa en `.claude/tmp/prueba-actualizar/consumidor-viejo`: Base 0, Renombres 0, Divergentes 0, nueve lints con código 0 y ausencia física de `memoria/`.
+- Implementación publicada en `ae3e7c9`; registro final de plugins publicado en `67e2d39`.
