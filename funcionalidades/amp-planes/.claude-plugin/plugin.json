@@ -1,6 +1,6 @@
 {
   "name": "amp-planes",
-  "description": "Ciclo de planes pendientes→ejecutados: carpetas planes/ + memoria del flujo. Incluye la skill operativa ciclo-de-plan. Depende de amp-memoria.",
-  "version": "0.4.5",
+  "description": "Ciclo de planes pendientes→ejecutados: carpetas, registro, README y lint. Incluye ciclo-de-plan.",
+  "version": "0.5.0",
   "author": { "name": "jllarens", "email": "jllarens@gmail.com" }
 }

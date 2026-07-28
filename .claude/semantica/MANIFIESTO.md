@@ -12,4 +12,4 @@ El subsistema `semántica` mantiene la coherencia semántica del dominio en el t
 node .claude/semantica/lint-semantica/lint-semantica.js
 ```
 
-Convención en la memoria `feedback_semantica.md`.
+Convención completa en `README.md`.

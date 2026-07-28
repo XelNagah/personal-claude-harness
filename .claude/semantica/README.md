@@ -1,9 +1,4 @@
----
-name: semantica
-description: Subsistema semántica en .claude/semantica/ — dos registros pares: GLOSARIO.md (terminología legítima, alias/propuestos) y TERMINOLOGIA-FARLOPA.md (relaciones vetadas término→significado); el agente solo propone, el usuario ratifica y veta; consultar al planificar/analizar; lint al cerrar.
-metadata:
-  type: feedback
----
+# Semántica
 
 El subsistema `semántica` mantiene la coherencia semántica del dominio en el tiempo. Vive en `.claude/semantica/` con **dos registros pares**, ninguno cargado en contexto siempre:
 

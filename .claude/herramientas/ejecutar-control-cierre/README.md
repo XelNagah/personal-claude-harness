@@ -8,7 +8,7 @@ node .claude/herramientas/ejecutar-control-cierre/ejecutar-control-cierre.js
 
 ## Qué corre
 
-1. **Todos los lints de subsistema**, descubiertos dinámicamente (no hardcodeados): cualquier `.claude/**/lint-*/lint-*.js` — hoy: conocimiento, decisiones, semantica, harness, herramientas, memoria, planes, preferencias. Un subsistema nuevo con su lint co-ubicado (decisión 0008) entra solo.
+1. **Todos los lints de subsistema**, descubiertos dinámicamente: cualquier `.claude/**/lint-*/lint-*.js`, excepto las copias de prueba bajo `.claude/tmp/`. Un subsistema nuevo con su lint co-ubicado entra solo.
 2. **`claude plugin validate .`** — validación del marketplace. Si el CLI no está disponible, lo reporta como `NO DISPONIBLE` (no como error).
 
 ## Salida

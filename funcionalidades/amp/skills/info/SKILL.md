@@ -1,6 +1,6 @@
 ---
 name: info
-description: Muestra la Pantalla de bienvenida del Agente Multipropósito — Título + Propósito del repo + métricas de cada subsistema (cuántas memorias, planes, términos, decisiones, herramientas, páginas) + estado de lint. Use when el usuario dice "amp:info", "mostrá el estado", "info del repo", "cómo está configurado", o quiere ver el estado del harness a demanda (el mismo bloque que se emite al arrancar la sesión).
+description: Muestra la Pantalla de bienvenida del Agente Multipropósito — Título + Propósito del repo + métricas descubiertas de sus subsistemas + estado de lint. Use when el usuario dice "amp:info", "mostrá el estado", "info del repo", "cómo está configurado", o quiere ver el estado del Agente a demanda.
 ---
 
 # info — Pantalla de bienvenida a demanda

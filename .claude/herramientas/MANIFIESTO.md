@@ -6,7 +6,7 @@ El registro se separa **por origen** en dos secciones: **Herramientas Base** (la
 
 **Disparador:** consultar el índice para saber qué tools existen y cómo se invocan; registrar una Herramienta al fabricar o adoptar una tool repetible del Propósito. ⚠️ Una tool referenciada por ruta en `settings`, `.gitignore` o un hook no se mueve sin actualizar esa referencia (rompe el match por prefijo).
 
-**Skills:** ninguna de operación — el registro (`INDICE.md`) se edita a mano; instalación con `inicializar-herramientas`.
+**Skills:** `registrar-herramienta` (alta o actualización guiada de una Herramienta, su ficha y su fila); instalación con `amp:inicializar`.
 
 **Índice: se carga siempre** (liviano). Al cerrar una tarea que tocó Herramientas, correr el lint desde la raíz del repo:
 
@@ -14,6 +14,6 @@ El registro se separa **por origen** en dos secciones: **Herramientas Base** (la
 node .claude/herramientas/lint-herramientas/lint-herramientas.js
 ```
 
-Convención en la memoria `feedback_herramientas.md`.
+Convención completa en `README.md`.
 
 @INDICE.md

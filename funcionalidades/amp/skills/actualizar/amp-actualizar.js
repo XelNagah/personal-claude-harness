@@ -33,13 +33,14 @@ const esDir = p => { try { return fs.statSync(p).isDirectory(); } catch { return
 const leer = p => { try { return fs.readFileSync(p, 'utf8'); } catch { return ''; } };
 
 // Renombres conocidos (carpeta vieja -> nueva). Extensible: se suman los que aparezcan (dec. 0028).
-// v1 arranca solo con glosario -> semantica (dec. 0026).
+// Los renombres puramente estructurales viven aca. Memoria -> subsistemas NO es un renombre:
+// requiere clasificar el Aprendizaje pieza por pieza y por eso se reporta como migracion guiada.
 const RENOMBRES = [
   { viejo: 'glosario', nuevo: 'semantica', que: 'subsistema', lintViejo: 'lint-glosario', lintNuevo: 'lint-semantica' },
 ];
 
 // Subsistemas Base esperados por el harness al dia (carpetas bajo .claude/).
-const SUBSISTEMAS = ['memoria', 'planes', 'conocimiento', 'semantica', 'decisiones', 'herramientas', 'conducta'];
+const SUBSISTEMAS = ['subsistemas', 'planes', 'conocimiento', 'semantica', 'decisiones', 'herramientas', 'conducta'];
 
 // Herramientas que el harness manda (origen Base) y que todo repo al dia deberia tener bajo
 // .claude/herramientas/<nombre>/<nombre>.js. No confundir con las del Proposito, que las suma
@@ -58,7 +59,7 @@ let _bloques = null;
 function bloquesJs() {
   if (_bloques) return _bloques;
   const t = leer(PLANTILLA);
-  _bloques = [...t.matchAll(/```js\n([\s\S]*?)\n```/g)].map(m => m[1]);
+  _bloques = [...t.matchAll(/```js\r?\n([\s\S]*?)\r?\n```/g)].map(m => m[1]);
   return _bloques;
 }
 // El bloque se ubica por un ancla: una linea del propio script que no aparece en ningun otro.
@@ -74,7 +75,7 @@ const CONTENIDO_BASE = [
   ['conducta/detectar-terminologia-vetada/detectar-terminologia-vetada.js', '// Control del momento `al escribir` del subsistema conducta'],
   ['conducta/mostrar-pantalla-bienvenida/mostrar-pantalla-bienvenida.js', '// mostrar-pantalla-bienvenida.js —'],
   ['herramientas/actualizar-plugins/actualizar-plugins.js', '// actualizar-plugins.js —'],
-  ['memoria/lint-memoria/lint-memoria.js', '// Lint de la memoria local:'],
+  ['subsistemas/lint-subsistemas/lint-subsistemas.js', '// Lint del catalogo de subsistemas:'],
   ['planes/lint-planes/lint-planes.js', '// Lint del ciclo de planes:'],
   ['conocimiento/lint-conocimiento/lint-conocimiento.js', '// Lint de la base de conocimiento:'],
   ['semantica/lint-semantica/lint-semantica.js', '// Lint de semantica:'],
@@ -116,6 +117,22 @@ function clasificar() {
   if (!esDir(claude)) {
     add('divergente', '?', '.claude/', 'no existe: este repo no tiene el Agente Multiproposito instalado (usar amp:inicializar, no el nivelador)');
     return;
+  }
+
+  // Memoria fue retirada. Su presencia nunca puede terminar en "Repo al dia": primero se instala
+  // la Base nueva y despues la skill coordina reubicar-aprendizaje, con confirmacion del usuario
+  // para cada pieza aprendida. El detector no intenta clasificar contenido: solo impide el falso verde.
+  const memoriaLegacy = path.join(claude, 'memoria');
+  if (esDir(memoriaLegacy)) {
+    const piezas = fs.readdirSync(memoriaLegacy, { withFileTypes: true })
+      .filter(e => e.isFile() && e.name.endsWith('.md') && !['MEMORIA.md', 'MANIFIESTO.md', 'README.md'].includes(e.name))
+      .length;
+    add(
+      'divergente',
+      '!',
+      'memoria/ → subsistemas/',
+      `migracion pendiente: memoria fue retirada; instalar la Base nueva y reubicar ${piezas} pieza(s) de Aprendizaje antes de informar que el repo esta al dia`
+    );
   }
 
   // [1] renombres legacy (carpeta vieja presente)

@@ -44,7 +44,7 @@ function resolverRef(t, fdir) {
   ].map(p => path.normalize(p)).find(p => dentroDelRepo(p) && fs.existsSync(p)) || null;
 }
 
-// --- Atribucion por ancestro mas cercano (identico en lint-conocimiento y lint-memoria) ---
+// --- Atribucion por ancestro mas cercano ---
 // Cada pagina se atribuye a su indice ancestro mas cercano; un sub-indice (INDICE.md), a su
 // ancestro ESTRICTO mas cercano (asi el padre queda obligado a nombrar la Carpeta que delego).
 // Un hallazgo cae una sola vez, contra el indice que corresponde.

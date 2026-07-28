@@ -4,7 +4,7 @@
 
 Los markdown de la raíz del repo (README y REGISTRO) son **documentación del proyecto**, no conocimiento de agente: no se listan acá.
 
-Convención completa en la memoria [feedback base conocimiento](../memoria/feedback_base_conocimiento.md).
+Convención completa en el [README del subsistema](README.md).
 
 ## Páginas
 
@@ -18,3 +18,4 @@ Convención completa en la memoria [feedback base conocimiento](../memoria/feedb
 - [El repo que un script describe](el-repo-que-un-script-describe.md) — un script que inspecciona "el repo" debe tomarlo del directorio de trabajo, nunca de su propia ubicación: en cuanto existe una segunda copia (plugin, marketplace bajado, repo consumidor) deducirlo desde `__dirname` describe y modifica el repo equivocado, y no falla — contesta.
 - [Despliegue de plugins de Claude Code](despliegue-de-plugins-claude-code.md) — las seis paradas por las que pasa una versión (repo autor, GitHub, marketplace bajado, instalado, cargado, archivos desplegados) y los tres desfases entre ellas; más las mecánicas del CLI que sorprenden: el registro es por repo, `prune` y las dependencias solo entienden el alcance de usuario, y dos generaciones de un plugin coexisten sin ganador definido.
 - [Terminología farlopa: la deriva terminológica de los agentes](terminologia-farlopa.md) — los agentes incorporan términos ajenos (anglicismos, calcos, jerga) al dominio sesión tras sesión sin ratificar; fenómeno universal a todo repo con agentes, síntoma la perplejidad del autor, y origen del subsistema semántica.
+- [Terminología canónica](terminologia-canonica.md) — una regla escrita con el vocabulario que prohíbe se auto-refuerza; ratificar un término no alcanza hasta bajarlo a todo el texto normativo.

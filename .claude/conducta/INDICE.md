@@ -22,7 +22,9 @@ Las que instala el Agente Multipropósito (origen **Base**). El nivelador `amp:a
 | Preguntar antes de redefinir o remover algo canónico | cada turno | inyectar | Antes de **remover, renombrar o redefinir** algo canónico (una definición del glosario, una decisión) o con dependientes: proponé y esperá la ratificación del usuario. El agente propone; ratificar, vetar y redefinir son potestad del usuario. Aplica también a **definiciones y remociones**, no solo al alta de un término. | vigente |
 | Contrastar contra la sabiduría del repo al escribir | al escribir | inyectar | Acabás de escribir un `.md`. Si es de `.claude/`, contrastalo contra el test de demarcación (¿va en este subsistema?); si es de lo que el repo publica, acordate de que ese texto lo hereda quien lo instale. En los dos casos: ¿contradice algo asentado?, ¿usaste un término vetado o inventado? Corregí si hace falta. | vigente |
 | Frenar la terminología vetada antes de que se escriba | al escribir | bloquear | conducta/detectar-terminologia-vetada/detectar-terminologia-vetada.js | vigente |
-| Registrar en el subsistema cuando algo cambia | al cerrar tarea | inyectar | Si en esta tarea cambió algo que otro subsistema debe saber (memoria, decisión, conocimiento, semántica, herramientas), registralo antes de cerrar. | pendiente |
+| Mantener el archivo de estado antes de informar | cada turno | inyectar | Si la tarea es exploratoria y tiene varias variables, actualizá su único archivo de estado antes de informar un resultado; al retomar, leelo primero. | vigente |
+| Aplicar el estilo de commits antes de confirmar | al crear un commit | inyectar | Antes de crear un commit o redactar una descripción de PR, leé `preferencias/estilo-commits.md` y verificá el texto contra esas reglas. | pendiente |
+| Registrar en el subsistema cuando algo cambia | al cerrar tarea | inyectar | Si en esta tarea cambió algo que otro subsistema debe saber (decisión, conocimiento, semántica, herramientas, conducta o catálogo de subsistemas), registralo antes de cerrar. | pendiente |
 
 ## Reglas del Propósito
 

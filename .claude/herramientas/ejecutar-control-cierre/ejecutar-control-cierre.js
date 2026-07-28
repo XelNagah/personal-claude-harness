@@ -10,7 +10,7 @@ const { spawnSync } = require('child_process');
 
 const REPO = path.resolve(__dirname, '..', '..', '..');
 const CLAUDE_DIR = path.join(REPO, '.claude');
-const EXCLUDE = new Set(['.git', 'node_modules']);
+const EXCLUDE = new Set(['.git', 'node_modules', 'tmp']);
 
 // -- descubrir lints: todo .claude/**/lint-*/lint-*.js --
 function findLints(dir, out) {

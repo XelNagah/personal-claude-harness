@@ -1,0 +1,6 @@
+{
+  "name": "amp-herramientas",
+  "description": "Registro y operación de las Herramientas del Propósito en .claude/herramientas/. Incluye registrar-herramienta.",
+  "version": "0.1.0",
+  "author": { "name": "jllarens", "email": "jllarens@gmail.com" }
+}

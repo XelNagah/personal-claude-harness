@@ -1,6 +1,6 @@
 ---
 name: registrar-conocimiento
-description: Asienta una página en .claude/conocimiento/ — separa lo que el agente SABE del dominio de la memoria de trabajo, de las fuentes crudas y de la documentación del proyecto; evita duplicar, indexa en INDICE.md y corre el lint. Use when se averigua algo del dominio que costó descubrir y que va a hacer falta de nuevo (cómo funciona un sistema externo, un formato, una restricción real), o al cerrar una tarea que dejó un hallazgo reutilizable.
+description: Asienta una página en .claude/conocimiento/ para algo reutilizable que el agente aprendió sobre el proyecto, el dominio o un sistema externo; evita duplicar, indexa y corre el lint. Use when algo costó descubrir y va a hacer falta de nuevo, o al cerrar una tarea que dejó un hallazgo reutilizable.
 ---
 
 # Registrar conocimiento
@@ -18,7 +18,7 @@ Antes de escribir nada, ubicar el hallazgo. Cinco destinos, y solo uno es este s
 | Es… | Va a | Cómo se reconoce |
 |---|---|---|
 | Lo que el agente **sabe** del dominio | **`conocimiento/`** ✅ | Cómo funciona algo, un formato, una restricción real, un procedimiento externo |
-| Cómo hay que **trabajar** en este repo | `memoria/` | Corrección del usuario, preferencia, estado de un proyecto en curso |
+| Cómo prefiere el usuario que el agente trabaje | `preferencias/` | Estilo, formato o principio recurrente |
 | Una elección que **condiciona el futuro** | `decisiones/` | Se toma una vez, se respeta después, tenía alternativas |
 | Qué significa una **palabra** | `semantica/` | Es un sustantivo del dominio, no un procedimiento |
 | Lo que el agente **lee**, no lo que sabe | se queda donde está | Fuentes crudas: documentos, datos, escaneos, exports |
@@ -26,13 +26,13 @@ Antes de escribir nada, ubicar el hallazgo. Cinco destinos, y solo uno es este s
 **La prueba que discrimina:** *¿esto seguiría siendo cierto si este repo no existiera?*
 
 - **Sí → conocimiento.** *"PowerShell 5.1 lee un `.ps1` sin BOM como ANSI y rompe los acentos al parsear."* Es verdad del mundo; sirve en cualquier repo que toque PowerShell.
-- **No → memoria o decisiones.** *"Los commits de este repo van en español, sin co-autoría."* Solo tiene sentido acá.
+- **No es conocimiento si gobierna la acción futura:** una preferencia va a Preferencias; una decisión estructural, a Decisiones; una tarea futura, a Planes; una regla ligada a un momento, a Conducta.
 
 Segunda prueba, para el caso dudoso: *¿lo sabría un experto del dominio sin haber visto nunca este proyecto?* Si sí, es conocimiento.
 
 ⚠️ **La documentación del proyecto no es conocimiento del agente.** `README.md`, `REGISTRO.md`, los ADRs de un repo de software: son texto para humanos sobre el proyecto, se quedan donde están. Enterrarlos bajo `conocimiento/` es el error clásico en la dirección opuesta.
 
-Si el hallazgo no es conocimiento, **decirlo y derivar** a la skill que corresponde (`registrar-memoria`, `registrar-decision`) en vez de forzarlo acá.
+Si el hallazgo no es conocimiento, **decirlo y derivar** a la skill dueña del subsistema correspondiente en vez de forzarlo acá.
 
 ### 2. Buscar si ya está asentado — por tema, no por nombre
 
@@ -51,7 +51,7 @@ Nombre en kebab-case, estable, sin fecha.
 
 ### 4. Escribir
 
-Markdown corriente, sin frontmatter (a diferencia de las memorias). Lo que no puede faltar:
+Markdown corriente, sin frontmatter. Lo que no puede faltar:
 
 ```markdown
 # <Título: el concepto, no "notas sobre X">

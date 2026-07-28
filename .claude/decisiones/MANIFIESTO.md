@@ -12,4 +12,4 @@ Las decisiones **estructurales al propósito del repo** (no las operativas trivi
 node .claude/decisiones/lint-decisiones/lint-decisiones.js
 ```
 
-Convención en la memoria `feedback_decisiones.md`.
+Convención completa en `README.md`.

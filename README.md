@@ -16,11 +16,11 @@ Mismo harness, tres dominios. Lo que cambia es lo que se acumula adentro.
 
 ## Qué te da
 
-**Nueve subsistemas** en el `.claude/` del repo. Todos siguen el mismo patrón (ver [Cómo aprende](#cómo-aprende)) y nacen vacíos:
+**Ocho subsistemas** en el `.claude/` del repo. Todos siguen el mismo patrón (ver [Cómo aprende](#cómo-aprende)) y nacen vacíos:
 
 | Subsistema | Qué acumula |
 |------------|-------------|
-| **memoria** | Hechos que hay que recordar entre sesiones, tipados, uno por archivo |
+| **subsistemas** | Catálogo de casas persistentes y coordinación del Aprendizaje |
 | **preferencias** | Cómo trabaja el agente: comunicación y principios, versionados en Base + Adaptaciones |
 | **planes** | El ciclo pendientes → ejecutados / descartados, con registro y estados configurables |
 | **conocimiento** | Lo que el agente **sabe** del dominio: lo que costó averiguar y va a hacer falta de nuevo |
@@ -28,21 +28,22 @@ Mismo harness, tres dominios. Lo que cambia es lo que se acumula adentro.
 | **decisiones** | Las decisiones estructurales, para no re-decidir ni contradecir lo ya resuelto |
 | **herramientas** | Las tools que el propósito del repo requiere (script, skill local, MCP), en un registro |
 | **conducta** | Reglas "cuando hagas X, asegurate de Y", que un hook entrega en el momento justo |
-| **commits** | La convención de mensajes de commit del repo |
 
-Se distribuye como **7 plugins**: el transversal `amp` más uno por cada subsistema que tenga skill de operación. Instalás `amp` y los otros seis entran solos como dependencias — una instalación por repo.
+Se distribuye como **9 plugins**: el transversal `amp` más uno por cada subsistema. Instalás `amp` y los otros ocho entran como dependencias — una instalación por repo.
 
 | Plugin | Skills |
 |--------|--------|
 | `amp` | `inicializar` (arma el `.claude/` completo) · `planificar` (analiza un plan contra lo que el repo sabe) · `info` (estado) · `actualizar` (pone al día una instalación vieja) |
-| `amp-memoria` | `registrar-memoria` |
+| `amp-subsistemas` | `agregar-subsistema`, `reubicar-aprendizaje` |
 | `amp-preferencias` | `registrar-preferencia` |
 | `amp-planes` | `ciclo-de-plan` |
 | `amp-conocimiento` | `registrar-conocimiento` · `buscar-conocimiento` |
 | `amp-semantica` | `converger-terminologia` |
 | `amp-decisiones` | `registrar-decision` |
+| `amp-herramientas` | `registrar-herramienta` |
+| `amp-conducta` | `registrar-regla` |
 
-Los tres subsistemas sin skill propia (**herramientas**, **conducta**, **commits**) no tienen plugin: su estructura la escribe `amp:inicializar`.
+`commits` no es un noveno subsistema: el texto del estilo vive en Preferencias y Conducta lo entrega en el momento de confirmar.
 
 ## Cómo aprende
 
@@ -111,7 +112,7 @@ En un repo que ya tiene el Agente Multipropósito, pedile al agente:
 amp:actualizar
 ```
 
-Es el único punto de entrada. Primero verifica el marketplace y los plugins del agente que estás usando; si realmente los actualiza, te pide reiniciar la sesión. Al volver, repetís el mismo pedido y nivelará los archivos Base del repo sin tocar su Aprendizaje. No hace falta ejecutar comandos de marketplace o plugins a mano.
+Es el único punto de entrada. Primero verifica el marketplace y los plugins; solo pide reiniciar si cambió lo que está cargado. Después nivela la Base. Si encuentra una generación retirada, como `memoria/`, instala la casa nueva y conduce la reubicación pieza por pieza: nunca informa “al día” mientras la migración siga pendiente.
 
 📄 **[Manual de instalación completo](docs/INSTALAR.md)** — paso a paso, actualización, instalación para Codex / Cursor / Gemini, y problemas frecuentes.
 
@@ -127,11 +128,11 @@ El catálogo completo de funcionalidades, dependencias y nombres de skill está 
 ├── docs/                      # documentación para humanos
 │   └── INSTALAR.md            # manual de instalación y actualización
 ├── .claude/                   # el propio setup, aplicado a este repo
-│   ├── memoria/ preferencias/ planes/ conocimiento/ semantica/
+│   ├── subsistemas/ preferencias/ planes/ conocimiento/ semantica/
 │   ├── decisiones/ herramientas/ conducta/
 │   └── ...                    # cada subsistema con su manifiesto, índice y lint
 ├── .claude-plugin/
-│   └── marketplace.json       # catálogo del marketplace (7 plugins)
+│   └── marketplace.json       # catálogo del marketplace (9 plugins)
 └── funcionalidades/           # cada subcarpeta = un plugin
     └── <nombre>/              # plugin.json + README + skills/<skill>/
 ```

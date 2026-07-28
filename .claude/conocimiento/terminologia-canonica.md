@@ -1,9 +1,4 @@
----
-name: terminologia-canonica
-description: Una regla escrita con el vocabulario que prohíbe se auto-refuerza; ratificar un término no lo cambia hasta bajarlo al texto. Barrer los canónicos primero y enunciar contra la lista aprobada, no contra una lista de prohibidos.
-metadata:
-  type: feedback
----
+# Terminología canónica
 
 Dos mecanismos por los que la terminología ajena sobrevive aunque el usuario la haya señalado. Los dos observados en este repo el 2026-07-20.
 
@@ -21,4 +16,4 @@ Dos mecanismos por los que la terminología ajena sobrevive aunque el usuario la
 4. **Excluir del barrido:** `planes/ejecutados/` y `descartados/` (historia congelada — reescribir el pasado falsea el registro), el glosario y el plan de veto (contienen los términos vetados como ejemplo, a propósito).
 5. Al cambiar la Base de preferencias, **verificar a mano** que quedó idéntica en los tres lugares (`PREFERENCIAS.md` y las dos `PLANTILLA.md`): `lint-harness` no compara ese texto.
 
-Relacionado: [[semantica]], [[propagacion-harness]].
+Relacionado: [Semántica](../semantica/README.md) y la skill local `propagar-harness`.

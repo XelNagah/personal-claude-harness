@@ -20,7 +20,7 @@ El repo es a la vez un **marketplace de plugins de Claude Code** (estilo Matt Po
 ├── README.md                                  # presentación del repo (público)
 ├── REGISTRO.md                                # catálogo de funcionalidades
 ├── .claude/                                   # el propio setup estándar, aplicado a este repo
-│   ├── memoria/                               # memoria local + índice MEMORIA.md + MANIFIESTO.md + lint-memoria/
+│   ├── subsistemas/                           # catálogo Base/Propósito + MANIFIESTO.md + lint-subsistemas/
 │   ├── preferencias/                          # PREFERENCIAS.md (Base + Adaptaciones) + lint-preferencias/
 │   ├── planes/                                # PLANES.md + ESTADOS.md + MANIFIESTO.md + pendientes/ ejecutados/ descartados/ + lint-planes/ (hook SessionStart)
 │   ├── conocimiento/                          # lo que el agente sabe (INDICE.md) + MANIFIESTO.md + lint-conocimiento/
@@ -29,30 +29,32 @@ El repo es a la vez un **marketplace de plugins de Claude Code** (estilo Matt Po
 │   └── herramientas/                          # tools del Propósito (INDICE.md, columna Tipo) + MANIFIESTO.md; los lints de subsistema viven con su subsistema, no acá
 │       ├── lint-herramientas/                 # lint del registro de Herramientas
 │       └── lint-harness/                      # lint de coherencia del harness (disco↔marketplace↔REGISTRO, textual, tamaño de manifiestos)
-├── .claude-plugin/marketplace.json            # catálogo del marketplace (7 plugins, decisión 0029)
+├── .claude-plugin/marketplace.json            # catálogo del marketplace (9 plugins)
 └── funcionalidades/                           # cada subcarpeta = un plugin
-    ├── amp/                                   # plugin transversal: skills inicializar · planificar · actualizar (+ info); dep: las 6 amp-<sub>
-    ├── amp-memoria/                           # infra: memoria/ + MEMORIA.md + Mapa del repo (@imports); skill registrar-memoria
+    ├── amp/                                   # plugin transversal: inicializar · planificar · actualizar · info; dep: los 8 amp-<sub>
+    ├── amp-subsistemas/                       # catálogo + alta de casas + reubicación guiada del Aprendizaje
     ├── amp-preferencias/                      # preferencias versionadas Base/Adaptaciones (@import); skill registrar-preferencia
-    ├── amp-planes/                            # ciclo pendientes/ejecutados/descartados + PLANES.md + lint + hook; skill ciclo-de-plan (dep: amp-memoria)
-    ├── amp-conocimiento/                      # base .claude/conocimiento/ + lint; skills registrar-conocimiento · buscar-conocimiento (dep: amp-memoria)
-    ├── amp-semantica/                         # glosario + terminología farlopa + lint; skill converger-terminologia (dep: amp-memoria)
-    └── amp-decisiones/                        # decisiones estructurales: tabla + detalle + lint; skill registrar-decision (dep: amp-memoria)
+    ├── amp-planes/                            # ciclo pendientes/ejecutados/descartados + PLANES.md + lint + hook
+    ├── amp-conocimiento/                      # base .claude/conocimiento/ + lint
+    ├── amp-semantica/                         # glosario + Terminología Farlopa + lint
+    ├── amp-decisiones/                        # decisiones estructurales: tabla + detalle + lint
+    ├── amp-herramientas/                      # registro de Herramientas; skill registrar-herramienta
+    └── amp-conducta/                          # momentos y reglas; skill registrar-regla
 ```
 
-Los subsistemas **sin skill de operación** (`herramientas`, `conducta`, `commits`) **no tienen plugin**: su estructura la escribe `amp:inicializar` (el instalador consolidado dentro del plugin `amp`).
+Todos los subsistemas Base tienen plugin y al menos una skill de operación. `commits` no es un subsistema: su estilo vive en Preferencias y su entrega en Conducta.
 
 Cada **funcionalidad/plugin** = `funcionalidades/<nombre>/` con `.claude-plugin/plugin.json` + `README.md` + `skills/<nombre-skill>/SKILL.md` (formato estándar Agent Skills, **fuente única** del flujo, rutas `.claude/` literales) y `PLANTILLA.md` cuando lleva textos literales. Catálogo, dependencias, nombres de plugin/skill en `REGISTRO.md`.
 
 ## Distribución: marketplace de plugins
 
-`.claude-plugin/marketplace.json` (nombre `xelnagah-harness`) lista los 7 Plugins con `source: "./funcionalidades/<nombre>"`: `amp` transversal + 6 `amp-<sub>`. Validado con `claude plugin validate .`. En Claude Code: `/plugin marketplace add <owner>/<repo>` + `/plugin install amp@xelnagah-harness`; instala el paquete completo por dependencias. En Codex CLI: registrar el marketplace y correr `node <checkout-harness>/.claude/herramientas/instalar-plugins-codex/instalar-plugins-codex.js --aplicar`; ese instalador agrega las dependencias antes de `amp`, porque `codex plugin add` no las instala automáticamente.
+`.claude-plugin/marketplace.json` (nombre `xelnagah-harness`) lista 9 plugins: `amp` transversal + 8 `amp-<sub>`. En Claude Code: `/plugin marketplace add <owner>/<repo>` + `/plugin install amp@xelnagah-harness`. En Codex CLI, `actualizar-plugins --aplicar` registra el marketplace e instala las dependencias antes de `amp`.
 
 ## Mantenimiento
 
 - **`SKILL.md` es la fuente única de cada flujo** (no hay más `prompt.md` por funcionalidad). Cambia una preferencia o un texto que viaja → actualizar el `SKILL.md`/`PLANTILLA.md` de la funcionalidad afectada **y** el instalador consolidado `amp:inicializar` (`funcionalidades/amp/skills/inicializar/`: su `SKILL.md` y `PLANTILLA.md` duplican los textos literales de todos los subsistemas, porque la copia instalada del Plugin no puede leer las piezas en ejecución). Usar la skill `propagar-harness`. `amp:inicializar` es la **fuente única** del setup: absorbió los ex `inicializar-<sub>` individuales.
 - **Agregar una funcionalidad nueva** → skill `agregar-funcionalidad`: crear `funcionalidades/<nombre>/` (plugin.json + README + skills/<skill>/), sumarla a `marketplace.json` (y a `dependencies` de `amp` si es un `amp-<sub>` del paquete), registrarla en `REGISTRO.md`, y sumar su sección a `amp:inicializar` si es parte del setup base. Validar con `claude plugin validate .`. Procedimiento en `REGISTRO.md`.
-- **Dependencias actuales (decisión 0029):** `amp-planes`, `amp-conocimiento`, `amp-semantica` y `amp-decisiones` dependen de `amp-memoria` (guardan memorias en `memoria/`); `amp-memoria` y `amp-preferencias` no dependen de nada. El plugin transversal `amp` depende de las 6 `amp-<sub>` (bundle). `amp:inicializar` respeta el orden: amp-memoria/amp-preferencias primero, después los que dependen de memoria.
+- **Dependencias actuales:** los ocho plugins de subsistema son independientes; `amp` depende de todos como paquete. `amp-memoria` está retirado. Si un consumidor todavía lo declara o conserva `.claude/memoria/`, `amp:actualizar` instala la Base nueva, migra el nombre retirado y coordina la reubicación del Aprendizaje antes de informar que quedó al día.
 - **Idempotencia / nivelar:** todo skill lleva una sección "Reconciliación (idempotencia)" — son seguros de re-correr y sirven para llevar al día repos a medio configurar. Reglas: inspeccionar antes de escribir, crear solo lo ausente, detectar equivalentes por tema (no pisar lo divergente, preguntar), reportar al final en tres grupos (`agregado` / `ya estaba` / `divergente`). Al tocar un flujo de trabajo, conservar esa propiedad: nada de "Crear X" a secas sobre archivos compartidos (`AGENTS.md`, `MEMORIA.md`).
 - **Versionado de plugins:** cada `plugin.json` tiene `version`. Con `version` fijo, los usuarios solo reciben la actualización al subirle la versión; si se omite, cada commit cuenta como versión nueva. Subir la versión al publicar cambios, o quitar `version` para auto-versionar por commit.
 
@@ -70,9 +72,9 @@ node .claude/preferencias/lint-preferencias/lint-preferencias.js
 
 Cada subsistema tiene un **Manifiesto** (`.claude/<sub>/MANIFIESTO.md`, decisión 0017): una descripción breve —qué es, cómo se usa, cuándo consultarlo— que va **siempre en contexto** y que **declara si su índice también se carga**, incluyendo o no la línea `@INDICE.md`. Lo que se carga siempre es el manifiesto, no necesariamente el índice (reemplaza la carga incondicional del índice de la decisión 0002).
 
-Si tu agente no expande imports, **leé estos manifiestos al inicio de la sesión** (y, si el manifiesto importa su índice, ese índice también). Hoy cargan su índice: memoria, conocimiento, herramientas. NO lo cargan (se consultan a demanda): planes, semántica, decisiones, conducta.
+Si tu agente no expande imports, **leé estos manifiestos al inicio de la sesión** (y, si el manifiesto importa su índice, ese índice también). Hoy cargan su índice: subsistemas, conocimiento y herramientas. NO lo cargan (se consultan a demanda): planes, semántica, decisiones y conducta.
 
-@.claude/memoria/MANIFIESTO.md
+@.claude/subsistemas/MANIFIESTO.md
 @.claude/planes/MANIFIESTO.md
 @.claude/conocimiento/MANIFIESTO.md
 @.claude/semantica/MANIFIESTO.md

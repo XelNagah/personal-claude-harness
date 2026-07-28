@@ -1,15 +1,16 @@
 {
   "name": "amp",
-  "description": "Plugin transversal del Agente Multipropósito: skills inicializar (arma el .claude completo), planificar (análisis crítico contra la sabiduría del repo), info (pantalla de estado) y actualizar (nivelador del harness). Instala el setup estándar completo — trae los 7 amp-<sub> por dependencias (bundle, alcance local).",
-  "version": "0.6.27",
+  "description": "Plugin transversal del Agente Multipropósito: inicializa y actualiza la Base, planifica contra la sabiduría del repo y muestra su estado. Instala el paquete completo de ocho subsistemas por dependencias.",
+  "version": "0.7.0",
   "author": { "name": "jllarens", "email": "jllarens@gmail.com" },
   "dependencies": [
-    "amp-memoria",
     "amp-subsistemas",
     "amp-preferencias",
     "amp-planes",
     "amp-conocimiento",
     "amp-semantica",
-    "amp-decisiones"
+    "amp-decisiones",
+    "amp-herramientas",
+    "amp-conducta"
   ]
 }

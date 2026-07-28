@@ -57,7 +57,7 @@ A medida que las cosas se cristalizan, no las acumules — capturalas en el mome
 
 - **Se resuelve un término** → actualizar `.claude/semantica/GLOSARIO.md` (fila del concepto; alias si aparecieron) o vetarlo en `.claude/semantica/TERMINOLOGIA-FARLOPA.md`. La semántica es solo terminología, no detalles de implementación.
 - **Se cristaliza una decisión estructural** (fija operatoria funcional, o elige un camino que condiciona el futuro) → registrarla en `.claude/decisiones/INDICE.md`. Ofrecerla **solo** si es estructural — no las triviales u operativas.
-- **Se averigua algo del dominio que costó descubrir** (cómo funciona un sistema externo, un formato, una restricción real) → asentarlo en `.claude/conocimiento/`. La prueba: *¿seguiría siendo cierto si este repo no existiera?* Sí → es conocimiento; no → es memoria o decisión. **Este análisis lee las tres bases; también tiene que escribirlas** — el hallazgo que se explica en la conversación y no se asienta se vuelve a averiguar en la sesión siguiente.
+- **Se averigua algo reutilizable que costó descubrir** sobre el proyecto, el dominio, un sistema externo, un formato o una restricción real → asentarlo en `.claude/conocimiento/`. Si en cambio gobierna cómo actuar, derivarlo a Preferencias, Decisiones, Planes, Semántica, Herramientas o Conducta. **Este análisis lee las bases; también tiene que escribirlas**: el hallazgo que solo se explica en la conversación se vuelve a averiguar.
 - Al cerrar, correr los lints correspondientes (`lint-semantica`, `lint-decisiones`, `lint-conocimiento`) si se tocaron esas carpetas.
 
 ## Cierre

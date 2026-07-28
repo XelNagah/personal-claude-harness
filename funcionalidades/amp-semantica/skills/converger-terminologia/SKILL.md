@@ -5,7 +5,7 @@ description: Recorre el texto del repo contra la semántica (glosario + Terminol
 
 # Converger la terminología a la semántica
 
-La semántica solo da coherencia si el repo la usa: los sinónimos improvisados y los anglicismos se propagan por texto plano, memorias y planes hasta volverse la terminología de facto. Esta skill hace el chequeo **semántico** que el lint mecánico no puede hacer: juzgar que dos palabras nombran el mismo concepto, y que un término está usado en su significado vetado.
+La semántica solo da coherencia si el repo la usa: los sinónimos improvisados y los anglicismos se propagan por texto plano, conocimiento y planes hasta volverse la terminología de facto. Esta skill hace el chequeo **semántico** que el lint mecánico no puede hacer: juzgar que dos palabras nombran el mismo concepto, y que un término está usado en su significado vetado.
 
 **Gobernanza (regla dura):** el agente **propone**; ratificar, vetar o reescribir es del usuario. Ningún término se asienta sin su ok.
 

@@ -83,7 +83,7 @@ for (const r of rows) {
 
 // [2] paginas .md huerfanas (en semantica/, no referenciadas por la tabla)
 // Los dos registros y la infra del subsistema no son paginas de detalle: se excluyen.
-const NO_HUERFANO = new Set(['GLOSARIO.md', 'TERMINOLOGIA-FARLOPA.md', 'INDICE.md', 'MANIFIESTO.md']);
+const NO_HUERFANO = new Set(['GLOSARIO.md', 'TERMINOLOGIA-FARLOPA.md', 'INDICE.md', 'MANIFIESTO.md', 'README.md']);
 const huerfanos = [];
 if (fs.existsSync(root)) {
   for (const f of fs.readdirSync(root)) {

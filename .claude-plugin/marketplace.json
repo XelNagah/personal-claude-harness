@@ -4,17 +4,12 @@
     "name": "jllarens",
     "email": "jllarens@gmail.com"
   },
-  "description": "Setup estándar del Agente Multipropósito (AMP): un plugin transversal 'amp' (inicializar · planificar · info · actualizar) + un plugin por subsistema con skill de operación (amp-memoria, amp-conocimiento, amp-decisiones, amp-preferencias, amp-planes, amp-semantica). Instalás 'amp' y el bundle completo entra por dependencias (alcance local: la declaración queda en settings.local.json, fuera del control de versiones).",
+  "description": "Agente Multipropósito: un plugin transversal y ocho plugins de subsistema. Instalás amp y el paquete completo entra por dependencias.",
   "plugins": [
     {
       "name": "amp",
       "source": "./funcionalidades/amp",
-      "description": "Plugin transversal del Agente Multipropósito: inicializar (arma el .claude completo), planificar, info (estado) y actualizar (nivelador). Trae los 7 amp-<sub> por dependencias."
-    },
-    {
-      "name": "amp-memoria",
-      "source": "./funcionalidades/amp-memoria",
-      "description": "Memoria local persistida: memoria/ + índice MEMORIA.md + memorias tipadas. Skill registrar-memoria. Infraestructura base."
+      "description": "Plugin transversal: inicializar, planificar, info y actualizar. Trae los ocho subsistemas por dependencias."
     },
     {
       "name": "amp-subsistemas",
@@ -29,22 +24,32 @@
     {
       "name": "amp-planes",
       "source": "./funcionalidades/amp-planes",
-      "description": "Ciclo de planes pendientes→ejecutados→descartados + registro PLANES.md. Skill ciclo-de-plan. Depende de amp-memoria."
+      "description": "Ciclo de planes pendientes→ejecutados→descartados + registro PLANES.md. Skill ciclo-de-plan."
     },
     {
       "name": "amp-conocimiento",
       "source": "./funcionalidades/amp-conocimiento",
-      "description": "Base de conocimiento en .claude/conocimiento/ + lint. Skills registrar-conocimiento y buscar-conocimiento. Depende de amp-memoria."
+      "description": "Base de conocimiento en .claude/conocimiento/ + lint. Skills registrar-conocimiento y buscar-conocimiento."
     },
     {
       "name": "amp-semantica",
       "source": "./funcionalidades/amp-semantica",
-      "description": "Subsistema semántica: glosario (terminología legítima) + Terminología Farlopa (relaciones término→significado vetadas) + lint. Skill converger-terminologia. Depende de amp-memoria."
+      "description": "Subsistema semántica: glosario + Terminología Farlopa + lint. Skill converger-terminologia."
     },
     {
       "name": "amp-decisiones",
       "source": "./funcionalidades/amp-decisiones",
-      "description": "Registro de decisiones estructurales del repo (tabla + detalle) + lint. Skill registrar-decision. Depende de amp-memoria."
+      "description": "Registro de decisiones estructurales del repo (tabla + detalle) + lint. Skill registrar-decision."
+    },
+    {
+      "name": "amp-herramientas",
+      "source": "./funcionalidades/amp-herramientas",
+      "description": "Registro de Herramientas del Propósito. Skill registrar-herramienta."
+    },
+    {
+      "name": "amp-conducta",
+      "source": "./funcionalidades/amp-conducta",
+      "description": "Reglas entregadas en el momento de actuar. Skill registrar-regla."
     }
   ]
 }

@@ -1,22 +1,23 @@
 ---
 name: inicializar
-description: Inicializa en el repo actual el setup estándar completo del Agente Multipropósito — arma el .claude completo con todos los subsistemas (memoria, preferencias, planes, conocimiento, semántica, decisiones, herramientas, conducta, commits). Use when el usuario dice "amp:inicializar", "inicializá el repo", "armá el .claude", "setup completo" o quiere arrancar un proyecto nuevo con su setup estándar.
+description: Inicializa en el repo actual el setup estándar completo del Agente Multipropósito — arma el .claude completo con el catálogo de subsistemas y las casas Base (preferencias, planes, conocimiento, semántica, decisiones, herramientas y conducta). Use when el usuario dice "amp:inicializar", "inicializá el repo", "armá el .claude", "setup completo" o quiere arrancar un proyecto nuevo con su setup estándar.
 ---
 
 # Inicializar setup completo (orquestador)
 
-Instala el setup estándar completo del usuario aplicando las nueve funcionalidades de convención en orden. Los textos literales (memorias, bloques de preferencias, contenidos iniciales, los scripts de lint y el hook repartidor de conducta) están en [PLANTILLA.md](PLANTILLA.md). (La skill de análisis `planificar` no se instala por-repo: es global.)
+Instala el setup estándar completo del usuario aplicando el catálogo y las siete casas Base en orden. Los textos literales (manifiestos, README, registros, preferencias, scripts de lint y hook repartidor de conducta) están en [PLANTILLA.md](PLANTILLA.md). (La skill de análisis `planificar` no se instala por-repo: es global.)
 
 ## Reconciliación (idempotencia)
 
 Segura de re-correr: este es el modo de **"nivelar"** repos que ya tienen partes del setup (unas sí, otras no). Reglas para **todo** paso que escribe:
 
-- **Inspeccionar antes de escribir.** Leer primero el archivo/carpeta destino. Nunca reescribir de cuajo un archivo existente (en especial `AGENTS.md` y `memoria/MEMORIA.md`).
+- **Inspeccionar antes de escribir.** Leer primero el archivo/carpeta destino. Nunca reescribir de cuajo un archivo existente (en especial `AGENTS.md`, `subsistemas/SUBSISTEMAS.md` y los registros con secciones del Propósito).
 - **Crear solo lo ausente.** No existe → crear. Existe → agregar únicamente lo que falte, preservando el resto tal cual.
-- ⚠️ **«Lo que falta» se mide por pieza, no por archivo.** Que el archivo exista **no** significa que esté completo. Un registro Base presente pero **sin una de sus filas** está incompleto, y esa fila se agrega —no se reporta `ya estaba`—. Es el modo de falla más caro de este flujo: el repo se informa al día mientras le falta la mitad del cableado, y nadie lo mira de nuevo. Los cinco registros que se reconcilian **por fila o por entrada**, con lo que cada uno debe tener sí o sí:
+- ⚠️ **«Lo que falta» se mide por pieza, no por archivo.** Que el archivo exista **no** significa que esté completo. Un registro Base presente pero **sin una de sus filas** está incompleto, y esa fila se agrega —no se reporta `ya estaba`—. Es el modo de falla más caro de este flujo: el repo se informa al día mientras le falta la mitad del cableado, y nadie lo mira de nuevo. Los seis registros que se reconcilian **por fila o por entrada**, con lo que cada uno debe tener sí o sí:
 
   | Registro | Lo Base que no puede faltar |
   |----------|------------------------------|
+  | `subsistemas/SUBSISTEMAS.md` → `## Subsistemas Base` | una fila por casa Base instalada; `## Subsistemas del Propósito` se preserva entero |
   | `conducta/MOMENTOS.md` | una fila por momento del vocabulario, incluido **al arrancar la sesión** (`SessionStart`) |
   | `conducta/INDICE.md` → `## Reglas Base` | las Reglas Base completas, incluidas **Mostrar la Pantalla de bienvenida al arrancar** (clase `correr`) y **Frenar la terminología vetada antes de que se escriba** (clase `bloquear`) |
   | `herramientas/INDICE.md` → `## Herramientas Base` | una fila por Herramienta Base instalada (hoy `actualizar-plugins`) |
@@ -24,19 +25,19 @@ Segura de re-correr: este es el modo de **"nivelar"** repos que ya tienen partes
   | `AGENTS.md` → `## Subsistemas` | una línea `@.claude/<sub>/MANIFIESTO.md` por subsistema instalado |
 
   Agregar una fila Base que falta **no es pisar**: lo que no se toca es lo aprendido —las filas del Propósito, las reglas propias, los hooks ajenos—, que convive en el mismo archivo y se preserva entero.
-- **Detectar equivalentes.** Una sección o memoria puede estar ya con otro título o redacción (de pedidos previos). Buscar por tema, no solo por nombre exacto. Igual → no tocar. Distinto → **no pisar**: reportar divergencia y preguntar antes de reconciliar.
+- **Detectar equivalentes.** Una sección o pieza puede estar ya con otro título o redacción (de pedidos previos). Buscar por tema, no solo por nombre exacto. Igual → no tocar. Distinto → **no pisar**: reportar divergencia y preguntar antes de reconciliar.
 - **Reportar al final** en tres grupos por funcionalidad: `agregado` (faltaba), `ya estaba` (ok), `divergente` (existe distinto, requiere decisión del user).
 
-## Cableado de subsistemas (decisiones 0017 / 0019)
+## Cableado de subsistemas
 
-Cada subsistema se cablea en `AGENTS.md` con **una línea `@.claude/<sub>/MANIFIESTO.md`** dentro de una **única sección `## Subsistemas`** (PLANTILLA §Subsistemas) — no con una sección de texto plano por subsistema ni con el viejo bloque "Mapa del repo". Además de su índice/lint/memoria, cada paso de subsistema **crea `<sub>/MANIFIESTO.md`** (PLANTILLA §Manifiesto de ese subsistema) y **asegura su línea** en `## Subsistemas`. El manifiesto **declara si su índice se carga** incluyendo o no la línea `@INDICE.md`: cargan índice **memoria, conocimiento, herramientas**; NO cargan (se consultan a demanda) **planes, semántica, decisiones, conducta**.
+`subsistemas/SUBSISTEMAS.md` es el catálogo de casas persistentes. Su sección `## Subsistemas Base` la mantiene el harness y se reconcilia por fila; `## Subsistemas del Propósito` pertenece al repo y nunca se pisa. Cada subsistema se cablea en `AGENTS.md` con **una línea `@.claude/<sub>/MANIFIESTO.md`** dentro de una **única sección `## Subsistemas`** (PLANTILLA §Subsistemas). Además de su índice o registro, README y lint, cada paso crea `<sub>/MANIFIESTO.md` y asegura su línea. Cargan índice **subsistemas, conocimiento y herramientas**; NO cargan índice **planes, semántica, decisiones y conducta**. Preferencias se carga siempre mediante su sección propia.
 
 **Migración (modelo viejo → nuevo).** Si el repo ya tenía secciones de texto plano por-subsistema ("## Memoria del proyecto", "## Glosario del proyecto", …) y/o el bloque "## Mapa del repo (siempre cargado)", `## Subsistemas` las **reemplaza**: al cablear cada subsistema, quitar su sección de texto plano vieja y su línea `@…INDICE`/`@…MEMORIA`/`@…PLANES` del Mapa; cuando el bloque Mapa queda sin líneas de subsistema, quitar también su encabezado. La sección `## Preferencias (siempre cargadas)` y la Descripción del proyecto **no se tocan**.
 
 ## Estructura objetivo
 
 ```
-├── AGENTS.md          # punto de entrada (fuente única): Descripción + Preferencias (@import) + Subsistemas (una sección con 7 @MANIFIESTO)
+├── AGENTS.md          # punto de entrada: Descripción + Preferencias (@import) + Subsistemas (una sección con 7 @MANIFIESTO)
 ├── CLAUDE.md          # adaptador para Claude Code: @AGENTS.md
 ├── .codex/
 │   └── hooks.json     # hooks: SessionStart → lint-planes --quiet + establecer-conducta; UserPromptSubmit/PreToolUse → establecer-conducta (Codex CLI; requiere repo de confianza + features.hooks)
@@ -44,19 +45,18 @@ Cada subsistema se cablea en `AGENTS.md` con **una línea `@.claude/<sub>/MANIFI
     ├── settings.json      # hooks: SessionStart → lint-planes --quiet + establecer-conducta; UserPromptSubmit/PreToolUse → establecer-conducta (Claude Code)
     ├── preferencias/
     │   ├── PREFERENCIAS.md    # Base (harness vN) + Adaptaciones de este repo
+    │   ├── estilo-commits.md
+    │   ├── archivo-de-estado.md
     │   └── lint-preferencias/lint-preferencias.js
-    ├── memoria/
-    │   ├── MEMORIA.md
-    │   ├── feedback_flujo_planes.md
-    │   ├── feedback_archivo_de_estado.md
-    │   ├── feedback_estilo_commits.md
-    │   ├── feedback_base_conocimiento.md
-    │   ├── feedback_semantica.md
-    │   ├── feedback_decisiones.md
-    │   ├── feedback_herramientas.md
-    │   ├── feedback_conducta.md
-    │   └── lint-memoria/lint-memoria.js
+    ├── subsistemas/
+    │   ├── MANIFIESTO.md
+    │   ├── SUBSISTEMAS.md
+    │   ├── README.md
+    │   └── lint-subsistemas/
+    │       ├── lint-subsistemas.js
+    │       └── README.md
     ├── planes/
+    │   ├── README.md
     │   ├── ESTADOS.md     # estados: Estado | Sentido | Carpeta | Terminal (fuente de verdad, la lee el lint)
     │   ├── PLANES.md      # registro: Plan | Estado | Creado | Cerrado | Origen | Notas
     │   ├── pendientes/.gitkeep
@@ -64,21 +64,26 @@ Cada subsistema se cablea en `AGENTS.md` con **una línea `@.claude/<sub>/MANIFI
     │   ├── descartados/.gitkeep
     │   └── lint-planes/lint-planes.js
     ├── conocimiento/
+    │   ├── README.md
     │   ├── INDICE.md
     │   └── lint-conocimiento/lint-conocimiento.js
     ├── semantica/
+    │   ├── README.md
     │   ├── GLOSARIO.md
     │   ├── TERMINOLOGIA-FARLOPA.md
     │   └── lint-semantica/lint-semantica.js
     ├── decisiones/
+    │   ├── README.md
     │   ├── INDICE.md
     │   └── lint-decisiones/lint-decisiones.js
     ├── herramientas/
+    │   ├── README.md
     │   ├── INDICE.md      # registro: ## Herramientas Base + ## Herramientas del Propósito
     │   ├── actualizar-plugins/actualizar-plugins.js   # Herramienta Base: pone al día los plugins
     │   └── lint-herramientas/lint-herramientas.js
     └── conducta/
         ├── MANIFIESTO.md
+        ├── README.md
         ├── INDICE.md         # registro de reglas: ## Reglas Base + ## Reglas del Propósito
         ├── MOMENTOS.md       # vocabulario de momentos (lo lee el lint)
         ├── establecer-conducta/establecer-conducta.js   # hook repartidor
@@ -87,31 +92,16 @@ Cada subsistema se cablea en `AGENTS.md` con **una línea `@.claude/<sub>/MANIFI
         └── lint-conducta/lint-conducta.js
 ```
 
-## Flujo de trabajo
+## Flujo de trabajo vigente
 
-0. **Ubicar la raíz.** Si el cwd contiene subproyectos independientes (varias carpetas con su propio `.claude`), preguntar en cuál inicializar antes de crear nada.
-1. **preferencias** — asegurar el **punto de entrada** (decisión 0010): `AGENTS.md` en la raíz (fuente única de instrucciones) + `CLAUDE.md` en la raíz como adaptador de una línea (`@AGENTS.md`). Si no existe ninguno, arrancar `AGENTS.md` con la **Descripción del proyecto** (1 a 3 párrafos inferidos del repo; si está vacío o es ambiguo, preguntar — no inventar). **Migración desde CLAUDE.md** (esquema previo a 0010): si hay un `CLAUDE.md` con contenido (en la raíz o en `.claude/`) y no hay `AGENTS.md` → mover el contenido a `AGENTS.md` (reescribiendo los `@imports` con prefijo `.claude/`), dejar `CLAUDE.md` como adaptador y eliminar el `.claude/CLAUDE.md` residual si lo hubiera (genera doble carga); si el contenido difiere de lo que instala el harness, migrar tal cual y marcar `divergente`. Crear `preferencias/PREFERENCIAS.md` (contenido inicial en PLANTILLA.md §Preferencias; la Base incluye el bullet de **Terminología** — control duro en glosario/decisiones) y asegurar en `AGENTS.md` la sección "Preferencias (siempre cargadas)" con su `@import` (`@.claude/preferencias/PREFERENCIAS.md`) **y el paso de lint** (PLANTILLA.md §Preferencias). Instalar el lint `preferencias/lint-preferencias/lint-preferencias.js` (PLANTILLA.md §Script — lint-preferencias) en su carpeta propia, co-ubicado con el subsistema. **Reconciliación de versiones:** Base con versión vieja → reemplazarla entera por la actual (reportar como actualización, no divergencia); Base editada a mano → mover lo ajeno a Adaptaciones; **Adaptaciones nunca se toca**. **Ignorar en git lo que no se versiona:** si el repo usa git, asegurar en `.gitignore` la línea `.claude/tmp/` (temporales de trabajo). Agregar solo si falta, sin reordenar el archivo. ⚠️ **No sembrar `.claude/.respaldo-amp/`:** el nivelador ya no deja el respaldo adentro de `.claude/` —lo omite si git cubre el subsistema, y si no, respalda fuera del repo—, así que esa línea apuntaría a un directorio que no se crea. Si el repo **ya la tiene** de una instalación anterior, dejarla: puede haber respaldos viejos ahí que todavía convenga no commitear. **Migración v0:** bloques inline "Preferencias de comunicación"/"Principios de trabajo" en el punto de entrada textualmente iguales a §Bases anteriores → borrarlos y dejar el import, sin preguntar; con diferencias → diferencias a Adaptaciones + reportar.
-2. **memoria-local** — asegurar `memoria/MEMORIA.md` (índice: encabezado "Cargar al inicio de cada sesión y respetar." + una línea por memoria, con descriptions que carguen el dato clave). Si ya existe, conservar encabezado y líneas; agregar solo las que falten — nunca reescribirlo entero. Crear `memoria/MANIFIESTO.md` (PLANTILLA.md §Manifiesto memoria; trae el criterio de uso + el lint al cerrar e importa su índice `@MEMORIA.md`) y asegurar su línea `@.claude/memoria/MANIFIESTO.md` en la sección `## Subsistemas` (PLANTILLA.md §Subsistemas; ver **Cableado de subsistemas** — migrar el viejo bloque "Mapa del repo"/sección de texto plano "Memoria del proyecto" si estaban). Instalar el lint `memoria/lint-memoria/lint-memoria.js` (PLANTILLA.md §Script — lint-memoria) en su carpeta propia, co-ubicado con el subsistema. Formato de memoria en PLANTILLA.md §Formato.
-3. **gestión-de-planes** — **Migración si hay esquema viejo (dos casos, pueden darse juntos):** (a) *dos carpetas → tres:* renombrar `planes-pendientes/`→`pendientes/`, `planes-ejecutados/`→`ejecutados/`; `.md` sueltos en la raíz de `planes/` → `pendientes/` marcados `Diferido` (preguntar en bloque si hay dudas); ⚠️ grep `planes-pendientes|planes-ejecutados` en AGENTS.md/memorias/planes/settings/hooks y actualizar refs (las de settings pueden vivir en el global de la máquina — reportarlas). (b) *dos ejes → un eje:* si `PLANES.md` tiene columna `Prioridad` (foco/estacionado) + estados viejos (`idea`/`en diseño`/`listo`/`en ejecución`), quitar la columna `Prioridad` y remapear cada fila a un único `Estado` (`estacionado`/`idea`/`en diseño`/`listo` → `Diferido`; `en ejecución` → `En curso`; cerradas conservan `Ejecutado`/`Descartado`); los términos viejos se barren, no se registran como alias. Luego: asegurar `pendientes/`, `ejecutados/`, `descartados/` (`.gitkeep` si usa git), `planes/ESTADOS.md` (PLANTILLA.md §Planes) y `planes/PLANES.md` (PLANTILLA.md §Planes; una fila por plan existente — Creado desde la fecha del nombre viejo; planes nuevos = nombre estable sin fecha); instalar las memorias `feedback_flujo_planes.md` y `feedback_archivo_de_estado.md` (la versión vieja del flujo se reemplaza, reportando) e indexarlas; instalar `planes/lint-planes/` (js + README, PLANTILLA.md §Script), co-ubicado con el subsistema; asegurar el hook `SessionStart` → lint-planes `--quiet` con **registro doble** (PLANTILLA.md §Planes, decisión 0010): en `.claude/settings.json` (Claude Code) y en `.codex/hooks.json` (Codex CLI; avisar que requiere repo de confianza y `features.hooks`), merge cuidadoso en ambos, sin pisar hooks existentes; crear `planes/MANIFIESTO.md` (PLANTILLA.md §Manifiesto planes; NO importa índice) y asegurar su línea `@.claude/planes/MANIFIESTO.md` en `## Subsistemas` (ver **Cableado de subsistemas**; migrar la sección "Planes del proyecto"/`@PLANES.md` del Mapa si estaban).
-4. **estilo-commits** — instalar la memoria `feedback_estilo_commits.md` (PLANTILLA.md) e indexarla con la línea **textual** que acompaña a esa sección (nombra el formato `<Área>: <Resumen>` + Antes/Ahora; un puntero mudo no alcanza, porque el cuerpo de la memoria no queda en contexto). Si el repo ya tiene una convención de commits propia con otro nombre de archivo (`commit_format.md`, `CONTRIBUTING.md`…) y más rica: reconocerla por tema, no crear un segundo archivo, reportar como `divergente` qué falta y preguntar antes de editar.
-5. **conocimiento** — asegurar `conocimiento/INDICE.md` (índice raíz; solo punteros); instalar el lint en su carpeta propia `conocimiento/lint-conocimiento/lint-conocimiento.js` (PLANTILLA.md §Script); instalar la memoria `feedback_base_conocimiento.md` (PLANTILLA.md) e indexarla; crear `conocimiento/MANIFIESTO.md` (PLANTILLA.md §Manifiesto conocimiento; importa su índice `@INDICE.md`) y asegurar su línea `@.claude/conocimiento/MANIFIESTO.md` en `## Subsistemas` (ver **Cableado de subsistemas**; migrar la sección "Base de conocimiento del proyecto"/`@INDICE` del Mapa si estaban). ⚠️ El **disparador de escritura** (*cuándo* asentar: al averiguar algo del dominio que costó descubrir, con la prueba «¿seguiría siendo cierto si este repo no existiera?»; la skill `registrar-conocimiento` hace el flujo) vive **en el manifiesto**, siempre en contexto — sin él nadie llena la carpeta y el lint da verde igual, porque un índice vacío es coherente.
-   **Migración — buscar en tres lugares, no solo el obvio:**
-   - **(a) raíz del repo:** árboles de md, carpetas con su `INDICE.md`, notas sueltas.
-   - **(b) dentro de `memoria/`** (el caso más común y el que más se pasa por alto): la memoria se desborda y termina siendo la base de conocimiento. Señales → **sin frontmatter**, **largo** (decenas/cientos de líneas con secciones), **diccionario/catálogo/procedimiento/formato/estructura**, o **`memoria/` indexado por un `README.md` en vez de `MEMORIA.md`**. Se quedan solo los hechos atómicos tipados con frontmatter.
-   - **(c) fuentes crudas: NO se mueven** — lo que el agente *lee* (escaneos, PDFs de resúmenes, exports, json/csv de origen) vs. lo que *sabe* (el md sintetizado). Salvo que ya estén entreveradas dentro de una carpeta de conocimiento.
-
-   Proponer plan de move y mover por defecto; ambiguo (código/assets/build) → preguntar antes. ⚠️ **Material sensible, en los dos sentidos:** (i) si un archivo a mover está **ya ignorado** por ruta (`memoria/*-token.md`, credenciales), moverlo rompe el ignore y **hace el commit del secreto** → no moverlo o actualizar el `.gitignore` en el mismo paso (verificar con `git status`); (ii) si hay material sensible **sin ignorar** (credenciales/tokens/`.env`/`*.key`, documentos personales o legales, resúmenes bancarios, libros contables, estudios médicos) → **sugerir** las líneas de `.gitignore` y el riesgo concreto, como hallazgo aparte, sin aplicarlo solo (el user decide; puede querer versionarlos en un repo local) + avisar si el repo nunca debería pushearse a un remoto. **Índice completo:** si había un índice parcial, cubrir TODOS los documentos (los no listados eran huérfanos). **Reparar refs:** índices, links, refs desde `AGENTS.md`/memorias/planes, y acople de scripts movidos a `herramientas/<tool>/` — `__dirname` (reapuntar) o **cwd** (prepender `process.chdir(require('path').join(__dirname,'<ruta datos>'))`). ⚠️ **Script referenciado por ruta en `settings.local.json`/`settings.json`** (ej. `"Bash(bash tools/moonraker-get.sh:*)"`): las reglas de permiso matchean por prefijo exacto → moverlo rompe la pre-autorización (en headless = denegación). `grep` su ruta en los settings antes de mover: o no lo movés, o actualizás la regla en el mismo paso. Correr el lint → 0 refs rotas. **Sin git en el repo → `git init` + commit inicial ANTES de mover** (un commit inicial post-migración no sirve de rollback).
-6. **semántica** — asegurar `semantica/GLOSARIO.md` (tabla legítima vacía; PLANTILLA.md §Glosario) y `semantica/TERMINOLOGIA-FARLOPA.md` (tabla de relaciones vetadas vacía; PLANTILLA.md §Farlopa); instalar el lint `semantica/lint-semantica/lint-semantica.js` (PLANTILLA.md §Script — lint-semantica); instalar la memoria `feedback_semantica.md` e indexarla; crear `semantica/MANIFIESTO.md` (PLANTILLA.md §Manifiesto semántica; NO importa índice) y asegurar su línea `@.claude/semantica/MANIFIESTO.md` en `## Subsistemas` (ver **Cableado de subsistemas**; migrar la sección "Glosario del proyecto" si estaba). **El veto es la relación término→significado, no el término**: lo vetado va a Terminología Farlopa con su significado; el glosario no tiene columna de vetados. Alias registrados (no prohibidos); conceptos complejos con página de detalle.
-7. **decisiones** — asegurar `decisiones/INDICE.md` (tabla vacía; PLANTILLA.md §Decisiones); instalar el lint `decisiones/lint-decisiones/lint-decisiones.js`; instalar la memoria `feedback_decisiones.md` e indexarla; crear `decisiones/MANIFIESTO.md` (PLANTILLA.md §Manifiesto decisiones; NO importa índice) y asegurar su línea `@.claude/decisiones/MANIFIESTO.md` en `## Subsistemas` (ver **Cableado de subsistemas**; migrar la sección "Decisiones del proyecto" si estaba). Solo lo **estructural al propósito** del repo; misma estructura tabla+detalle que el glosario.
-8. **herramientas** — asegurar `herramientas/INDICE.md` (registro-tabla **Herramienta | Tipo | Qué hace | Cómo se invoca | Estado** partido **en dos secciones por origen**: `## Herramientas Base` poblada con la Herramienta Base `actualizar-plugins` + `## Herramientas del Propósito` vacía; PLANTILLA.md §Herramientas) — las *tools* que el Propósito requiere (tipos `script`, `skill` local, `MCP` local). ⚠️ **Separación Base/Propósito:** si ya existe un `INDICE.md` con la sección `## Herramientas del Propósito` cargada, poner al día **solo** la sección `## Herramientas Base` y preservar el resto; si el `INDICE.md` viejo **no** tiene el corte en las dos secciones, es reacomodo legacy → **no pisar**, reportar `divergente` y preguntar antes de partir la tabla (una Herramienta del Propósito podría quedar del lado equivocado). Instalar la **Herramienta Base** `herramientas/actualizar-plugins/actualizar-plugins.js` con su `README.md` (PLANTILLA.md §Script — actualizar-plugins) — pone al día los plugins del Agente Multipropósito en esta máquina y detecta el desfase entre lo que corre y lo publicado (los plugins se sirven de un clon del marketplace: la versión que corre es la que quedó en la caché el día que se instaló, y nada avisa); instalar el lint `herramientas/lint-herramientas/lint-herramientas.js` con su `README.md`; instalar la memoria `feedback_herramientas.md` e indexarla; crear `herramientas/MANIFIESTO.md` (PLANTILLA.md §Manifiesto herramientas; importa su índice `@INDICE.md`) y asegurar su línea `@.claude/herramientas/MANIFIESTO.md` en `## Subsistemas` (ver **Cableado de subsistemas**; migrar la sección "Herramientas del proyecto"/`@INDICE` del Mapa si estaban). Los **lints de subsistema no van acá** (son infra del Patrón, co-ubicados con su subsistema). **Migrar las herramientas desordenadas:** cada script suelto a `<tool>/` con README y fila (`Tipo: script`); lo que no se sabe qué hace → `Estado: obsoleto` + reportar. ⚠️ Grep de refs por ruta en `settings`/`.gitignore`/hooks antes de mover.
-9. **conducta** — reglas **"cuando hagas X, asegurate de Y"** que atan **momentos** (evento de hook + condición sin juicio) a **acciones**; su registro **no se carga en contexto**, lo entrega un hook repartidor (una regla cargada al arranque se recita, no se obedece). Asegurar `conducta/MOMENTOS.md` (vocabulario de momentos —incluye el momento `al arrancar la sesión` (`SessionStart`, `activo`)—; PLANTILLA.md §Conducta) y `conducta/INDICE.md` (registro de reglas: encabezado + `## Reglas Base` poblada con las reglas Base —entre ellas la regla clase `correr` que muestra la Pantalla de bienvenida en el momento `al arrancar la sesión`— + `## Reglas del Propósito` vacía; PLANTILLA.md §Conducta). ⚠️ **Separación Base/Propósito:** si ya existe un `INDICE.md` con la sección `## Reglas del Propósito` cargada, poner al día **solo** la sección `## Reglas Base` y preservar el resto; si el `INDICE.md` viejo **no** tiene el corte en las dos secciones, es reacomodo legacy → **no pisar**, reportar `divergente` y preguntar antes de partir la tabla (una regla del Propósito podría quedar del lado equivocado). Instalar el **hook repartidor** `conducta/establecer-conducta/establecer-conducta.js` + su `README.md`, el script de la **Pantalla de bienvenida** `conducta/mostrar-pantalla-bienvenida/mostrar-pantalla-bienvenida.js` + su `README.md` y el **control de terminología** `conducta/detectar-terminologia-vetada/detectar-terminologia-vetada.js` + su `README.md` (PLANTILLA.md §Conducta) — ninguno es una Herramienta (infra co-ubicada, como el lint); instalar el lint `conducta/lint-conducta/lint-conducta.js` + su `README.md` (PLANTILLA.md §Conducta), co-ubicado con el subsistema. Cablear el repartidor con **registro doble** (PLANTILLA.md §Conducta, decisión 0010): las mismas tres entradas en `.claude/settings.json` (Claude Code) y en `.codex/hooks.json` (Codex CLI) — `SessionStart` (corre la Pantalla de bienvenida vía la regla `correr`), `UserPromptSubmit` (sin matcher) y `PreToolUse` (matcher `Write|Edit`, que en Codex alcanza igual porque toda edición pasa por `apply_patch`); en Codex la caja de la Pantalla depende de su soporte de `systemMessage` y el `deny` de una regla `bloquear` todavía no frena la escritura (degrada a aviso). El `SessionStart` se **mergea con el de planes** (`lint-planes --quiet`) sin pisarlo; merge cuidadoso en ambos, **sin pisar** los hooks ya presentes. Instalar la memoria `feedback_conducta.md` (PLANTILLA.md, en Memorias textuales) e indexarla en `MEMORIA.md`. Crear `conducta/MANIFIESTO.md` (PLANTILLA.md §Manifiesto conducta; **NO importa índice** — el registro se consulta a demanda solo para gestionarlo) y asegurar su línea `@.claude/conducta/MANIFIESTO.md` en `## Subsistemas` (ver **Cableado de subsistemas**). Correr el lint (`node .claude/conducta/lint-conducta/lint-conducta.js`) → limpio. **Avisar** que en Codex el hook requiere que la carpeta `.codex/` sea de confianza (`/hooks`) y `features.hooks`, y que **cada actualización que cambie el texto del hook lo vuelve a frenar hasta aprobarlo de nuevo**.
-10. **Memorias adicionales**: si en la conversación ya surgieron preferencias u objetivos del proyecto, persistirlos con el frontmatter estándar e indexarlos.
-11. **Verificar antes de reportar — obligatorio.** No alcanza con haber recorrido los pasos: hay que comprobar que no quedó nada afuera, y eso lo dice el detector del nivelador, que revisa **pieza por pieza** (no por archivo):
-
-    ```bash
-    node <ruta-de-la-skill-amp:actualizar>/amp-actualizar.js --vista-previa
-    ```
-
-    Está al lado de esta skill, en el mismo plugin: `../actualizar/amp-actualizar.js`. **Tiene que dar `BASE — INSTALAR / PISAR (0)`.** Si sigue listando algo, esa pieza no se instaló: volver al paso que le corresponde y completarla, no reportar el repo como nivelado. Es la red contra el modo de falla de este flujo — dar por hecho un paso porque el archivo que lo contiene ya existía.
-
-12. **Reportar el nivelado**: por funcionalidad, qué quedó en `agregado` / `ya estaba` / `divergente`, la estructura final y **la salida del detector del paso 11**. Si hubo `divergente`, listarlo aparte para que el user decida. **No hacer commit** salvo pedido explícito.
+0. **Ubicar la raíz.** Si el cwd contiene subproyectos independientes, preguntar en cuál inicializar antes de crear nada.
+1. **preferencias** — asegurar `AGENTS.md` como fuente única y `CLAUDE.md` como adaptador `@AGENTS.md`; instalar `preferencias/PREFERENCIAS.md` (Base v7, preservando Adaptaciones), `preferencias/estilo-commits.md`, `preferencias/archivo-de-estado.md` y `preferencias/lint-preferencias/` desde PLANTILLA. Asegurar la sección de preferencias y su import en `AGENTS.md`. Reconocer convenciones equivalentes por tema y reportar divergencias sin duplicarlas.
+2. **subsistemas** — instalar `subsistemas/MANIFIESTO.md`, `SUBSISTEMAS.md`, `README.md` y `lint-subsistemas/` desde PLANTILLA. Reconciliar `## Subsistemas Base` por fila y preservar entera `## Subsistemas del Propósito`. Asegurar `@.claude/subsistemas/MANIFIESTO.md` en `AGENTS.md`.
+3. **planes** — instalar `README.md`, `MANIFIESTO.md`, `ESTADOS.md`, `PLANES.md`, las tres carpetas de estados y `lint-planes/`; migrar esquemas previos según §Planes. Cablear el lint de arranque en Claude Code y Codex por merge.
+4. **conocimiento** — instalar `README.md`, `MANIFIESTO.md`, `INDICE.md` y `lint-conocimiento/`. Migrar documentos que son saber reutilizable, reparar referencias y preservar fuentes crudas. No crear ni usar `memoria/`.
+5. **semántica** — instalar `README.md`, `MANIFIESTO.md`, `GLOSARIO.md`, `TERMINOLOGIA-FARLOPA.md` y `lint-semantica/`.
+6. **decisiones** — instalar `README.md`, `MANIFIESTO.md`, `INDICE.md` y `lint-decisiones/`.
+7. **herramientas** — instalar `README.md`, `MANIFIESTO.md`, `INDICE.md`, `actualizar-plugins/` y `lint-herramientas/`; reconciliar sólo `## Herramientas Base` y preservar `## Herramientas del Propósito`.
+8. **conducta** — instalar `README.md`, `MANIFIESTO.md`, `INDICE.md`, `MOMENTOS.md`, el repartidor, la Pantalla de bienvenida, el control de terminología y `lint-conducta/`. Reconciliar sólo `## Reglas Base`, preservar `## Reglas del Propósito` y cablear los tres eventos en Claude Code y Codex por merge.
+9. **Verificar.** Correr todos los lints instalados y `../actualizar/amp-actualizar.js --vista-previa`; debe dar `BASE — INSTALAR / PISAR (0)`.
+10. **Reportar.** Por subsistema: `agregado` / `ya estaba` / `divergente`. No hacer commit salvo pedido explícito.

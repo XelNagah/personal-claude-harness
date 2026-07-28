@@ -18,7 +18,7 @@ La base de conocimiento (`.claude/conocimiento/`) solo sirve si captura lo que e
 3. **Filtrar por naturaleza** (no todo `.md` es conocimiento de agente):
    - **Documentación del proyecto** (README, registros, docs para humanos) → se queda donde está; no se lista en la base.
    - **Conocimiento de agente** → candidato a página.
-   - **Memorias** (correcciones, preferencias, hechos del usuario) → van al subsistema de memoria, no acá.
+   - **Preferencias** (correcciones recurrentes sobre cómo trabajar) → van a Preferencias, no acá.
 4. **Proponer al usuario** la lista de candidatos: título propuesto → fuente (dónde está hoy) → qué aporta → si es **mover** (el original queda obsoleto) o **sintetizar** (el original sigue siendo doc del proyecto). Nada se migra ni se crea sin su ok.
 5. **Asentar lo aprobado:** crear cada página en `.claude/conocimiento/`, indexarla en `INDICE.md` (una línea-puntero por página), y si fue un movimiento, dejar la fuente vieja sin duplicado.
 6. **Cerrar con el lint** desde la raíz del repo:

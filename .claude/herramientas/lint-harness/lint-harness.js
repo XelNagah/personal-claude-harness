@@ -141,7 +141,7 @@ for (const f of enDisco) {
 function buscarLints(dir, out) {
   if (!fs.existsSync(dir)) return out;
   for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
-    if (!e.isDirectory() || e.name === '.git' || e.name === 'node_modules') continue;
+    if (!e.isDirectory() || e.name === '.git' || e.name === 'node_modules' || e.name === 'tmp') continue;
     const full = path.join(dir, e.name);
     if (/^lint-/.test(e.name)) {
       const js = path.join(full, e.name + '.js');
@@ -215,7 +215,7 @@ const baseDivergente = basePorHash.size > 1
 // una declaracion de carga del indice (se carga siempre | NO se carga siempre) y el
 // comando de lint del propio subsistema. El "Flujo de trabajo" es opcional (solo multi-paso,
 // como puntero) y no se chequea. Ademas la presencia de la linea de import del
-// indice (@...INDICE / @...MEMORIA / @...PLANES) debe ser COHERENTE con esa declaracion:
+// indice (la linea @<archivo>.md del propio manifiesto) debe ser COHERENTE con esa declaracion:
 // la linea ES la declaracion (M1 de 0017), no puede mentir. Lado autor, informativo: no
 // viaja al consumidor (se instala correcto desde PLANTILLA).
 const manifiestosSinCampos = [];
@@ -234,9 +234,9 @@ if (fs.existsSync(claudeDir)) {
     const cargaSi = !!(cargaM && !cargaNo);
     if (!cargaM) faltan.push('declaracion de carga del indice');
     if (!new RegExp('node \\.claude/' + sub.name + '/lint-' + sub.name + '/').test(t)) faltan.push('comando de lint');
-    const tieneImport = /^@\S*(INDICE|MEMORIA|PLANES)/m.test(t);
-    if (cargaSi && !tieneImport) faltan.push('declara "se carga siempre" pero falta la linea @INDICE');
-    if (cargaNo && tieneImport) faltan.push('declara "NO se carga siempre" pero incluye una linea @INDICE');
+    const tieneImport = /^@\S+\.md\s*$/m.test(t);
+    if (cargaSi && !tieneImport) faltan.push('declara "se carga siempre" pero falta la linea de import del indice');
+    if (cargaNo && tieneImport) faltan.push('declara "NO se carga siempre" pero incluye una linea de import');
     if (faltan.length) manifiestosSinCampos.push(`${sub.name}/MANIFIESTO.md  [${faltan.join('; ')}]`);
   }
 }

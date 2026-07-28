@@ -1,6 +1,6 @@
 ---
 name: actualizar
-description: Nivela el .claude/ de un Agente con Propósito ya instalado, poniendo al día el Agente Multipropósito que tiene adentro contra la plantilla nueva. Converge por estructura, sin guardar versión: pisa lo Base (mecanismo del harness) respaldándolo antes en .claude/.respaldo-amp/<fecha>/, nunca toca el Aprendizaje (las entradas que el repo acumuló persiguiendo su Propósito), y pregunta antes de reacomodar formas viejas. Aplica renombres conocidos (glosario→semantica) e instala subsistemas faltantes (conducta), delegando en el instalador consolidado amp:inicializar. Arranca chequeando los plugins de la máquina con la Herramienta Base actualizar-plugins —si el repo no la tiene todavía, usa la del marketplace bajado, que siempre está— y, si están atrasados, los pone al día y pide reiniciar antes de tocar archivos; si el repo quedó con nombres de plugin retirados, ejecuta él mismo la migración (instalar lo nuevo, desinstalar lo viejo con el alcance de cada uno) previa confirmación, sin que el usuario tipee comandos. Trae vista previa. Use when el usuario dice "nivelá el Agente Multipropósito", "actualizá el harness del repo", "poné al día el .claude", "amp:actualizar", o al detectar un Agente con Propósito cuyo Agente Multipropósito quedó viejo.
+description: Nivela el .claude/ de un Agente con Propósito ya instalado contra la Base actual. Pisa Base con respaldo, preserva el Aprendizaje y conduce los reacomodos viejos que requieren juicio. En particular, si encuentra la generación retirada memoria/, instala subsistemas/ y coordina reubicar-aprendizaje pieza por pieza: no informa "al día" hasta que memoria desaparece o queda esperando una confirmación explícita del usuario. También actualiza y migra plugins retirados antes de tocar archivos. Use when el usuario dice "nivelá el Agente Multipropósito", "actualizá el harness del repo", "poné al día el .claude", "amp:actualizar", o al detectar un Agente con Propósito cuyo Agente Multipropósito quedó viejo.
 ---
 
 # amp:actualizar — nivelador del harness
@@ -12,10 +12,19 @@ Pone al día el `.claude/` de un **Agente con Propósito**: actualiza el Agente 
 Un Agente con Propósito son dos cosas superpuestas, y la separación por origen **disuelve** el problema de "qué puedo pisar sin borrar lo aprendido":
 
 - **Base** = el **Agente Multipropósito** que tiene adentro (lint, `MANIFIESTO`, estructura, `MOMENTOS`, secciones `## Reglas Base`, cableado del hook) → **se pisa**, respaldando antes. Es lo único que esta skill actualiza.
-- **Aprendizaje** = las entradas que acumuló persiguiendo su Propósito (términos del glosario, memorias, planes, decisiones, conocimiento, `## Reglas del Propósito`) → **no se toca nunca**.
+- **Aprendizaje** = las entradas que acumuló persiguiendo su Propósito (términos del glosario, planes, decisiones, conocimiento, `## Reglas del Propósito`) → **no se pisa ni se reclasifica en silencio**. Cuando una forma retirada lo contiene, esta skill conduce su reubicación y pide confirmación pieza por pieza.
 - **Reacomodo legacy** (formas viejas anteriores a 0027 que puedan enredar el Aprendizaje) → **se pregunta antes**, bloqueante.
 
-**Primera corrida sobre un Agente con Propósito viejo = migración** (instala `conducta`, renombra `glosario`→`semantica` preservando términos, mete el corte Base/Propósito). Las siguientes = reconcile limpio (todo "ya estaba").
+**Primera corrida sobre un Agente con Propósito viejo = migración** (instala la Base nueva, renombra formas conocidas y reubica el Aprendizaje que quedó en casas retiradas). Las siguientes = reconciliación limpia (todo "ya estaba").
+
+### Condición de cierre obligatoria
+
+La presencia de `.claude/memoria/` significa **migración incompleta**, aunque todos sus archivos sean válidos para la versión vieja. Nunca responder “ya estaba al día” ni “nada para nivelar” mientras exista. El único cierre válido es uno de estos:
+
+- `memoria/` ya no existe, todas sus piezas fueron reubicadas o descartadas con confirmación y los lints quedan verdes;
+- el flujo está detenido esperando **una decisión concreta** del usuario sobre la pieza que se mostró textual.
+
+No mandar al usuario a invocar otra skill: `amp:actualizar` llama y coordina `amp-subsistemas:reubicar-aprendizaje` como un paso interno.
 
 ## Reparto de trabajo (skill ↔ script)
 
@@ -88,16 +97,25 @@ El repo quedó con nombres de plugin que el marketplace ya no ofrece. **No se ar
    - **`contenido viejo`** (un script Base instalado que difiere del de la PLANTILLA) → **pisarlo con el bloque de la PLANTILLA**, entero y tal cual. Es el caso más frecuente al poner al día un repo que ya tenía el Agente Multipropósito: la pieza está, pero en la versión de cuando se instaló. No hay nada que preservar — los scripts Base no se ajustan por repo; lo que el repo aprendió vive en sus registros, no en el código del harness.
    - **Hook sin cablear** → merge del bloque de cableado de `conducta` en `.claude/settings.json` (y `.codex/hooks.json`), sin pisar hooks existentes.
    - **`conducta/INDICE.md` sin las secciones** (y sin reglas propias que repartir) → agregar `## Reglas Base` (con las reglas Base actuales) y `## Reglas del Propósito` (vacía).
+   - **Generación con `memoria/`** → instalar primero el subsistema `subsistemas/`, sus tres piezas Base (`MANIFIESTO.md`, `SUBSISTEMAS.md`, `README.md`) y su lint. No borrar todavía ninguna pieza aprendida.
 6. **Aplicar Renombres** (el caso con más juicio — preservar lo aprendido):
    - **`glosario`→`semantica`:**
      1. Mover la carpeta `.claude/glosario/` → `.claude/semantica/` y `lint-glosario/` → `lint-semantica/` (renombrar también `lint-glosario.js` → `lint-semantica.js`).
      2. Correr `amp:inicializar` en reconciliación: pone al día el mecanismo de semántica (lint nuevo, `MANIFIESTO`, estructura de columnas) **preservando** `GLOSARIO.md` y `TERMINOLOGIA-FARLOPA.md` con sus términos. Verificar que ningún término se haya perdido.
      3. Migrar las referencias: en `AGENTS.md`, `@.claude/glosario/MANIFIESTO.md` → `@.claude/semantica/MANIFIESTO.md`; el prefijo de skill `glosario:` → `semantica:` donde aparezca; y toda referencia por ruta al lint renombrado (settings, hooks).
-7. **Divergentes** — aplicar solo lo que el usuario aprobó en el paso 3.
-8. **Reporte final.** Resumir lo hecho en los tres grupos (`pisado/instalado` · `ya estaba` · `divergente resuelto`) y **qué pasó con el respaldo**: si se omitió (git lo cubre) o dónde quedó, con la ruta absoluta. Cuando se hizo, decir que es **de un solo uso**: sirve hasta que el usuario verifique que el repo quedó bien, y después se borra.
+7. **Migrar `memoria/` retirada — responsabilidad de esta skill.**
+   1. Inventariar `memoria/` separando infraestructura Base (`MANIFIESTO.md`, `MEMORIA.md`, `lint-memoria/`) de las piezas aprendidas.
+   2. La infraestructura vieja se retira cuando la Base `subsistemas/` ya está instalada.
+   3. Para las piezas aprendidas, invocar internamente el flujo de `amp-subsistemas:reubicar-aprendizaje`: mostrar **una pieza por vez**, proponer destino y texto resultante, y esperar confirmación explícita antes de mover, partir o descartar.
+   4. Reparar índices, vínculos y referencias después de cada confirmación.
+   5. Cuando no queda ninguna pieza, retirar el directorio `memoria/`, correr nuevamente la vista previa y verificar que no aparezca la migración.
+
+   Si la sesión debe detenerse por una confirmación, informar exactamente qué pieza espera decisión. No presentar la migración como terminada.
+8. **Otros Divergentes** — aplicar solo lo que el usuario aprobó en el paso 3.
+9. **Reporte final.** Volver a correr la vista previa. Solo si da cero acciones y no existe `memoria/`, resumir lo hecho en los tres grupos (`pisado/instalado` · `ya estaba` · `divergente resuelto`) y **qué pasó con el respaldo**: si se omitió (git lo cubre) o dónde quedó, con la ruta absoluta. Cuando se hizo, decir que es **de un solo uso**: sirve hasta que el usuario verifique que el repo quedó bien, y después se borra.
 
    **Si el repo tiene `.claude/.respaldo-amp/`,** viene de corridas anteriores a este cambio. Avisarlo: son copias completas de `.claude/` que nadie limpia y que **inflan los hallazgos de todos los lints**. Ofrecer borrarlas — y si el borrado recursivo bajo `.claude/` está vedado en ese entorno, decírselo al usuario con el comando exacto en vez de dejarlo pasar en silencio.
-9. **Lint.** Correr los lints de los subsistemas tocados (o `ejecutar-control-cierre` si es el repo autor). **No hacer commit** salvo pedido explícito.
+10. **Lint.** Correr los lints de los subsistemas tocados (o `ejecutar-control-cierre` si es el repo autor). **No hacer commit** salvo pedido explícito.
 
 ## Reconciliación (idempotencia)
 

@@ -1,9 +1,4 @@
----
-name: conducta
-description: Subsistema conducta en .claude/conducta/ — reglas "cuando hagas X, asegurate de Y" que atan momentos (evento de hook + condición sin juicio) a acciones (inyectar/correr/bloquear); las entrega un hook repartidor que lee el registro vivo, no el agente a mano; Base (harness) vs Propósito (repo); lint al cerrar.
-metadata:
-  type: feedback
----
+# Conducta
 
 El subsistema `conducta` asegura comportamientos del tipo **"cuando hagas X, asegurate de Y"**: ata **momentos** del flujo a **acciones**. Vive en `.claude/conducta/`:
 

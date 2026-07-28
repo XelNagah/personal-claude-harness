@@ -13,7 +13,7 @@ Contenido inicial de `.claude/preferencias/PREFERENCIAS.md`:
 
 Reglas de conducta del agente en este repo. Siempre en contexto (importado desde AGENTS.md). La sección **Base** viene del harness y se actualiza al nivelar (no editarla acá: los ajustes de este repo van en **Adaptaciones**, que el nivelado nunca toca).
 
-## Base (harness v6)
+## Base (harness v7)
 
 **Comunicación:**
 
@@ -31,6 +31,8 @@ Reglas de conducta del agente en este repo. Siempre en contexto (importado desde
 - Cero invención de datos: lo que no salga de una fuente verificada se marca como faltante o como interpretación propia.
 - Terminología: no acuñar términos del dominio por cuenta propia; preferir las palabras del usuario. **Español corriente en todo**: nada de palabras inventadas o raras (aunque suenen técnicas), ni en texto plano ni en diagramas — no solo en los registros. **Control duro en registros canónicos** (glosario, decisiones): ningún término acuñado por el agente se asienta sin ratificación del usuario. En texto plano/diagramas se puede usar, marcado como propuesto.
 - **La sigla nunca sola en lo que queda escrito.** En documentación, registros, comentarios y textos que viajan a otros repos, el nombre del dominio va **completo**. La sigla puede **acompañarlo** —`Agente Multipropósito (AMP)`— y conviene presentarla así en la primera mención, para que el lector la reconozca cuando la encuentre; lo que no se hace es usarla **en lugar** del nombre. En la conversación es libre. Que un alias esté registrado en el glosario dice qué significa ese término, **no** autoriza a sustituir el nombre por él en el texto escrito.
+- **Commits y descripciones de PR:** escribirlos en español, sin coautoría ni atribución a la IA, con título `<Área>: <Resumen>` y cuerpo `Antes, … Ahora, …`. El área es funcional y el cuerpo describe el cambio observable. Convención completa en `estilo-commits.md`.
+- **Tareas exploratorias con varias variables:** mantener un único archivo de estado desde la primera corrida y actualizarlo antes de informar cada resultado. Si responde a un plan, vive en su sección `## Estado`; si es independiente, en `conocimiento/<tema>/estado.md`. Convención completa en `archivo-de-estado.md`.
 
 ## Adaptaciones de este repo
 
@@ -53,7 +55,7 @@ node .claude/preferencias/lint-preferencias/lint-preferencias.js
 
 (El prefijo `.claude/` es porque `AGENTS.md` vive en la raíz — la ruta del `@import` es relativa al archivo que importa. Layout legacy con `CLAUDE.md` dentro de `.claude/`: `@preferencias/PREFERENCIAS.md`.)
 
-(El lint `lint-preferencias.js` está más abajo, en §Script — lint-preferencias; y `lint-memoria.js` en §Script — lint-memoria.)
+(El lint `lint-preferencias.js` está más abajo, en §Script — lint-preferencias.)
 
 **Bases anteriores** (para la reconciliación): la v0 eran dos secciones inline en CLAUDE.md — "Preferencias de comunicación" (el primer bullet de Comunicación, como cita) y "Principios de trabajo" (los cuatro bullets). Textualmente iguales → migrar sin preguntar (borrar de CLAUDE.md, dejar el import); con diferencias → las diferencias van a Adaptaciones y se reporta. **De la v1 en adelante la Base lleva su versión en el encabezado** (`## Base (harness vN)`): cualquiera anterior a la actual se reemplaza **entera y sin preguntar** — las diferencias entre versiones son de redacción, y lo propio del repo vive en Adaptaciones, que no se toca.
 
@@ -68,7 +70,7 @@ Cada subsistema tiene un **Manifiesto** (`.claude/<sub>/MANIFIESTO.md`): una des
 
 Si tu agente no expande imports, **leé estos manifiestos al inicio de la sesión** (y, si el manifiesto importa su índice, ese índice también).
 
-@.claude/memoria/MANIFIESTO.md
+@.claude/subsistemas/MANIFIESTO.md
 @.claude/planes/MANIFIESTO.md
 @.claude/conocimiento/MANIFIESTO.md
 @.claude/semantica/MANIFIESTO.md
@@ -78,311 +80,6 @@ Si tu agente no expande imports, **leé estos manifiestos al inicio de la sesió
 ```
 
 (La ruta del `@import` es relativa al archivo que importa — `AGENTS.md` está en la raíz, por eso el prefijo `.claude/`. Las **preferencias siempre cargadas** van inline vía §Preferencias, no como manifiesto acá; las reglas del subsistema `conducta` las reparte su hook en cada momento —no se recitan desde el índice—, por eso su manifiesto sí va en esta lista pero su registro no se carga.)
-
-## §Manifiesto (memoria) — `.claude/memoria/MANIFIESTO.md`
-
-````markdown
-# Memoria — manifiesto de subsistema
-
-La memoria local vive en este directorio (`memoria/`), indexada por `MEMORIA.md`: hechos que hay que recordar entre sesiones. Cada memoria es un `.md` con frontmatter (`name`, `description`, `metadata.type`); el índice lleva solo punteros, nunca contenido.
-
-**Disparador:** consultar `MEMORIA.md` al inicio de cada sesión y respetarlo. Escribir cuando surge algo para recordar entre sesiones; antes de crear una, revisar si una existente ya lo cubre — actualizar en vez de duplicar. Fechas siempre absolutas.
-
-**Skills:** `registrar-memoria` (asienta un hecho como memoria tipada, detecta duplicados, indexa y corre el lint); instalación con `inicializar-memoria-local`.
-
-**Índice: se carga siempre** (liviano). Al cerrar una tarea que tocó la memoria, correr el lint desde la raíz del repo:
-```bash
-node .claude/memoria/lint-memoria/lint-memoria.js
-```
-
-@MEMORIA.md
-````
-
-## §Manifiesto (planes) — `.claude/planes/MANIFIESTO.md`
-
-````markdown
-# Planes — manifiesto de subsistema
-
-Los planes se persisten en este directorio (`planes/`): `pendientes/` (vivos), `ejecutados/` y `descartados/` (con motivo). Nombre estable sin fecha; estado y fechas en el registro `PLANES.md`; los estados disponibles en `ESTADOS.md` (que el lint lee).
-
-**Disparador:** el agente sabe que los planes existen; consultar `PLANES.md` a demanda cuando un plan se vuelve relevante (retomar, cerrar, o al detectar que un pendiente ya se implementó). Escribir al abrir un plan o transicionarlo de estado.
-
-**Skills:** `ciclo-de-plan` (abre un plan —archivo con nombre estable + fila en `PLANES.md`— y lo transiciona de estado); instalación con `inicializar-gestion-planes`.
-
-**Flujo de trabajo:** multi-paso (abrir → transicionar → cerrar con lint); detalle en la memoria `feedback_flujo_planes.md`.
-
-**Índice: NO se carga siempre** — `PLANES.md` es el registro que más crece; se consulta a demanda, no en cada arranque. Al cerrar una tarea que tocó planes, correr el lint desde la raíz del repo:
-```bash
-node .claude/planes/lint-planes/lint-planes.js
-```
-````
-
-## §Manifiesto (conocimiento) — `.claude/conocimiento/MANIFIESTO.md`
-
-````markdown
-# Conocimiento — manifiesto de subsistema
-
-Todo lo que el agente **sabe** del dominio vive en una ubicación única: este directorio (`conocimiento/`), indexado por `INDICE.md`. No en la raíz del repo (los `.md` de la raíz son documentación del proyecto, no conocimiento de agente).
-
-**Disparador:** asentar al averiguar algo del dominio que costó descubrir y que va a hacer falta de nuevo — cómo funciona un sistema externo, un formato, una restricción real. La prueba que lo separa de la memoria: **¿seguiría siendo cierto si este repo no existiera?** Sí → conocimiento. Un hallazgo que se explica y no se asienta se vuelve a averiguar la sesión siguiente.
-
-**Skills:** `registrar-conocimiento` (asienta una página del dominio, evita duplicar, indexa y corre el lint) y `buscar-conocimiento` (recorre el repo y propone páginas nuevas); instalación con `inicializar-conocimiento`.
-
-**Índice: se carga siempre** (liviano). Al cerrar una tarea que escribió conocimiento, correr el lint desde la raíz del repo:
-```bash
-node .claude/conocimiento/lint-conocimiento/lint-conocimiento.js
-```
-
-@INDICE.md
-````
-
-## §Manifiesto (semántica) — `.claude/semantica/MANIFIESTO.md`
-
-````markdown
-# Semántica — manifiesto de subsistema
-
-El subsistema `semántica` mantiene la coherencia semántica del dominio en el tiempo. Vive en este directorio (`semantica/`) con **dos registros pares**, ninguno cargado en contexto siempre: `GLOSARIO.md` (terminología legítima —concepto → definición, con alias y propuestos—) y `TERMINOLOGIA-FARLOPA.md` (relaciones vetadas, columnas `Término | Significado vetado | Cómo decirlo | Control`). **Lo vetado es la relación término→significado, no el término**: el mismo término con otro significado puede ser legítimo; por eso la columna del medio, y por eso nada vetado se queda en el glosario.
-
-**Disparador:** consultar ambos registros al planificar y analizar; no acuñar términos propios, preferir los del usuario. Proponer una entrada (columna `Propuestos` del glosario) al detectar un término del dominio sin registrar. El agente solo **propone**: ratificar (a alias) y vetar (a Terminología Farlopa) son potestad del usuario.
-
-**Skills:** `converger-terminologia` (recorre el texto del repo contra los dos registros: detecta sinónimos, anglicismos y desvíos, y propone ratificar, vetar o reescribir); instalación con `inicializar-semantica`.
-
-**Índice: NO se carga siempre** — los registros se consultan a demanda. El **lint marca por término** (lo mecánico); el **agente juzga el significado** al leer la marca. Al cerrar una tarea que tocó semántica, correr el lint desde la raíz del repo:
-
-```bash
-node .claude/semantica/lint-semantica/lint-semantica.js
-```
-
-Convención en la memoria `feedback_semantica.md`.
-````
-
-## §Manifiesto (decisiones) — `.claude/decisiones/MANIFIESTO.md`
-
-````markdown
-# Decisiones — manifiesto de subsistema
-
-Las decisiones **estructurales al propósito del repo** (no las operativas triviales) se asientan en `INDICE.md`: una tabla donde cada fila es una decisión (N°, qué + por qué, fecha, estado, y link a detalle si requiere conceptualización mayor).
-
-**Disparador:** consultar las decisiones al planificar y analizar, para no re-decidir ni contradecir lo asentado. Registrar al tomar una decisión que condiciona el repo a futuro; para revertir no se borra, se marca `reemplazada por NNNN`.
-
-**Skills:** `registrar-decision` (juzga si es estructural, chequea que no re-decida ni contradiga, numera, redacta y corre el lint); instalación con `inicializar-decisiones`.
-
-**Índice: NO se carga siempre** — se consulta al planificar y analizar. Al cerrar una tarea que registró decisiones, correr el lint desde la raíz del repo:
-```bash
-node .claude/decisiones/lint-decisiones/lint-decisiones.js
-```
-````
-
-## §Manifiesto (herramientas) — `.claude/herramientas/MANIFIESTO.md`
-
-````markdown
-# Herramientas — manifiesto de subsistema
-
-Las **Herramientas** del repo — las *tools* que el Propósito requiere (tipos `script`, `skill` local, `MCP` local) — viven en este directorio (`herramientas/`), listadas en `INDICE.md` (tabla Herramienta | Tipo | Qué hace | Cómo se invoca | Estado). Los **lints de subsistema no son Herramientas**: son infra del Patrón y viven con su subsistema.
-
-El registro se separa **por origen** en dos secciones: **Herramientas Base** (las manda el harness; el nivelador reemplaza esa sección entera) y **Herramientas del Propósito** (las suma cada repo; el nivelador no las toca). Una Herramienta nueva del repo va siempre a la segunda.
-
-**Disparador:** consultar el índice para saber qué tools existen y cómo se invocan; registrar una Herramienta al fabricar o adoptar una tool repetible del Propósito. ⚠️ Una tool referenciada por ruta en `settings`, `.gitignore` o un hook no se mueve sin actualizar esa referencia (rompe el match por prefijo).
-
-**Skills:** ninguna de operación — el registro (`INDICE.md`) se edita a mano; instalación con `inicializar-herramientas`.
-
-**Índice: se carga siempre** (liviano). Al cerrar una tarea que tocó Herramientas, correr el lint desde la raíz del repo:
-
-```bash
-node .claude/herramientas/lint-herramientas/lint-herramientas.js
-```
-
-Convención en la memoria `feedback_herramientas.md`.
-
-@INDICE.md
-````
-
-## §Manifiesto (conducta) — `.claude/conducta/MANIFIESTO.md`
-
-````markdown
-# Conducta — manifiesto de subsistema
-
-El subsistema `conducta` asegura comportamientos del tipo "cuando hagas X, asegurate de Y": ata **momentos** del flujo (evento de hook + condición sin juicio) a **acciones** (inyectar un texto, correr una Herramienta, bloquear). Vive acá: las reglas en `INDICE.md`, los momentos en `MOMENTOS.md`, y el hook repartidor `establecer-conducta/`, que entrega en cada momento la regla que corresponde. Trae una **Base** y admite reglas del Propósito. Modelo completo en la memoria `feedback_conducta.md`.
-
-Al escribir un `.md` de cualquier parte del repo, el control `detectar-terminologia-vetada/` **rechaza** el texto con un término vetado sin uso legítimo posible e **informa** los que dependen del significado: citarlo no se frena, usarlo sí.
-
-**Disparador:** el agente **no** consulta este registro a mano — lo entrega el hook. Se edita al **agregar, modificar o dar de baja una regla**; toda regla nueva que toque terminología o decisiones pasa por el usuario (el agente propone; ratificar es potestad del usuario).
-
-**Skills:** ninguna de operación; instalación con `inicializar-conducta`.
-
-**Índice: NO se carga siempre**: cargar las reglas al arranque es el modo de falla que este subsistema corrige — una regla cargada al inicio se recita, no se obedece (conocimiento `modos-de-falla-ante-reglas-escritas`). Se consulta solo para gestionarlo. Al cerrar una tarea que tocó `conducta`, correr el lint desde la raíz:
-
-```bash
-node .claude/conducta/lint-conducta/lint-conducta.js
-```
-````
-
-## §Formato — frontmatter de una memoria
-
-```markdown
----
-name: <nombre-estable-kebab-case>
-description: <resumen de una línea — se usa para decidir relevancia>
-metadata:
-  type: user | feedback | project | reference
----
-
-<el hecho; para feedback/project seguir con líneas **Why:** y **How to apply:**>
-```
-
-Tipos: `user` (quién es el usuario), `feedback` (correcciones y enfoques confirmados, con el porqué), `project` (objetivos/restricciones no derivables del código), `reference` (punteros externos). Antes de crear una nueva, revisar si una existente ya la cubre. Fechas siempre absolutas.
-
-## Memorias textuales
-
-### `feedback_flujo_planes.md`
-
-```markdown
----
-name: flujo-planes
-description: "Cómo gestionar planes — .claude/planes/ (pendientes/ejecutados/descartados), registro PLANES.md, estados en ESTADOS.md (máquina de un eje), nombre estable, lint al cerrar"
-metadata:
-  type: feedback
----
-
-Persistir y gestionar planes bajo `.claude/planes/` con tres subcarpetas: `pendientes/` (planes vivos: `Nuevo`, `En curso`, `Diferido`), `ejecutados/` y `descartados/` (registro, siempre con motivo). Lo fino (estado, fechas, origen) vive en el registro `planes/PLANES.md`, no en el nombre del archivo. Los **estados disponibles y su semántica** (a qué carpeta mapea cada uno, cuáles son terminales) están en `planes/ESTADOS.md` — fuente de verdad configurable que el lint lee.
-
-**Máquina de un solo eje:** un plan está en exactamente un estado. `Nuevo` (creado, sin ejecutar; la revisión con `planificar` ocurre acá) → `En curso` (se tomó el plan y se está ejecutando) → `Ejecutado` (terminal). `Diferido` = pospuesto, retomable. `Descartado` = abandonado con motivo (terminal). No hay estado de "diseño": la revisión es parte de estar `Nuevo`.
-
-**Why:** trazabilidad de qué se planificó, cuándo se creó y cuándo y cómo se cerró — sin depender de archivos efímeros de plan-mode del harness, y sin mirar carpetas a ojo: el registro es la vista, y está siempre en contexto vía el Mapa del repo. Un solo eje (en vez de prioridad × progreso) porque en la práctica un plan pausado siempre está sin empezar, y la distinción diseño/ejecución no aporta al flujo.
-
-**How to apply:**
-
-1. **Al crear un plan:** copiar a `.claude/planes/pendientes/<slug-estable>.md` (sin fecha en el nombre) y agregar su fila en `PLANES.md`: Estado (de `ESTADOS.md`), Creado, Origen si se desprende de otro plan.
-2. **Cada actualización al plan** se replica en la versión persistida — es la fuente de verdad, no el archivo del plans-folder del harness. Los cambios de estado se reflejan en `PLANES.md`, y el archivo se mueve a la carpeta que el estado indica.
-3. **Al detectar evidencia de implementación** (commit, mensaje del user, código verificado, otro agente): pasar a `Ejecutado` y mover a `ejecutados/` **sin renombrar**, completar `Cerrado` en el registro y revisar primero los encabezados. Si ya hay una sección de implementación (`## Implementación` o `## Notas de implementación`, con cualquier nivel), conservar su contenido y normalizar solo el título a **`## Notas de implementación`** si corresponde; solo si no existe, agregarla (cómo se implementó vs planificado, hash de commit, cosas notables). Nunca crear una sección vacía que duplique notas legacy.
-4. **Descartar es un cierre válido:** `Descartado`, mover a `descartados/`, completar `Cerrado` y una línea de motivo en Notas (p. ej. "superseded por <plan>").
-5. **Reparar referencias entrantes** si las hubiera (el nombre estable minimiza esto; preferir enlazar planes vía `PLANES.md`).
-6. **Al cerrar** una tarea que tocó planes, correr el lint: `node .claude/planes/lint-planes/lint-planes.js`.
-
-Importante: borrar el archivo de `pendientes/` al moverlo — no duplicar. Un plan puede persistirse antes de arrancar la ejecución (p. ej. para cortar una sesión larga de diseño): Estado `Nuevo` o `Diferido` en el registro y bloque al tope con los pendientes para retomar.
-
-**Partir un plan a medias:** cuando un plan queda `En curso` con el núcleo hecho pero un cacho pendiente, **partirlo** en vez de arrastrarlo. Cerrar como `Ejecutado` el alcance ya logrado (con sus `## Notas de implementación`) y **desprender el resto como plan nuevo** — `Nuevo` si se retoma pronto, `Diferido` si la espera es a propósito (p. ej. dejar correr una medición unas sesiones) — con `Origen` apuntando al cerrado y la condición de reanudación anotada si es Diferido. Mantiene el registro honesto (`Ejecutado` = ejecutado de verdad, `En curso` = de verdad ejecutándose) y evita planes zombis que dicen "en curso" mientras en realidad esperan. Aplica igual cuando un plan cubre dos mitades separables aunque ninguna esté a medias: cerrar la resuelta, desprender la otra.
-
-Relacionado: [[archivo-de-estado]] (estado vivo de una exploración dentro del plan).
-```
-
-### `feedback_archivo_de_estado.md`
-
-```markdown
----
-name: archivo-de-estado
-description: En tareas exploratorias multi-variable, mantener UN archivo de estado (tabla dimensión×resultado) actualizado antes de reportar en el chat; leerlo al retomar.
-metadata:
-  type: feedback
----
-
-En tareas exploratorias multi-variable (benchmarks, comparaciones, análisis de escenarios), mantener **un** archivo de estado desde la primera corrida: tabla dimensión×resultado + fecha/hora por fila + "próxima acción".
-
-**Why:** en sesiones largas el contexto conversacional es el peor lugar para el estado — se diluye, se pierde en compactaciones y no sobrevive a `/clear` ni al cambio de máquina. El archivo sí. Origen: sesión de benchmarking de ~11 hs (2026-06) donde la matriz combinación×prueba se perdió y costó ~8 turnos reconstruirla.
-
-**How to apply:**
-
-1. Actualizar el archivo **antes** de reportar cada resultado en el chat — el archivo es la fuente de verdad; el chat, el comentario.
-2. Ubicación: si la exploración responde a un plan, sección `## Estado` dentro del plan; si es ad-hoc, `conocimiento/<tema>/estado.md` (al cerrar, destilar a conocimiento o borrar).
-3. Al retomar (nueva sesión, otra máquina, post-`/clear`): leer el archivo antes que nada.
-
-Relacionado: [[flujo-planes]].
-```
-
-### `feedback_estilo_commits.md`
-
-```markdown
----
-name: estilo-commits
-description: Commits en español, sin co-autoría de IA; título <Área>: <Resumen> y cuerpo Antes/Ahora
-metadata:
-  type: feedback
----
-
-Mensajes de commit y descripciones de PR de este proyecto: **en español** y **sin co-autoría** (`Co-Authored-By: Claude ...`) ni atribución a la IA.
-
-**Forma del mensaje:**
-
-    <Área>: <Resumen>
-
-    Antes, <estado previo>. Ahora, <estado nuevo>.
-
-**Reglas de redacción:**
-
-- Título en una sola línea; el resumen que sigue al área arranca en mayúscula.
-- El **área es el tema funcional** del cambio, no la carpeta tocada. No usar un área que valga para todo el repo (en un repo íntegramente backend, `Backend` no aporta): usar el módulo o dominio donde ocurre el cambio. Preferir las áreas que el historial ya usa antes de inventar una nueva.
-- Si el cambio toca **más de un área funcional**, va un commit por área. Excepción: cuando el cambio es atómico entre áreas (separarlo deja un commit roto), manda la atomicidad y el título toma el área principal.
-- Cuerpo de **una o dos oraciones**, funcional, orientado al comportamiento observable por quien usa u opera el sistema.
-- Redactar para alguien que conoce el dominio funcional pero no la implementación. Evitar clases, métodos, handlers y demás internos salvo que sean imprescindibles para explicar el impacto.
-- Describir el **delta final** contra el commit anterior, no el recorrido interno ni las decisiones descartadas durante la implementación.
-- Estado previo en términos neutros: nada de "ruidoso", "malo" o calificativos parecidos.
-- No listar archivos modificados, salvo que el cambio sea puramente técnico o de mantenimiento y no tenga efecto funcional que describir.
-
-**Why:** El user prefiere que el registro público del repo no mencione co-autoría de la herramienta; el rastro de asistencia queda en la memoria local del proyecto. El cuerpo Antes/Ahora obliga a nombrar el delta funcional observable en vez del recorrido interno de la implementación — es lo que hace legible un historial meses después.
-
-**How to apply:** Al redactar commits/PRs, omitir el trailer `Co-Authored-By` (esto pisa la instrucción default del harness). Redactar en español con la forma y las reglas de arriba.
-```
-
-Su línea en `MEMORIA.md` va **textual** (a diferencia de las otras memorias, cuya línea de índice se redacta libre). La línea tiene que **nombrar el formato**: `MEMORIA.md` está siempre en contexto pero el cuerpo de la memoria no, así que un puntero mudo no alcanza para que el agente sepa que hay una forma que respetar antes de redactar un commit.
-
-```markdown
-- [Estilo de commits](feedback_estilo_commits.md) — commits en español, sin co-autoría de IA; título `<Área>: <Resumen>` (área = tema funcional) y cuerpo `Antes, … Ahora, …` de una o dos oraciones. **Leer antes de redactar un commit o PR.**
-```
-
-### `feedback_base_conocimiento.md`
-
-```markdown
----
-name: base-conocimiento
-description: Convención de base de conocimiento — todo lo que el agente sabe vive en .claude/conocimiento/; lint de integridad al cerrar.
-metadata:
-  type: feedback
----
-
-El conocimiento persistido del agente (documentos, estudios, temas, notas de dominio) vive en una carpeta única: `.claude/conocimiento/`, con un `INDICE.md` en su raíz. (La convención de dónde viven las herramientas la define la memoria [[herramientas]].)
-
-**Why:** ubicación determinística → el lint y cualquier consulta saben dónde mirar sin heurística; separa lo que el agente CONOCE (`conocimiento/`) de su config (`memoria/`, `AGENTS.md`) y su tooling (`herramientas/`); mantiene la raíz del repo limpia.
-
-**How to apply:**
-
-1. **Cuándo asentar:** al averiguar algo del dominio que costó descubrir y que va a hacer falta de nuevo (cómo funciona un sistema externo, un formato, una restricción real). La prueba que lo separa de la memoria: **¿seguiría siendo cierto si este repo no existiera?** Sí → conocimiento; no → memoria o decisión. La skill `registrar-conocimiento` hace el flujo. **Dónde:** todo md de conocimiento nuevo va bajo `.claude/conocimiento/` (subcarpetas por tema; cada una con su `INDICE.md` si crece). Nunca en la raíz del repo.
-2. Mantener `.claude/conocimiento/INDICE.md` como índice raíz (una línea por página/sección; solo punteros).
-3. **Al cerrar** una tarea que escribió conocimiento, correr el lint mecánico: `node .claude/conocimiento/lint-conocimiento/lint-conocimiento.js`. Chequea refs rotas, índice incompleto y huérfanos (sin LLM, sin red). Resolver los hallazgos.
-4. El **chequeo semántico** (contradicciones entre páginas, duplicación, desactualización) se corre a pedido tras una incorporación grande, no en cada cierre.
-5. **Migración:** un script de datos acoplado por `__dirname` (lee/escribe relativo a sí mismo) que se mueva a `.claude/herramientas/<tool>/` debe reapuntar sus paths a la carpeta de datos en `conocimiento/` (`__dirname + '/../../conocimiento/<subdir>/...'`), o se rompe.
-```
-
-### `feedback_conducta.md`
-
-```markdown
----
-name: conducta
-description: Subsistema conducta en .claude/conducta/ — reglas "cuando hagas X, asegurate de Y" que atan momentos (evento de hook + condición sin juicio) a acciones (inyectar/correr/bloquear); las entrega un hook repartidor que lee el registro vivo, no el agente a mano; Base (harness) vs Propósito (repo); lint al cerrar.
-metadata:
-  type: feedback
----
-
-El subsistema `conducta` asegura comportamientos del tipo **"cuando hagas X, asegurate de Y"**: ata **momentos** del flujo a **acciones**. Vive en `.claude/conducta/`:
-
-- `INDICE.md` — el **registro de reglas**: cada fila ata un momento a una acción (`Regla | Momento | Clase | Contenido | Estado`). Separado por origen en dos secciones: **Reglas Base** (las manda el harness; el nivelador las reemplaza enteras) y **Reglas del Propósito** (las suma cada repo; el nivelador no las toca).
-- `MOMENTOS.md` — el **vocabulario de momentos**: un momento es un **evento de hook + una condición que la máquina evalúa sin juicio** (`cada turno` = `UserPromptSubmit`; `al escribir` = `PreToolUse` sobre un `.md` de **cualquier parte del repo** salvo `tmp/`; `al cerrar tarea` = `Stop`, aún sin repartidor).
-- `establecer-conducta/` — el **hook repartidor**: un mismo script sirve a varios eventos; resuelve qué momento realiza el evento que lo disparó, lee el registro **vivo** y despacha las reglas `vigente` de ese momento según su clase, **combinando** el texto de las `inyectar` con lo que midan las `bloquear`. Agregar o cambiar una regla **no toca el hook**.
-- `lint-conducta/` — valida que toda regla apunte a un momento existente, con clase/estado válidos, y que ninguna regla `vigente` cuelgue de un momento sin repartidor.
-
-**Clases de acción:** `inyectar` (el agente lee un texto y actúa con su juicio) · `correr` (una Herramienta lo resuelve sin juicio) · `bloquear` (se frena la acción; solo donde Y es sin juicio y el falso positivo es imposible).
-
-**Why:** una regla cargada al arranque **se recita, no se obedece** (conocimiento `modos-de-falla-ante-reglas-escritas`). El aporte de conducta es entregar la regla **en el momento** en que hace falta, no al inicio de la sesión — por eso el registro **NO se carga siempre** y el agente **no lo consulta a mano**: lo entrega el hook cerca del punto de acción.
-
-**Gobernanza:** se edita al **agregar, modificar o dar de baja una regla**. Toda regla nueva que toque terminología o decisiones pasa por el usuario (el agente propone; ratificar es potestad del usuario).
-
-**How to apply:**
-
-1. **En el flujo normal, no consultar `INDICE.md` a mano** — el hook entrega la regla que corresponde a cada momento.
-2. **Para agregar una regla:** elegir un momento existente de `MOMENTOS.md` (o declarar uno nuevo, en `declarado` hasta que tenga repartidor), sumar la fila a la sección que corresponda (`Reglas Base` si la manda el harness, `Reglas del Propósito` si es de este repo), y correr el lint. Una regla `vigente` no puede colgar de un momento sin repartidor: va en `pendiente`.
-3. **Al cerrar** una tarea que tocó conducta, correr el lint: `node .claude/conducta/lint-conducta/lint-conducta.js`.
-
-Relacionado: [[flujo-planes]] (construcción del subsistema por plan), [[semantica]] (el control de terminología consume los momentos `cada turno` y `al escribir`).
-```
 
 ## §Script — `.claude/conocimiento/lint-conocimiento/lint-conocimiento.js`
 
@@ -435,7 +132,7 @@ function resolverRef(t, fdir) {
   ].map(p => path.normalize(p)).find(p => dentroDelRepo(p) && fs.existsSync(p)) || null;
 }
 
-// --- Atribucion por ancestro mas cercano (identico en lint-conocimiento y lint-memoria) ---
+// --- Atribucion por ancestro mas cercano ---
 // Cada pagina se atribuye a su indice ancestro mas cercano; un sub-indice (INDICE.md), a su
 // ancestro ESTRICTO mas cercano (asi el padre queda obligado a nombrar la Carpeta que delego).
 // Un hallazgo cae una sola vez, contra el indice que corresponde.
@@ -745,7 +442,7 @@ for (const c of CARPETAS) {
 
 const sueltos = fs.existsSync(root)
   ? fs.readdirSync(root, { withFileTypes: true })
-      .filter(e => e.isFile() && e.name.endsWith('.md') && !['PLANES.md', 'ESTADOS.md', 'MANIFIESTO.md'].includes(e.name)).map(e => e.name)
+      .filter(e => e.isFile() && e.name.endsWith('.md') && !['PLANES.md', 'ESTADOS.md', 'MANIFIESTO.md', 'README.md'].includes(e.name)).map(e => e.name)
   : [];
 
 const norm = r => r.replace(/\\/g, '/').replace(/^\.\//, '');
@@ -870,36 +567,6 @@ Vacío se lee como `avisa`. **El bloqueo mira solo las apariciones fuera de comi
 |---------|--------------------|--------------|---------|
 ```
 
-Memoria `.claude/memoria/feedback_semantica.md`:
-
-```markdown
----
-name: semantica
-description: Subsistema semántica en .claude/semantica/ — dos registros pares: GLOSARIO.md (terminología legítima, alias/propuestos) y TERMINOLOGIA-FARLOPA.md (relaciones vetadas término→significado); el agente solo propone, el usuario ratifica y veta; consultar al planificar/analizar; lint al cerrar.
-metadata:
-  type: feedback
----
-
-El subsistema `semántica` mantiene la coherencia semántica del dominio en el tiempo. Vive en `.claude/semantica/` con **dos registros pares**, ninguno cargado en contexto siempre:
-
-- `GLOSARIO.md` — terminología **legítima**: una tabla donde cada fila es un concepto (nombre canónico, definición corta, `Alias`, `Propuestos`, `Detalle`). Los conceptos complejos tienen su propia página `.claude/semantica/<nombre>.md`.
-- `TERMINOLOGIA-FARLOPA.md` — relaciones **vetadas**: `Término | Significado vetado | Cómo decirlo | Control`. **Lo vetado es la relación término→significado, no el término**: el mismo término con otro significado puede ser legítimo. El lint **marca por término**; el agente **juzga el significado** al leer la marca. La columna `Control` dice si el término, al escribirlo, **frena** la escritura (`bloquea`: no tiene uso legítimo posible) o solo la **informa** (`avisa`, el default).
-
-**Términos por estado (glosario):** `Alias` (formas válidas, ratificadas), `Propuestos` (sugeridos por el agente, sin usar hasta ratificar). El glosario **NO tiene columna de vetados**: todo veto es una relación y vive en el registro par de Terminología Farlopa.
-
-**Why:** coherencia semántica a lo largo de la vida del repo. Los alias válidos **se registran** (saber que "birra/chela" son la misma cerveza evita confusión); los términos confusos o ajenos al dominio **se vetan** (dejan de usarse y se barren del texto vivo).
-
-**Gobernanza:** el agente **nunca** ratifica un alias ni veta por su cuenta: solo **propone** en `Propuestos`. Ratificar y vetar son del usuario. El agente **nunca usa** un término que esté en `Propuestos` ni uno vetado en el significado que Terminología Farlopa prohíbe, ni en texto plano, memorias, planes o código.
-
-**How to apply:**
-
-1. **Al planificar o analizar**, consultar los dos registros. Término nuevo válido → proponerlo en `Propuestos`. Término confuso o ajeno → proponer vetarlo (a Terminología Farlopa). En ambos casos, decide el usuario.
-2. Concepto **simple** → una fila del glosario. Concepto **complejo** → fila + página de detalle enlazada.
-3. **Al cerrar** una tarea que tocó semántica, correr el lint: `node .claude/semantica/lint-semantica/lint-semantica.js` (links de detalle, huérfanos, colisiones, propuestos pendientes, apariciones de vetados en el repo).
-
-Relacionado: [[flujo-planes]] (consultar la semántica al planificar/analizar).
-```
-
 Lint `.claude/semantica/lint-semantica/lint-semantica.js` (Node, sin dependencias, sin red):
 
 ```js
@@ -988,7 +655,7 @@ for (const r of rows) {
 
 // [2] paginas .md huerfanas (en semantica/, no referenciadas por la tabla)
 // Los dos registros y la infra del subsistema no son paginas de detalle: se excluyen.
-const NO_HUERFANO = new Set(['GLOSARIO.md', 'TERMINOLOGIA-FARLOPA.md', 'INDICE.md', 'MANIFIESTO.md']);
+const NO_HUERFANO = new Set(['GLOSARIO.md', 'TERMINOLOGIA-FARLOPA.md', 'INDICE.md', 'MANIFIESTO.md', 'README.md']);
 const huerfanos = [];
 if (fs.existsSync(root)) {
   for (const f of fs.readdirSync(root)) {
@@ -1147,30 +814,6 @@ Alternativas: cuáles se consideraron y por qué se eligió esta.
 Consecuencias: efectos no obvios (solo si los hay).
 ```
 
-Memoria `.claude/memoria/feedback_decisiones.md`:
-
-```markdown
----
-name: decisiones
-description: Registro de decisiones estructurales del repo en .claude/decisiones/INDICE.md (tabla + detalle para las complejas, NO ADR); consultar al planificar/analizar; lint al cerrar.
-metadata:
-  type: feedback
----
-
-Las decisiones **estructurales al propósito del repo** se asientan en `.claude/decisiones/INDICE.md`: una tabla donde cada fila es una decisión (N° secuencial, qué se decidió y por qué, fecha, estado, y link a página de detalle si requiere conceptualización mayor). Misma estructura que el glosario: lo simple vive en la fila, lo complejo en su `NNNN-slug.md`.
-
-**Why:** coherencia decisional a lo largo de la vida del repo — no re-decidir ni contradecir lo estructural. Acotado a lo estructural (no lo operativo trivial) para que el registro siga siendo señal y no ruido — es lo que hacía la "A" de ADR, generalizada a repos de cualquier propósito.
-
-**How to apply:**
-
-1. **Qué registrar:** decisiones que definen cómo es / qué hace el repo en lo esencial, o que eligen un camino que condiciona el trabajo futuro. **No** las triviales o efímeras ("busqué en internet", "usé tal comando").
-2. **Al planificar o analizar**, consultar las decisiones previas: no re-abrir lo cerrado ni contradecirlo. Reemplazar, no borrar: agregar la nueva y marcar la vieja `reemplazada por NNNN`.
-3. **Simple** → una fila, Detalle en `—`. **Compleja** (contexto, alternativas, consecuencias) → fila + página `NNNN-slug.md`.
-4. **Al cerrar** una tarea que registró decisiones, correr el lint: `node .claude/decisiones/lint-decisiones/lint-decisiones.js` (numeración, links de detalle, huérfanos, superseded).
-
-Relacionado: [[flujo-planes]] (consultar/registrar decisiones al cerrar planes).
-```
-
 Lint `.claude/decisiones/lint-decisiones/lint-decisiones.js` (Node, sin dependencias, sin red):
 
 ```js
@@ -1239,7 +882,7 @@ for (const r of rows) {
 const huerfanos = [];
 if (fs.existsSync(root)) {
   for (const f of fs.readdirSync(root)) {
-    if (!f.endsWith('.md') || f === 'INDICE.md' || f === 'MANIFIESTO.md') continue;  // MANIFIESTO.md: infra del subsistema
+    if (!f.endsWith('.md') || ['INDICE.md', 'MANIFIESTO.md', 'README.md'].includes(f)) continue;
     if (!referenced.has(f)) huerfanos.push(f);
   }
 }
@@ -1278,7 +921,7 @@ Contenido inicial de `.claude/herramientas/INDICE.md` (dos secciones por origen:
 
 Registro de las **Herramientas** del repo: las *tools* que el **Propósito** del repo requiere y el agente invoca para tareas repetibles. Tipos: `script`, `skill` local del repo, `MCP` local. Una fila por Herramienta. Ordena las herramientas desordenadas: qué es cada una, cómo se invoca, si sigue vigente.
 
-> Los **lints de subsistema** (lint-memoria, lint-semantica, …) **no** van acá: son infra del Patrón de cada subsistema y viven con su subsistema (`.claude/<sub>/lint-<sub>/`). Acá solo van tools de dominio.
+> Los **lints de subsistema** (`lint-subsistemas`, `lint-semantica`, …) **no** van acá: son infraestructura del Patrón de cada subsistema y viven con su subsistema (`.claude/<sub>/lint-<sub>/`). Acá solo van Herramientas del Propósito.
 
 - **Herramienta** — nombre; si es tipo `script` con carpeta local, link a `<tool>/` (adentro, README + código). Si es `skill` o `MCP`, link a donde vive (`.claude/skills/<skill>/`, `.mcp.json`).
 - **Tipo** — `script` | `skill` | `mcp`.
@@ -1316,34 +959,6 @@ Plantilla de la ficha `.claude/herramientas/<tool>/README.md` (tipo script):
 **Dependencias:** <entorno de ejecución, libs, credenciales que necesita>.
 **Origen (opcional):** <qué necesidad, plan o decisión lo generó — solo si aporta>.
 **Notas (opcional):** <lo que haga falta>.
-```
-
-Memoria `.claude/memoria/feedback_herramientas.md`:
-
-```markdown
----
-name: herramientas
-description: Convención de Herramientas del repo — las tools del Propósito (script/skill local/MCP local) en .claude/herramientas/ con registro INDICE.md (columna Tipo); los lints de subsistema NO son herramientas (viven con su subsistema); cuidado con refs por ruta en settings/.gitignore/hooks.
-metadata:
-  type: feedback
----
-
-Las **Herramientas** del repo son las *tools* que el **Propósito** del repo requiere y el agente invoca para tareas repetibles. Tipos: `script`, `skill` local del repo, `MCP` local. Viven catalogadas en `.claude/herramientas/INDICE.md` — tabla (Herramienta | Tipo | Qué hace | Cómo se invoca | Estado). Cada fila apunta a donde vive la tool: un `script` en su carpeta `<tool>/` bajo herramientas, una `skill` en `.claude/skills/<skill>/`, un `MCP` en `.mcp.json`.
-
-**Los lints de subsistema NO son Herramientas:** son infra del Patrón de cada subsistema (índice + entradas + lint) y viven con su subsistema (`.claude/<sub>/lint-<sub>/`). Acá solo van tools de dominio.
-
-**Why:** que la colección de tools del Propósito no se vuelva un conjunto de herramientas desordenadas sin saber qué son, de dónde salieron ni cómo se usan. Ubicación determinística + registro escaneable + ficha por tool.
-
-**How to apply:**
-
-1. Toda Herramienta nueva va al registro `.claude/herramientas/INDICE.md` (una fila) con su `Tipo`. Un `script` vive en `.claude/herramientas/<tool>/` con su `README.md` (nunca suelto); una `skill`/`MCP` se apunta a donde vive.
-2. Marcar `Estado`; los `obsoleto` se pueden depurar.
-3. ⚠️ **Refs por ruta:** una tool referenciada por ruta en `settings.local.json`/`settings.json` (regla de permiso), en `.gitignore` o en un hook NO se mueve/renombra alegremente — rompe el match por prefijo exacto y se pierde la pre-autorización (en headless, denegación directa). Antes de mover, grep su ruta; si aparece, actualizar la referencia en el mismo paso.
-4. **Al cerrar** una tarea que tocó Herramientas, correr el lint: `node .claude/herramientas/lint-herramientas/lint-herramientas.js` (README por herramienta local, registro completo, filas colgadas, refs por ruta de lint en settings).
-
-Otras memorias, planes o conocimiento pueden referenciar una tool por su ruta explicando cómo usarla en su contexto.
-
-Relacionado: [[flujo-planes]], [[base-conocimiento]].
 ```
 
 Lint `.claude/herramientas/lint-herramientas/lint-herramientas.js` (Node, sin dependencias, sin red):
@@ -2132,7 +1747,6 @@ Un `RETIRADO` no se arregla actualizando: el nombre ya no está en el marketplac
 
 Por eso la Herramienta **imprime el comando pero no lo ejecuta**, ni siquiera con `--aplicar`. Para ver qué dependencias quedarían sin dueño sin tocar nada: `claude plugin prune --dry-run`.
 
-⚠️ Mientras conviven, **el viejo y el nuevo no se pisan: coexisten**. `memoria-local` y `amp-memoria` traen los dos una skill `registrar-memoria`, con la misma descripción y distinto prefijo de plugin. No hay ganador definido — el modelo elige. De ahí que el paso 2 no sea opcional.
 
 Sin `process.exit(1)`: reporta, no frena — es capa mecánica, el juicio queda del lado del agente.
 
@@ -2191,7 +1805,7 @@ Las que instala el Agente Multipropósito (origen **Base**). El nivelador `amp:a
 | Preguntar antes de redefinir o remover algo canónico | cada turno | inyectar | Antes de **remover, renombrar o redefinir** algo canónico (una definición del glosario, una decisión) o con dependientes: proponé y esperá la ratificación del usuario. El agente propone; ratificar, vetar y redefinir son potestad del usuario. Aplica también a **definiciones y remociones**, no solo al alta de un término. | vigente |
 | Contrastar contra la sabiduría del repo al escribir | al escribir | inyectar | Acabás de escribir un `.md`. Si es de `.claude/`, contrastalo contra el test de demarcación (¿va en este subsistema?); si es de lo que el repo publica, acordate de que ese texto lo hereda quien lo instale. En los dos casos: ¿contradice algo asentado?, ¿usaste un término vetado o inventado? Corregí si hace falta. | vigente |
 | Frenar la terminología vetada antes de que se escriba | al escribir | bloquear | conducta/detectar-terminologia-vetada/detectar-terminologia-vetada.js | vigente |
-| Registrar en el subsistema cuando algo cambia | al cerrar tarea | inyectar | Si en esta tarea cambió algo que otro subsistema debe saber (memoria, decisión, conocimiento, semántica, herramientas), registralo antes de cerrar. | pendiente |
+| Registrar en el subsistema cuando algo cambia | al cerrar tarea | inyectar | Si en esta tarea cambió algo que otro subsistema debe saber (decisión, conocimiento, semántica, herramientas, conducta o catálogo de subsistemas), registralo antes de cerrar. | pendiente |
 
 ## Reglas del Propósito
 
@@ -3132,204 +2746,6 @@ for (const [titulo, items] of secciones) {
 **Origen (opcional):** funcionalidad `conducta` del harness — es infra del Patrón del subsistema (co-ubicada, como todo lint), **no** una Herramienta, así que no se registra en `herramientas/INDICE.md`.
 ```
 
-## §Script — lint-memoria — `.claude/memoria/lint-memoria/lint-memoria.js`
-
-Contenido exacto (Node, sin dependencias, sin red):
-
-```js
-#!/usr/bin/env node
-// Lint de la memoria local: refs rotas, indice (MEMORIA.md) incompleto, huerfanos, frontmatter. Sin LLM, sin red.
-// Uso: node lint-memoria.js [<carpeta>]   (default: .claude/memoria)
-const fs = require('fs'), path = require('path');
-const root = path.resolve(process.argv[2] || '.claude/memoria');
-// '.respaldo-amp' son copias congeladas de .claude/ que dejaron corridas viejas del nivelador:
-// sus hallazgos ya no se pueden corregir y duplican el diagnostico real. No se barren.
-// 'tmp' es material de trabajo descartable (handoffs, notas, borradores) que el propio harness
-// gitignorea: sus hallazgos no se corrigen, se borra la carpeta. Excluye por NOMBRE, en
-// cualquier nivel del repo, no solo `.claude/tmp/`.
-const EXCLUDE = new Set(['.git', 'node_modules', '.respaldo-amp', 'tmp']);
-const TYPES = new Set(['user', 'feedback', 'project', 'reference']);
-
-function walk(dir, acc) {
-  for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
-    if (EXCLUDE.has(e.name)) continue;
-    const full = path.join(dir, e.name);
-    if (e.isDirectory()) { if (e.name.startsWith('lint-')) continue; walk(full, acc); }  // el lint co-ubicado del subsistema no es contenido
-    else if (e.name.endsWith('.md')) acc.push(full);
-  }
-  return acc;
-}
-const rel = p => path.relative(root, p).replace(/\\/g, '/');
-const read = f => fs.readFileSync(f, 'utf8');
-const inRoot = p => path.resolve(p).startsWith(path.resolve(root) + path.sep);
-
-// La raiz del repo se deduce de la ubicacion del propio lint: .claude/<sub>/lint-<sub>/ -> 3 arriba.
-// La profundidad la fija el instalador; no depende de desde donde se invoque.
-const repoRoot = path.resolve(__dirname, '..', '..', '..');
-const dentroDelRepo = p => {
-  const r = path.resolve(p);
-  return r === repoRoot || r.startsWith(repoRoot + path.sep);
-};
-// Un archivo de un subsistema puede linkear a otros (planes/, conocimiento/, docs/, ...): la ref se
-// resuelve relativa al archivo, a la raiz del subsistema, a .claude/, a la raiz del repo y al cwd.
-// Solo se acepta el candidato que caiga DENTRO del repo: una ref rota no resuelve contra afuera.
-function resolverRef(t, fdir) {
-  return [
-    path.join(fdir, t),
-    path.join(root, t),
-    path.join(root, '..', t),
-    path.join(repoRoot, t),
-    path.resolve(t),
-  ].map(p => path.normalize(p)).find(p => dentroDelRepo(p) && fs.existsSync(p)) || null;
-}
-
-// --- Atribucion por ancestro mas cercano (identico en lint-conocimiento y lint-memoria) ---
-// Cada pagina se atribuye a su indice ancestro mas cercano; un sub-indice (INDICE.md), a su
-// ancestro ESTRICTO mas cercano (asi el padre queda obligado a nombrar la Carpeta que delego).
-// Un hallazgo cae una sola vez, contra el indice que corresponde.
-function indiceAncestro(p, dirsIndice, estricto) {
-  let d = path.dirname(p);
-  if (estricto) d = path.dirname(d);
-  while (d.length >= root.length) {
-    if (dirsIndice.has(d)) return d;
-    const up = path.dirname(d);
-    if (up === d) break;
-    d = up;
-  }
-  return null;
-}
-// Un indice "nombra" a p si menciona su archivo, su stem, o alguna Carpeta de la cadena entre el
-// dir del indice y p (la Entrada que delega el subarbol). Un sub-indice se nombra por su Carpeta.
-function indiceNombra(t, p, idxDir) {
-  const base = path.basename(p);
-  if (base !== 'INDICE.md') {
-    const stem = base.slice(0, -3);
-    if (t.includes(base) || t.includes(stem)) return true;
-  }
-  let d = path.dirname(p);
-  while (d !== idxDir && d.length > idxDir.length) {
-    if (t.includes(path.basename(d))) return true;
-    d = path.dirname(d);
-  }
-  return false;
-}
-// --- fin atribucion por ancestro ---
-
-const all = walk(root, []);
-const indexFile = path.join(root, 'MEMORIA.md');
-const hasIndex = fs.existsSync(indexFile);
-const idxText = hasIndex ? read(indexFile) : '';
-const memos = all.filter(p => path.basename(p) !== 'MEMORIA.md' && path.basename(p) !== 'MANIFIESTO.md');  // MANIFIESTO.md: infra del subsistema, no es memoria
-
-// nombres validos para wikilinks: `name:` del frontmatter + stem del archivo
-const nameSet = new Set();
-for (const p of memos) {
-  nameSet.add(path.basename(p).slice(0, -3));
-  const fm = read(p).match(/^---\r?\n([\s\S]*?)\r?\n---/);
-  if (fm) { const nm = fm[1].match(/^name:\s*(\S+)/m); if (nm) nameSet.add(nm[1].trim()); }
-}
-
-const mdLink = /\]\(([^)]+?\.md)\)/g;
-const codePath = /`([^`]+?\/[^`]+?\.md)`/g;
-const wiki = /\[\[([^\]]+?)\]\]/g;
-
-// Un wikilink ACTIVO (que el harness resuelve) va crudo; uno CITADO va en backticks
-// para mostrar el simbolo. Mapear code-spans inline (y fences) para saltar citas.
-function codeSpans(txt) {
-  const runs = []; let m; const re = /`+/g;
-  while ((m = re.exec(txt))) runs.push([m.index, m[0].length]);
-  const spans = [];
-  for (let i = 0; i < runs.length; ) {
-    const [open, len] = runs[i]; let j = i + 1;
-    while (j < runs.length && runs[j][1] !== len) j++;
-    if (j < runs.length) { spans.push([open, runs[j][0] + runs[j][1]]); i = j + 1; }
-    else i++;
-  }
-  return spans;
-}
-const enCodeSpan = (spans, idx) => spans.some(([s, e]) => idx >= s && idx < e);
-
-// [1] refs rotas: links a .md inexistentes + wikilinks sin memoria.
-const broken = [], referenced = new Set();
-for (const f of all) {
-  const txt = read(f), fdir = path.dirname(f);
-  for (const re of [mdLink, codePath]) {
-    let m; re.lastIndex = 0;
-    while ((m = re.exec(txt))) {
-      let t = m[1].trim();
-      if (/^https?:\/\//.test(t)) continue;
-      if (t.includes('...') || t.includes('<') || t.includes('*')) continue;
-      const hit = resolverRef(t, fdir);
-      if (hit) { if (inRoot(hit)) referenced.add(rel(hit)); }
-      else broken.push([rel(f), t, 'ref .md no existe']);
-    }
-  }
-  const spans = codeSpans(txt);
-  let m; wiki.lastIndex = 0;
-  while ((m = wiki.exec(txt))) {
-    if (enCodeSpan(spans, m.index)) continue;  // wikilink citado en backticks, no activo
-    const name = m[1].split('|')[0].trim();
-    if (!nameSet.has(name)) broken.push([rel(f), `[[${name}]]`, 'wikilink sin memoria']);
-  }
-}
-
-// [2] indice incompleto: memoria no listada en su indice ancestro mas cercano
-// (MEMORIA.md en la raiz + cualquier sub/INDICE.md; sin anidar, el dueno es siempre MEMORIA.md)
-const subIndices = memos.filter(p => path.basename(p) === 'INDICE.md');
-const dirsIndice = new Set([root, ...subIndices.map(i => path.dirname(i))]);
-const idxPorDir = new Map([[root, indexFile], ...subIndices.map(i => [path.dirname(i), i])]);
-const textoIndice = i => i === indexFile ? idxText : read(i);
-const gaps = [];
-for (const p of memos) {
-  const ownerDir = indiceAncestro(p, dirsIndice, path.basename(p) === 'INDICE.md');
-  if (ownerDir === null) continue;
-  const idx = idxPorDir.get(ownerDir);
-  if (idx === p) continue;
-  if (!indiceNombra(textoIndice(idx), p, ownerDir)) gaps.push([rel(idx), rel(p)]);
-}
-
-// [3] huerfanos: ni referenciada ni en el indice que le corresponde
-const orphans = [];
-for (const p of memos) {
-  if (referenced.has(rel(p))) continue;
-  const ownerDir = indiceAncestro(p, dirsIndice, path.basename(p) === 'INDICE.md');
-  const idx = ownerDir === null ? null : idxPorDir.get(ownerDir);
-  if (idx !== null && idx !== p && indiceNombra(textoIndice(idx), p, ownerDir)) continue;
-  orphans.push(rel(p));
-}
-
-// [4] frontmatter: name / description / metadata.type valido
-const fmBad = [];
-for (const p of memos) {
-  if (path.basename(p) === 'INDICE.md') continue;  // sub-indice: estructura, no memoria con frontmatter
-  const txt = read(p);
-  const fm = txt.match(/^---\r?\n([\s\S]*?)\r?\n---/);
-  if (!fm) { fmBad.push([rel(p), 'sin frontmatter']); continue; }
-  const body = fm[1];
-  if (!/\bname:\s*\S/.test(body)) fmBad.push([rel(p), 'falta name']);
-  if (!/\bdescription:\s*\S/.test(body)) fmBad.push([rel(p), 'falta description']);
-  const tm = body.match(/type:\s*([a-z]+)/);
-  if (!tm) fmBad.push([rel(p), 'falta metadata.type']);
-  else if (!TYPES.has(tm[1])) fmBad.push([rel(p), `type invalido: ${tm[1]}`]);
-}
-
-console.log(`== LINT MEMORIA: ${root} ==`);
-console.log(`memorias: ${memos.length} | indice: ${hasIndex ? 'MEMORIA.md' : 'FALTA'}\n`);
-if (!hasIndex) console.log('[!] No existe MEMORIA.md (indice de memoria)\n');
-console.log(`[1] REFS ROTAS (${broken.length}):`);
-broken.forEach(([f, r, w]) => console.log(`    ${f}  ->  ${r}   [${w}]`));
-if (!broken.length) console.log('    (ninguna)');
-console.log(`\n[2] INDICE INCOMPLETO (${gaps.length}):`);
-gaps.forEach(([i, p]) => console.log(`    ${i}  no lista  ${p}`));
-if (!gaps.length) console.log('    (completo)');
-console.log(`\n[3] HUERFANOS (${orphans.length}):`);
-orphans.forEach(o => console.log(`    ${o}`));
-if (!orphans.length) console.log('    (ninguno)');
-console.log(`\n[4] FRONTMATTER (${fmBad.length}):`);
-fmBad.forEach(([p, w]) => console.log(`    ${p}   [${w}]`));
-if (!fmBad.length) console.log('    (ok)');
-```
-
 ## §Script — lint-preferencias — `.claude/preferencias/lint-preferencias/lint-preferencias.js`
 
 Contenido exacto (Node, sin dependencias, sin red):
@@ -3373,3 +2789,499 @@ console.log(`hallazgos: ${problems.length}\n`);
 if (!problems.length) console.log('    (ok)');
 else problems.forEach(p => console.log(`    [x] ${p}`));
 ```
+
+
+## §Piezas Base vigentes — copias textuales
+
+Estas piezas se instalan en sus rutas indicadas. Cada bloque es copia literal de la fuente viva del harness.
+
+### `.claude/subsistemas/MANIFIESTO.md`
+
+````markdown
+# Subsistemas — manifiesto de subsistema
+
+Este directorio cataloga los subsistemas instalados del Agente Multipropósito. `SUBSISTEMAS.md` separa los que pertenecen a la Base de los que nacieron del Propósito y apunta a la casa de cada uno; no guarda el contenido de esos subsistemas.
+
+**Disparador:** consultar el catálogo para descubrir qué casas existen y quién debe recibir una pieza de Aprendizaje. Escribir al agregar, retirar o cambiar de origen un subsistema.
+
+**Skills:** `agregar-subsistema` (crea una casa nueva siguiendo el Patrón) y `reubicar-aprendizaje` (coordina con las habilidades dueñas el reparto guiado de piezas antiguas).
+
+**Índice: se carga siempre** (liviano). Al cerrar una tarea que cambió el catálogo o sus casas, correr:
+
+```bash
+node .claude/subsistemas/lint-subsistemas/lint-subsistemas.js
+```
+
+@SUBSISTEMAS.md
+````
+
+### `.claude/subsistemas/SUBSISTEMAS.md`
+
+````markdown
+# Subsistemas
+
+Catálogo de casas persistentes del Agente Multipropósito. La Base la mantiene `amp:actualizar`; el Propósito puede sumar casas con `agregar-subsistema`.
+
+## Subsistemas Base
+
+| Subsistema | Qué guarda | Operación |
+|---|---|---|
+| [subsistemas](./) | Catálogo y coordinación entre casas | `agregar-subsistema`, `reubicar-aprendizaje` |
+| [preferencias](../preferencias/) | Preferencias del usuario y adaptaciones del repo | `registrar-preferencia` |
+| [planes](../planes/) | Planes y su ciclo de vida | `ciclo-de-plan` |
+| [conocimiento](../conocimiento/) | Lo que el agente sabe y necesita reutilizar | `registrar-conocimiento`, `buscar-conocimiento` |
+| [semantica](../semantica/) | Vocabulario legítimo y relaciones vetadas | `converger-terminologia` |
+| [decisiones](../decisiones/) | Decisiones estructurales | `registrar-decision` |
+| [herramientas](../herramientas/) | Herramientas repetibles y su registro | `registrar-herramienta` |
+| [conducta](../conducta/) | Reglas entregadas en el momento de actuar | `registrar-regla` |
+
+## Subsistemas del Propósito
+
+| Subsistema | Qué guarda | Operación |
+|---|---|---|
+````
+
+### `.claude/subsistemas/README.md`
+
+````markdown
+# Subsistemas
+
+Un subsistema es una casa persistente con propósito propio. Sigue el Patrón mínimo: manifiesto para saber cuándo usarlo, índice o registro para descubrir sus piezas, entradas propias y un lint mecánico.
+
+`SUBSISTEMAS.md` es el catálogo, no un segundo índice de todo el contenido. La separación Base/Propósito permite que el actualizador reemplace las filas que distribuye sin tocar las casas creadas por el repo.
+
+La reubicación de Aprendizaje antiguo se hace pieza por pieza. `reubicar-aprendizaje` inventaría las piezas, pide a la habilidad del destino que evalúe pertenencia y no mueve ni parte nada sin confirmación explícita del usuario.
+````
+
+### `.claude/subsistemas/lint-subsistemas/README.md`
+
+````markdown
+# lint-subsistemas
+
+Comprueba que el catálogo y las casas instaladas coincidan, que no haya filas duplicadas y que cada subsistema catalogado tenga `MANIFIESTO.md`.
+
+```bash
+node .claude/subsistemas/lint-subsistemas/lint-subsistemas.js
+```
+````
+
+### `.claude/subsistemas/lint-subsistemas/lint-subsistemas.js`
+
+```js
+#!/usr/bin/env node
+// Lint del catalogo de subsistemas: catalogo<->disco, duplicados y manifiestos. Sin LLM, sin red.
+const fs = require('fs');
+const path = require('path');
+
+const claude = path.resolve(process.argv[2] || '.claude');
+const catalogo = path.join(claude, 'subsistemas', 'SUBSISTEMAS.md');
+const ignorar = new Set(['skills', 'tmp']);
+const errores = [];
+
+if (!fs.existsSync(catalogo)) {
+  console.error('[!] Falta .claude/subsistemas/SUBSISTEMAS.md');
+  process.exit(1);
+}
+
+const texto = fs.readFileSync(catalogo, 'utf8');
+const filas = [...texto.matchAll(/^\|\s*\[([^\]]+)\]\(([^)]+)\)\s*\|/gm)]
+  .map(([, nombre, enlace]) => ({ nombre: nombre.trim(), enlace: enlace.trim() }));
+const nombres = filas.map(f => f.nombre);
+
+for (const nombre of new Set(nombres)) {
+  if (nombres.filter(n => n === nombre).length > 1) errores.push(`fila duplicada: ${nombre}`);
+}
+
+for (const fila of filas) {
+  const destino = path.resolve(path.dirname(catalogo), fila.enlace);
+  if (!fs.existsSync(destino) || !fs.statSync(destino).isDirectory()) errores.push(`casa inexistente: ${fila.nombre} -> ${fila.enlace}`);
+  else if (!fs.existsSync(path.join(destino, 'MANIFIESTO.md')) && fila.nombre !== 'preferencias')
+    errores.push(`sin MANIFIESTO.md: ${fila.nombre}`);
+}
+
+const casas = fs.readdirSync(claude, { withFileTypes: true })
+  .filter(e => e.isDirectory() && !e.name.startsWith('.') && !ignorar.has(e.name))
+  .map(e => e.name)
+  .filter(n => fs.existsSync(path.join(claude, n, 'MANIFIESTO.md')));
+for (const casa of casas) {
+  if (!nombres.includes(casa)) errores.push(`casa no catalogada: ${casa}`);
+}
+
+console.log(`subsistemas: ${filas.length} | casas: ${casas.length}`);
+if (errores.length) {
+  errores.forEach(e => console.error(`[!] ${e}`));
+  process.exit(1);
+}
+console.log('OK');
+```
+
+### `.claude/planes/README.md`
+
+````markdown
+# Planes
+
+Persistir y gestionar planes bajo `.claude/planes/` con tres subcarpetas: `pendientes/` (planes vivos: `Nuevo`, `En curso`, `Diferido`), `ejecutados/` y `descartados/` (registro, siempre con motivo). Lo fino (estado, fechas, origen) vive en el registro `planes/PLANES.md`, no en el nombre del archivo. Los **estados disponibles y su semántica** (a qué carpeta mapea cada uno, cuáles son terminales) están en `planes/ESTADOS.md` — fuente de verdad configurable que el lint lee.
+
+**Máquina de un solo eje:** un plan está en exactamente un estado. `Nuevo` (creado, sin ejecutar; la revisión con `planificar` ocurre acá) → `En curso` (se tomó el plan y se está ejecutando) → `Ejecutado` (terminal). `Diferido` = pospuesto, retomable. `Descartado` = abandonado con motivo (terminal). No hay estado de "diseño": la revisión es parte de estar `Nuevo`.
+
+**Why:** trazabilidad de qué se planificó, cuándo se creó y cuándo y cómo se cerró — sin depender de archivos efímeros de plan-mode del harness, y sin mirar carpetas a ojo: el registro es la vista, y está siempre en contexto vía el Mapa del repo. Un solo eje (en vez de prioridad × progreso) porque en la práctica un plan pausado siempre está sin empezar, y la distinción diseño/ejecución no aporta al flujo.
+
+**How to apply:**
+
+1. **Al crear un plan:** copiar a `.claude/planes/pendientes/<slug-estable>.md` (sin fecha en el nombre) y agregar su fila en `PLANES.md`: Estado (de `ESTADOS.md`), Creado, Origen si se desprende de otro plan.
+2. **Cada actualización al plan** se replica en la versión persistida — es la fuente de verdad, no el archivo del plans-folder del harness. Los cambios de estado se reflejan en `PLANES.md`, y el archivo se mueve a la carpeta que el estado indica.
+3. **Al detectar evidencia de implementación** (commit, mensaje del user, código verificado, otro agente): pasar a `Ejecutado` y mover a `ejecutados/` **sin renombrar**, completar `Cerrado` en el registro y revisar primero los encabezados. Si ya hay una sección de implementación (`## Implementación` o `## Notas de implementación`, con cualquier nivel), conservar su contenido y normalizar solo el título a **`## Notas de implementación`** si corresponde; solo si no existe, agregarla (cómo se implementó vs planificado, hash de commit, cosas notables). Nunca crear una sección vacía que duplique notas legacy.
+4. **Descartar es un cierre válido:** `Descartado`, mover a `descartados/`, completar `Cerrado` y una línea de motivo en Notas (p. ej. "superseded por <plan>").
+5. **Reparar referencias entrantes** si las hubiera (el nombre estable minimiza esto; preferir enlazar planes vía `PLANES.md`).
+6. **Al cerrar** una tarea que tocó planes, correr el lint: `node .claude/planes/lint-planes/lint-planes.js`.
+
+Importante: borrar el archivo de `pendientes/` al moverlo — no duplicar. Un plan puede persistirse antes de arrancar la ejecución (p. ej. para cortar una sesión larga de diseño): Estado `Nuevo` o `Diferido` en el registro y bloque al tope con los pendientes para retomar.
+
+**Partir un plan a medias:** cuando un plan queda `En curso` con el núcleo hecho pero un cacho pendiente, **partirlo** en vez de arrastrarlo. Cerrar como `Ejecutado` el alcance ya logrado (con sus `## Notas de implementación`) y **desprender el resto como plan nuevo** — `Nuevo` si se retoma pronto, `Diferido` si la espera es a propósito (p. ej. dejar correr una medición unas sesiones) — con `Origen` apuntando al cerrado y la condición de reanudación anotada si es Diferido. Mantiene el registro honesto (`Ejecutado` = ejecutado de verdad, `En curso` = de verdad ejecutándose) y evita planes zombis que dicen "en curso" mientras en realidad esperan. Aplica igual cuando un plan cubre dos mitades separables aunque ninguna esté a medias: cerrar la resuelta, desprender la otra.
+
+Relacionado: [[archivo-de-estado]] (estado vivo de una exploración dentro del plan).
+````
+
+### `.claude/conocimiento/README.md`
+
+````markdown
+# Conocimiento
+
+El conocimiento persistido del agente (documentos, estudios, temas y notas del proyecto o dominio) vive en una carpeta única: `.claude/conocimiento/`, con un `INDICE.md` en su raíz. La convención de Herramientas está en [el README de ese subsistema](../herramientas/README.md).
+
+**Why:** ubicación determinística → el lint y cualquier consulta saben dónde mirar sin heurística; separa lo que el agente conoce de la configuración y de sus Herramientas; mantiene la raíz del repo limpia.
+
+**How to apply:**
+
+1. **Cuándo asentar:** al averiguar algo que costó descubrir y que va a hacer falta de nuevo (cómo funciona el proyecto, el dominio, un sistema externo, un formato o una restricción real). La skill `registrar-conocimiento` hace el flujo. **Dónde:** todo md de conocimiento nuevo va bajo `.claude/conocimiento/` (subcarpetas por tema; cada una con su `INDICE.md` si crece). Nunca en la raíz del repo.
+2. Mantener `.claude/conocimiento/INDICE.md` como índice raíz (una línea por página/sección; solo punteros).
+3. **Al cerrar** una tarea que escribió conocimiento, correr el lint mecánico: `node .claude/conocimiento/lint-conocimiento/lint-conocimiento.js`. Chequea refs rotas, índice incompleto y huérfanos (sin LLM, sin red). Resolver los hallazgos.
+4. El **chequeo semántico** (contradicciones entre páginas, duplicación, desactualización) se corre a pedido tras una incorporación grande, no en cada cierre.
+5. **Migración:** un script de datos acoplado por `__dirname` que se mueva a `.claude/herramientas/<tool>/` debe reapuntar sus paths a la carpeta de datos en `conocimiento/` (`__dirname + '/../../conocimiento/<subdir>/...'`), o se rompe.
+````
+
+### `.claude/semantica/README.md`
+
+````markdown
+# Semántica
+
+El subsistema `semántica` mantiene la coherencia semántica del dominio en el tiempo. Vive en `.claude/semantica/` con **dos registros pares**, ninguno cargado en contexto siempre:
+
+- `GLOSARIO.md` — terminología **legítima**: una tabla donde cada fila es un concepto (nombre canónico, definición corta, `Alias`, `Propuestos`, `Detalle`). Los conceptos complejos tienen su propia página `.claude/semantica/<nombre>.md`.
+- `TERMINOLOGIA-FARLOPA.md` — relaciones **vetadas**: `Término | Significado vetado | Cómo decirlo | Control`. **Lo vetado es la relación término→significado, no el término**: el mismo término con otro significado puede ser legítimo (`plomería`=cañerías es válido; `plomería`=infra interna es farlopa). El lint **marca por término**; el agente **juzga el significado** al leer la marca. La columna `Control` dice si al escribirlo **frena** la escritura (`bloquea`: sin uso legítimo posible) o solo la **informa** (`avisa`, el default).
+
+**Términos por estado (glosario):** `Alias` (formas válidas, ratificadas), `Propuestos` (sugeridos por el agente, sin usar hasta ratificar). El glosario **NO tiene columna de vetados**: todo veto es una relación término→significado y vive en el registro par de Terminología Farlopa.
+
+**Why:** coherencia semántica a lo largo de la vida del repo. Los alias válidos **se registran** (saber que "birra/chela" son la misma cerveza evita confusión); los términos confusos o ajenos al dominio **se vetan** (dejan de usarse y se barren del texto vivo). Los agentes acumulan jerga sesión tras sesión —ver el conocimiento `terminologia-farlopa.md`—; la semántica la frena.
+
+**Gobernanza:** el agente **nunca** ratifica un alias ni veta por su cuenta: solo **propone** en `Propuestos`. Ratificar y vetar son del usuario. El agente **nunca usa** un término que esté en `Propuestos`, ni uno vetado en el significado que Terminología Farlopa prohíbe, ni en texto plano, memorias, planes o código.
+
+**How to apply:**
+
+1. **Al planificar o analizar**, consultar los dos registros. Término nuevo válido → proponerlo en `Propuestos`. Término confuso o ajeno → proponer vetarlo (a Terminología Farlopa). En ambos casos, decide el usuario.
+2. Concepto **simple** → una fila del glosario. Concepto **complejo** → fila + página de detalle enlazada.
+3. **Al cerrar** una tarea que tocó semántica, correr el lint: `node .claude/semantica/lint-semantica/lint-semantica.js` (links de detalle, huérfanos, colisiones, propuestos pendientes, apariciones de vetados en el repo).
+
+Relacionado: [[flujo-planes]] (consultar la semántica al planificar/analizar), [[terminologia-canonica]] (la ratificación no vale hasta bajarla al texto).
+````
+
+### `.claude/decisiones/README.md`
+
+````markdown
+# Decisiones
+
+Las decisiones **estructurales al propósito del repo** se asientan en `.claude/decisiones/INDICE.md`: una tabla donde cada fila es una decisión (N° secuencial, qué se decidió y por qué, fecha, estado, y link a página de detalle si requiere conceptualización mayor). Misma estructura que el glosario: lo simple vive en la fila, lo complejo en su `NNNN-slug.md`.
+
+**Why:** coherencia decisional a lo largo de la vida del repo — no re-decidir ni contradecir lo estructural. Acotado a lo estructural (no lo operativo trivial) para que el registro siga siendo señal y no ruido — es lo que hacía la "A" de ADR, generalizada a repos de cualquier propósito.
+
+**How to apply:**
+
+1. **Qué registrar:** decisiones que definen cómo es / qué hace el repo en lo esencial, o que eligen un camino que condiciona el trabajo futuro. **No** las triviales o efímeras ("busqué en internet", "usé tal comando").
+2. **Al planificar o analizar**, consultar las decisiones previas: no re-abrir lo cerrado ni contradecirlo. Reemplazar, no borrar: agregar la nueva y marcar la vieja `reemplazada por NNNN`.
+3. **Simple** → una fila, Detalle en `—`. **Compleja** (contexto, alternativas, consecuencias) → fila + página `NNNN-slug.md`.
+4. **Al cerrar** una tarea que registró decisiones, correr el lint: `node .claude/decisiones/lint-decisiones/lint-decisiones.js` (numeración, links de detalle, huérfanos, superseded).
+
+Relacionado: [[flujo-planes]] (consultar/registrar decisiones al cerrar planes).
+````
+
+### `.claude/herramientas/README.md`
+
+````markdown
+# Herramientas
+
+Las **Herramientas** del repo son las *tools* que el **Propósito** del repo requiere y el agente invoca para tareas repetibles. Tipos: `script`, `skill` local del repo, `MCP` local. Viven catalogadas en `.claude/herramientas/INDICE.md` — tabla (Herramienta | Tipo | Qué hace | Cómo se invoca | Estado). Cada fila apunta a donde vive la tool: un `script` en su carpeta `<tool>/` bajo herramientas, una `skill` en `.claude/skills/<skill>/`, un `MCP` en `.mcp.json`.
+
+**Distinción clave:** los **lints de subsistema** (`lint-subsistemas`, `lint-semantica`, …) **no** son Herramientas. Son infraestructura del Patrón de cada subsistema (índice + entradas + **lint**) y viven con su subsistema. En el registro de Herramientas solo van tools del Propósito.
+
+**Why:** que la colección de tools del Propósito no se vuelva un conjunto de herramientas desordenadas sin saber qué son, de dónde salieron ni cómo se usan. Ubicación determinística + registro escaneable + ficha por tool. Y que la infraestructura interna del harness (lints) no se confunda con las tools de dominio.
+
+**How to apply:**
+
+1. Toda Herramienta nueva va al registro `.claude/herramientas/INDICE.md` (una fila), con su `Tipo`. Un `script` vive en `.claude/herramientas/<tool>/` con su `README.md` (nunca suelto); una `skill`/`MCP` se apunta a donde vive.
+2. Marcar `Estado`; los `obsoleto` se pueden depurar.
+3. ⚠️ **Refs por ruta:** una tool referenciada por ruta en `settings.local.json`/`settings.json` (regla de permiso), en `.gitignore` o en un hook NO se mueve/renombra alegremente — rompe el match por prefijo exacto y se pierde la pre-autorización (en headless, denegación directa). Antes de mover, grep su ruta; si aparece, actualizar la referencia en el mismo paso.
+4. **Al cerrar** una tarea que tocó Herramientas, correr el lint: `node .claude/herramientas/lint-herramientas/lint-herramientas.js` (README por herramienta local, registro completo, filas colgadas, refs por ruta de lint en settings).
+
+Planes, conocimiento u otros subsistemas pueden referenciar una Herramienta por su ruta explicando cómo usarla en su contexto.
+
+Relacionado: [[flujo-planes]], [[base-conocimiento]].
+````
+
+### `.claude/conducta/README.md`
+
+````markdown
+# Conducta
+
+El subsistema `conducta` asegura comportamientos del tipo **"cuando hagas X, asegurate de Y"**: ata **momentos** del flujo a **acciones**. Vive en `.claude/conducta/`:
+
+- `INDICE.md` — el **registro de reglas**: cada fila ata un momento a una acción (`Regla | Momento | Clase | Contenido | Estado`). Separado por origen en dos secciones: **Reglas Base** (las manda el harness; el nivelador las reemplaza enteras) y **Reglas del Propósito** (las suma cada repo; el nivelador no las toca).
+- `MOMENTOS.md` — el **vocabulario de momentos**: un momento es un **evento de hook + una condición que la máquina evalúa sin juicio** (`cada turno` = `UserPromptSubmit`; `al escribir` = `PreToolUse` sobre un `.md` de **cualquier parte del repo** salvo `tmp/`; `al cerrar tarea` = `Stop`, aún sin repartidor).
+- `establecer-conducta/` — el **hook repartidor**: un mismo script sirve a varios eventos; resuelve qué momento realiza el evento que lo disparó, lee el registro **vivo** y despacha las reglas `vigente` de ese momento según su clase, **combinando** el texto de las `inyectar` con lo que midan las `bloquear`. Agregar o cambiar una regla **no toca el hook**.
+- `lint-conducta/` — valida que toda regla apunte a un momento existente, con clase/estado válidos, y que ninguna regla `vigente` cuelgue de un momento sin repartidor.
+
+**Clases de acción:** `inyectar` (el agente lee un texto y actúa con su juicio) · `correr` (una Herramienta lo resuelve sin juicio) · `bloquear` (se frena la acción; solo donde Y es sin juicio y el falso positivo es imposible).
+
+**Why:** una regla cargada al arranque **se recita, no se obedece** (conocimiento `modos-de-falla-ante-reglas-escritas`). El aporte de conducta es entregar la regla **en el momento** en que hace falta, no al inicio de la sesión — por eso el registro **NO se carga siempre** y el agente **no lo consulta a mano**: lo entrega el hook cerca del punto de acción.
+
+**Gobernanza:** se edita al **agregar, modificar o dar de baja una regla**. Toda regla nueva que toque terminología o decisiones pasa por el usuario (el agente propone; ratificar es potestad del usuario).
+
+**How to apply:**
+
+1. **En el flujo normal, no consultar `INDICE.md` a mano** — el hook entrega la regla que corresponde a cada momento.
+2. **Para agregar una regla:** elegir un momento existente de `MOMENTOS.md` (o declarar uno nuevo, en `declarado` hasta que tenga repartidor), sumar la fila a la sección que corresponda (`Reglas Base` si la manda el harness, `Reglas del Propósito` si es de este repo), y correr el lint. Una regla `vigente` no puede colgar de un momento sin repartidor: va en `pendiente`.
+3. **Al cerrar** una tarea que tocó conducta, correr el lint: `node .claude/conducta/lint-conducta/lint-conducta.js`.
+
+Relacionado: [[flujo-planes]] (construcción del subsistema por plan), [[semantica]] (el control de terminología consume los momentos `cada turno` y `al escribir`).
+````
+
+### `.claude/preferencias/estilo-commits.md`
+
+````markdown
+# Estilo de commits
+
+Mensajes de commit y descripciones de PR de este proyecto: **en español** y **sin co-autoría** (`Co-Authored-By: Claude ...`) ni atribución a la IA.
+
+**Forma del mensaje:**
+
+    <Área>: <Resumen>
+
+    Antes, <estado previo>. Ahora, <estado nuevo>.
+
+**Reglas de redacción:**
+
+- Título en una sola línea; el resumen que sigue al área arranca en mayúscula.
+- El **área es el tema funcional** del cambio, no la carpeta tocada. No usar un área que valga para todo el repo (en un repo íntegramente backend, `Backend` no aporta): usar el módulo o dominio donde ocurre el cambio. Preferir las áreas que el historial ya usa antes de inventar una nueva.
+- Si el cambio toca **más de un área funcional**, va un commit por área. Excepción: cuando el cambio es atómico entre áreas (separarlo deja un commit roto), manda la atomicidad y el título toma el área principal.
+- Cuerpo de **una o dos oraciones**, funcional, orientado al comportamiento observable por quien usa u opera el sistema.
+- Redactar para alguien que conoce el dominio funcional pero no la implementación. Evitar clases, métodos, handlers y demás internos salvo que sean imprescindibles para explicar el impacto.
+- Describir el **delta final** contra el commit anterior, no el recorrido interno ni las decisiones descartadas durante la implementación.
+- Estado previo en términos neutros: nada de "ruidoso", "malo" o calificativos parecidos.
+- No listar archivos modificados, salvo que el cambio sea puramente técnico o de mantenimiento y no tenga efecto funcional que describir.
+
+**Why:** el registro público del repo no menciona coautoría de la herramienta; el rastro de asistencia queda en el Aprendizaje local del proyecto. El cuerpo Antes/Ahora obliga a nombrar el cambio funcional observable en vez del recorrido interno de la implementación.
+
+**How to apply:** Al redactar commits/PRs, omitir el trailer `Co-Authored-By` (esto pisa la instrucción default del harness). Redactar en español con la forma y las reglas de arriba.
+````
+
+### `.claude/preferencias/archivo-de-estado.md`
+
+````markdown
+# Archivo de estado
+
+En tareas exploratorias multi-variable (benchmarks, comparaciones, análisis de escenarios), mantener **un** archivo de estado desde la primera corrida: tabla dimensión×resultado + fecha/hora por fila + "próxima acción".
+
+**Why:** en sesiones largas el contexto conversacional es el peor lugar para el estado — se diluye, se pierde en compactaciones y no sobrevive a `/clear` ni al cambio de máquina. El archivo sí. Origen: sesión de benchmarking de ~11 hs (2026-06) donde la matriz combinación×prueba se perdió y costó ~8 turnos reconstruirla.
+
+**How to apply:**
+
+1. Actualizar el archivo **antes** de reportar cada resultado en el chat — el archivo es la fuente de verdad; el chat, el comentario.
+2. Ubicación: si la exploración responde a un plan, sección `## Estado` dentro del plan; si es ad-hoc, `conocimiento/<tema>/estado.md` (al cerrar, destilar a conocimiento o borrar).
+3. Al retomar (nueva sesión, otra máquina, post-`/clear`): leer el archivo antes que nada.
+
+Relacionado: [[flujo-planes]].
+````
+
+### `.claude/conducta/MANIFIESTO.md`
+
+````markdown
+# Conducta — manifiesto de subsistema
+
+El subsistema `conducta` asegura comportamientos del tipo "cuando hagas X, asegurate de Y": ata **momentos** del flujo a **acciones** (inyectar un texto, correr una Herramienta, bloquear). Sus reglas viven en `INDICE.md`, sus momentos en `MOMENTOS.md` y el hook `establecer-conducta/` las entrega. Trae una **Base** y admite reglas del Propósito. Modelo completo en `README.md`.
+
+Al escribir un `.md` de cualquier parte del repo, el control `detectar-terminologia-vetada/` **rechaza** el texto con un término vetado sin uso legítimo posible e **informa** los que dependen del significado: citarlo no se frena, usarlo sí.
+
+**Disparador:** el agente **no** consulta este registro a mano — lo entrega el hook. Se edita al **agregar, modificar o dar de baja una regla**; toda regla nueva que toque terminología o decisiones pasa por el usuario (el agente propone; ratificar es potestad del usuario).
+
+**Skills:** `registrar-regla` (alta, modificación o baja guiada de una regla y su momento); instalación con `amp:inicializar`.
+
+**Índice: NO se carga siempre**: cargar las reglas al arranque es el modo de falla que este subsistema corrige — una regla cargada al inicio se recita, no se obedece (conocimiento `modos-de-falla-ante-reglas-escritas`). Se consulta solo para gestionarlo. Al cerrar una tarea que tocó `conducta`, correr el lint desde la raíz:
+
+```bash
+node .claude/conducta/lint-conducta/lint-conducta.js
+```
+````
+
+### `.claude/conducta/INDICE.md`
+
+````markdown
+# Reglas de conducta
+
+Registro de las **reglas de conducta** del repo: cada fila ata un **momento** (del vocabulario en `MOMENTOS.md`) a una **acción**, para asegurar "cuando hagas X, asegurate de Y". El hook repartidor `establecer-conducta/` lee este registro **vivo** en cada momento y entrega la regla que corresponde — agregar o cambiar una regla **no toca la config del hook**. Una fila por regla.
+
+- **Regla** — qué asegura, en una frase (verbo).
+- **Momento** — a qué momento se ata; tiene que existir en `MOMENTOS.md`.
+- **Clase** — `inyectar` (el agente lee un texto y actúa con su juicio) · `correr` (una Herramienta lo resuelve sin juicio) · `bloquear` (se frena la acción; solo donde Y es sin juicio y el falso positivo es imposible).
+- **Contenido** — el texto a inyectar (`inyectar`), la Herramienta a correr (`correr`) o la condición de bloqueo (`bloquear`).
+- **Estado** — `vigente` (se entrega) · `pendiente` (declarada, su momento aún no tiene repartidor) · `obsoleto` (no se entrega; se puede depurar).
+
+> **Origen del contenido:** las reglas se separan por origen en dos secciones — **Reglas Base** (las manda el Agente Multipropósito; el nivelador `amp:actualizar` las reemplaza enteras al poner al día un Agente con Propósito) y **Reglas del Propósito** (las suma cada repo; el nivelador no las toca). Hoy tienen repartidor los momentos `al arrancar la sesión` (`SessionStart`, clase `correr`), `cada turno` (`UserPromptSubmit`) y `al escribir` (`PreToolUse`); la regla de momento `al cerrar tarea` (`Stop`) queda en `pendiente` (honesta, sin entregar) hasta que se sume su repartidor.
+
+## Reglas Base
+
+Las que instala el Agente Multipropósito (origen **Base**). El nivelador `amp:actualizar` reemplaza **esta sección entera** al poner al día un Agente con Propósito; nunca abre la de abajo.
+
+| Regla | Momento | Clase | Contenido | Estado |
+|-------|---------|-------|-----------|--------|
+| Mostrar la Pantalla de bienvenida al arrancar | al arrancar la sesión | correr | conducta/mostrar-pantalla-bienvenida/mostrar-pantalla-bienvenida.js --hook | vigente |
+| Respetar las preferencias cargadas | cada turno | inyectar | Antes de responder, respetá las preferencias ya cargadas (PREFERENCIAS.md): en particular fechas en formato argentino al conversar, ejemplos del dominio del repo (nunca deportivos) y temporales en `.claude/tmp/`. | vigente |
+| No acuñar terminología del dominio | cada turno | inyectar | No acuñes términos del dominio (usá el glosario, proponé en Propuestos, nunca uses vetados). Antes de una palabra de origen inglés, aplicá el test: ¿la diría tal cual un desarrollador hispanohablante en una charla en español (`commit`, `deploy`, `parsear`, `hardcodear`, `bug`) o es una metáfora o modismo del inglés (`churn`, `wedge`, `dogfooding`, `staleness`, `feasibility`)? Lo segundo → traducilo, le resulta raro al usuario. Ante la duda, traducí. | vigente |
+| Preguntar antes de redefinir o remover algo canónico | cada turno | inyectar | Antes de **remover, renombrar o redefinir** algo canónico (una definición del glosario, una decisión) o con dependientes: proponé y esperá la ratificación del usuario. El agente propone; ratificar, vetar y redefinir son potestad del usuario. Aplica también a **definiciones y remociones**, no solo al alta de un término. | vigente |
+| Contrastar contra la sabiduría del repo al escribir | al escribir | inyectar | Acabás de escribir un `.md`. Si es de `.claude/`, contrastalo contra el test de demarcación (¿va en este subsistema?); si es de lo que el repo publica, acordate de que ese texto lo hereda quien lo instale. En los dos casos: ¿contradice algo asentado?, ¿usaste un término vetado o inventado? Corregí si hace falta. | vigente |
+| Frenar la terminología vetada antes de que se escriba | al escribir | bloquear | conducta/detectar-terminologia-vetada/detectar-terminologia-vetada.js | vigente |
+| Mantener el archivo de estado antes de informar | cada turno | inyectar | Si la tarea es exploratoria y tiene varias variables, actualizá su único archivo de estado antes de informar un resultado; al retomar, leelo primero. | vigente |
+| Aplicar el estilo de commits antes de confirmar | al crear un commit | inyectar | Antes de crear un commit o redactar una descripción de PR, leé `preferencias/estilo-commits.md` y verificá el texto contra esas reglas. | pendiente |
+| Registrar en el subsistema cuando algo cambia | al cerrar tarea | inyectar | Si en esta tarea cambió algo que otro subsistema debe saber (decisión, conocimiento, semántica, herramientas, conducta o catálogo de subsistemas), registralo antes de cerrar. | pendiente |
+
+## Reglas del Propósito
+
+Las que cada repo suma para su Propósito (origen **aprendido**). El nivelador **no toca esta sección**. Hoy vacía: cuando el repo sume una regla propia, va acá con las mismas columnas que la tabla de arriba.
+````
+
+### `.claude/conducta/MOMENTOS.md`
+
+````markdown
+# Momentos de conducta
+
+Vocabulario de los **momentos** válidos a los que una regla de conducta puede atarse. Un momento es un **evento de hook + una condición que la máquina evalúa sin juicio**; es agente-agnóstico, y su realización depende de que el agente tenga un repartidor para ese evento. Este archivo es el punto de partida del registro de momentos: hoy alcanza el vocabulario (nombre · qué representa · evento · disponibilidad). Crece a las columnas completas (condición fina, disponibilidad por agente) cuando se sumen repartidores nuevos. El `lint-conducta` lo lee para validar que toda regla apunte a un momento existente y que ninguna regla `vigente` cuelgue de un momento sin repartidor.
+
+- **Momento** — nombre canónico, en español corriente.
+- **Qué representa** — el punto del flujo, en una línea.
+- **Evento de hook** — el evento que lo dispara (+ condición, si la hay).
+- **Disponibilidad** — `activo` (hay repartidor construido que lo entrega) o `declarado` (definido, sin repartidor todavía → sus reglas van en estado `pendiente`).
+
+| Momento | Qué representa | Evento de hook | Disponibilidad |
+|---------|----------------|----------------|----------------|
+| al arrancar la sesión | Al iniciar la sesión, sin condición. Su realización corre una Herramienta y reenvía su salida; hoy muestra la Pantalla de bienvenida (bloque de estado → `systemMessage`, visible al usuario). | `SessionStart` | activo |
+| cada turno | Antes de cada respuesta del agente, sin condición. | `UserPromptSubmit` | activo |
+| al escribir | Al escribir o editar un `.md` de **cualquier parte del repo** — lo que el repo publica incluido, no solo los registros del Agente Multipropósito—, salvo el directorio de borradores `tmp/`. El `additionalContext` llega **junto al resultado** de la tool: es un recordatorio posterior a la escritura. El `deny`, en cambio, **sí** es previo: frena la escritura antes de que el archivo exista. | `PreToolUse` sobre `Write`\|`Edit`\|`apply_patch`, condición: **alguna** ruta tocada es `.md` fuera de `tmp/` | activo |
+| al cerrar tarea | Al terminar de responder una tarea. | `Stop` | declarado |
+| al crear un commit | Antes de confirmar un commit o redactar una descripción de PR. | `PreToolUse` sobre la creación del commit; repartidor específico pendiente | declarado |
+
+> Paridad: `cada turno` (`UserPromptSubmit` + `additionalContext`) tiene paridad plena Claude Code ↔ Codex (conocimiento `hooks-claude-code`). `al arrancar la sesión` (`SessionStart` → `systemMessage`) anda en Claude Code, Codex y Gemini; Cursor no tiene banner nativo y degrada sin caja. `al escribir` **también corre en Codex** desde abril de 2026: toda edición pasa por `apply_patch`, que dispara `PreToolUse` y matchea como `apply_patch`, `Edit` o `Write` (conocimiento `hooks-codex-cli`; hasta entonces solo disparaba para Bash y el momento figuraba acá como Claude-first). Con una salvedad: **el `deny` todavía no frena en Codex** —el archivo se escribe igual, bug abierto del CLI—, así que ahí una regla `bloquear` degrada a aviso hasta que lo arreglen; se emite igual para que empiece a frenar sola el día que ocurra. Los momentos `declarado` esperan su repartidor.
+````
+
+### `.claude/planes/MANIFIESTO.md`
+
+````markdown
+# Planes — manifiesto de subsistema
+
+Los planes se persisten en este directorio (`planes/`): `pendientes/` (planes vivos: `Nuevo`, `En curso`, `Diferido`), `ejecutados/` y `descartados/` (con motivo). Nombre estable sin fecha; estado y fechas viven en el registro `PLANES.md`, y los estados disponibles (carpeta y si son terminales) en `ESTADOS.md` — configurable, que el lint lee. El flujo completo está en el `README.md` de este subsistema.
+
+**Disparador:** el agente sabe que los planes existen; consultar `PLANES.md` a demanda cuando un plan se vuelve relevante — retomar, cerrar, o al detectar que un pendiente ya se implementó (la Pantalla de bienvenida da el conteo al arrancar). Escribir al abrir un plan o transicionarlo de estado.
+
+**Skills:** `ciclo-de-plan` (abre un plan —archivo con nombre estable + fila en `PLANES.md`— y lo transiciona de estado); instalación con `inicializar-gestion-planes`.
+
+**Flujo de trabajo:** multi-paso (abrir → transicionar → cerrar con lint); detalle en `README.md`.
+
+**Índice: NO se carga siempre** (`PLANES.md` es el registro más pesado del repo); se consulta a demanda, no en cada arranque. Al cerrar una tarea que tocó planes, correr el lint desde la raíz del repo:
+
+```bash
+node .claude/planes/lint-planes/lint-planes.js
+```
+````
+
+### `.claude/conocimiento/MANIFIESTO.md`
+
+````markdown
+# Conocimiento — manifiesto de subsistema
+
+Todo lo que el agente **sabe** vive en una ubicación única: este directorio (`conocimiento/`), indexado por `INDICE.md`. Nunca en la raíz del repo. Los `.md` de la raíz (README y REGISTRO) son **documentación del proyecto**, no conocimiento de agente.
+
+**Disparador:** asentar al averiguar algo que costó descubrir y que va a hacer falta de nuevo: cómo funciona el dominio, el proyecto, un sistema externo, un formato o una restricción real. Un hallazgo que se explica y no se asienta se vuelve a averiguar en la sesión siguiente.
+
+**Skills:** `registrar-conocimiento` (asienta una página del dominio, evita duplicar, indexa y corre el lint) y `buscar-conocimiento` (recorre el repo y propone páginas nuevas); instalación con `inicializar-conocimiento`.
+
+**Índice: se carga siempre** (liviano). Al cerrar una tarea que escribió conocimiento, correr el lint desde la raíz del repo:
+
+```bash
+node .claude/conocimiento/lint-conocimiento/lint-conocimiento.js
+```
+
+Chequea refs rotas, índice incompleto y huérfanos. Convención completa en `README.md`.
+
+@INDICE.md
+````
+
+### `.claude/semantica/MANIFIESTO.md`
+
+````markdown
+# Semántica — manifiesto de subsistema
+
+El subsistema `semántica` mantiene la coherencia semántica del dominio en el tiempo. Vive en este directorio (`semantica/`) con **dos registros pares**, ninguno cargado en contexto siempre: `GLOSARIO.md` (terminología legítima —concepto → definición, con alias y propuestos—) y `TERMINOLOGIA-FARLOPA.md` (relaciones vetadas, columnas `Término | Significado vetado | Cómo decirlo`). **Lo vetado es la relación término→significado, no el término**: el mismo término con otro significado puede ser legítimo; por eso la columna del medio, y por eso nada vetado se queda en el glosario.
+
+**Disparador:** consultar ambos registros al planificar y analizar; no acuñar términos propios, preferir los del usuario. Proponer una entrada (columna `Propuestos` del glosario) al detectar un término del dominio sin registrar. El agente solo **propone**: ratificar (a alias) y vetar (a Terminología Farlopa) son potestad del usuario.
+
+**Skills:** `converger-terminologia` (recorre el texto del repo contra los dos registros: detecta sinónimos, anglicismos y desvíos, y propone ratificar, vetar o reescribir); instalación con `inicializar-semantica`.
+
+**Índice: NO se carga siempre** — los registros se consultan a demanda. El **lint marca por término** (lo mecánico); el **agente juzga el significado** al leer la marca. Al cerrar una tarea que tocó semántica, correr el lint desde la raíz del repo:
+
+```bash
+node .claude/semantica/lint-semantica/lint-semantica.js
+```
+
+Convención completa en `README.md`.
+````
+
+### `.claude/decisiones/MANIFIESTO.md`
+
+````markdown
+# Decisiones — manifiesto de subsistema
+
+Las decisiones **estructurales al propósito del repo** (no las operativas triviales) se asientan en `INDICE.md`: una tabla donde cada fila es una decisión (N°, qué + por qué, fecha, estado, y link a detalle si requiere conceptualización mayor).
+
+**Disparador:** consultar las decisiones al planificar y analizar, para no re-decidir ni contradecir lo asentado. Registrar al tomar una decisión que condiciona el repo a futuro; para revertir no se borra, se marca `reemplazada por NNNN`.
+
+**Skills:** `registrar-decision` (juzga si es estructural, chequea que no re-decida ni contradiga, numera, redacta y corre el lint); instalación con `inicializar-decisiones`.
+
+**Índice: NO se carga siempre** (segundo registro más pesado) — se consulta al planificar y analizar. Al cerrar una tarea que registró decisiones, correr el lint desde la raíz del repo:
+
+```bash
+node .claude/decisiones/lint-decisiones/lint-decisiones.js
+```
+
+Convención completa en `README.md`.
+````
+
+### `.claude/herramientas/MANIFIESTO.md`
+
+````markdown
+# Herramientas — manifiesto de subsistema
+
+Las **Herramientas** del repo — las *tools* que el Propósito requiere (tipos `script`, `skill` local, `MCP` local) — viven en este directorio (`herramientas/`), listadas en `INDICE.md` (tabla Herramienta | Tipo | Qué hace | Cómo se invoca | Estado). Los **lints de subsistema no son Herramientas**: son infra del Patrón y viven con su subsistema.
+
+El registro se separa **por origen** en dos secciones: **Herramientas Base** (las manda el harness; el nivelador reemplaza esa sección entera) y **Herramientas del Propósito** (las suma cada repo; el nivelador no las toca). Una Herramienta nueva del repo va siempre a la segunda.
+
+**Disparador:** consultar el índice para saber qué tools existen y cómo se invocan; registrar una Herramienta al fabricar o adoptar una tool repetible del Propósito. ⚠️ Una tool referenciada por ruta en `settings`, `.gitignore` o un hook no se mueve sin actualizar esa referencia (rompe el match por prefijo).
+
+**Skills:** `registrar-herramienta` (alta o actualización guiada de una Herramienta, su ficha y su fila); instalación con `amp:inicializar`.
+
+**Índice: se carga siempre** (liviano). Al cerrar una tarea que tocó Herramientas, correr el lint desde la raíz del repo:
+
+```bash
+node .claude/herramientas/lint-herramientas/lint-herramientas.js
+```
+
+Convención completa en `README.md`.
+
+@INDICE.md
+````
