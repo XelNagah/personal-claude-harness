@@ -24,17 +24,24 @@ Los dos agentes guardan marketplaces y plugins en configuraciones distintas. Con
 
 ## Por qué hace falta
 
-Hay **tres desfases distintos**, y el primero y el tercero son los que engañan:
+Hay **cuatro desfases distintos**, y todos menos el segundo engañan:
 
 1. **Publicado ↔ bajado** — el marketplace bajado todavía no trajo lo último. Engaña porque *todo lo demás se compara contra lo bajado*: si está viejo, un plugin atrasado se informa `ACTUALIZADO`. Se arregla con `--aplicar`.
 2. **Bajado ↔ instalado** — el marketplace bajado tiene una versión nueva que esta máquina no instaló. Se arregla con `--aplicar`.
 3. **Instalado ↔ cargado** — se instaló, pero la **sesión viva** sigue con la versión que cargó al arrancar. Se arregla **reiniciando**, y es silencioso: `claude plugin list` muestra la versión nueva mientras la sesión corre la vieja.
+4. **Declarado ↔ requerido** — un plugin instalado exige dependencias que el repo nunca declaró, así que **no carga** y sus skills no existen en la sesión. Es el que más engaña: los otros tres al menos dejan una fila. Se arregla con `--aplicar`, y da el estado `SIN DECLARAR`.
 
-Los tres pasaron el 25/07/2026:
+Los tres primeros pasaron el 25/07/2026:
 
 - Por la tarde, `amp` corría la 0.6.2 con la 0.6.3 publicada seis commits atrás. La versión vieja no tenía una preferencia Base que sí estaba escrita en el repo, así que el instalador habría sembrado preferencias viejas en un repo nuevo.
 - A la noche, después de publicar la 0.6.5, el plugin **se trajo solo en segundo plano** (registro actualizado 00:12) pero la sesión —arrancada a las 19:34— siguió ejecutando la 0.6.3. La skill se cargó desde la carpeta vieja de la caché sin que nada lo indicara.
 - Más tarde, publicada la 0.6.6, el marketplace bajado se había refrescado **doce minutos antes** del push. La Herramienta informó `TODO ACTUALIZADO` sobre un catálogo que no tenía la versión nueva: lo instalado coincidía con lo bajado, y lo bajado estaba viejo.
+
+El cuarto se midió el 28/07/2026 sobre un repo consumidor y sobre un repo de prueba:
+
+- El consumidor tenía `amp` 0.7.1 instalado y cinco de sus ocho dependencias. La Herramienta informaba `TODO ACTUALIZADO` y la sesión no tenía ninguna de las cuatro skills de `amp`. En el registro de depuración estaba el motivo —`error type: dependency-unsatisfied`—, pero ahí no lo mira nadie, y nombra **una sola** de las tres que faltaban.
+- Sacada una dependencia en el repo de prueba, el arranque procesa 7 plugins habilitados en vez de 8: Claude Code descarta el plugin **entero**, no la dependencia.
+- `claude plugin update amp` contesta *"already at the latest version"* y no instala ninguna. `claude plugin install amp`, sobre un repo al que le faltan tres, repara **una por corrida**. De ahí que la Herramienta instale cada dependencia por su nombre en vez de confiar en el arrastre.
 
 De ahí salen los dos chequeos que no se leen de un archivo:
 
@@ -43,7 +50,7 @@ De ahí salen los dos chequeos que no se leen de un archivo:
 
 ## Qué compara
 
-Por cada plugin habilitado para el repo (`enabledPlugins` de `.claude/settings.json`, `settings.local.json` y el del usuario):
+Por cada plugin habilitado para el repo (`enabledPlugins` de `.claude/settings.json`, `settings.local.json` y el del usuario) **y por cada dependencia que esos plugins arrastran**, aunque el repo no la declare:
 
 | Estado | Qué significa |
 |--------|---------------|
@@ -51,7 +58,8 @@ Por cada plugin habilitado para el repo (`enabledPlugins` de `.claude/settings.j
 | `ACTUALIZAR` | Hay versión nueva sin traer |
 | `RETIRADO` | Está habilitado pero el marketplace ya no lo ofrece — el repo quedó en una generación de nombres vieja. **Actualizar no lo arregla**: es una migración (desinstalar los nombres viejos, instalar el conjunto nuevo) |
 | `NO INSTALADO` | Habilitado en `settings` pero sin entrada instalada |
-| `SIN DATO` | El plugin se sirve de un origen propio, o el catálogo no se pudo leer |
+| `SIN DECLARAR` | Otro plugin la requiere y este repo **no la nombra** en `enabledPlugins`. El que la pide no carga: Claude Code lo descarta entero y sus skills no se registran. No es `NO INSTALADO` — ese estado es para un plugin que el repo sí declara |
+| `SIN DATO` | El plugin se sirve de un origen propio, el catálogo no se pudo leer, o una dependencia requerida no está en el catálogo |
 
 Y una marca aparte, que se suma a cualquiera de esos estados:
 
@@ -59,6 +67,7 @@ Y una marca aparte, que se suma a cualquiera de esos estados:
 |-------|---------------|
 | `[SIN CARGAR]` | El plugin se actualizó **después** de que arrancó esta sesión: está instalado pero la sesión sigue con la versión vieja. No se arregla con `--aplicar` — hay que **reiniciar** |
 
+- **Lo requerido** sale del `plugin.json` de cada plugin dentro del marketplace bajado, recorriendo `dependencies` en cadena. `enabledPlugins` no sirve para esto: es la foto del momento en que se instaló, y no se mueve cuando una versión posterior suma dependencias.
 - **Lo instalado** sale de `installed_plugins.json`, prefiriendo la entrada de este repo sobre la de alcance usuario.
 - **Lo disponible** sale del `plugin.json` dentro del marketplace bajado. Si ese manifiesto no declara `version`, el plugin se versiona por commit y se comparan los sha.
 - **Lo cargado** no se lee: se deduce comparando el `lastUpdated` de cada plugin contra la hora de arranque del proceso de la sesión (`CLAUDE_PID`). Si el plugin es posterior, no está cargado.

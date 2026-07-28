@@ -17,15 +17,27 @@ Las paradas 1 a 5 son mecanismo de Claude Code y valen para cualquier marketplac
 
 Vocabulario para no confundirlas: **publicado** (parada 2) · **bajado** (3) · **instalado** (4) · **cargado** (5).
 
-## Los tres desfases
+## Los cuatro desfases
 
-Entre paradas consecutivas se abre un desfase, y los tres se ven distinto:
+Tres se abren entre paradas consecutivas, y se ven distinto:
 
 1. **`publicado ↔ bajado`** — el marketplace de la máquina todavía no trajo lo que hay en GitHub. **Es el más engañoso, porque contamina la comparación de los otros dos:** todo lo demás se compara contra lo bajado, así que con el marketplace viejo un plugin atrasado se informa como al día. Se averigua sin bajar nada con `git ls-remote` contra el origen (~0,6 s).
 2. **`bajado ↔ instalado`** — lo bajado tiene una versión que el plugin todavía no trajo. Se arregla actualizando.
 3. **`instalado ↔ cargado`** — el plugin ya se trajo, pero la sesión arrancó antes y sigue ejecutando la anterior. **También engaña:** `claude plugin list` muestra la versión nueva mientras la sesión corre la vieja. Se arregla **reiniciando**, no actualizando.
 
 El desfase 3 **no se puede diagnosticar desde afuera**: depende de qué levantó una sesión al arrancar, así que apuntar la inspección a otro repo lo deja ciego por definición.
+
+El cuarto no está entre dos paradas sino **al costado de todas**, y es el que menos rastro deja:
+
+4. **`declarado ↔ requerido`** — el repo declara un plugin que exige dependencias que ese repo nunca nombró. `enabledPlugins` es la **foto del momento en que se instaló**: se escribe entera al instalar y no se vuelve a mover, así que cuando una versión posterior suma una dependencia, el repo ya instalado no se entera. El plugin que la pide **no carga**: Claude Code lo descarta entero y sus skills no se registran.
+
+Medido el 28/07/2026 sobre un repo consumidor con `amp` 0.7.1 (ocho dependencias declaradas) y cinco instaladas:
+
+- En el registro de depuración (`claude --debug --debug-file <ruta>`) aparece `Plugin not available for MCP: amp@xelnagah-harness - error type: dependency-unsatisfied` y el detalle `Dependency "amp-subsistemas@xelnagah-harness" is not installed`. **El aviso existe, pero solo ahí**: en la sesión no se ve nada, y nombra **una sola** de las tres que faltaban.
+- El arranque procesa `7 plugins habilitados` en vez de 8, y la línea `Checking plugin amp:` no aparece. Con las tres instaladas, procesa 11 de 11 y la línea vuelve. Ese par —`dependency-unsatisfied` presente/ausente y `Checking plugin <nombre>:` ausente/presente— es la forma barata de verificar si un plugin carga sin abrir una sesión interactiva.
+- **`claude plugin update <plugin>` no repara nada**: contesta `already at the latest version` y no instala ninguna dependencia, aunque falten.
+- **`claude plugin install <plugin>` sobre un plugin ya instalado repara UNA dependencia por corrida** (`+ 1 dependency: amp-subsistemas`). Con tres faltantes hacen falta tres corridas. Por eso conviene instalar cada dependencia **por su nombre**, que sí es determinista, en vez de confiar en el arrastre del que las pide.
+- Una dependencia instalada pero **deshabilitada** en el repo cuenta como faltante: la resolución es por repo, no por máquina.
 
 ## Mecánicas del CLI que sorprenden
 

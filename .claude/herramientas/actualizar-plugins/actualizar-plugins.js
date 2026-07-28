@@ -52,6 +52,52 @@ function leerJson(p) {
   try { return JSON.parse(fs.readFileSync(p, 'utf8')); } catch (e) { return null; }
 }
 
+// -- catalogo de un marketplace bajado: se lee una vez por raiz --
+// El cierre de dependencias vuelve sobre el mismo `marketplace.json` una vez por plugin declarado y
+// otra por cada dependencia suya; releerlo en cada vuelta multiplica el disco sin cambiar la respuesta.
+const CATALOGOS = new Map();
+function catalogoDe(raiz) {
+  if (!CATALOGOS.has(raiz)) CATALOGOS.set(raiz, leerJson(path.join(raiz, '.claude-plugin', 'marketplace.json')));
+  return CATALOGOS.get(raiz);
+}
+
+// La fila del catalogo apunta con `source` a la carpeta del plugin; ahi vive su `plugin.json`.
+// Devuelve el motivo en vez de un nulo pelado: "ausente del catalogo" y "manifiesto ilegible" se
+// arreglan distinto, y quien llama necesita poder decir cual de los dos es.
+function manifiestoDe(raiz, nombre) {
+  const catalogo = catalogoDe(raiz);
+  if (!catalogo || !Array.isArray(catalogo.plugins)) return { motivo: 'catalogo ilegible' };
+  const fila = catalogo.plugins.find(p => p.name === nombre);
+  if (!fila) return { motivo: 'ausente del catalogo' };
+  const origen = fila.source === undefined ? '.' : fila.source;
+  if (typeof origen !== 'string') return { motivo: 'se sirve de un origen propio, no del marketplace bajado' };
+  const manifiesto = leerJson(path.join(raiz, origen, '.claude-plugin', 'plugin.json'));
+  return manifiesto ? { manifiesto } : { motivo: 'plugin.json ilegible' };
+}
+
+// -- cierre de dependencias: todo lo que un plugin arrastra, en orden de instalacion --
+// Un plugin que declara `dependencies` NO CARGA hasta que TODAS esten instaladas: Claude Code lo
+// descarta entero (`error type: dependency-unsatisfied`) y sus skills no se registran. Medido el
+// 28/07/2026 sobre un repo de prueba: sacada una dependencia de `amp`, el arranque procesa 7 plugins
+// habilitados en vez de 8 y las cuatro skills de `amp` desaparecen. El aviso existe, pero solo en el
+// registro de depuracion (`--debug`), que nadie mira, y nombra UNA sola de las que faltan.
+// Por eso los plugins en juego para un repo no son los que declara `enabledPlugins`, sino su cierre.
+function cerrarDependencias(raiz, nombres) {
+  const orden = [], vistos = new Set(), faltantes = [];
+  const requeridoPor = new Map();
+  function visitar(nombre, padre) {
+    if (vistos.has(nombre)) return;
+    vistos.add(nombre);
+    if (padre) requeridoPor.set(nombre, padre);
+    const { manifiesto, motivo } = manifiestoDe(raiz, nombre);
+    if (!manifiesto) { faltantes.push({ nombre, padre, motivo }); return; }
+    for (const dep of manifiesto.dependencies || []) visitar(dep, nombre);
+    orden.push(nombre);
+  }
+  for (const n of nombres) visitar(n, null);
+  return { orden, requeridoPor, faltantes };
+}
+
 // -- Codex CLI -----------------------------------------------------------
 // Codex y Claude Code guardan marketplaces y plugins en casas distintas. No se puede
 // diagnosticar Codex leyendo ~/.claude: ahi puede haber un paquete completo mientras Codex
@@ -86,21 +132,10 @@ function raizMarketplaceCodex() {
 }
 
 function bundleCodex(raiz) {
-  const catalogo = leerJson(path.join(raiz, '.claude-plugin', 'marketplace.json'));
-  if (!catalogo || !Array.isArray(catalogo.plugins)) throw new Error('catalogo de Codex ilegible');
-  const porNombre = new Map(catalogo.plugins.map(p => [p.name, p]));
-  const orden = [], vistos = new Set();
-  function visitar(nombre) {
-    if (vistos.has(nombre)) return;
-    const fila = porNombre.get(nombre);
-    if (!fila) throw new Error(`plugin ausente del marketplace: ${nombre}`);
-    vistos.add(nombre);
-    const manifest = leerJson(path.join(raiz, fila.source, '.claude-plugin', 'plugin.json'));
-    if (!manifest) throw new Error(`plugin.json ilegible: ${nombre}`);
-    for (const dep of manifest.dependencies || []) visitar(dep);
-    orden.push(nombre);
-  }
-  visitar('amp');
+  const { orden, faltantes } = cerrarDependencias(raiz, ['amp']);
+  // Codex instala el paquete entero, asi que un nombre irresoluble frena todo: sin el, el orden
+  // que se devuelve estaria incompleto y la instalacion dejaria el repo a medias.
+  if (faltantes.length) throw new Error(`${faltantes[0].nombre}: ${faltantes[0].motivo}`);
   return orden;
 }
 
@@ -260,8 +295,10 @@ function arranqueSesion() {
   } catch (e) { return null; }
 }
 
-// -- que plugins usa este repo: enabledPlugins del settings del repo + el del usuario --
-function plugesHabilitados() {
+// -- que plugins DECLARA este repo: enabledPlugins del settings del repo + el del usuario --
+// Ojo: lo declarado no es lo que el repo necesita. `enabledPlugins` es la foto del momento en que se
+// instalo, y no se mueve cuando un plugin ya instalado suma dependencias en una version posterior.
+function pluginsHabilitados() {
   const ids = new Set();
   const fuentes = [
     path.join(REPO, '.claude', 'settings.json'),
@@ -299,7 +336,7 @@ function marketplaceRegistrado(marketplace) {
 // `raiz` es la carpeta que contiene `.claude-plugin/marketplace.json`; ese archivo apunta con
 // `source` a la carpeta de cada plugin, y ahi vive el `plugin.json` con la version.
 function versionDe(raiz, nombre) {
-  const catalogo = leerJson(path.join(raiz, '.claude-plugin', 'marketplace.json'));
+  const catalogo = catalogoDe(raiz);
   if (!catalogo || !Array.isArray(catalogo.plugins)) return { error: 'catalogo ilegible' };
   const fila = catalogo.plugins.find(p => p.name === nombre);
   // Habilitado pero ausente del catalogo = el marketplace ya no lo ofrece (renombrado o dado de baja).
@@ -388,10 +425,77 @@ function versionesQueFaltan(marketplace, mkt, bajado, nombres) {
   return cambios.length ? cambios : null;
 }
 
-// -- diagnostico: una fila por plugin habilitado --
-function diagnosticar() {
+// Los estados que `--aplicar` sabe resolver. Cambiar esta lista alcanza: el resumen final y el
+// bucle de aplicacion la leen los dos, asi que no puede haber un estado que se informe y no se toque.
+const DESFASADOS = ['ACTUALIZAR', 'NO INSTALADO', 'SIN DECLARAR'];
+
+// -- cuarto desfase: DECLARADO <-> REQUERIDO, el que no deja rastro --
+// Los tres desfases del encabezado se ven porque el plugin tiene fila. Este no: la dependencia que
+// `enabledPlugins` nunca nombro no aparece en ningun lado, y el plugin que la requiere no carga.
+// No es `NO INSTALADO` — ese estado es para un plugin que el repo SI declara. Este ni siquiera se
+// declaro, asi que lleva estado propio, `SIN DECLARAR`.
+// Una fila por dependencia que el cierre exige y `enabledPlugins` no nombra.
+function filasSinDeclarar(declarados) {
   const filas = [];
-  for (const id of plugesHabilitados().sort()) {
+  const yaDeclarado = new Set(declarados);
+  const porMarketplace = new Map();
+  for (const id of declarados) {
+    const [nombre, marketplace] = id.split('@');
+    if (!marketplace) continue;
+    if (!porMarketplace.has(marketplace)) porMarketplace.set(marketplace, []);
+    porMarketplace.get(marketplace).push(nombre);
+  }
+  // El cierre se resuelve marketplace por marketplace: cada uno declara sus dependencias en SU catalogo.
+  for (const [marketplace, nombres] of porMarketplace) {
+    const mkt = marketplaceRegistrado(marketplace);
+    // Sin catalogo bajado no hay dependencias que leer. No se inventa nada: los plugins de ese
+    // marketplace ya salen `SIN DATO` en el diagnostico de arriba, que es donde se ve el problema.
+    if (!mkt || !mkt.installLocation) continue;
+    const { orden, requeridoPor, faltantes } = cerrarDependencias(mkt.installLocation, nombres);
+    // El alcance con el que se instala una dependencia es el del plugin que la pide: no tiene entrada
+    // propia de la cual sacarlo, y mezclar alcances deja al CLI sin encontrar lo que acaba de instalar.
+    const alcanceDe = padre => {
+      const inst = padre ? instalado(`${padre}@${marketplace}`) : null;
+      return (inst && inst.scope) || 'local';
+    };
+    for (const nombre of orden) {
+      const id = `${nombre}@${marketplace}`;
+      if (yaDeclarado.has(id)) continue;
+      const padre = requeridoPor.get(nombre);
+      const inst = instalado(id);
+      filas.push({
+        id, nombre, marketplace, padre,
+        estado: 'SIN DECLARAR',
+        detalle: `lo requiere ${padre}, y este repo no lo declara en enabledPlugins`
+          + (inst ? ' · instalado pero sin habilitar' : ' · sin instalar'),
+        sinCargar: false,
+        scope: alcanceDe(padre),
+      });
+    }
+    // Una dependencia que el catalogo no ofrece no se puede instalar: se dice, no se omite.
+    for (const { nombre, padre, motivo } of faltantes) {
+      if (!padre || yaDeclarado.has(`${nombre}@${marketplace}`)) continue;
+      filas.push({
+        id: `${nombre}@${marketplace}`, nombre, marketplace,
+        estado: 'SIN DATO',
+        detalle: `lo requiere ${padre}, pero en ${marketplace}: ${motivo}`,
+        sinCargar: false,
+        scope: alcanceDe(padre),
+      });
+    }
+  }
+  return filas;
+}
+
+// -- diagnostico: una fila por plugin declarado, mas las dependencias que ninguno declara --
+function diagnosticar() {
+  // El catalogo se cachea por raiz durante UNA pasada de diagnostico. Se olvida al empezar la
+  // siguiente porque entre medio `--aplicar` refresca el marketplace bajado: comparar contra el
+  // catalogo viejo es exactamente el primer desfase que esta Herramienta existe para no cometer.
+  CATALOGOS.clear();
+  const filas = [];
+  const declarados = pluginsHabilitados();
+  for (const id of declarados.slice().sort()) {
     const [nombre, marketplace] = id.split('@');
     if (!marketplace) continue;   // plugin sin marketplace (skills-dir u otra fuente): no aplica
     const inst = instalado(id);
@@ -425,7 +529,8 @@ function diagnosticar() {
     }
     filas.push({ id, nombre, marketplace, estado, detalle, sinCargar, scope: (inst && inst.scope) || 'local' });
   }
-  return filas;
+  // Al final, y no intercaladas: son las que ninguna corrida anterior nombraba.
+  return filas.concat(filasSinDeclarar(declarados));
 }
 
 // Una linea por marketplace en juego (no por plugin): lo bajado es compartido por todos sus plugins.
@@ -473,7 +578,7 @@ function aplicar(filas) {
   }
 
   // Releer: refrescar el marketplace puede haber cambiado que esta desactualizado.
-  const pendientes = diagnosticar().filter(f => f.estado === 'ACTUALIZAR' || f.estado === 'NO INSTALADO');
+  const pendientes = diagnosticar().filter(f => DESFASADOS.includes(f.estado));
   if (!pendientes.length) {
     console.log('\nNada que actualizar despues de refrescar el marketplace.');
     return;
@@ -484,6 +589,20 @@ function aplicar(filas) {
     // Y se relee el estado en cada vuelta: instalar un plugin con dependencias arrastra las suyas,
     // asi que las que venian pendientes pueden haber entrado solas.
     const yaEsta = instalado(f.id);
+    if (f.estado === 'SIN DECLARAR') {
+      // Una dependencia se instala SIEMPRE por su nombre, nunca reinstalando al que la pide.
+      // Medido el 28/07/2026: `claude plugin install amp` sobre un repo al que le faltaban tres
+      // dependencias reparo UNA por corrida (`+ 1 dependency`), y `claude plugin update amp`
+      // contesto "already at the latest version" sin instalar ninguna. Confiar en el arrastre deja
+      // el repo a medio arreglar y con salida tranquilizadora.
+      if (pluginsHabilitados().includes(f.id)) {
+        console.log(`\n> ${f.id}: entro como dependencia de otro, ya quedo declarado.`);
+        continue;
+      }
+      console.log(`\n> Instalando ${f.id}, que requiere ${f.padre} (alcance ${f.scope})...`);
+      console.log('  ' + correr(['plugin', 'install', f.id, '--scope', f.scope]));
+      continue;
+    }
     if (f.estado === 'NO INSTALADO' && yaEsta) {
       console.log(`\n> ${f.id}: entro como dependencia, no hace falta instalarlo aparte.`);
       continue;
@@ -505,8 +624,19 @@ if (!filas.length) {
   console.log('');
   imprimir(filas);
 
-  const desfasados = filas.filter(f => f.estado === 'ACTUALIZAR' || f.estado === 'NO INSTALADO');
+  const desfasados = filas.filter(f => DESFASADOS.includes(f.estado));
   const retirados = filas.filter(f => f.estado === 'RETIRADO');
+  const sinDeclarar = filas.filter(f => f.estado === 'SIN DECLARAR');
+
+  // Se explica antes de cualquier otra cosa: es el unico desfase que deja al repo sin las skills
+  // del plugin que las trae, y el unico que hasta esta version no aparecia en ninguna tabla.
+  if (sinDeclarar.length) {
+    console.log(`\n${sinDeclarar.length} dependencia(s) SIN DECLARAR: otro plugin las requiere y este repo`);
+    console.log('no las nombra. `enabledPlugins` es la foto de cuando se instalo, y no se mueve cuando una');
+    console.log('version posterior suma dependencias. El plugin que las pide NO CARGA hasta que esten:');
+    console.log('Claude Code lo descarta entero y sus skills no se registran, sin avisar en la sesion.');
+    for (const f of sinDeclarar) console.log(`  ${f.id} — lo requiere ${f.padre}`);
+  }
 
   // Estado de lo bajado: sin esto, lo "disponible" de la tabla de arriba no se puede creer.
   const catalogos = imprimirCatalogos(filas);

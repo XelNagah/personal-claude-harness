@@ -13,19 +13,21 @@ El Agente Multipropósito se distribuye como Plugins para Claude Code y Codex CL
 
 ## Qué instala
 
-Un solo comando trae **7 plugins**: el transversal `amp` más los seis por subsistema, que entran solos como dependencias.
+Un solo comando trae **9 plugins**: el transversal `amp` más los ocho por subsistema, que entran solos como dependencias.
 
 | Plugin | Skills | Para qué |
 |--------|--------|----------|
 | `amp` | `inicializar` · `planificar` · `info` · `actualizar` | Arma el `.claude/` completo, analiza planes contra lo que el repo ya sabe, muestra el estado, pone al día una instalación vieja |
-| `amp-memoria` | `registrar-memoria` | Hechos que hay que recordar entre sesiones |
+| `amp-subsistemas` | `agregar-subsistema` · `reubicar-aprendizaje` | Catálogo de casas y reparto de lo aprendido |
 | `amp-preferencias` | `registrar-preferencia` | Reglas de conducta del agente, versionadas |
 | `amp-planes` | `ciclo-de-plan` | Planes con estado, del alta al cierre |
 | `amp-conocimiento` | `registrar-conocimiento` · `buscar-conocimiento` | Lo que el agente sabe del dominio |
 | `amp-semantica` | `converger-terminologia` | Glosario del dominio y términos vetados |
 | `amp-decisiones` | `registrar-decision` | Decisiones estructurales, para no re-decidir |
+| `amp-herramientas` | `registrar-herramienta` | Las tools que el repo se fabrica para su Propósito |
+| `amp-conducta` | `registrar-regla` | Reglas "cuando hagas X, asegurate de Y", entregadas por un hook |
 
-Además de esos seis, `amp:inicializar` escribe la estructura de tres subsistemas que todavía no tienen skill propia: **herramientas** (las tools que el repo se fabrica), **conducta** (reglas "cuando hagas X, asegurate de Y", entregadas por un hook) y **commits** (estilo de los mensajes).
+El plugin `amp-memoria` está **retirado**: su generación quedó atrás y `amp:actualizar` migra lo que haya guardado a los subsistemas que corresponden. Si tu repo todavía lo declara, no lo desinstales a mano — la skill conduce la migración.
 
 ---
 
@@ -45,7 +47,7 @@ claude plugin marketplace add XelNagah/personal-claude-harness
 claude plugin install amp@xelnagah-harness -s local
 ```
 
-Los seis `amp-<sub>` entran solos por dependencias: es **una instalación por repo**, no siete. Si lo hacés desde la sesión con `/plugin install` y te pregunta el alcance, elegí **local**.
+Los ocho `amp-<sub>` entran solos por dependencias: es **una instalación por repo**, no nueve. Si lo hacés desde la sesión con `/plugin install` y te pregunta el alcance, elegí **local**.
 
 <details>
 <summary>Por qué <code>local</code> y no las otras dos opciones</summary>
@@ -69,7 +71,7 @@ Adentro de la sesión, pedile al agente:
 amp:inicializar
 ```
 
-Escribe la estructura completa de los nueve subsistemas: índices, manifiestos, lints, el hook de conducta y el cableado en `AGENTS.md` / `CLAUDE.md`. Es **reconciliable**: si el repo ya tenía algo, crea solo lo ausente, respeta lo divergente y te reporta al final qué agregó, qué ya estaba y qué encontró distinto.
+Escribe la estructura completa de los ocho subsistemas: índices, manifiestos, lints, el hook de conducta y el cableado en `AGENTS.md` / `CLAUDE.md`. Es **reconciliable**: si el repo ya tenía algo, crea solo lo ausente, respeta lo divergente y te reporta al final qué agregó, qué ya estaba y qué encontró distinto.
 
 ### 5. Verificar
 
@@ -92,6 +94,7 @@ amp:actualizar
 Es el único comando que necesitás recordar. La skill se encarga del resto:
 
 - **Chequea los plugins** antes de tocar archivos. Si algo quedó atrasado, lo pone al día y pide reiniciar la sesión. Al volver, pedí otra vez `amp:actualizar`; la misma skill retoma el nivelado. No ejecutes los comandos de marketplace o plugins a mano.
+- **Si al paquete le faltan dependencias**, las instala. Es el caso del repo que se instaló antes de que `amp` sumara un subsistema: la declaración de plugins del repo quedó con el conjunto viejo, y un plugin al que le falta una dependencia **no carga** — sus skills no existen en la sesión y Claude Code no lo dice. Si `amp:actualizar` no te responde, es probablemente esto: corré la Herramienta de abajo, que lo diagnostica y lo arregla.
 - **Si hay nombres de plugin retirados**, hace la migración —instalar lo nuevo, desinstalar lo viejo con el alcance que le toca a cada uno— previa confirmación tuya, porque desinstalar no se puede deshacer.
 - **Nivela el `.claude/`** contra la plantilla nueva: pisa lo Base (mecanismo del harness) y **no toca nunca** lo aprendido — tus memorias, planes, decisiones, términos, y las Herramientas y reglas de tu Propósito.
 - **Respalda solo si hace falta**: si `.claude/` está versionado en git, lo omite (git ya es la red); si no, deja la copia fuera del repo y te dice dónde.
