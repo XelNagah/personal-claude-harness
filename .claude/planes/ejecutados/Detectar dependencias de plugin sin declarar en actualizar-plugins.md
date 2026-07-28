@@ -49,17 +49,33 @@ Le pega a **cualquier** Agente con Propósito cuya declaración de plugins qued�
 
 8. **Control de cierre** (`ejecutar-control-cierre`) y corrida de la Herramienta arreglada contra los dos repos testigo, con `--aplicar` recién después de confirmar que el diagnóstico nombra los tres plugins que faltan.
 
-## Falta decidir (no ratificado)
+## Lo que midió el paso 1 (28/07/2026)
 
-**Cómo se llama el estado nuevo.** Dos posturas, con el mismo caso concreto — `amp-conducta` requerido por `amp` 0.7.1, sin línea en `enabledPlugins` y sin entrada instalada:
+El mecanismo se reprodujo en un repo de prueba propio (`.claude/tmp/prueba-dependencias/`), instalando `amp` y sacándole tres dependencias. Dos hallazgos cambiaron el arreglo previsto:
 
-- **Reusar `NO INSTALADO`**, con detalle distinto: `dependencia de amp, no declarada en settings`. A favor: el estado ya está enganchado al conjunto que dispara `--aplicar`, así que no hay que tocar ese cableado. En contra: **redefine** un término que el README ya define como *"habilitado en `settings` pero sin entrada instalada"*, que es justo lo que este caso **no** es.
-- **Agregar un estado propio**, del estilo `SIN DECLARAR`. A favor: dice la verdad y deja la definición vieja intacta. En contra: un nombre más en un vocabulario de cinco estados, y hay que sumarlo a mano al conjunto que dispara `--aplicar`.
+- **Claude Code descarta el plugin entero.** Con una dependencia afuera, el arranque procesa `7 plugins habilitados` en vez de 8 y la línea `Checking plugin amp:` desaparece del registro de depuración; con las tres puestas vuelve, y procesa 11 de 11. El aviso existe —`error type: dependency-unsatisfied`— pero **solo con `claude --debug`**, y nombra **una sola** de las que faltan.
+- **`update` no repara nada e `install` repara de a una.** `claude plugin update amp` contesta *"already at the latest version"* sobre el repo roto. `claude plugin install amp`, ya instalado, agrega `+ 1 dependency` por corrida: con tres faltantes hacen falta tres. Por eso `--aplicar` **instala cada dependencia por su nombre** en vez de confiar en el arrastre, que era lo previsto en el paso 4.
 
-El agente propone el segundo, porque el costo del primero es redefinir en silencio un término documentado. Ratificar es del autor.
+## Decidido al ejecutar
 
-**Opcional, misma zona del archivo:** `plugesHabilitados()` es una abreviatura inventada, de las que las preferencias vetan. Si se toca esa función, es el momento de renombrarla; si el plan prefiere no mezclar, se deja anotado.
+- **El estado nuevo se llama `SIN DECLARAR`**, no se reusó `NO INSTALADO`. Reusarlo obligaba a redefinir un término que el README define como *"habilitado en `settings` pero sin entrada instalada"* — justo lo que este caso no es: acá el repo ni siquiera lo declara. El cableado se resolvió con una lista única (`DESFASADOS`) que leen el resumen final y el bucle de aplicación, para que no pueda existir un estado que se informe y no se toque.
+- **`plugesHabilitados()` pasó a `pluginsHabilitados()`.** Era una abreviatura inventada de las que las preferencias vetan, en la función que este arreglo tocaba de todos modos.
+- **`docs/INSTALAR.md` se arregló acá y no aparte.** Es el manual que alguien sigue para instalar y actualizar: dejarlo diciendo "7 plugins" con `amp-memoria` vigente produce exactamente la falla que este plan arregla. Quedó en nueve plugins, con `amp-memoria` marcado como retirado y un párrafo sobre qué hacer cuando `amp:actualizar` no responde.
 
-## Lo que este plan no toca
+## Notas de implementación
 
-`docs/INSTALAR.md` quedó atrás de su propio catálogo: dice "7 plugins", lista `amp-memoria` como vigente y afirma que herramientas y conducta "no tienen skill propia". El `marketplace.json` del mismo commit bajado (`b3f4156`) ofrece nueve, ya no incluye `amp-memoria`, y las dos skills existen. Es un defecto real y de la misma familia —documentación que quedó atrás del paquete— pero es de otra pieza y no bloquea a esta. Va aparte.
+Commit `ecc798b`, con `amp` **0.7.2** publicada. Lo que cambió:
+
+- `.claude/herramientas/actualizar-plugins/actualizar-plugins.js` — cierre de dependencias compartido (`cerrarDependencias`, `manifiestoDe`, catálogo cacheado por raíz y olvidado al empezar cada diagnóstico), filas `SIN DECLARAR`, lista única `DESFASADOS`, instalación por nombre de cada dependencia faltante, y `bundleCodex()` reescrito sobre la función compartida.
+- Su `README.md` y la fila del registro de Herramientas: tres desfases pasan a cuatro.
+- `funcionalidades/amp/skills/actualizar/SKILL.md`: qué hacer ante `SIN DECLARAR`, incluida la salvedad de que si la que falta es dependencia de `amp`, esa misma skill no está cargada y hay que entrar por la Herramienta del marketplace bajado.
+- `funcionalidades/amp/skills/inicializar/PLANTILLA.md`: script embebido reemplazado y verificado idéntico byte a byte (37.326 bytes), README embebido regenerado conservando la única línea que ya divergía de antes, y fila del registro al día.
+- `docs/INSTALAR.md` y la página de conocimiento `despliegue-de-plugins-claude-code.md` (más su línea del índice).
+
+## Verificado
+
+- La copia **distribuida** (marketplace bajado, commit `ecc798b`) corrida contra el repo testigo `Agente-Coordinador` en modo diagnóstico nombra las tres que faltan (`amp-subsistemas`, `amp-herramientas`, `amp-conducta`), cada una con quién la requiere. El testigo no se tocó: sigue con el árbol limpio.
+- Sobre el repo de prueba, `--aplicar` instaló las tres en **una sola corrida** y el arranque siguiente cargó `amp` sin errores de dependencia.
+- Sobre este repo, que está sano, el diagnóstico no inventa ninguna fila `SIN DECLARAR`.
+- El camino de Codex sigue resolviendo el paquete con la función compartida.
+- Control de cierre: verde salvo los 43 hallazgos de terminología que ya estaban abiertos (son del plan de nomenclatura, no de este cambio).
