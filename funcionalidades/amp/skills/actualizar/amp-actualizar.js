@@ -39,6 +39,21 @@ const RENOMBRES = [
   { viejo: 'glosario', nuevo: 'semantica', que: 'subsistema', lintViejo: 'lint-glosario', lintNuevo: 'lint-semantica' },
 ];
 
+// Estas ocho entradas eran Base distribuida por la generación memoria/. Sus destinos ya forman
+// parte de la Base actual, así que actualizar las reconcilia sin preguntarle al usuario. Cualquier
+// otro .md es Aprendizaje; si una de estas piezas fue ampliada por el repo, la skill preserva solo
+// esa adición y pide decisión sobre ella, no sobre el bloque Base.
+const MEMORIAS_BASE_RETIRADAS = new Set([
+  'feedback_flujo_planes.md',
+  'feedback_archivo_de_estado.md',
+  'feedback_estilo_commits.md',
+  'feedback_base_conocimiento.md',
+  'feedback_semantica.md',
+  'feedback_decisiones.md',
+  'feedback_herramientas.md',
+  'feedback_conducta.md',
+]);
+
 // Subsistemas Base esperados por el harness al dia (carpetas bajo .claude/).
 const SUBSISTEMAS = ['subsistemas', 'planes', 'conocimiento', 'semantica', 'decisiones', 'herramientas', 'conducta'];
 
@@ -126,12 +141,14 @@ function clasificar() {
   if (esDir(memoriaLegacy)) {
     const piezas = fs.readdirSync(memoriaLegacy, { withFileTypes: true })
       .filter(e => e.isFile() && e.name.endsWith('.md') && !['MEMORIA.md', 'MANIFIESTO.md', 'README.md'].includes(e.name))
-      .length;
+      .map(e => e.name);
+    const baseConocida = piezas.filter(nombre => MEMORIAS_BASE_RETIRADAS.has(nombre)).length;
+    const aprendizaje = piezas.length - baseConocida;
     add(
       'divergente',
       '!',
       'memoria/ → subsistemas/',
-      `migracion pendiente: memoria fue retirada; instalar la Base nueva y reubicar ${piezas} pieza(s) de Aprendizaje antes de informar que el repo esta al dia`
+      `migracion pendiente: retirar automaticamente ${baseConocida} pieza(s) Base conocida(s) y decidir solo sobre ${aprendizaje} pieza(s) de Aprendizaje antes de informar que el repo esta al dia`
     );
   }
 

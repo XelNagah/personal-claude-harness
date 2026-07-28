@@ -1,6 +1,6 @@
 ---
 name: actualizar
-description: Nivela el .claude/ de un Agente con Propósito ya instalado contra la Base actual. Pisa Base con respaldo, preserva el Aprendizaje y conduce los reacomodos viejos que requieren juicio. En particular, si encuentra la generación retirada memoria/, instala subsistemas/ y coordina reubicar-aprendizaje pieza por pieza: no informa "al día" hasta que memoria desaparece o queda esperando una confirmación explícita del usuario. También actualiza y migra plugins retirados antes de tocar archivos. Use when el usuario dice "nivelá el Agente Multipropósito", "actualizá el harness del repo", "poné al día el .claude", "amp:actualizar", o al detectar un Agente con Propósito cuyo Agente Multipropósito quedó viejo.
+description: Nivela el .claude/ de un Agente con Propósito ya instalado contra la Base actual. Pisa Base con respaldo, preserva el Aprendizaje y conduce los reacomodos viejos que requieren juicio. En particular, si encuentra la generación retirada memoria/, retira automáticamente su infraestructura y sus ocho piezas Base conocidas; solo coordina pieza por pieza el Aprendizaje restante. No informa "al día" hasta que memoria desaparece o queda esperando una confirmación explícita del usuario. También actualiza y migra plugins retirados antes de tocar archivos. Use when el usuario dice "nivelá el Agente Multipropósito", "actualizá el harness del repo", "poné al día el .claude", "amp:actualizar", o al detectar un Agente con Propósito cuyo Agente Multipropósito quedó viejo.
 ---
 
 # amp:actualizar — nivelador del harness
@@ -104,11 +104,28 @@ El repo quedó con nombres de plugin que el marketplace ya no ofrece. **No se ar
      2. Correr `amp:inicializar` en reconciliación: pone al día el mecanismo de semántica (lint nuevo, `MANIFIESTO`, estructura de columnas) **preservando** `GLOSARIO.md` y `TERMINOLOGIA-FARLOPA.md` con sus términos. Verificar que ningún término se haya perdido.
      3. Migrar las referencias: en `AGENTS.md`, `@.claude/glosario/MANIFIESTO.md` → `@.claude/semantica/MANIFIESTO.md`; el prefijo de skill `glosario:` → `semantica:` donde aparezca; y toda referencia por ruta al lint renombrado (settings, hooks).
 7. **Migrar `memoria/` retirada — responsabilidad de esta skill.**
-   1. Inventariar `memoria/` separando infraestructura Base (`MANIFIESTO.md`, `MEMORIA.md`, `lint-memoria/`) de las piezas aprendidas.
-   2. La infraestructura vieja se retira cuando la Base `subsistemas/` ya está instalada.
-   3. Para las piezas aprendidas, invocar internamente el flujo de `amp-subsistemas:reubicar-aprendizaje`: mostrar **una pieza por vez**, proponer destino y texto resultante, y esperar confirmación explícita antes de mover, partir o descartar.
-   4. Reparar índices, vínculos y referencias después de cada confirmación.
-   5. Cuando no queda ninguna pieza, retirar el directorio `memoria/`, correr nuevamente la vista previa y verificar que no aparezca la migración.
+   1. Inventariar `memoria/` en tres grupos, **antes de hacer cualquier pregunta**:
+      - infraestructura Base retirada: `MANIFIESTO.md`, `MEMORIA.md`, `README.md` y `lint-memoria/`;
+      - las ocho piezas Base conocidas que distribuía la generación anterior;
+      - Aprendizaje restante del Propósito.
+   2. Retirar automáticamente la infraestructura vieja cuando la Base `subsistemas/` ya está instalada.
+   3. Reconciliar automáticamente las ocho piezas Base conocidas. **No pedir confirmación por ellas**: comprobar primero que su destino actual exista y cubra el comportamiento; después retirar el duplicado viejo.
+
+      | Pieza Base retirada | Destino actual |
+      |---|---|
+      | `feedback_flujo_planes.md` | `.claude/planes/README.md` |
+      | `feedback_semantica.md` | `.claude/semantica/README.md` |
+      | `feedback_decisiones.md` | `.claude/decisiones/README.md` |
+      | `feedback_base_conocimiento.md` | `.claude/conocimiento/README.md` |
+      | `feedback_conducta.md` | `.claude/conducta/README.md` |
+      | `feedback_herramientas.md` | `.claude/herramientas/README.md` |
+      | `feedback_estilo_commits.md` | `.claude/preferencias/estilo-commits.md` + regla Base de conducta correspondiente |
+      | `feedback_archivo_de_estado.md` | `.claude/preferencias/archivo-de-estado.md` + regla Base de conducta correspondiente |
+
+      Si una pieza con uno de esos nombres contiene una adición propia del repo que no está cubierta por el destino, **solo esa adición** pasa al grupo de Aprendizaje; no se pregunta si se mueve el bloque Base entero.
+   4. Recién con el Aprendizaje restante, invocar internamente `amp-subsistemas:reubicar-aprendizaje`: mostrar **una pieza por vez**, proponer destino y texto resultante, y esperar confirmación explícita antes de mover, partir o descartar.
+   5. Reparar índices, vínculos y referencias después de cada confirmación.
+   6. Cuando no queda ninguna pieza, retirar el directorio `memoria/`, correr nuevamente la vista previa y verificar que no aparezca la migración.
 
    Si la sesión debe detenerse por una confirmación, informar exactamente qué pieza espera decisión. No presentar la migración como terminada.
 8. **Otros Divergentes** — aplicar solo lo que el usuario aprobó en el paso 3.
