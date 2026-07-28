@@ -47,6 +47,42 @@ El desfase 3 **no se puede diagnosticar desde afuera**: depende de qué levantó
 
 **El orden de una migración de nombres es obligatorio:** instalar lo nuevo → desinstalar lo viejo → reiniciar. Al revés, entre medio el repo se queda sin las skills que todavía usa.
 
-**Cómo se verificó:** las mecánicas de `prune`, de las dependencias al desinstalar, de `enabledPlugins` y del registro por `projectPath` se comprobaron el 26/07/2026 instalando y revirtiendo `amp@xelnagah-harness` en un repo de esta máquina, con salida textual del CLI y lectura de `installed_plugins.json`. Los tres desfases, el comportamiento de `/reload-plugins` y el de `claude plugin update` salen del desarrollo y las pruebas de la Herramienta `actualizar-plugins` (24-26/07/2026), documentados en su README. La coexistencia de generaciones se observó con `memoria-local` y `amp-memoria`, que traen las dos una skill `registrar-memoria` con la misma descripción.
+## Una migración no se prueba en el repo autor
+
+Que el repo autor quede verde sólo demuestra que la **forma nueva** es coherente. No demuestra que `amp:actualizar` pueda llevar un consumidor viejo hasta ella. El modo de falla comprobado el 27/07/2026 fue exactamente ése: el detector consideraba `memoria/` un subsistema vigente, de modo que podía informar “al día” sin ejecutar la migración que retiraba Memoria.
+
+La prueba útil es una copia congelada de un consumidor viejo bajo `.claude/tmp/`:
+
+1. Conservar la estructura anterior completa, incluido el Aprendizaje real que debe repartirse.
+2. Darle a un agente recién iniciado una sola entrada: `amp:actualizar`.
+3. Permitir que itere sobre la copia, nunca sobre el repo autor.
+4. Exigir como cierre la **forma final en disco**, no el relato del agente: la casa retirada no existe, los destinos conservan el contenido, los índices y referencias están reparados, todos los lints terminan bien y una nueva vista previa da cero acciones.
+5. Después de cualquier cambio en un archivo Base embebido, repetir la última nivelación: el detector debe volver a ponerse rojo ante esa diferencia y regresar a cero sólo después de copiar la pieza nueva.
+
+El detector necesita **invariantes de generación**, además de comparar piezas conocidas. Ejemplo: mientras exista `.claude/memoria/`, la migración está incompleta aunque sus archivos sean válidos para la versión vieja. Sin esa invariante, una lista manual de piezas puede olvidar justamente la novedad que debería buscar.
+
+## Codex y Claude Code no actualizan igual
+
+El mismo marketplace tiene dos mecanismos locales distintos:
+
+- **Codex:** el marketplace instalado vive bajo `~/.codex/.tmp/marketplaces/`; `codex plugin list` puede mostrar los plugins habilitados apuntando directamente a ese checkout y con las versiones nuevas, aunque sobrevivan carpetas históricas en `~/.codex/plugins/cache/`. Una caché vieja no prueba que esté activa: manda el registro que muestra `plugin list`.
+- **Claude Code:** el marketplace bajado, el registro por proyecto y la caché de versiones son paradas separadas. Actualizar el plugin transversal actualiza los plugins ya instalados, pero en la prueba del 27/07/2026 **no instaló dos dependencias nuevas agregadas al paquete**. Hubo que instalar `amp-herramientas` y `amp-conducta` explícitamente y recién después desinstalar `amp-memoria`.
+
+Por eso “actualizar el paquete” no alcanza como verificación de una migración del catálogo. Hay que comparar el conjunto esperado con el conjunto **registrado y habilitado** en cada agente: nuevos presentes, retirados ausentes y versiones coincidentes.
+
+## Cierre verificable de una publicación
+
+No aceptar un mensaje aislado de “todo actualizado” si contradice otra evidencia. El cierre completo recorre estas comprobaciones:
+
+1. `git rev-parse HEAD` coincide con `git ls-remote origin refs/heads/main`.
+2. El checkout local de cada marketplace coincide con ese commit publicado.
+3. El registro del agente muestra todos los plugins esperados, habilitados y en la versión publicada; ningún nombre retirado sigue activo.
+4. El control del repo autor queda enteramente verde.
+5. El consumidor viejo de prueba llega a cero acciones y pierde físicamente la casa retirada.
+6. Un agente efímero, iniciado **después** de la instalación, confirma que las skills nuevas están cargadas como capacidades. Leer los archivos instalados no sustituye esta prueba: la sesión actual puede conservar el catálogo con el que arrancó.
+
+Esta última comprobación evita pedirle al usuario que reinicie “para ver si ahora sí”. El reinicio o agente nuevo sigue siendo la frontera de carga, pero la verificación la puede hacer el propio proceso de publicación antes de entregar.
+
+**Cómo se verificó:** las mecánicas de `prune`, de las dependencias al desinstalar, de `enabledPlugins` y del registro por `projectPath` se comprobaron el 26/07/2026 instalando y revirtiendo `amp@xelnagah-harness` en un repo de esta máquina, con salida textual del CLI y lectura de `installed_plugins.json`. El 27/07/2026 se migró una copia con diez piezas reales de `.claude/memoria/`: el detector pasó de dos acciones a cero, la casa retirada desapareció y nueve lints terminaron con código 0. Después se compararon los hashes local, remoto y de ambos marketplaces; Codex y Claude Code quedaron con nueve plugins vigentes. Finalmente, un Codex efímero de solo lectura confirmó que `amp-herramientas:registrar-herramienta` y `amp-conducta:registrar-regla` estaban cargadas, sin inferirlo desde archivos.
 
 **Cuándo aplica / cuándo no:** vale para plugins de Claude Code servidos por un marketplace de repo git. Un marketplace servido desde una carpeta local no tiene parada 3 ni desfase 1: se lee directo. Las rutas de arriba son de Windows; en Linux/macOS el directorio raíz es `~/.claude/plugins/` igual. Los nombres de comando y de archivo se verificaron contra la versión de Claude Code instalada en julio de 2026 — el CLI cambia, conviene re-verificar si algo no coincide.
