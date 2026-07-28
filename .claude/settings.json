@@ -38,12 +38,13 @@
   },
   "enabledPlugins": {
     "amp@xelnagah-harness": true,
-    "amp-memoria@xelnagah-harness": true,
     "amp-preferencias@xelnagah-harness": true,
     "amp-planes@xelnagah-harness": true,
     "amp-conocimiento@xelnagah-harness": true,
     "amp-semantica@xelnagah-harness": true,
     "amp-decisiones@xelnagah-harness": true,
-    "amp-subsistemas@xelnagah-harness": true
+    "amp-subsistemas@xelnagah-harness": true,
+    "amp-herramientas@xelnagah-harness": true,
+    "amp-conducta@xelnagah-harness": true
   }
 }
