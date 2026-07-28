@@ -83,44 +83,21 @@ Muestra el Título y el Propósito del repo más las métricas de cada subsistem
 
 ## Actualizar una instalación existente
 
-Tres pasos. Los dos primeros se tipean; el tercero lo hace el agente.
-
-### 1. Traer la versión nueva
-
-En la sesión abierta en el repo:
-
-```
-/plugin marketplace update xelnagah-harness
-/plugin update amp@xelnagah-harness
-```
-
-Si te pregunta el alcance, elegí **local**.
-
-### 2. Reiniciar la sesión
-
-Claude Code carga los plugins al arrancar y se queda con esos, así que hasta reiniciar seguís ejecutando la versión anterior.
-
-**Reiniciar significa cerrar la ventana y abrir `claude` de nuevo.** Ni `/clear` ni `/reload-plugins` alcanzan, y ninguno de los dos avisa:
-
-- `/clear` vacía la conversación pero **no termina el proceso**, y los plugins se cargan cuando el proceso arranca ⇒ seguís con las versiones que estaban al abrir la ventana.
-- `/reload-plugins` recarga lo que ya está, en la versión que ya tenía.
-
-Por qué importa: la versión vieja de `amp:inicializar` escribe la Base de preferencias y los textos de **su** momento. Si quedó atrasada, siembra en el repo vocabulario y reglas que el Agente Multipropósito ya cambió, y nada lo marca como error.
-
-Para confirmar que el reinicio tomó, pedile a cualquier agente del repo que corra la Herramienta Base `actualizar-plugins`: si sigue listando algo como `SIN CARGAR`, la ventana no se reinició de verdad.
-
-### 3. Pedir el nivelado
+Pedile al agente, desde el repo que querés actualizar:
 
 ```
 amp:actualizar
 ```
 
-Y listo. Esa skill se encarga del resto:
+Es el único comando que necesitás recordar. La skill se encarga del resto:
 
-- **Chequea los plugins** antes de tocar archivos, y si algo quedó atrasado lo pone al día y te pide otro reinicio. Si el repo viene de la generación de nombres vieja, **hace la migración él mismo** —instalar lo nuevo, desinstalar lo viejo con el alcance que le toca a cada uno— previa confirmación tuya, porque desinstalar no se puede deshacer.
+- **Chequea los plugins** antes de tocar archivos. Si algo quedó atrasado, lo pone al día y pide reiniciar la sesión. Al volver, pedí otra vez `amp:actualizar`; la misma skill retoma el nivelado. No ejecutes los comandos de marketplace o plugins a mano.
+- **Si hay nombres de plugin retirados**, hace la migración —instalar lo nuevo, desinstalar lo viejo con el alcance que le toca a cada uno— previa confirmación tuya, porque desinstalar no se puede deshacer.
 - **Nivela el `.claude/`** contra la plantilla nueva: pisa lo Base (mecanismo del harness) y **no toca nunca** lo aprendido — tus memorias, planes, decisiones, términos, y las Herramientas y reglas de tu Propósito.
 - **Respalda solo si hace falta**: si `.claude/` está versionado en git, lo omite (git ya es la red); si no, deja la copia fuera del repo y te dice dónde.
 - **Trae vista previa** y pregunta ante cualquier cosa dudosa antes de escribirla.
+
+**Reiniciar significa cerrar la sesión y abrir una nueva.** Ni `/clear` ni `/reload-plugins` alcanzan: no cargan la versión nueva del plugin.
 
 ### Verificar
 

@@ -103,7 +103,15 @@ amp:inicializar
 
 Te va a preguntar qué querés lograr en ese repo, y arma el `.claude/` completo. A partir de ahí trabajás normal: al arrancar la sesión el agente ve el estado del repo y sus manifiestos, y escribe lo aprendido a medida que aparece.
 
-**Para actualizar** un repo que ya lo tiene, son los mismos dos comandos con `marketplace update` / `plugin update`, reiniciar, y pedirle `amp:actualizar` — esa skill se ocupa del resto, incluido migrar instalaciones viejas.
+## Actualizar
+
+En un repo que ya tiene el Agente Multipropósito, pedile al agente:
+
+```
+amp:actualizar
+```
+
+Es el único punto de entrada. Primero verifica el marketplace y los plugins del agente que estás usando; si realmente los actualiza, te pide reiniciar la sesión. Al volver, repetís el mismo pedido y nivelará los archivos Base del repo sin tocar su Aprendizaje. No hace falta ejecutar comandos de marketplace o plugins a mano.
 
 📄 **[Manual de instalación completo](docs/INSTALAR.md)** — paso a paso, actualización, instalación para Codex / Cursor / Gemini, y problemas frecuentes.
 

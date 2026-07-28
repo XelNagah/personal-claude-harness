@@ -12,6 +12,7 @@ Los **estados** y su semántica (a qué carpeta mapea cada uno, cuáles son term
 
 | Plan | Estado | Creado | Cerrado | Origen | Notas |
 |------|--------|--------|---------|--------|-------|
+| [Controlar terminologia y preferencias en commits.md](pendientes/Controlar terminologia y preferencias en commits.md) | Nuevo | 26-07-27 | — | — | Revisar el mensaje antes de crear cada commit: Terminología Farlopa y preferencias mecánicamente verificables. |
 | [Completar cobertura de lint mecanico - memoria y preferencias.md](ejecutados/Completar cobertura de lint mecanico - memoria y preferencias.md) | Ejecutado | 26-07-18 | 26-07-18 | Rework README | commits 9e3a4ac + 4ff41ee; lint-memoria + lint-preferencias en repo y harness |
 | [Rework README raiz + patron carpeta-indice-lint + audit sub-README.md](ejecutados/Rework README raiz + patron carpeta-indice-lint + audit sub-README.md) | Ejecutado | 26-07-18 | 26-07-18 | — | README multipropósito + 2 diagramas + armonización CLAUDE.md/REGISTRO + 6 sub-README; decisión 0004 ampliada; 2 planes diferidos |
 | [Propagar gobernanza de terminologia al harness.md](ejecutados/Propagar gobernanza de terminologia al harness.md) | Ejecutado | 26-07-18 | 26-07-18 | Rework README | commit 4ff41ee; decisión 0004 a preferencias-trabajo + glosario + orquestador |
