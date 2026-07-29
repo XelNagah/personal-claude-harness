@@ -25,9 +25,11 @@ Propuesto, nada ratificado:
 - **`Registro volátil` se elimina** del glosario, no se renombra: nombra algo que ya se dice *"contenido interno de la Herramienta"*, el reemplazo ratificado cuando se vetó `tripa`. Es el punto más barato y el único independiente de los otros.
 - **Sin resolver:** si `Entrada` se borra del glosario o queda como otra forma de decir lo mismo. Si queda, las 223 apariciones siguen siendo válidas y no se toca ninguna; si se borra, se suman al barrido, más dos lints y la `PLANTILLA` que viaja.
 
-### 2. `Agente desplegado` se escribe de dos maneras
+### 2. `Agente desplegado` se escribía de dos maneras — resuelto el 29/07/2026
 
-El glosario lo asienta con minúscula (`Agente desplegado`), mientras que los otros dos conceptos de la misma familia van con mayúscula (`Agente Multipropósito`, `Agente con Propósito`). Los encabezados ratificados el 28/07/2026 usan mayúscula. Falta unificar.
+El glosario lo asentaba con minúscula (`Agente desplegado`), mientras que los otros dos conceptos de la misma familia van con mayúscula (`Agente Multipropósito`, `Agente con Propósito`), igual que los encabezados ratificados el 28/07/2026.
+
+**Ratificado: mayúscula**, con el criterio general que dio el autor — *una entidad o un concepto importante se escribe con mayúscula, como un nombre propio*. Corregidos la entrada del glosario, su definición y las dos citas en planes vivos. El criterio es candidato a preferencia: hoy no está escrito en ningún lado y aplica a todo el vocabulario del repo, no solo a este término.
 
 ### 3. `Base` quedó con dos sentidos, deliberadamente
 

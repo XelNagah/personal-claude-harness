@@ -44,7 +44,7 @@ Es el punto más barato: mecánico, sin discusión de fondo, y hoy ensucia lo qu
 
 | Término hallado | Compite con | Dónde | Propuesta |
 |---|---|---|---|
-| `consumidor` / `consumidores` / `repo consumidor` | **Agente con Propósito** (el repo) y **Agente desplegado** (la instalación) | 106 apariciones: decisiones 0024, 0028, 0033, 0036, manifiestos, varios `README.md`. Los dos canónicos juntos suman 9 | vetar; elegir el canónico según se hable del repo o de la instalación |
+| `consumidor` / `consumidores` / `repo consumidor` | **Agente con Propósito** (el repo) y **Agente Desplegado** (la instalación) | 106 apariciones: decisiones 0024, 0028, 0033, 0036, manifiestos, varios `README.md`. Los dos canónicos juntos suman 9 | vetar; elegir el canónico según se hable del repo o de la instalación |
 | `guarda` (calco de *guard*) | **Control** — el glosario ya define *chequeo que frena el avance* | decisión 0024: *"`lint-harness` gana una guarda que falla si…"* | vetar en ese significado; el verbo *guardar* es legítimo y no se toca |
 | `orquestador` | la habilidad `amp:inicializar` | 37 apariciones. La 0029 dice que el orquestador fue **absorbido**: el concepto ya no existe y el término siguió circulando | vetar; nombrar la habilidad |
 | `sembrar` / `siembra` / `sembradas` | ya vetado como `semilla` = contenido inicial | 0027 y 0036 | extender la fila existente a las formas verbales: hoy el lint las deja pasar |
@@ -92,7 +92,7 @@ No es solo vocabulario: son referencias colgadas. Se arreglan sin ratificar nada
 
 ## Cruces con otros planes
 
-- **`Ordenar la nomenclatura del harness`** — resuelve `registro`, `Entrada`, `Registro volátil` y cómo se escribe `Agente desplegado`. El punto 2 de acá (`consumidor`) toca la misma familia de conceptos: conviene resolverlos juntos o, al menos, no antes que aquél.
+- **`Ordenar la nomenclatura del harness`** — resuelve `registro`, `Entrada`, `Registro volátil` y cómo se escribe `Agente Desplegado`. El punto 2 de acá (`consumidor`) toca la misma familia de conceptos: conviene resolverlos juntos o, al menos, no antes que aquél.
 - **`Barrer la terminologia vetada del Producto`** (En curso) — barre en `funcionalidades/` los términos **ya** vetados. Este plan corre río abajo: primero se vetan los nuevos acá, después ese barrido los alcanza. Todo lo que se vete en los puntos 1 a 5 le suma trabajo.
 - **`Partir los indices por origen y pasar preferencias a tabla`** — reescribe `PREFERENCIAS.md` entero. Si se ejecuta primero, el punto 4 (`harness`) se resuelve de paso.
 
