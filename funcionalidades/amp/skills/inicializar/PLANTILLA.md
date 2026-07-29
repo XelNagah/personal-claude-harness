@@ -4,14 +4,14 @@ textos literales que el orquestador escribe. (Réplica de los textos de las piez
 
 ## §Preferencias — `.claude/preferencias/PREFERENCIAS.md` + sección de AGENTS.md
 
-Separado por origen en dos secciones, igual que `conducta/INDICE.md` y `herramientas/INDICE.md`: **Preferencias del Agente Multipropósito** (vienen río arriba; el nivelado reemplaza esa sección entera) + **Preferencias del Agente Desplegado** (nunca se toca). Importado siempre al contexto — las preferencias son reglas de conducta: inline, no índice+fetch. Al editar acá la sección de río arriba, **subir la versión del plugin**: la versión vive ahí, no en el encabezado, porque el Agente Desplegado no guarda ninguna.
+Separado por origen en dos secciones, igual que `conducta/INDICE.md` y `herramientas/INDICE.md`: **Preferencias del Agente Multipropósito** (el nivelado reemplaza esa sección entera) + **Preferencias del Agente Desplegado** (nunca se toca). Importado siempre al contexto — las preferencias son reglas de conducta: inline, no índice+fetch. Al editar acá la sección del Agente Multipropósito, **subir la versión del plugin**: la versión vive ahí, no en el encabezado, porque el Agente Desplegado no guarda ninguna.
 
 Contenido inicial de `.claude/preferencias/PREFERENCIAS.md`:
 
 ```markdown
 # Preferencias
 
-Reglas de conducta del agente en este repo. Siempre en contexto (importado desde AGENTS.md). La sección del **Agente Multipropósito** viene río arriba y se actualiza al nivelar (no editarla acá: los ajustes de este repo van en la sección del **Agente Desplegado**, que el nivelado nunca toca).
+Reglas de conducta del agente en este repo. Siempre en contexto (importado desde AGENTS.md). La sección del **Agente Multipropósito** viene del Agente Multipropósito y se actualiza al nivelar (no editarla acá: los ajustes de este repo van en la sección del **Agente Desplegado**, que el nivelado nunca toca).
 
 ## Preferencias del Agente Multipropósito
 
@@ -61,7 +61,7 @@ node .claude/preferencias/lint-preferencias/lint-preferencias.js
 
 - La más vieja eran dos secciones inline en CLAUDE.md — "Preferencias de comunicación" (el primer bullet de Comunicación, como cita) y "Principios de trabajo" (los cuatro bullets). Textualmente iguales → migrar sin preguntar (borrar de CLAUDE.md, dejar el import); con diferencias → las diferencias van a la sección del Agente Desplegado y se reporta.
 - Después vino el par de encabezados `## Base (harness vN)` / `## Adaptaciones de este repo`, con la versión adentro del encabezado. **Los dos se renombran sin preguntar** a `## Preferencias del Agente Multipropósito` y `## Preferencias del Agente Desplegado`, conservando el contenido de cada uno: es renombre de encabezado, no reemplazo de contenido. La versión sale del encabezado y no se traslada a ningún lado — vive en el plugin.
-- Con los encabezados ya al día, la sección de río arriba se reemplaza **entera y sin preguntar**: las diferencias entre versiones son de redacción, y lo propio del repo vive en la otra sección, que no se toca.
+- Con los encabezados ya al día, la sección del Agente Multipropósito se reemplaza **entera y sin preguntar**: las diferencias entre versiones son de redacción, y lo propio del repo vive en la otra sección, que no se toca.
 
 ## §Subsistemas — bloque `## Subsistemas` en `AGENTS.md`
 
@@ -918,7 +918,7 @@ if (!supRotas.length) console.log('    (ninguna)');
 
 ## §Herramientas — `.claude/herramientas/`
 
-Contenido inicial de `.claude/herramientas/INDICE.md` (dos secciones por origen: `## Herramientas del Agente Multipropósito` poblada con la Herramienta que viene río arriba + `## Herramientas del Agente Desplegado` con la tabla vacía — sin filas de ejemplo):
+Contenido inicial de `.claude/herramientas/INDICE.md` (dos secciones por origen: `## Herramientas del Agente Multipropósito` poblada con la Herramienta que manda el Agente Multipropósito + `## Herramientas del Agente Desplegado` con la tabla vacía — sin filas de ejemplo):
 
 ```markdown
 # Herramientas del proyecto
@@ -1046,7 +1046,7 @@ if (!refsRotas.length) console.log('    (ninguna)');
 
 ## §Script — actualizar-plugins — `.claude/herramientas/actualizar-plugins/actualizar-plugins.js`
 
-Herramienta de río arriba del subsistema `herramientas` (va en la sección `## Herramientas del Agente Multipropósito` del registro). Pone al día los plugins que traen el Agente Multipropósito a este repo: se sirven de una copia local del catálogo, y entre lo publicado, lo que tiene esa copia, lo instalado y lo que la sesión cargó al arrancar puede haber tres desfases distintos, ninguno de los cuales se anuncia solo.
+Herramienta del Agente Multipropósito, del subsistema `herramientas` (va en la sección `## Herramientas del Agente Multipropósito` del registro). Pone al día los plugins que traen el Agente Multipropósito a este repo: se sirven de una copia local del catálogo, y entre lo publicado, lo que tiene esa copia, lo instalado y lo que la sesión cargó al arrancar puede haber tres desfases distintos, ninguno de los cuales se anuncia solo.
 
 Contenido exacto (Node, sin dependencias; consulta el commit publicado con `git ls-remote`, y sin salida a red estima con lo que hay en disco):
 
@@ -1922,7 +1922,7 @@ Vocabulario de los **momentos** válidos a los que una regla de conducta puede a
 > Paridad: `cada turno` (`UserPromptSubmit` + `additionalContext`) tiene paridad plena Claude Code ↔ Codex (conocimiento `hooks-claude-code`). `al arrancar la sesión` (`SessionStart` → `systemMessage`) anda en Claude Code, Codex y Gemini; Cursor no tiene banner nativo y degrada sin caja. `al escribir` **también corre en Codex** desde abril de 2026: toda edición pasa por `apply_patch`, que dispara `PreToolUse` y matchea como `apply_patch`, `Edit` o `Write` (conocimiento `hooks-codex-cli`; hasta entonces solo disparaba para Bash y el momento figuraba acá como Claude-first). Con una salvedad: **el `deny` todavía no frena en Codex** —el archivo se escribe igual, bug abierto del CLI—, así que ahí una regla `bloquear` degrada a aviso hasta que lo arreglen; se emite igual para que empiece a frenar sola el día que ocurra. Los momentos `declarado` esperan su repartidor.
 ````
 
-Contenido inicial de `.claude/conducta/INDICE.md` (registro de reglas; `## Reglas del Agente Multipropósito` poblada río arriba, `## Reglas del Agente Desplegado` vacía para que la llene cada repo):
+Contenido inicial de `.claude/conducta/INDICE.md` (registro de reglas; `## Reglas del Agente Multipropósito` poblada por el Agente Multipropósito, `## Reglas del Agente Desplegado` vacía para que la llene cada repo):
 
 ````markdown
 # Reglas de conducta
@@ -2690,7 +2690,7 @@ En `settings.json` el `SessionStart` llama al repartidor `establecer-conducta`, 
 
 - **Descubrimiento dinámico:** un subsistema es un dir hijo de `.claude/` con su lint co-ubicado `.claude/<D>/lint-<D>/lint-<D>.js`. Sumar un subsistema con su lint lo hace aparecer solo, sin tocar este script.
 - **Conteo de entradas:** genérico — filas de tabla si el índice es una tabla, si no bullets con link. Nombre del índice por prioridad (`INDICE.md` · `MEMORIA.md` · `PLANES.md` · `PREFERENCIAS.md`).
-- **Enriquecimientos baratos:** `planes` desglosa los estados vivos; `preferencias` desglosa las de río arriba y las del repo. El sustantivo por subsistema (memorias, términos…) es cosmético; los desconocidos caen a "entradas".
+- **Enriquecimientos baratos:** `planes` desglosa los estados vivos; `preferencias` desglosa las del Agente Multipropósito y las del repo. El sustantivo por subsistema (memorias, términos…) es cosmético; los desconocidos caen a "entradas".
 - **Lint:** corre cada `lint-<D>` (sin `--quiet`: ese flag da exit ≠ 0 en algunos lints artesanales) y suma los `(N)` de la salida, igual que `ejecutar-control-cierre`.
 - **Identidad:** lee `.claude/identidad.md` (Título + Propósito). Tolerante a indefinido → muestra `<sin definir>`.
 
@@ -2977,7 +2977,7 @@ Catálogo de casas persistentes del Agente Multipropósito. La Base la mantiene 
 | Subsistema | Qué guarda | Operación |
 |---|---|---|
 | [subsistemas](./) | Catálogo y coordinación entre casas | `agregar-subsistema`, `reubicar-aprendizaje` |
-| [preferencias](../preferencias/) | Preferencias del usuario, las de río arriba y las del repo | `registrar-preferencia` |
+| [preferencias](../preferencias/) | Preferencias del usuario, las del Agente Multipropósito y las del repo | `registrar-preferencia` |
 | [planes](../planes/) | Planes y su ciclo de vida | `ciclo-de-plan` |
 | [conocimiento](../conocimiento/) | Lo que el agente sabe y necesita reutilizar | `registrar-conocimiento`, `buscar-conocimiento` |
 | [semantica](../semantica/) | Vocabulario legítimo y relaciones vetadas | `converger-terminologia` |
@@ -3184,7 +3184,7 @@ Relacionado: [[flujo-planes]], [[base-conocimiento]].
 
 El subsistema `conducta` asegura comportamientos del tipo **"cuando hagas X, asegurate de Y"**: ata **momentos** del flujo a **acciones**. Vive en `.claude/conducta/`:
 
-- `INDICE.md` — el **registro de reglas**: cada fila ata un momento a una acción (`Regla | Momento | Clase | Contenido | Estado`). Separado por origen en dos secciones: **Reglas del Agente Multipropósito** (las manda río arriba; el nivelador las reemplaza enteras) y **Reglas del Agente Desplegado** (las suma cada repo; el nivelador no las toca).
+- `INDICE.md` — el **registro de reglas**: cada fila ata un momento a una acción (`Regla | Momento | Clase | Contenido | Estado`). Separado por origen en dos secciones: **Reglas del Agente Multipropósito** (el nivelador las reemplaza enteras) y **Reglas del Agente Desplegado** (las suma cada repo; el nivelador no las toca).
 - `MOMENTOS.md` — el **vocabulario de momentos**: un momento es un **evento de hook + una condición que la máquina evalúa sin juicio** (`cada turno` = `UserPromptSubmit`; `al escribir` = `PreToolUse` sobre un `.md` de **cualquier parte del repo** salvo `tmp/`; `al cerrar tarea` = `Stop`, aún sin repartidor).
 - `establecer-conducta/` — el **hook repartidor**: un mismo script sirve a varios eventos; resuelve qué momento realiza el evento que lo disparó, lee el registro **vivo** y despacha las reglas `vigente` de ese momento según su clase, **combinando** el texto de las `inyectar` con lo que midan las `bloquear`. Agregar o cambiar una regla **no toca el hook**.
 - `lint-conducta/` — valida que toda regla apunte a un momento existente, con clase/estado válidos, y que ninguna regla `vigente` cuelgue de un momento sin repartidor.
@@ -3198,7 +3198,7 @@ El subsistema `conducta` asegura comportamientos del tipo **"cuando hagas X, ase
 **How to apply:**
 
 1. **En el flujo normal, no consultar `INDICE.md` a mano** — el hook entrega la regla que corresponde a cada momento.
-2. **Para agregar una regla:** elegir un momento existente de `MOMENTOS.md` (o declarar uno nuevo, en `declarado` hasta que tenga repartidor), sumar la fila a la sección que corresponda (`Reglas del Agente Multipropósito` si viene río arriba, `Reglas del Agente Desplegado` si es de este repo), y correr el lint. Una regla `vigente` no puede colgar de un momento sin repartidor: va en `pendiente`.
+2. **Para agregar una regla:** elegir un momento existente de `MOMENTOS.md` (o declarar uno nuevo, en `declarado` hasta que tenga repartidor), sumar la fila a la sección que corresponda (`Reglas del Agente Multipropósito` si viene con el Agente Multipropósito, `Reglas del Agente Desplegado` si es de este repo), y correr el lint. Una regla `vigente` no puede colgar de un momento sin repartidor: va en `pendiente`.
 3. **Al cerrar** una tarea que tocó conducta, correr el lint: `node .claude/conducta/lint-conducta/lint-conducta.js`.
 
 Relacionado: [[flujo-planes]] (construcción del subsistema por plan), [[semantica]] (el control de terminología consume los momentos `cada turno` y `al escribir`).
@@ -3419,7 +3419,7 @@ Convención completa en `README.md`.
 
 Las **Herramientas** del repo — las *tools* que el Propósito requiere (tipos `script`, `skill` local, `MCP` local) — viven en este directorio (`herramientas/`), listadas en `INDICE.md` (tabla Herramienta | Tipo | Qué hace | Cómo se invoca | Estado). Los **lints de subsistema no son Herramientas**: son infra del Patrón y viven con su subsistema.
 
-El registro se separa **por origen** en dos secciones: **Herramientas del Agente Multipropósito** (las manda río arriba; el nivelador reemplaza esa sección entera) y **Herramientas del Agente Desplegado** (las suma cada repo; el nivelador no las toca). Una Herramienta nueva del repo va siempre a la segunda.
+El registro se separa **por origen** en dos secciones: **Herramientas del Agente Multipropósito** (el nivelador reemplaza esa sección entera) y **Herramientas del Agente Desplegado** (las suma cada repo; el nivelador no las toca). Una Herramienta nueva del repo va siempre a la segunda.
 
 **Disparador:** consultar el índice para saber qué tools existen y cómo se invocan; registrar una Herramienta al fabricar o adoptar una tool repetible del Propósito. ⚠️ Una tool referenciada por ruta en `settings`, `.gitignore` o un hook no se mueve sin actualizar esa referencia (rompe el match por prefijo).
 

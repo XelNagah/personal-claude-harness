@@ -2,7 +2,7 @@
 
 Las **Herramientas** del repo — las *tools* que el Propósito requiere (tipos `script`, `skill` local, `MCP` local) — viven en este directorio (`herramientas/`), listadas en `INDICE.md` (tabla Herramienta | Tipo | Qué hace | Cómo se invoca | Estado). Los **lints de subsistema no son Herramientas**: son infra del Patrón y viven con su subsistema.
 
-El registro se separa **por origen** en dos secciones: **Herramientas del Agente Multipropósito** (las manda río arriba; el nivelador reemplaza esa sección entera) y **Herramientas del Agente Desplegado** (las suma cada repo; el nivelador no las toca). Una Herramienta nueva del repo va siempre a la segunda.
+El registro se separa **por origen** en dos secciones: **Herramientas del Agente Multipropósito** (el nivelador reemplaza esa sección entera) y **Herramientas del Agente Desplegado** (las suma cada repo; el nivelador no las toca). Una Herramienta nueva del repo va siempre a la segunda.
 
 **Disparador:** consultar el índice para saber qué tools existen y cómo se invocan; registrar una Herramienta al fabricar o adoptar una tool repetible del Propósito. ⚠️ Una tool referenciada por ruta en `settings`, `.gitignore` o un hook no se mueve sin actualizar esa referencia (rompe el match por prefijo).
 

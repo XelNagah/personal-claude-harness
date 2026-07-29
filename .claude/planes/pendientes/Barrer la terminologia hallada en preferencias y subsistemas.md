@@ -71,7 +71,22 @@ Aplicando el test que ya inyecta la regla de conducta (¿lo diría tal cual un d
 - **Candidatos a veto:** `runtime` (0017, 0022, 0023), `inline` (0023, 0024), `hop` (0017, 0019), `fallback` (0011), `legacy` (0028), `soft` (0025), `launcher` y `cross-agente` (0012), `à la carte` (0029), `río arriba` (0027, calco de *upstream*), `Claude-first` (`MOMENTOS.md`).
 - **`escaparate`** (0031) es castellano pero peninsular; en la Argentina se dice *vidriera*.
 
+**`río arriba` se disparó y se barrió el mismo día (29/07/2026).** Estaba listado arriba como candidato con **1** aparición, en la 0027. El renombre de las etiquetas de origen lo usó como reemplazo sin haber leído este plan y lo llevó a **36**, de las cuales 21 en `funcionalidades/` — texto que viaja y que llegó a publicarse. Barridas las 32 introducidas, contra el término ratificado (`del Agente Multipropósito`). **Quedan las 4 preexistentes** —la 0027, este plan que lo cita, `Separar origen Base y aprendido` y su fila en `PLANES.md`— a la espera de que el veto se ratifique.
+
+Dos cosas que deja el episodio, más allá del término:
+
+- **La medición falló primero en silencio.** El primer barrido usó `grep -i "r[ií]o arriba"` y devolvió **cero**, que es exactamente el modo de falla que el conocimiento [grep y acentos en Windows](../../conocimiento/grep-y-acentos-en-windows.md) tiene asentado. Sin repetirlo sin `-i`, el término quedaba dado por inexistente.
+- **Nada frenó la introducción.** El control de terminología del momento `al escribir` sólo marca lo que ya está vetado, y `río arriba` era candidato, no veto. Un término nuevo acuñado por el agente no lo detiene ningún control: es el hueco que el plan `Crecer el subsistema conducta` cubre con el momento al cerrar la tarea.
+
 ⚠️ El índice de decisiones se consulta al planificar: cada término acá se relee cada vez que se abre un plan.
+
+## 5.b `casa` — metáfora sin registrar, hallada el 29/07/2026
+
+`casa` nombra el directorio donde vive un subsistema (*"catálogo de casas persistentes"*, *"quién debe recibir una pieza de Aprendizaje"*). **No está en el glosario ni en el registro de vetados**, así que ningún control la mira, y circula **42 veces** en texto vivo: 17 en la `PLANTILLA` que viaja, 4 en el manifiesto de subsistemas, el resto repartido.
+
+Es una metáfora, no un término técnico, y el reemplazo literal ya existe en el propio vocabulario del repo: **directorio** para el lugar, **subsistema** para lo que lo ocupa. El autor la marcó al leerla en una decisión propuesta (*"¿un subsistema es una casa?"*), que es la señal de perplejidad que este plan usa como criterio.
+
+A resolver: ratificarla como alias legítimo o vetarla y barrer las 42.
 
 ## 6. Residuo de un subsistema retirado
 

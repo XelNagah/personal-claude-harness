@@ -8,6 +8,16 @@
 
 Un **Registro** = una colección de entradas homogéneas con su `INDICE.md` + sus `.md` + (quizás) su lint. La idea: poder **instanciar registros nuevos** bajo `conocimiento/` sin inventar un subsistema entero cada vez. Primer caso concreto: el **Registro de Documentos de investigación** (los que produce `investigar-documentar`).
 
+## Resuelto el 29/07/2026 (sesión de `planificar`)
+
+- **El nombre está elegido: `Registro Multipropósito`.** Nombra el carácter del mecanismo, no de quién es: sirve a cualquier propósito porque **las columnas las define quien lo usa**. Se forma igual que `Agente Multipropósito`, y en inglés sale derecho. Todavía **no se asienta en el glosario**: entra cuando el mecanismo se construya.
+- **La tensión de abajo se resuelve por (a), no por (b): es un concepto propio y es opcional.** Se evaluó unificarlo con el Índice de Subsistema —que todo índice fuera un Registro— y **se descartó**: obligaría a cada subsistema a usar el mecanismo. Un subsistema puede usar **cero** Registros; su Índice sólo lista sus elementos y no está obligado a nada más.
+- **Un Registro declara sus columnas en el frontmatter**, agregado del autor a la idea original. La decisión 0042 ya lo aplica a los Índices de Subsistema, así que el formato del frontmatter (`nombre`, `origen`, `columnas`) queda fijado antes de que este plan se ejecute.
+- **Los Registros pueden viajar a los Agentes Desplegados.** El campo `origen` los distingue igual que a los Índices.
+- **Sin identificadores numéricos.** Referirse a «el Registro 4» reabre lo que el plan `Partir los índices por origen` ya cerró: la numeración corrida se rompe cuando el Agente Multipropósito saca una entrada y el mismo número pasa a significar cosas distintas en dos repos con versiones distintas. La referencia estable es el nombre del Registro.
+
+Queda abierto todo lo mecánico: cómo se instancia uno nuevo, dónde se cataloga, si el lint es propio o del subsistema que lo contiene, y la migración de lo existente.
+
 ## Tensión de fondo a resolver
 
 El harness **ya** define **Subsistema** como "área que persiste estado siguiendo el patrón índice + entradas + lint" (semántica/decisión 0002). Un "Registro genérico" es, a primera vista, **ese mismo patrón reificado** — una fábrica de casas índice+entradas dentro de un subsistema (conocimiento) en vez de un subsistema nuevo por colección. Hay que decidir si Registros:

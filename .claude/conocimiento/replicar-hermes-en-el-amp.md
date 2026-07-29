@@ -66,7 +66,7 @@ Hermes además impide que una tarea agendada cree más tareas agendadas, para no
 
 ### 5. Persona — ya cubierto
 
-`PREFERENCIAS.md` (separado por origen) es el equivalente de `SOUL.md`, y separa mejor lo de río arriba de lo del repo. Sin trabajo pendiente.
+`PREFERENCIAS.md` (separado por origen) es el equivalente de `SOUL.md`, y separa mejor lo del Agente Multipropósito de lo del repo. Sin trabajo pendiente.
 
 ## Huecos sin plan (candidatos)
 

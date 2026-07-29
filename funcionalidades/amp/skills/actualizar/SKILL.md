@@ -97,8 +97,8 @@ El repo quedó con nombres de plugin que el marketplace ya no ofrece. **No se ar
    - **`MANIFIESTO`/lint/estructura vieja** → tomar el contenido canónico de la sección del subsistema en la PLANTILLA de `amp:inicializar` y **pisar** el archivo Base. (A diferencia de la reconciliación normal de `amp:inicializar`, que preserva lo existente, acá el archivo Base **se pisa** — es del harness. El contenido aprendido del mismo subsistema no se toca.)
    - **`contenido viejo`** (un script Base instalado que difiere del de la PLANTILLA) → **pisarlo con el bloque de la PLANTILLA**, entero y tal cual. Es el caso más frecuente al poner al día un repo que ya tenía el Agente Multipropósito: la pieza está, pero en la versión de cuando se instaló. No hay nada que preservar — los scripts Base no se ajustan por repo; lo que el repo aprendió vive en sus registros, no en el código del harness.
    - **Hook sin cablear** → merge del bloque de cableado de `conducta` en `.claude/settings.json` (y `.codex/hooks.json`), sin pisar hooks existentes.
-   - **`conducta/INDICE.md` sin las secciones** (y sin reglas propias que repartir) → agregar `## Reglas del Agente Multipropósito` (con las reglas de río arriba actuales) y `## Reglas del Agente Desplegado` (vacía).
-   - **Generación con `memoria/`** → instalar primero el subsistema `subsistemas/`, sus tres piezas de río arriba (`MANIFIESTO.md`, `SUBSISTEMAS.md`, `README.md`) y su lint. No borrar todavía ninguna pieza aprendida.
+   - **`conducta/INDICE.md` sin las secciones** (y sin reglas propias que repartir) → agregar `## Reglas del Agente Multipropósito` (con las reglas actuales del Agente Multipropósito) y `## Reglas del Agente Desplegado` (vacía).
+   - **Generación con `memoria/`** → instalar primero el subsistema `subsistemas/`, sus tres piezas del Agente Multipropósito (`MANIFIESTO.md`, `SUBSISTEMAS.md`, `README.md`) y su lint. No borrar todavía ninguna pieza aprendida.
 6. **Aplicar Renombres** (el caso con más juicio — preservar lo aprendido):
    - **`glosario`→`semantica`:**
      1. Mover la carpeta `.claude/glosario/` → `.claude/semantica/` y `lint-glosario/` → `lint-semantica/` (renombrar también `lint-glosario.js` → `lint-semantica.js`).
@@ -107,7 +107,7 @@ El repo quedó con nombres de plugin que el marketplace ya no ofrece. **No se ar
    - **Encabezados de los tres índices separados por origen** (`preferencias/PREFERENCIAS.md`, `conducta/INDICE.md`, `herramientas/INDICE.md`): el detector lista cada encabezado viejo con su nombre nuevo.
      1. Reemplazar **solo la línea del encabezado**, dejando intacto todo el contenido de esa sección. No es un reemplazo de contenido: la sección del Agente Desplegado sigue siendo del repo y no se toca aunque cambie de nombre.
      2. En `preferencias/PREFERENCIAS.md` el encabezado viejo llevaba adentro un número de versión (`## Base (harness vN)`). **Ese número se descarta y no se traslada a ningún lado**: la versión vive en el plugin, y un Agente Desplegado no guarda ninguna.
-     3. Recién con los encabezados al día, aplicar el reemplazo de la sección de río arriba del punto 5. Al revés, el reemplazo no encuentra la sección y el repo queda con dos.
+     3. Recién con los encabezados al día, aplicar el reemplazo de la sección del Agente Multipropósito del punto 5. Al revés, el reemplazo no encuentra la sección y el repo queda con dos.
      4. Cerrar corriendo el lint de cada subsistema tocado.
 7. **Migrar `memoria/` retirada — responsabilidad de esta skill.**
    1. Inventariar `memoria/` en tres grupos, **antes de hacer cualquier pregunta**:

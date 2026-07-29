@@ -1,6 +1,6 @@
 # Preferencias
 
-Reglas de conducta del agente en este repo. Siempre en contexto (importado desde AGENTS.md). La sección del **Agente Multipropósito** viene río arriba y se actualiza al nivelar (no editarla acá: los ajustes de este repo van en la sección del **Agente Desplegado**, que el nivelado nunca toca).
+Reglas de conducta del agente en este repo. Siempre en contexto (importado desde AGENTS.md). La sección del **Agente Multipropósito** viene del Agente Multipropósito y se actualiza al nivelar (no editarla acá: los ajustes de este repo van en la sección del **Agente Desplegado**, que el nivelado nunca toca).
 
 ## Preferencias del Agente Multipropósito
 

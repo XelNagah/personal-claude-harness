@@ -19,8 +19,8 @@ Segura de re-correr: este es el modo de **"nivelar"** repos que ya tienen partes
   |----------|------------------------------|
   | `subsistemas/SUBSISTEMAS.md` → `## Subsistemas Base` | una fila por casa Base instalada; `## Subsistemas del Propósito` se preserva entero |
   | `conducta/MOMENTOS.md` | una fila por momento del vocabulario, incluido **al arrancar la sesión** (`SessionStart`) |
-  | `conducta/INDICE.md` → `## Reglas del Agente Multipropósito` | las reglas de río arriba completas, incluidas **Mostrar la Pantalla de bienvenida al arrancar** (clase `correr`) y **Frenar la terminología vetada antes de que se escriba** (clase `bloquear`) |
-  | `herramientas/INDICE.md` → `## Herramientas del Agente Multipropósito` | una fila por Herramienta de río arriba instalada (hoy `actualizar-plugins`) |
+  | `conducta/INDICE.md` → `## Reglas del Agente Multipropósito` | las reglas completas del Agente Multipropósito, incluidas **Mostrar la Pantalla de bienvenida al arrancar** (clase `correr`) y **Frenar la terminología vetada antes de que se escriba** (clase `bloquear`) |
+  | `herramientas/INDICE.md` → `## Herramientas del Agente Multipropósito` | una fila por Herramienta instalada del Agente Multipropósito (hoy `actualizar-plugins`) |
   | `.claude/settings.json` y `.codex/hooks.json` → `hooks` | el repartidor `establecer-conducta` en los **tres** eventos, en **los dos** archivos: `SessionStart`, `UserPromptSubmit`, `PreToolUse` con matcher `Write\|Edit` — **por merge**, sin sacar los hooks que ya estén |
   | `AGENTS.md` → `## Subsistemas` | una línea `@.claude/<sub>/MANIFIESTO.md` por subsistema instalado |
 

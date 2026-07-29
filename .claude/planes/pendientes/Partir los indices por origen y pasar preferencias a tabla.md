@@ -40,11 +40,24 @@ Con dos secciones, el actualizador tiene que abrir el archivo y reemplazar media
 - **Formas que puede tomar una entrada del Patrón:** nada · un documento `.md` · una carpeta con su propio índice. Hay una cuarta forma en disco, ya contemplada al vetar `tripa`: la carpeta de una Herramienta, cuyo contenido ningún índice lista.
 - **Cómo se llaman las dos secciones ya está ratificado y asentado** (28/07/2026): `Herramientas del Agente Multipropósito` / `Herramientas del Agente Desplegado`, y así con reglas y preferencias. El resto de la nomenclatura **no se toca acá** — ver el plan `Ordenar la nomenclatura del harness`.
 
+## Diseño acordado el 29/07/2026 (sesión de `planificar`) — asentado en la decisión 0042
+
+Lo que se resolvió cambia la forma del paso 1 y responde dos de los tres abiertos de abajo.
+
+- **Son cuatro índices partidos, no tres.** `subsistemas/SUBSISTEMAS.md` también lo está (`## Subsistemas Base` / `## Subsistemas del Propósito`) y este plan no lo contemplaba. Además esas dos etiquetas **sobrevivieron al barrido del 29/07**: el registro de vetados lista `Herramientas Base`, `Reglas Base`, `preferencias Base` y `piezas Base`, pero no las de `subsistemas`, así que el lint nunca las marcó.
+- **El origen se declara en un frontmatter, no en el nombre del archivo.** El nivelador identifica qué reemplazar leyendo `origen`, así que el nombre queda libre para decir qué lista. Eso descarta `MULTIPROPOSITO.md` y sus variantes, que fue el punto donde el diseño se trabó: el nombre decía de dónde venía el contenido y ocultaba cuál era.
+- **El manifiesto lista los Índices del subsistema**, con el origen de cada uno — sexto campo obligatorio, validado por el control de campos mínimos que ya corre. Sin eso, con nombres libres no hay forma de descubrir los índices sin recorrer el directorio.
+- **Un subsistema con un solo origen tiene un solo Índice.** No se crean archivos vacíos esperando contenido: el segundo entra el día que llegue. `semantica` deja de ser el caso raro, porque sus dos archivos se dividen por función y el formato ya no exige que la división sea por origen.
+- **Las columnas también se declaran**, y cierran un fallo silencioso que existe hoy: el repartidor de conducta busca `Momento` y `Clase` por nombre en el encabezado y, si una se renombra, deja de despachar reglas sin emitir ningún error.
+- **Descartado el puntero** —un `INDICE.md` con dos `@` a los índices reales— por el límite de cuatro saltos de importación, que la 0019 ya había medido con margen cero.
+
+**Medición del 29/07/2026, entradas por origen:** `subsistemas` 8/0 · `preferencias` 13/5 · `conducta` 9/0 · `herramientas` 2/6. Los otros cuatro subsistemas tienen cero contenido del Agente Multipropósito.
+
 ## Falta decidir
 
 1. **Las columnas de la tabla de preferencias.** Propuesto: `Preferencia | Ámbito | Contenido | Detalle`. Se descartaron `Estado` (una acción pendiente no es un estado; lo pendiente en este repo es un plan) y `Momento` (duplica la columna de `conducta/INDICE.md`).
 2. **Un identificador estable no numérico.** Idea del autor: un código corto. Precisión a tener en cuenta: un hash del contenido cambia cuando cambia el texto, así que no da la referencia inmutable que se busca — tiene que ser un código asignado al crear la entrada.
-3. **Los nombres de los seis archivos** que salen de partir los tres índices.
+3. ~~**Los nombres de los seis archivos** que salen de partir los tres índices.~~ **Resuelto el 29/07/2026:** el nombre es descriptivo —dice qué lista— porque el origen lo declara el frontmatter y el nivelador lo lee de ahí. Falta elegir el nombre concreto de cada uno, que ahora es una discusión libre y chica.
 
 ## El trabajo
 

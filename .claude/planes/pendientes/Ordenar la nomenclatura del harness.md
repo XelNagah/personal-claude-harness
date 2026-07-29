@@ -25,6 +25,14 @@ Propuesto, nada ratificado:
 - **`Registro volátil` se elimina** del glosario, no se renombra: nombra algo que ya se dice *"contenido interno de la Herramienta"*, el reemplazo ratificado cuando se vetó `tripa`. Es el punto más barato y el único independiente de los otros.
 - **Sin resolver:** si `Entrada` se borra del glosario o queda como otra forma de decir lo mismo. Si queda, las 223 apariciones siguen siendo válidas y no se toca ninguna; si se borra, se suman al barrido, más dos lints y la `PLANTILLA` que viaja.
 
+**Actualizado el 29/07/2026 por la decisión 0042, que cierra dos de los tres sentidos:**
+
+- **`Registro` queda tomado para la colección**, no para la línea: es el mecanismo que el plan `Subsistema de Registros genérico` diseña, con el nombre `Registro Multipropósito`. La propuesta de arriba —usar `Registro` para la fila— **queda descartada**: chocaría con un uso que ya está en dos planes y en la conversación del autor.
+- **La fila sigue siendo `Entrada`**, ahora asentada como `Entrada de Índice de Subsistema`. Sus 223 apariciones no se tocan.
+- **El archivo se llama `Índice de Subsistema`**, también asentado. No es «el archivo que lista» a secas: es el que lista los elementos **de un subsistema**, y esa precisión lo separa de un Registro cualquiera.
+
+Queda vivo el tercer sentido, `Registro volátil`, y la propuesta de eliminarlo.
+
 ### 2. `Agente desplegado` se escribía de dos maneras — resuelto el 29/07/2026
 
 El glosario lo asentaba con minúscula (`Agente desplegado`), mientras que los otros dos conceptos de la misma familia van con mayúscula (`Agente Multipropósito`, `Agente con Propósito`), igual que los encabezados ratificados el 28/07/2026.

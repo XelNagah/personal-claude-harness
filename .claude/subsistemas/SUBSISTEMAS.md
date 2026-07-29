@@ -7,7 +7,7 @@ Catálogo de casas persistentes del Agente Multipropósito. La Base la mantiene 
 | Subsistema | Qué guarda | Operación |
 |---|---|---|
 | [subsistemas](./) | Catálogo y coordinación entre casas | `agregar-subsistema`, `reubicar-aprendizaje` |
-| [preferencias](../preferencias/) | Preferencias del usuario, las de río arriba y las del repo | `registrar-preferencia` |
+| [preferencias](../preferencias/) | Preferencias del usuario, las del Agente Multipropósito y las del repo | `registrar-preferencia` |
 | [planes](../planes/) | Planes y su ciclo de vida | `ciclo-de-plan` |
 | [conocimiento](../conocimiento/) | Lo que el agente sabe y necesita reutilizar | `registrar-conocimiento`, `buscar-conocimiento` |
 | [semantica](../semantica/) | Vocabulario legítimo y relaciones vetadas | `converger-terminologia` |
