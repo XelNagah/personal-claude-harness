@@ -11,4 +11,4 @@ Plugin transversal del Agente Multipropósito.
 
 `amp` depende de los ocho plugins de subsistema. En Codex, `actualizar-plugins --aplicar` los registra en orden antes de instalar el transversal.
 
-La condición de cierre de `actualizar` es explícita: una instalación que todavía conserva `.claude/memoria/` no está al día. El flujo instala `subsistemas/`, retira automáticamente la infraestructura y las ocho piezas conocidas del Agente Multipropósito, coordina pieza por pieza solo el Aprendizaje restante y vuelve a ejecutar el detector antes de cerrar.
+La condición de cierre de `actualizar` es explícita: una instalación que todavía conserva `.claude/memoria/` no está al día. El flujo instala `subsistemas/`, retira automáticamente la infraestructura y los ocho Componentes de Subsistema conocidos del Agente Multipropósito, coordina de a uno por vez solo el Aprendizaje restante y vuelve a ejecutar el detector antes de cerrar.

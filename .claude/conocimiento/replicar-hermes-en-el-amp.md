@@ -4,15 +4,15 @@ Diseño del **2026-07-23**. Toma los mecanismos de Hermes Agent (relevados en [p
 
 ## Principio rector
 
-La auto-mejora de Hermes **en vivo** no es magia estadística: son **dos piezas simples** — (1) un texto en el prompt de sistema que empuja al agente a guardar lo que aprendió, y (2) una herramienta que escribe ese aprendizaje a un archivo. La minería de sesiones y el entrenamiento corren **en diferido**, en un repo aparte, con una persona aprobando cada cambio: fuera del alcance del AMP y no hace falta.
+La auto-mejora de Hermes **en vivo** no es magia estadística: son **dos componentes simples** — (1) un texto en el prompt de sistema que empuja al agente a guardar lo que aprendió, y (2) una herramienta que escribe ese aprendizaje a un archivo. La minería de sesiones y el entrenamiento corren **en diferido**, en un repo aparte, con una persona aprobando cada cambio: fuera del alcance del AMP y no hace falta.
 
-Consecuencia clave: el AMP tiene una pieza que Hermes **en vivo no** tiene — el subsistema `conducta` con reglas de clase **correr**, donde una Herramienta resuelve el momento **sin juicio del agente**. Donde Hermes solo puede *inyectar* un recordatorio y confiar en que el agente lo siga, el AMP puede *correr* la captura de forma determinística. En vivo, el AMP puede igualar o superar a Hermes.
+Consecuencia clave: el AMP tiene un componente que Hermes **en vivo no** tiene — el subsistema `conducta` con reglas de clase **correr**, donde una Herramienta resuelve el momento **sin juicio del agente**. Donde Hermes solo puede *inyectar* un recordatorio y confiar en que el agente lo siga, el AMP puede *correr* la captura de forma determinística. En vivo, el AMP puede igualar o superar a Hermes.
 
 Regla de traducción:
 
-- La pieza **empuje/observador** de Hermes → una **regla de conducta** (`inyectar` o `correr`) atada a un momento del flujo.
-- La pieza **herramienta que escribe** de Hermes → una **skill de registro** del subsistema que corresponda (`registrar-*`, `/contrastar`).
-- La pieza **en diferido / entrenamiento** → fuera de alcance.
+- El componente **empuje/observador** de Hermes → una **regla de conducta** (`inyectar` o `correr`) atada a un momento del flujo.
+- El componente **herramienta que escribe** de Hermes → una **skill de registro** del subsistema que corresponda (`registrar-*`, `/contrastar`).
+- El componente **en diferido / entrenamiento** → fuera de alcance.
 
 ## Tabla maestra
 

@@ -2,7 +2,7 @@
 
 ## Qué se decidió
 
-Dónde va cada **Componente** del repo se decide pasándolo por **cinco ejes**. Los ejes son el test; los casos resueltos y los criterios finos viven en esta página. Ratificado el 2026-07-22.
+Dónde va cada **archivo o carpeta** del repo se decide pasándolo por **cinco ejes**. Los ejes son el test; los casos resueltos y los criterios finos viven en esta página. Ratificado el 2026-07-22.
 
 ## Por qué
 

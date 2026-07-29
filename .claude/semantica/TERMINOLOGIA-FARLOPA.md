@@ -1,3 +1,9 @@
+---
+indice: Terminología Farlopa
+origen: agente-desplegado
+columnas: [Término, Significado vetado, Cómo decirlo, Control]
+---
+
 # Terminología Farlopa
 
 *Farlop Terminology* (EN). Registro par del glosario: las **relaciones término→significado vetadas** del dominio. Cada fila prohíbe un término **en un significado específico**, no el término en sí — el mismo término con otro significado puede ser legítimo (`plomería`=cañerías en un repo de fontanería es válido; `plomería`=infraestructura interna de software es farlopa). Por eso la columna del medio: fija el significado que se veta.
@@ -21,7 +27,8 @@ Vacío se lee como `avisa`. **El bloqueo mira solo las apariciones fuera de comi
 
 | Término | Significado vetado | Cómo decirlo | Control |
 |---------|--------------------|--------------|---------|
-| `artefacto` | un Componente del repo (archivo o directorio) | Componente | avisa |
+| `artefacto` | un archivo o una carpeta del repo | Componente de Subsistema cuando pertenece a uno; si no, `archivo` o `carpeta` | avisa |
+| `pieza` | un Componente de Subsistema (archivo o carpeta de un subsistema) | Componente de Subsistema | avisa |
 | `gate` | un Control (chequeo que frena el avance) | Control | bloquea |
 | `prosa` | el texto corriente de los `.md` | texto plano | avisa |
 | `levelear` / `leveleo` / `leveling` | poner al día una instalación existente | nivelar | bloquea |

@@ -14,7 +14,7 @@ Una regla escrita en el contexto de un agente **no se obedece por estar escrita*
 
 **5. Se inventa reglas y las defiende como si fueran del usuario.** Enuncia restricciones que nadie escribió ("no toco tu material sin permiso explícito", "no se generaliza con un solo caso") y las sostiene como si vinieran de la convención. Cuesta más disolverlas que las reglas reales, porque el usuario no sabe que las está discutiendo con el agente y no con su propio setup.
 
-**6. Verifica presencia y reporta completitud.** Ante una regla del tipo "asegurá que X esté", comprueba que **el contenedor** exista y da por cumplido el resto: el directorio del subsistema está ⇒ "ya estaba", aunque adentro falten piezas; el registro existe ⇒ no le agrega la fila que le falta; el plugin figura instalado ⇒ "todo al día", sin mirar en qué alcance ni si la sesión lo cargó. El resultado es siempre el mismo y es lo que lo hace caro: **una respuesta tranquilizadora sobre algo incompleto**. Nadie vuelve a mirar lo que ya se informó en verde. Se distingue del modo 1 en que acá el agente **sí** ejecuta la regla — la ejecuta sobre el objeto equivocado, o sobre una parte que confunde con el todo.
+**6. Verifica presencia y reporta completitud.** Ante una regla del tipo "asegurá que X esté", comprueba que **el contenedor** exista y da por cumplido el resto: el directorio del subsistema está ⇒ "ya estaba", aunque adentro falten Componentes de Subsistema; el registro existe ⇒ no le agrega la fila que le falta; el plugin figura instalado ⇒ "todo al día", sin mirar en qué alcance ni si la sesión lo cargó. El resultado es siempre el mismo y es lo que lo hace caro: **una respuesta tranquilizadora sobre algo incompleto**. Nadie vuelve a mirar lo que ya se informó en verde. Se distingue del modo 1 en que acá el agente **sí** ejecuta la regla — la ejecuta sobre el objeto equivocado, o sobre una parte que confunde con el todo.
 
 ## Cómo se verificó
 
@@ -26,7 +26,7 @@ Lectura de **18 conversaciones completas** (~6.400 eventos, 15 MB) de un agente 
 
 **El dato más fuerte, y el que ordena todo lo demás:** el agente editó él mismo el archivo de reglas para reemplazar un término, y **seis minutos después**, en la sesión siguiente, usó el término viejo en texto plano propio. Escribir la regla no la instala — ni siquiera escribirla uno mismo.
 
-**El modo 6 se agregó el 26/07/2026**, con cuatro casos del mismo día y en tres piezas distintas: (1) un instalador reportó un repo "al día" con cinco piezas Base faltantes, porque el directorio del subsistema existía; (2) el mismo instalador, ya corregido el detector, no agregó tres filas a registros que existían — leyó "crear solo lo ausente" a nivel archivo; (3) un diagnóstico informó "todo actualizado" sobre el repo equivocado; (4) el mismo diagnóstico informó "nada retirado" habiendo nueve. La regla escrita decía, en los cuatro casos, exactamente lo correcto.
+**El modo 6 se agregó el 26/07/2026**, con cuatro casos del mismo día y en tres lugares distintos: (1) un instalador reportó un repo "al día" con cinco Componentes de Subsistema del Agente Multipropósito faltantes, porque el directorio del subsistema existía; (2) el mismo instalador, ya corregido el detector, no agregó tres filas a registros que existían — leyó "crear solo lo ausente" a nivel archivo; (3) un diagnóstico informó "todo actualizado" sobre el repo equivocado; (4) el mismo diagnóstico informó "nada retirado" habiendo nueve. La regla escrita decía, en los cuatro casos, exactamente lo correcto.
 
 ## Cuándo aplica y cuándo no
 

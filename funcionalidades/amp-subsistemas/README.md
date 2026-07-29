@@ -1,6 +1,6 @@
 # Subsistemas
 
-Administra el catálogo de subsistemas del Agente Multipropósito y coordina la reubicación de Aprendizaje. Antes de conversar excluye infraestructura y duplicados Base; después consulta las habilidades de los subsistemas dueños y presenta una propuesta por cada pieza propia del Propósito para que el usuario la confirme.
+Administra el catálogo de subsistemas del Agente Multipropósito y coordina la reubicación de Aprendizaje. Antes de conversar excluye infraestructura y duplicados Base; después consulta las habilidades de los subsistemas dueños y presenta una propuesta por cada Componente de Subsistema propio del Propósito para que el usuario la confirme.
 
 ## Skills
 

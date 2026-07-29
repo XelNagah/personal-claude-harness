@@ -5,7 +5,7 @@ description: Propaga un cambio textual de este repo (lint, manifiesto, preferenc
 
 # Propagar al harness
 
-Un cambio en una pieza Base de este repo (un lint, un `MANIFIESTO`, un texto de la Base de preferencias, un contenido inicial) tiene una **copia textual** que mantener: el instalador consolidado **`amp:inicializar`** (`funcionalidades/amp/skills/inicializar/SKILL.md` + `PLANTILLA.md`), que duplica los textos literales de **todos** los subsistemas porque en ejecución no puede leer las otras carpetas. El código de un lint va embebido en `PLANTILLA.md` bajo `## §Script`, dentro de un bloque de código ```js.
+Un cambio en un Componente de Subsistema del Agente Multipropósito de este repo (un lint, un `MANIFIESTO`, un texto de la Base de preferencias, un contenido inicial) tiene una **copia textual** que mantener: el instalador consolidado **`amp:inicializar`** (`funcionalidades/amp/skills/inicializar/SKILL.md` + `PLANTILLA.md`), que duplica los textos literales de **todos** los subsistemas porque en ejecución no puede leer las otras carpetas. El código de un lint va embebido en `PLANTILLA.md` bajo `## §Script`, dentro de un bloque de código ```js.
 
 Desde el empaquetado 0029, `amp:inicializar` es la **fuente única** del setup (absorbió los ex `inicializar-<sub>` individuales). Por eso el destino de propagación es **uno solo**, no "funcionalidad + orquestador" como antes. Las skills de **operación** (`registrar-memoria`, `ciclo-de-plan`, `converger-terminologia`, …) viven en su `amp-<sub>` y son fuente única sin duplicar: no se propagan.
 

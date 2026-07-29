@@ -1,3 +1,9 @@
+---
+indice: Glosario del proyecto
+origen: agente-desplegado
+columnas: [Concepto, Definición, Alias, Propuestos, Detalle]
+---
+
 # Glosario del proyecto
 
 Terminología **legítima** del dominio de este repo. Una fila por concepto en la tabla de abajo:
@@ -27,7 +33,7 @@ Los términos **vetados no viven acá**: un veto es sobre la relación término�
 | Aprendizaje | Las entradas **aprendidas** de un Agente con Propósito: las que acumula en sus subsistemas persiguiendo su Propósito —memorias, decisiones, planes, términos, páginas de conocimiento, y las Herramientas y reglas de conducta del Agente Desplegado—. Es lo que el nivelador **nunca abre**. Las entradas del **Agente Multipropósito** (sus reglas de conducta, sus Herramientas, sus preferencias) no son Aprendizaje: vienen del Agente Multipropósito. Se distingue del **Producto del Propósito**: el Aprendizaje es lo que el agente sabe y vive en `.claude/`; el Producto es lo que el repo entrega y vive en la raíz. | lo aprendido, entradas aprendidas | — | — |
 | Subsistema | Área del Agente Multipropósito que persiste estado siguiendo el Patrón: índice + entradas + lint. La definición es el Patrón, no una lista cerrada — la Base trae los suyos y un repo puede sumar los que su Propósito requiera. | subsistema de acumulación | — | — |
 | Producto del Propósito | Lo que el repo produce para cumplir su Propósito (una web, una base de inmuebles, un informe). Vive en la raíz del repo, fuera de `.claude/`, y legítimamente **no** pertenece a ningún subsistema ni se cataloga como Componente del harness: por eso el inventario de fuera-de-subsistema barre solo `.claude/` y no la raíz. | — | — | — |
-| Componente | Archivo o directorio dentro del repo, incluido el harness `.claude/`. La unidad física que un subsistema puede tener por dueño o que puede quedar huérfana (suelta). | — | — | — |
+| Componente de Subsistema | Cada archivo o carpeta que forma parte de un subsistema: su manifiesto, sus Índices, su README, su lint co-ubicado, los hooks y controles que instala, y las entradas que acumula. Es la unidad con la que se trabaja al instalar, nivelar o reubicar: se cuenta, se pisa o se muda de a una. | — | — | — |
 | Herramienta | Capacidad que el repo se fabricó para su Propósito y el agente invoca para tareas repetibles. Tipos: script, skill local del repo, MCP local. **No** incluye los lints (esos son infra del Patrón de cada subsistema, decisión 0003). | Tool | — | — |
 | Registro volátil | Estado de sesión que una Herramienta administra y que pierde sentido al terminar la sesión. Es contenido interno de la Herramienta —no una Entrada de ningún índice—; la Herramienta que lo administra sí es una fila del registro, el estado en sí no. Lo efímero es una propiedad, no un Tipo nuevo (los Tipos dicen cómo se invoca: script/skill/MCP). | — | — | — |
 | Conducta | Subsistema que ata momentos del flujo de trabajo a guía para el agente, para asegurar comportamientos del tipo "cuando hagas X, asegurate de Y". Viene con una Base instalada (respetar preferencias, considerar el conocimiento, registrar en los subsistemas cuando algo cambia) y admite reglas propias del Propósito de cada repo. Se apoya en los otros subsistemas —los agenda en el momento justo—, no los reimplementa. | conduct | — | — |

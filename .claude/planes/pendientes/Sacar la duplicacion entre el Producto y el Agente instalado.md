@@ -18,7 +18,7 @@ Medido el 26/07/2026, el mismo párrafo del manifiesto de planes:
 - En `.claude/planes/MANIFIESTO.md`: *"`pendientes/` (planes vivos: `Nuevo`, `En curso`, `Diferido`)"*
 - En `PLANTILLA.md`: *"`pendientes/` (vivos)"*
 
-Y esa misma mañana el control de cierre había dado verde y `amp:actualizar` había reportado *"Repo al día: nada para nivelar"*. El nivelador chequea que la **pieza esté**, no que **diga lo mismo**: es el quinto caso del patrón ya asentado en el conocimiento `el-repo-que-un-script-describe` y `modos-de-falla-ante-reglas-escritas` — *chequear presencia en vez de completitud*, con su síntoma de siempre, una respuesta tranquilizadora sobre algo incompleto.
+Y esa misma mañana el control de cierre había dado verde y `amp:actualizar` había reportado *"Repo al día: nada para nivelar"*. El nivelador chequea que el **Componente de Subsistema esté**, no que **diga lo mismo**: es el quinto caso del patrón ya asentado en el conocimiento `el-repo-que-un-script-describe` y `modos-de-falla-ante-reglas-escritas` — *chequear presencia en vez de completitud*, con su síntoma de siempre, una respuesta tranquilizadora sobre algo incompleto.
 
 ## El encuadre que lo resuelve (Javier, 26/07/2026)
 
@@ -33,7 +33,7 @@ El glosario define **Producto del Propósito** como *"lo que el repo produce par
 1. **La Plantilla es la fuente; `.claude/` es su salida.** El repo autor se pone al día contra su propio Producto corriendo `amp:actualizar`, igual que cualquier Agente con Propósito. Es lo que `AGENTS.md` ya declara que es `.claude/` (*"el propio setup estándar, aplicado a este repo"*), solo que hoy no se cumple porque se edita `.claude/` directo. **Preferida.**
 2. **`.claude/` es la fuente; un paso de construcción arma la Plantilla** antes de publicar. Requiere nombre para ese paso — `armar-plantilla` sería el candidato (verbo + objeto, decisión 0015).
 
-Cualquiera de las dos mata la copia manual. La 1 además no agrega piezas: usa el nivelador que ya existe.
+Cualquiera de las dos mata la copia manual. La 1 además no agrega Componentes de Subsistema: usa el nivelador que ya existe.
 
 ## Consecuencia: `propagar-harness` se retira
 
