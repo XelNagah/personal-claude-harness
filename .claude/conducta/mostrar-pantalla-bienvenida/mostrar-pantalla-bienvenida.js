@@ -115,12 +115,15 @@ function detallePlanes(txt, estadosTxt) {
   const partes = orden.map(carp => `${cont[carp] || 0} ${carp}`);
   return `(${partes.join(' · ')})`;
 }
+// Las dos secciones por origen. Se aceptan los encabezados viejos ("## Base (harness vN)" /
+// "## Adaptaciones") mientras haya Agentes Desplegados sin nivelar. La version ya no se muestra:
+// vive en el plugin, no en el encabezado.
 function detallePreferencias(txt) {
-  const v = (txt.match(/harness\s+v(\d+)/i) || [])[1];
-  const m = txt.split(/##\s+Adaptaciones/i);
-  let adapt = 0;
-  if (m[1]) adapt = (m[1].split(/\r?\n/).filter(l => /^\s*[-*]\s+\S/.test(l))).length;
-  return `Base${v ? ' v' + v : ''} · ${adapt} adaptaci${adapt === 1 ? 'ón' : 'ones'}`;
+  const contar = t => t ? t.split(/\r?\n/).filter(l => /^\s*[-*]\s+\S/.test(l)).length : 0;
+  const partes = txt.split(/^##\s+(?:Preferencias del Agente Desplegado|Adaptaciones)\b[^\n]*$/mi);
+  const arriba = partes[0].split(/^##\s+(?:Preferencias del Agente Multiprop[oó]sito|Base)\b[^\n]*$/mi)[1];
+  const rioArriba = contar(arriba), delRepo = contar(partes[1]);
+  return `${rioArriba} del Agente Multipropósito · ${delRepo} del Agente Desplegado`;
 }
 
 // --- correr el lint del subsistema y contar hallazgos (misma heurística que ejecutar-control-cierre) ---

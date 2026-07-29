@@ -39,6 +39,21 @@ const RENOMBRES = [
   { viejo: 'glosario', nuevo: 'semantica', que: 'subsistema', lintViejo: 'lint-glosario', lintNuevo: 'lint-semantica' },
 ];
 
+// Encabezados renombrados: mismo criterio que RENOMBRES pero adentro de un archivo. Los tres
+// indices separados por origen estrenaron nombres nuevos; un Agente Desplegado que todavia tenga
+// los viejos se migra renombrando el encabezado y CONSERVANDO el contenido de cada seccion — es
+// renombre, no reemplazo. En preferencias el encabezado viejo ademas llevaba adentro un numero de
+// version: ese numero se descarta, la version vive en el plugin y el Agente Desplegado no guarda
+// ninguna. El lint de cada subsistema acepta las dos formas mientras dure la migracion.
+const ENCABEZADOS_RENOMBRADOS = [
+  { archivo: 'preferencias/PREFERENCIAS.md', viejo: /^##\s+Base\b[^\n]*$/mi,                  nuevo: '## Preferencias del Agente Multipropósito' },
+  { archivo: 'preferencias/PREFERENCIAS.md', viejo: /^##\s+Adaptaciones\b[^\n]*$/mi,          nuevo: '## Preferencias del Agente Desplegado' },
+  { archivo: 'conducta/INDICE.md',           viejo: /^##\s+Reglas Base\b[^\n]*$/mi,           nuevo: '## Reglas del Agente Multipropósito' },
+  { archivo: 'conducta/INDICE.md',           viejo: /^##\s+Reglas del Prop[oó]sito\b[^\n]*$/mi, nuevo: '## Reglas del Agente Desplegado' },
+  { archivo: 'herramientas/INDICE.md',       viejo: /^##\s+Herramientas Base\b[^\n]*$/mi,     nuevo: '## Herramientas del Agente Multipropósito' },
+  { archivo: 'herramientas/INDICE.md',       viejo: /^##\s+Herramientas del Prop[oó]sito\b[^\n]*$/mi, nuevo: '## Herramientas del Agente Desplegado' },
+];
+
 // Estas ocho entradas eran Base distribuida por la generación memoria/. Sus destinos ya forman
 // parte de la Base actual, así que actualizar las reconcilia sin preguntarle al usuario. Cualquier
 // otro .md es Aprendizaje; si una de estas piezas fue ampliada por el repo, la skill preserva solo
@@ -163,6 +178,14 @@ function clasificar() {
     }
   }
 
+  // [1b] encabezados renombrados (el archivo esta, la seccion se llama como antes)
+  for (const e of ENCABEZADOS_RENOMBRADOS) {
+    const f = path.join(claude, e.archivo);
+    if (!existe(f)) continue;
+    const m = leer(f).match(e.viejo);
+    if (m) add('renombre', '→', `${e.archivo}: ${m[0].trim()}`, `renombrar el encabezado a "${e.nuevo}" conservando el contenido de la seccion`);
+  }
+
   // [2] subsistemas Base: presentes / ausentes / con piezas faltantes
   for (const sub of SUBSISTEMAS) {
     const dir = path.join(claude, sub);
@@ -182,20 +205,20 @@ function clasificar() {
     if (!existe(path.join(dir, `lint-${sub}`, `lint-${sub}.js`))) add('base', '~', `${sub}/lint-${sub}/`, 'lint ausente: instalar');
   }
 
-  // [2b] Herramientas Base: viven DENTRO de herramientas/, asi que un subsistema presente puede
-  // igual estar incompleto. Sin este chequeo, un repo al que le falta una Herramienta Base se
+  // [2b] Herramientas de rio arriba: viven DENTRO de herramientas/, asi que un subsistema presente puede
+  // igual estar incompleto. Sin este chequeo, un repo al que le falta una Herramienta de rio arriba se
   // informa "ya estaba" — que es lo que pasa cuando se clasifica por subsistema y no por pieza.
   const dirHerr = path.join(claude, 'herramientas');
   if (esDir(dirHerr)) {
     for (const h of HERRAMIENTAS_BASE) {
-      if (!existe(path.join(dirHerr, h, `${h}.js`))) add('base', '+', `herramientas/${h}/`, 'Herramienta Base ausente: instalar con su README y su fila en el INDICE');
+      if (!existe(path.join(dirHerr, h, `${h}.js`))) add('base', '+', `herramientas/${h}/`, 'Herramienta de rio arriba ausente: instalar con su README y su fila en el INDICE');
       else if (!existe(path.join(dirHerr, h, 'README.md'))) add('base', '~', `herramientas/${h}/README.md`, 'ausente: instalar');
     }
     const indiceHerr = path.join(dirHerr, 'INDICE.md');
     if (existe(indiceHerr)) {
       const t = leer(indiceHerr);
       for (const h of HERRAMIENTAS_BASE) {
-        if (!t.includes(h)) add('base', '~', `herramientas/INDICE.md`, `sin fila para la Herramienta Base ${h}: agregar en la seccion Herramientas Base`);
+        if (!t.includes(h)) add('base', '~', `herramientas/INDICE.md`, `sin fila para la Herramienta de rio arriba ${h}: agregar en la seccion de Herramientas del Agente Multiproposito`);
       }
     }
   }
@@ -216,16 +239,18 @@ function clasificar() {
     const indice = path.join(cond, 'INDICE.md');
     if (existe(indice)) {
       const t = leer(indice);
-      const tieneCorte = /##\s+Reglas Base/i.test(t) && /##\s+Reglas del Prop[oó]sito/i.test(t);
+      // Acepta las dos formas: el corte existe igual con los encabezados viejos, que [1b] migra.
+      const tieneCorte = /##\s+Reglas (Base|del Agente Multiprop[oó]sito)/i.test(t)
+                      && /##\s+Reglas del (Prop[oó]sito|Agente Desplegado)/i.test(t);
       const tieneReglas = /\|\s*inyectar\s*\||\|\s*correr\s*\||\|\s*bloquear\s*\|/i.test(t);
       if (!tieneCorte && tieneReglas)
-        add('divergente', '?', 'conducta/INDICE.md', 'reglas sin corte Base/Proposito (pre-0027): repartir requiere decidir cuales son Base y cuales del Proposito');
+        add('divergente', '?', 'conducta/INDICE.md', 'reglas sin corte por origen: repartir requiere decidir cuales vienen de rio arriba y cuales son del Agente Desplegado');
       else if (!tieneCorte)
-        add('base', '~', 'conducta/INDICE.md', 'sin secciones Reglas Base / Reglas del Proposito: poner al dia');
+        add('base', '~', 'conducta/INDICE.md', 'sin las dos secciones de reglas por origen: poner al dia');
       if (!/mostrar-pantalla-bienvenida/.test(t))
-        add('base', '~', 'conducta/INDICE.md', 'sin la Regla Base que muestra la Pantalla de bienvenida al arrancar: agregar la fila');
+        add('base', '~', 'conducta/INDICE.md', 'sin la regla de rio arriba que muestra la Pantalla de bienvenida al arrancar: agregar la fila');
       if (!/detectar-terminologia-vetada/.test(t))
-        add('base', '~', 'conducta/INDICE.md', 'sin la Regla Base que frena la terminologia vetada al escribir: agregar la fila');
+        add('base', '~', 'conducta/INDICE.md', 'sin la regla de rio arriba que frena la terminologia vetada al escribir: agregar la fila');
     }
     // La condicion del momento «al escribir» se amplio a todo .md del repo (antes solo `.claude/`):
     // un MOMENTOS.md con la condicion vieja deja sin cubrir lo que el repo publica.

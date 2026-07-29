@@ -1,6 +1,6 @@
 ---
 name: actualizar
-description: Nivela el .claude/ de un Agente con Propósito ya instalado contra la Base actual. Pisa Base con respaldo, preserva el Aprendizaje y conduce los reacomodos viejos que requieren juicio. En particular, si encuentra la generación retirada memoria/, retira automáticamente su infraestructura y sus ocho piezas Base conocidas; solo coordina pieza por pieza el Aprendizaje restante. No informa "al día" hasta que memoria desaparece o queda esperando una confirmación explícita del usuario. También actualiza y migra plugins retirados antes de tocar archivos. Use when el usuario dice "nivelá el Agente Multipropósito", "actualizá el harness del repo", "poné al día el .claude", "amp:actualizar", o al detectar un Agente con Propósito cuyo Agente Multipropósito quedó viejo.
+description: Nivela el .claude/ de un Agente con Propósito ya instalado contra la Base actual. Pisa Base con respaldo, preserva el Aprendizaje y conduce los reacomodos viejos que requieren juicio. En particular, si encuentra la generación retirada memoria/, retira automáticamente su infraestructura y sus ocho piezas conocidas del Agente Multipropósito; solo coordina pieza por pieza el Aprendizaje restante. No informa "al día" hasta que memoria desaparece o queda esperando una confirmación explícita del usuario. También actualiza y migra plugins retirados antes de tocar archivos. Use when el usuario dice "nivelá el Agente Multipropósito", "actualizá el harness del repo", "poné al día el .claude", "amp:actualizar", o al detectar un Agente con Propósito cuyo Agente Multipropósito quedó viejo.
 ---
 
 # amp:actualizar — nivelador del harness
@@ -11,8 +11,8 @@ Pone al día el `.claude/` de un **Agente con Propósito**: actualiza el Agente 
 
 Un Agente con Propósito son dos cosas superpuestas, y la separación por origen **disuelve** el problema de "qué puedo pisar sin borrar lo aprendido":
 
-- **Base** = el **Agente Multipropósito** que tiene adentro (lint, `MANIFIESTO`, estructura, `MOMENTOS`, secciones `## Reglas Base`, cableado del hook) → **se pisa**, respaldando antes. Es lo único que esta skill actualiza.
-- **Aprendizaje** = las entradas que acumuló persiguiendo su Propósito (términos del glosario, planes, decisiones, conocimiento, `## Reglas del Propósito`) → **no se pisa ni se reclasifica en silencio**. Cuando una forma retirada lo contiene, esta skill conduce su reubicación y pide confirmación pieza por pieza.
+- **Base** = el **Agente Multipropósito** que tiene adentro (lint, `MANIFIESTO`, estructura, `MOMENTOS`, secciones `## Reglas del Agente Multipropósito`, cableado del hook) → **se pisa**, respaldando antes. Es lo único que esta skill actualiza.
+- **Aprendizaje** = las entradas que acumuló persiguiendo su Propósito (términos del glosario, planes, decisiones, conocimiento, `## Reglas del Agente Desplegado`) → **no se pisa ni se reclasifica en silencio**. Cuando una forma retirada lo contiene, esta skill conduce su reubicación y pide confirmación pieza por pieza.
 - **Reacomodo legacy** (formas viejas anteriores a 0027 que puedan enredar el Aprendizaje) → **se pregunta antes**, bloqueante.
 
 **Primera corrida sobre un Agente con Propósito viejo = migración** (instala la Base nueva, renombra formas conocidas y reubica el Aprendizaje que quedó en casas retiradas). Las siguientes = reconciliación limpia (todo "ya estaba").
@@ -97,20 +97,25 @@ El repo quedó con nombres de plugin que el marketplace ya no ofrece. **No se ar
    - **`MANIFIESTO`/lint/estructura vieja** → tomar el contenido canónico de la sección del subsistema en la PLANTILLA de `amp:inicializar` y **pisar** el archivo Base. (A diferencia de la reconciliación normal de `amp:inicializar`, que preserva lo existente, acá el archivo Base **se pisa** — es del harness. El contenido aprendido del mismo subsistema no se toca.)
    - **`contenido viejo`** (un script Base instalado que difiere del de la PLANTILLA) → **pisarlo con el bloque de la PLANTILLA**, entero y tal cual. Es el caso más frecuente al poner al día un repo que ya tenía el Agente Multipropósito: la pieza está, pero en la versión de cuando se instaló. No hay nada que preservar — los scripts Base no se ajustan por repo; lo que el repo aprendió vive en sus registros, no en el código del harness.
    - **Hook sin cablear** → merge del bloque de cableado de `conducta` en `.claude/settings.json` (y `.codex/hooks.json`), sin pisar hooks existentes.
-   - **`conducta/INDICE.md` sin las secciones** (y sin reglas propias que repartir) → agregar `## Reglas Base` (con las reglas Base actuales) y `## Reglas del Propósito` (vacía).
-   - **Generación con `memoria/`** → instalar primero el subsistema `subsistemas/`, sus tres piezas Base (`MANIFIESTO.md`, `SUBSISTEMAS.md`, `README.md`) y su lint. No borrar todavía ninguna pieza aprendida.
+   - **`conducta/INDICE.md` sin las secciones** (y sin reglas propias que repartir) → agregar `## Reglas del Agente Multipropósito` (con las reglas de río arriba actuales) y `## Reglas del Agente Desplegado` (vacía).
+   - **Generación con `memoria/`** → instalar primero el subsistema `subsistemas/`, sus tres piezas de río arriba (`MANIFIESTO.md`, `SUBSISTEMAS.md`, `README.md`) y su lint. No borrar todavía ninguna pieza aprendida.
 6. **Aplicar Renombres** (el caso con más juicio — preservar lo aprendido):
    - **`glosario`→`semantica`:**
      1. Mover la carpeta `.claude/glosario/` → `.claude/semantica/` y `lint-glosario/` → `lint-semantica/` (renombrar también `lint-glosario.js` → `lint-semantica.js`).
      2. Correr `amp:inicializar` en reconciliación: pone al día el mecanismo de semántica (lint nuevo, `MANIFIESTO`, estructura de columnas) **preservando** `GLOSARIO.md` y `TERMINOLOGIA-FARLOPA.md` con sus términos. Verificar que ningún término se haya perdido.
      3. Migrar las referencias: en `AGENTS.md`, `@.claude/glosario/MANIFIESTO.md` → `@.claude/semantica/MANIFIESTO.md`; el prefijo de skill `glosario:` → `semantica:` donde aparezca; y toda referencia por ruta al lint renombrado (settings, hooks).
+   - **Encabezados de los tres índices separados por origen** (`preferencias/PREFERENCIAS.md`, `conducta/INDICE.md`, `herramientas/INDICE.md`): el detector lista cada encabezado viejo con su nombre nuevo.
+     1. Reemplazar **solo la línea del encabezado**, dejando intacto todo el contenido de esa sección. No es un reemplazo de contenido: la sección del Agente Desplegado sigue siendo del repo y no se toca aunque cambie de nombre.
+     2. En `preferencias/PREFERENCIAS.md` el encabezado viejo llevaba adentro un número de versión (`## Base (harness vN)`). **Ese número se descarta y no se traslada a ningún lado**: la versión vive en el plugin, y un Agente Desplegado no guarda ninguna.
+     3. Recién con los encabezados al día, aplicar el reemplazo de la sección de río arriba del punto 5. Al revés, el reemplazo no encuentra la sección y el repo queda con dos.
+     4. Cerrar corriendo el lint de cada subsistema tocado.
 7. **Migrar `memoria/` retirada — responsabilidad de esta skill.**
    1. Inventariar `memoria/` en tres grupos, **antes de hacer cualquier pregunta**:
       - infraestructura Base retirada: `MANIFIESTO.md`, `MEMORIA.md`, `README.md` y `lint-memoria/`;
-      - las ocho piezas Base conocidas que distribuía la generación anterior;
+      - las ocho piezas conocidas del Agente Multipropósito que distribuía la generación anterior;
       - Aprendizaje restante del Propósito.
    2. Retirar automáticamente la infraestructura vieja cuando la Base `subsistemas/` ya está instalada.
-   3. Reconciliar automáticamente las ocho piezas Base conocidas. **No pedir confirmación por ellas**: comprobar primero que su destino actual exista y cubra el comportamiento; después retirar el duplicado viejo.
+   3. Reconciliar automáticamente las ocho piezas conocidas del Agente Multipropósito. **No pedir confirmación por ellas**: comprobar primero que su destino actual exista y cubra el comportamiento; después retirar el duplicado viejo.
 
       | Pieza Base retirada | Destino actual |
       |---|---|

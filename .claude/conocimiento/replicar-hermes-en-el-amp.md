@@ -23,7 +23,7 @@ Regla de traducción:
 | **Memoria — sesiones buscables** | búsqueda de texto completo sobre las conversaciones pasadas guardadas en SQLite | — (no hay subsistema de sesiones) | **Falta, sin plan** | ninguno |
 | **Skills — que el agente las escriba solo** | el agente crea y parcha sus propias skills; carga por niveles | skills del harness + `conducta` (empuje) | Las skills existen; la auto-escritura no | *Crecer el subsistema conducta* (empuje); auto-escritura sin plan |
 | **Tareas agendadas** | tarea de agente en lenguaje natural, modo sin LLM, corte por seguridad de costo, adjuntar skills | repo `Alertas-Push` (fuera del harness) | Existe base; sin corte por seguridad | **Falta** — vive en `Alertas-Push` |
-| **Persona** | `SOUL.md` | `preferencias` (Base/Adaptaciones) | Cubierto | — |
+| **Persona** | `SOUL.md` | `preferencias` (separado por origen) | Cubierto | — |
 | **Gobernanza terminológica** | *(Hermes no tiene)* | `semantica` + `converger-terminologia` | **AMP adelante** | — (exportar, no importar) |
 
 ## Cómo replicar cada componente
@@ -66,7 +66,7 @@ Hermes además impide que una tarea agendada cree más tareas agendadas, para no
 
 ### 5. Persona — ya cubierto
 
-`PREFERENCIAS.md` (Base/Adaptaciones) es el equivalente de `SOUL.md`, y separa mejor lo del harness de lo del repo. Sin trabajo pendiente.
+`PREFERENCIAS.md` (separado por origen) es el equivalente de `SOUL.md`, y separa mejor lo de río arriba de lo del repo. Sin trabajo pendiente.
 
 ## Huecos sin plan (candidatos)
 

@@ -1,6 +1,6 @@
 # Conducta — manifiesto de subsistema
 
-El subsistema `conducta` asegura comportamientos del tipo "cuando hagas X, asegurate de Y": ata **momentos** del flujo a **acciones** (inyectar un texto, correr una Herramienta, bloquear). Sus reglas viven en `INDICE.md`, sus momentos en `MOMENTOS.md` y el hook `establecer-conducta/` las entrega. Trae una **Base** y admite reglas del Propósito. Modelo completo en `README.md`.
+El subsistema `conducta` asegura comportamientos del tipo "cuando hagas X, asegurate de Y": ata **momentos** del flujo a **acciones** (inyectar un texto, correr una Herramienta, bloquear). Sus reglas viven en `INDICE.md`, sus momentos en `MOMENTOS.md` y el hook `establecer-conducta/` las entrega. Trae las reglas del Agente Multipropósito y admite las del Agente Desplegado. Modelo completo en `README.md`.
 
 Al escribir un `.md` de cualquier parte del repo, el control `detectar-terminologia-vetada/` **rechaza** el texto con un término vetado sin uso legítimo posible e **informa** los que dependen del significado: citarlo no se frena, usarlo sí.
 

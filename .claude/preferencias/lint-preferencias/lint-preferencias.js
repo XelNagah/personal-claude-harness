@@ -1,5 +1,6 @@
 #!/usr/bin/env node
-// Lint estructural de preferencias: PREFERENCIAS.md con Base/Adaptaciones + @import en el punto de entrada (AGENTS.md/CLAUDE.md). Sin LLM, sin red.
+// Lint estructural de preferencias: PREFERENCIAS.md con sus dos secciones por origen (Agente
+// Multiproposito / Agente Desplegado) + @import en el punto de entrada (AGENTS.md/CLAUDE.md). Sin LLM, sin red.
 // NO detecta contradicciones semanticas (eso es la capa semantica, a pedido).
 // Uso: node lint-preferencias.js [<carpeta .claude>]   (default: .claude)
 const fs = require('fs'), path = require('path');
@@ -11,8 +12,10 @@ if (!fs.existsSync(prefFile)) {
   problems.push('no existe preferencias/PREFERENCIAS.md');
 } else {
   const txt = fs.readFileSync(prefFile, 'utf8');
-  if (!/^##\s+Base\b/m.test(txt)) problems.push('falta la seccion "## Base"');
-  if (!/^##\s+Adaptaciones\b/mi.test(txt)) problems.push('falta la seccion "## Adaptaciones"');
+  // Los nombres viejos ("## Base" / "## Adaptaciones") se aceptan mientras haya Agentes
+  // Desplegados sin nivelar: el nivelador los migra, y hasta entonces el lint no debe fallar.
+  if (!/^##\s+(Preferencias del Agente Multiprop[oó]sito|Base)\b/mi.test(txt)) problems.push('falta la seccion "## Preferencias del Agente Multiproposito"');
+  if (!/^##\s+(Preferencias del Agente Desplegado|Adaptaciones)\b/mi.test(txt)) problems.push('falta la seccion "## Preferencias del Agente Desplegado"');
   if (txt.trim().length < 50) problems.push('PREFERENCIAS.md casi vacio (sin contenido util)');
 }
 

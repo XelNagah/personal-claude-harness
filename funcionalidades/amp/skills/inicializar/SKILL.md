@@ -19,8 +19,8 @@ Segura de re-correr: este es el modo de **"nivelar"** repos que ya tienen partes
   |----------|------------------------------|
   | `subsistemas/SUBSISTEMAS.md` → `## Subsistemas Base` | una fila por casa Base instalada; `## Subsistemas del Propósito` se preserva entero |
   | `conducta/MOMENTOS.md` | una fila por momento del vocabulario, incluido **al arrancar la sesión** (`SessionStart`) |
-  | `conducta/INDICE.md` → `## Reglas Base` | las Reglas Base completas, incluidas **Mostrar la Pantalla de bienvenida al arrancar** (clase `correr`) y **Frenar la terminología vetada antes de que se escriba** (clase `bloquear`) |
-  | `herramientas/INDICE.md` → `## Herramientas Base` | una fila por Herramienta Base instalada (hoy `actualizar-plugins`) |
+  | `conducta/INDICE.md` → `## Reglas del Agente Multipropósito` | las reglas de río arriba completas, incluidas **Mostrar la Pantalla de bienvenida al arrancar** (clase `correr`) y **Frenar la terminología vetada antes de que se escriba** (clase `bloquear`) |
+  | `herramientas/INDICE.md` → `## Herramientas del Agente Multipropósito` | una fila por Herramienta de río arriba instalada (hoy `actualizar-plugins`) |
   | `.claude/settings.json` y `.codex/hooks.json` → `hooks` | el repartidor `establecer-conducta` en los **tres** eventos, en **los dos** archivos: `SessionStart`, `UserPromptSubmit`, `PreToolUse` con matcher `Write\|Edit` — **por merge**, sin sacar los hooks que ya estén |
   | `AGENTS.md` → `## Subsistemas` | una línea `@.claude/<sub>/MANIFIESTO.md` por subsistema instalado |
 
@@ -44,7 +44,7 @@ Segura de re-correr: este es el modo de **"nivelar"** repos que ya tienen partes
 └── .claude/
     ├── settings.json      # hooks: SessionStart → lint-planes --quiet + establecer-conducta; UserPromptSubmit/PreToolUse → establecer-conducta (Claude Code)
     ├── preferencias/
-    │   ├── PREFERENCIAS.md    # Base (harness vN) + Adaptaciones de este repo
+    │   ├── PREFERENCIAS.md    # secciones del Agente Multipropósito + del Agente Desplegado
     │   ├── estilo-commits.md
     │   ├── archivo-de-estado.md
     │   └── lint-preferencias/lint-preferencias.js
@@ -78,13 +78,13 @@ Segura de re-correr: este es el modo de **"nivelar"** repos que ya tienen partes
     │   └── lint-decisiones/lint-decisiones.js
     ├── herramientas/
     │   ├── README.md
-    │   ├── INDICE.md      # registro: ## Herramientas Base + ## Herramientas del Propósito
+    │   ├── INDICE.md      # registro: ## Herramientas del Agente Multipropósito + ## Herramientas del Agente Desplegado
     │   ├── actualizar-plugins/actualizar-plugins.js   # Herramienta Base: pone al día los plugins
     │   └── lint-herramientas/lint-herramientas.js
     └── conducta/
         ├── MANIFIESTO.md
         ├── README.md
-        ├── INDICE.md         # registro de reglas: ## Reglas Base + ## Reglas del Propósito
+        ├── INDICE.md         # registro de reglas: ## Reglas del Agente Multipropósito + ## Reglas del Agente Desplegado
         ├── MOMENTOS.md       # vocabulario de momentos (lo lee el lint)
         ├── establecer-conducta/establecer-conducta.js   # hook repartidor
         ├── mostrar-pantalla-bienvenida/mostrar-pantalla-bienvenida.js  # Pantalla de bienvenida (Regla Base correr)
@@ -95,13 +95,13 @@ Segura de re-correr: este es el modo de **"nivelar"** repos que ya tienen partes
 ## Flujo de trabajo vigente
 
 0. **Ubicar la raíz.** Si el cwd contiene subproyectos independientes, preguntar en cuál inicializar antes de crear nada.
-1. **preferencias** — asegurar `AGENTS.md` como fuente única y `CLAUDE.md` como adaptador `@AGENTS.md`; instalar `preferencias/PREFERENCIAS.md` (Base v7, preservando Adaptaciones), `preferencias/estilo-commits.md`, `preferencias/archivo-de-estado.md` y `preferencias/lint-preferencias/` desde PLANTILLA. Asegurar la sección de preferencias y su import en `AGENTS.md`. Reconocer convenciones equivalentes por tema y reportar divergencias sin duplicarlas.
+1. **preferencias** — asegurar `AGENTS.md` como fuente única y `CLAUDE.md` como adaptador `@AGENTS.md`; instalar `preferencias/PREFERENCIAS.md` (preservando la sección del Agente Desplegado), `preferencias/estilo-commits.md`, `preferencias/archivo-de-estado.md` y `preferencias/lint-preferencias/` desde PLANTILLA. Asegurar la sección de preferencias y su import en `AGENTS.md`. Reconocer convenciones equivalentes por tema y reportar divergencias sin duplicarlas.
 2. **subsistemas** — instalar `subsistemas/MANIFIESTO.md`, `SUBSISTEMAS.md`, `README.md` y `lint-subsistemas/` desde PLANTILLA. Reconciliar `## Subsistemas Base` por fila y preservar entera `## Subsistemas del Propósito`. Asegurar `@.claude/subsistemas/MANIFIESTO.md` en `AGENTS.md`.
 3. **planes** — instalar `README.md`, `MANIFIESTO.md`, `ESTADOS.md`, `PLANES.md`, las tres carpetas de estados y `lint-planes/`; migrar esquemas previos según §Planes. Cablear el lint de arranque en Claude Code y Codex por merge.
 4. **conocimiento** — instalar `README.md`, `MANIFIESTO.md`, `INDICE.md` y `lint-conocimiento/`. Migrar documentos que son saber reutilizable, reparar referencias y preservar fuentes crudas. No crear ni usar `memoria/`.
 5. **semántica** — instalar `README.md`, `MANIFIESTO.md`, `GLOSARIO.md`, `TERMINOLOGIA-FARLOPA.md` y `lint-semantica/`.
 6. **decisiones** — instalar `README.md`, `MANIFIESTO.md`, `INDICE.md` y `lint-decisiones/`.
-7. **herramientas** — instalar `README.md`, `MANIFIESTO.md`, `INDICE.md`, `actualizar-plugins/` y `lint-herramientas/`; reconciliar sólo `## Herramientas Base` y preservar `## Herramientas del Propósito`.
-8. **conducta** — instalar `README.md`, `MANIFIESTO.md`, `INDICE.md`, `MOMENTOS.md`, el repartidor, la Pantalla de bienvenida, el control de terminología y `lint-conducta/`. Reconciliar sólo `## Reglas Base`, preservar `## Reglas del Propósito` y cablear los tres eventos en Claude Code y Codex por merge.
+7. **herramientas** — instalar `README.md`, `MANIFIESTO.md`, `INDICE.md`, `actualizar-plugins/` y `lint-herramientas/`; reconciliar sólo `## Herramientas del Agente Multipropósito` y preservar `## Herramientas del Agente Desplegado`.
+8. **conducta** — instalar `README.md`, `MANIFIESTO.md`, `INDICE.md`, `MOMENTOS.md`, el repartidor, la Pantalla de bienvenida, el control de terminología y `lint-conducta/`. Reconciliar sólo `## Reglas del Agente Multipropósito`, preservar `## Reglas del Agente Desplegado` y cablear los tres eventos en Claude Code y Codex por merge.
 9. **Verificar.** Correr todos los lints instalados y `../actualizar/amp-actualizar.js --vista-previa`; debe dar `BASE — INSTALAR / PISAR (0)`.
 10. **Reportar.** Por subsistema: `agregado` / `ya estaba` / `divergente`. No hacer commit salvo pedido explícito.

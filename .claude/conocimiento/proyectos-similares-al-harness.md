@@ -27,7 +27,7 @@ Producto abierto de Nous Research (`pip install hermes-agent`): motor propio, va
 |---|---|---|
 | Memoria | archivos que el propio agente edita con una herramienta de memoria, más sesiones pasadas buscables | `memoria/` tipada + `conocimiento/`, escritas a mano vía skills |
 | Skills | las crea desde la experiencia y las mejora con el uso | skills del harness (slash + disparo conversacional) |
-| Persona | `SOUL.md` | `PREFERENCIAS.md` (Base/Adaptaciones), siempre en contexto |
+| Persona | `SOUL.md` | `PREFERENCIAS.md` (separado por origen), siempre en contexto |
 | Tareas agendadas | tareas de agente, no de shell, con corte por seguridad de costo | fuera del harness (repo `Alertas-Push`) |
 | Bucle de auto-mejora | observar → destilar → reusar → afinar, automático | **hueco**: hoy es manual (`buscar-conocimiento` + seguimientos que dispara el usuario) |
 

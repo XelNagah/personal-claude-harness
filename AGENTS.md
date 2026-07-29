@@ -21,7 +21,7 @@ El repo es a la vez un **marketplace de plugins de Claude Code** (estilo Matt Po
 ├── REGISTRO.md                                # catálogo de funcionalidades
 ├── .claude/                                   # el propio setup estándar, aplicado a este repo
 │   ├── subsistemas/                           # catálogo Base/Propósito + MANIFIESTO.md + lint-subsistemas/
-│   ├── preferencias/                          # PREFERENCIAS.md (Base + Adaptaciones) + lint-preferencias/
+│   ├── preferencias/                          # PREFERENCIAS.md (dos secciones por origen) + lint-preferencias/
 │   ├── planes/                                # PLANES.md + ESTADOS.md + MANIFIESTO.md + pendientes/ ejecutados/ descartados/ + lint-planes/ (hook SessionStart)
 │   ├── conocimiento/                          # lo que el agente sabe (INDICE.md) + MANIFIESTO.md + lint-conocimiento/
 │   ├── semantica/                             # glosario + terminología farlopa (2 registros) + MANIFIESTO.md + lint-semantica/
@@ -33,7 +33,7 @@ El repo es a la vez un **marketplace de plugins de Claude Code** (estilo Matt Po
 └── funcionalidades/                           # cada subcarpeta = un plugin
     ├── amp/                                   # plugin transversal: inicializar · planificar · actualizar · info; dep: los 8 amp-<sub>
     ├── amp-subsistemas/                       # catálogo + alta de casas + reubicación guiada del Aprendizaje
-    ├── amp-preferencias/                      # preferencias versionadas Base/Adaptaciones (@import); skill registrar-preferencia
+    ├── amp-preferencias/                      # preferencias separadas por origen (@import); skill registrar-preferencia
     ├── amp-planes/                            # ciclo pendientes/ejecutados/descartados + PLANES.md + lint + hook
     ├── amp-conocimiento/                      # base .claude/conocimiento/ + lint
     ├── amp-semantica/                         # glosario + Terminología Farlopa + lint
@@ -62,7 +62,7 @@ Cada **funcionalidad/plugin** = `funcionalidades/<nombre>/` con `.claude-plugin/
 
 @.claude/preferencias/PREFERENCIAS.md
 
-Al tocar las preferencias, correr el lint estructural **desde la raíz del repo** (chequea secciones Base/Adaptaciones + el `@import`):
+Al tocar las preferencias, correr el lint estructural **desde la raíz del repo** (chequea las dos secciones por origen + el `@import`):
 
 ```bash
 node .claude/preferencias/lint-preferencias/lint-preferencias.js

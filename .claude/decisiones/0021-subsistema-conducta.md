@@ -16,7 +16,7 @@ Se evaluó la alternativa de **config fija** (un `settings.json` escrito una vez
 - **Regla de conducta** = ata un momento a una **acción**, de tres clases: *inyectar texto* (el agente hace Y con su juicio) / *correr una Herramienta* (la máquina hace Y sin juicio) / *bloquear* (solo donde Y es sin juicio y el falso positivo es imposible). Regla: Y verificable por máquina → lo hace la máquina; Y con juicio → se empuja al agente.
 - **Dos registros:** `momentos` (momento · qué representa · evento · condición · disponibilidad por agente) y `reglas de conducta` (regla · momento · acción · estado).
 - **Entrega:** un **hook repartidor por evento** (sin filtro), escrito una vez por agente, que lee el registro compartido y entrega la regla que corresponde al evento + datos actuales. Agregar una regla **no toca la config**: el repartidor lee el registro vivo.
-- **Base instalada:** el subsistema no viene vacío. Trae reglas base — respetar las preferencias, considerar el conocimiento, contrastar contra glosario/decisiones al escribir (test 0020), registrar en el subsistema que corresponde cuando algo cambia. Sobre esa Base, cada repo suma reglas de su Propósito. Paralelo al modelo Base/Adaptaciones de preferencias.
+- **Base instalada:** el subsistema no viene vacío. Trae reglas de río arriba — respetar las preferencias, considerar el conocimiento, contrastar contra glosario/decisiones al escribir (test 0020), registrar en el subsistema que corresponde cuando algo cambia. Sobre esas, cada repo suma las suyas. Paralelo a cómo preferencias separa por origen.
 - **Se apoya en los otros subsistemas:** la acción de una regla suele ser "consultá el glosario" o "corré `registrar-conocimiento`". `conducta` los **agenda** en el momento justo, no los duplica.
 - **Gestión por skills** del subsistema (crear/modificar/borrar/analizar/verificar), distribuidas como plugin; lint propio.
 
@@ -44,4 +44,4 @@ Resuelve de una la clase "control en el punto de acción": los planes `Hook de p
 
 ## Relación
 
-Se apoya en el patrón de subsistema (0002), respeta que los hooks quedan fuera de Herramientas (0007) dándoles casa propia, y usa la paridad/degradación multi-agente de 0010/0013. Una de sus reglas base es el test de demarcación (0020).
+Se apoya en el patrón de subsistema (0002), respeta que los hooks quedan fuera de Herramientas (0007) dándoles casa propia, y usa la paridad/degradación multi-agente de 0010/0013. Una de esas reglas es el test de demarcación (0020).

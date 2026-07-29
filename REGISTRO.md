@@ -8,13 +8,13 @@ Catálogo de las funcionalidades que este repo instala para armar un agente de *
 |---------------|----------|-----------|---------|
 | **amp** | Plugin transversal. Skills: `inicializar`, `planificar`, `info` y `actualizar`. El actualizador también conduce las migraciones de formas retiradas y no informa “al día” mientras quede `memoria/`. | los 8 `amp-<sub>` | [`amp/`](funcionalidades/amp/) |
 | **amp-subsistemas** | Catálogo Base/Propósito y coordinación de la reubicación del Aprendizaje. Skills: `agregar-subsistema` y `reubicar-aprendizaje`. | — | [`amp-subsistemas/`](funcionalidades/amp-subsistemas/) |
-| **amp-preferencias** | Preferencias versionadas en `preferencias/PREFERENCIAS.md` (Base del harness + Adaptaciones del repo), importadas siempre vía `@`, + lint estructural. Skill de operación `registrar-preferencia`. | — | [`amp-preferencias/`](funcionalidades/amp-preferencias/) |
+| **amp-preferencias** | Preferencias versionadas en `preferencias/PREFERENCIAS.md` (las del Agente Multipropósito + las del Agente Desplegado), importadas siempre vía `@`, + lint estructural. Skill de operación `registrar-preferencia`. | — | [`amp-preferencias/`](funcionalidades/amp-preferencias/) |
 | **amp-planes** | Ciclo de planes `pendientes/ejecutados/descartados` + registro, README, lint y hook. Skill `ciclo-de-plan`. | — | [`amp-planes/`](funcionalidades/amp-planes/) |
 | **amp-conocimiento** | Base única de lo que el agente sabe + README y lint. Skills `registrar-conocimiento` y `buscar-conocimiento`. | — | [`amp-conocimiento/`](funcionalidades/amp-conocimiento/) |
 | **amp-semantica** | Glosario + Terminología Farlopa + README y lint. Skill `converger-terminologia`. | — | [`amp-semantica/`](funcionalidades/amp-semantica/) |
 | **amp-decisiones** | Decisiones estructurales + README y lint. Skill `registrar-decision`. | — | [`amp-decisiones/`](funcionalidades/amp-decisiones/) |
-| **amp-herramientas** | Registro de Herramientas Base/Propósito, fichas y lint. Skill `registrar-herramienta`. | — | [`amp-herramientas/`](funcionalidades/amp-herramientas/) |
-| **amp-conducta** | Momentos, reglas Base/Propósito, repartidor y lint. Skill `registrar-regla`. | — | [`amp-conducta/`](funcionalidades/amp-conducta/) |
+| **amp-herramientas** | Registro de Herramientas separadas por origen, fichas y lint. Skill `registrar-herramienta`. | — | [`amp-herramientas/`](funcionalidades/amp-herramientas/) |
+| **amp-conducta** | Momentos, reglas separadas por origen, repartidor y lint. Skill `registrar-regla`. | — | [`amp-conducta/`](funcionalidades/amp-conducta/) |
 
 Todos los subsistemas Base tienen plugin y skill de operación. `commits` no es un subsistema: su texto vive en Preferencias y Conducta lo entrega antes de confirmar.
 

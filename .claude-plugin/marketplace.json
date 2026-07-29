@@ -19,7 +19,7 @@
     {
       "name": "amp-preferencias",
       "source": "./funcionalidades/amp-preferencias",
-      "description": "Preferencias de trabajo versionadas (Base + Adaptaciones). Skill registrar-preferencia."
+      "description": "Preferencias de trabajo separadas por origen (Agente Multipropósito + Agente Desplegado). Skill registrar-preferencia."
     },
     {
       "name": "amp-planes",
@@ -44,7 +44,7 @@
     {
       "name": "amp-herramientas",
       "source": "./funcionalidades/amp-herramientas",
-      "description": "Registro de Herramientas del Propósito. Skill registrar-herramienta."
+      "description": "Registro de Herramientas del Agente Desplegado. Skill registrar-herramienta."
     },
     {
       "name": "amp-conducta",

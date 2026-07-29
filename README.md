@@ -21,7 +21,7 @@ Mismo harness, tres dominios. Lo que cambia es lo que se acumula adentro.
 | Subsistema | Qué acumula |
 |------------|-------------|
 | **subsistemas** | Catálogo de casas persistentes y coordinación del Aprendizaje |
-| **preferencias** | Cómo trabaja el agente: comunicación y principios, versionados en Base + Adaptaciones |
+| **preferencias** | Cómo trabaja el agente: comunicación y principios, separados por origen: los del Agente Multipropósito y los del Agente Desplegado |
 | **planes** | El ciclo pendientes → ejecutados / descartados, con registro y estados configurables |
 | **conocimiento** | Lo que el agente **sabe** del dominio: lo que costó averiguar y va a hacer falta de nuevo |
 | **semántica** | La terminología del dominio: glosario de términos legítimos + registro de los vetados |

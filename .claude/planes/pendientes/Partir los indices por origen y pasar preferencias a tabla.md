@@ -59,6 +59,14 @@ Con dos secciones, el actualizador tiene que abrir el archivo y reemplazar media
    - En `funcionalidades/` —el texto que viaja— son **43 apariciones en 6 archivos**: `Adaptaciones` 17, `Reglas Base` 7, `Reglas del Propósito` 6, `piezas Base` 6, `Herramientas del Propósito` 4, `Herramientas Base` 3. El grueso está en `PLANTILLA.md`. Es el único chequeo en rojo del control de cierre.
    - **Solo 11 de esas 43 son texto suelto** (`las ocho piezas Base conocidas`, `sin pisar adaptaciones locales`). Las otras **32 nombran los títulos de sección**, así que se acomodan solas una vez renombrados los títulos — pero renombrarlas antes deja instrucciones que mandan a secciones inexistentes. El orden es: primero los títulos, después las frases.
    - **Tres archivos de código tienen la cadena cableada**, no solo texto: `lint-preferencias.js` valida el título con `/^##\s+Adaptaciones\b/mi`, y `lint-harness.js` y `mostrar-pantalla-bienvenida.js` la buscan también. Mientras haya Agentes Desplegados sin migrar conviene que el lint acepte el nombre viejo y el nuevo.
+
+   **Ejecutado el 29/07/2026.** Los 15 títulos vivos (9 en `PLANTILLA.md`, 6 en `.claude/`), su texto suelto, los índices de la raíz y las cinco decisiones que los citaban. El texto que viaja pasó de 43 hallazgos de terminología a **0**. Lo medido de más contra el diagnóstico de arriba:
+
+   - **Los archivos de código eran cuatro, no tres:** el nivelador `amp-actualizar.js` tenía la cadena en cuatro puntos. Ganó `ENCABEZADOS_RENOMBRADOS`, análogo a `RENOMBRES` pero adentro de un archivo: detecta los seis encabezados viejos y pide renombrarlos **conservando el contenido** de cada sección. Verificado contra el consumidor de prueba (6 hallazgos) y contra este repo (0).
+   - **`lint-harness` daba falso verde.** Su comparación de la Base entre `PREFERENCIAS.md` y las plantillas devolvía `null` cuando el encabezado no matcheaba, y `null` se salteaba en silencio: si el título cambiaba y el patrón no, el chequeo salía limpio sin comparar nada. Ahora el archivo sin sección reconocible es hallazgo.
+   - **El número de versión salió del encabezado** (ratificado el 29/07/2026): `## Base (harness v7)` guardaba una versión adentro del Agente Desplegado, que la 0028 declara sin estado y la 0034 explica —la versión es del Agente Multipropósito—; ningún control la comparaba contra nada y quedaba desincronizada de la del plugin. La Pantalla pasó a contar las dos secciones, como con los demás subsistemas.
+
+   Los tres lints aceptan la forma vieja y la nueva mientras dure la migración de la flota. Versiones: `amp` 0.8.0, `amp-preferencias` 0.5.0, `amp-conducta` y `amp-herramientas` 0.2.0.
 6. Propagar a lo que viaja (`amp:inicializar` y su `PLANTILLA.md`, `amp-preferencias`, `amp:actualizar`) y verificar con `lint-harness`.
 7. Migrar los Agentes Desplegados que ya tienen la forma vieja.
 

@@ -180,10 +180,14 @@ if (fs.existsSync(claudeDir)) {
 // Hueco detectado 26-07-20: el texto de la Base viaja (PREFERENCIAS.md -> PLANTILLA de
 // preferencias-trabajo y del orquestador setup-completo) y NADA comparaba las copias
 // (el chequeo [4] solo mira bloques de memoria y fragmentos de lint). Se extrae la seccion
-// `## Base (harness vN)` hasta `## Adaptaciones` de cada archivo que la contenga —incluida la
-// version en el encabezado— y se comparan normalizadas. Divergen -> se listan por hash.
+// seccion del Agente Multiproposito de cada archivo que la contenga, hasta la del Agente
+// Desplegado, y se comparan normalizadas. Divergen -> se listan por hash.
+// Se aceptan los encabezados viejos (`## Base (harness vN)` / `## Adaptaciones`) mientras haya
+// Agentes Desplegados sin nivelar. OJO: si el encabezado cambia y este patron no, la funcion
+// devuelve null y el chequeo pasa en verde SIN comparar nada (falso verde), por eso el aviso.
+const RE_BASE_PREF = /(## (?:Preferencias del Agente Multiprop[oó]sito|Base \(harness[^\n]*\))[^\n]*)\n([\s\S]*?)\n## (?:Preferencias del Agente Desplegado|Adaptaciones)/;
 function extraerBase(txt) {
-  const m = txt.match(/(## Base \(harness[^\n]*)\n([\s\S]*?)\n## Adaptaciones/);
+  const m = txt.match(RE_BASE_PREF);
   return m ? (m[1] + '\n' + m[2]).replace(/\s+/g, ' ').trim() : null;
 }
 const fuentesBase = [path.join(repo, '.claude', 'preferencias', 'PREFERENCIAS.md')];
@@ -196,18 +200,29 @@ for (const f of enDisco) {
   }
 }
 const basePorHash = new Map(); // hash -> [archivos]
+const baseSinSeccion = [];     // archivos donde el patron no encontro la seccion
 for (const f of fuentesBase) {
   if (!fs.existsSync(f)) continue;
-  const base = extraerBase(fs.readFileSync(f, 'utf8'));
-  if (base == null) continue;
+  const rel = path.relative(repo, f).replace(/\\/g, '/');
+  const txt = fs.readFileSync(f, 'utf8');
+  const base = extraerBase(txt);
+  if (base == null) {
+    // Solo es hallazgo si el archivo dice tener preferencias: una PLANTILLA de otro
+    // subsistema no las lleva y no tiene por que matchear.
+    if (/PREFERENCIAS\.md|## Preferencias del Agente|## Base \(harness/i.test(txt)) baseSinSeccion.push(rel);
+    continue;
+  }
   const h = crypto.createHash('sha1').update(base).digest('hex').slice(0, 10);
   const arr = basePorHash.get(h) || [];
-  arr.push(path.relative(repo, f).replace(/\\/g, '/'));
+  arr.push(rel);
   basePorHash.set(h, arr);
 }
-const baseDivergente = basePorHash.size > 1
-  ? [...basePorHash].map(([h, arr]) => `(${h}) ${arr.join('  |  ')}`)
-  : [];
+// Sin este aviso el chequeo daba FALSO VERDE: si los encabezados cambiaban y el patron no,
+// extraerBase devolvia null en todos lados, no se comparaba nada y la salida quedaba limpia.
+const baseDivergente = [
+  ...baseSinSeccion.map(f => `sin seccion de preferencias reconocible (encabezado cambiado?): ${f}`),
+  ...(basePorHash.size > 1 ? [...basePorHash].map(([h, arr]) => `(${h}) ${arr.join('  |  ')}`) : []),
+];
 
 // -- [8] estructura minima de los manifiestos de subsistema (dec. 0019 + 0023) ---
 // Cada MANIFIESTO.md debe traer los campos obligatorios: titulo H1, "Disparador",
