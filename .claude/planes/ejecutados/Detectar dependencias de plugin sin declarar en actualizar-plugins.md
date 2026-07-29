@@ -1,6 +1,6 @@
 # Detectar dependencias de plugin sin declarar en actualizar-plugins
 
-**Estado: Nuevo · Creado 26-07-28.** Origen: el repo testigo `Agente-Coordinador` quedó sin la skill `amp:actualizar` mientras `actualizar-plugins` informaba todo `ACTUALIZADO`. El agente que lo diagnosticó tuvo que llegar al código; la Herramienta no dio ninguna señal.
+**Estado: Ejecutado · Creado 26-07-28 · Cerrado 26-07-28.** Origen: el repo testigo `Agente-Coordinador` quedó sin la skill `amp:actualizar` mientras `actualizar-plugins` informaba todo `ACTUALIZADO`. El agente que lo diagnosticó tuvo que llegar al código; la Herramienta no dio ninguna señal.
 
 ## Por qué existe
 
