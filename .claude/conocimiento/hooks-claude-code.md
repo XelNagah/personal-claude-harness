@@ -269,8 +269,37 @@ Un plugin declara sus hooks en `.claude-plugin/plugin.json` (o `hooks.json`), co
 
 | Variable | Apunta a |
 |----------|----------|
-| `${CLAUDE_PROJECT_DIR}` | Raíz del proyecto (path absoluto) — para hooks de repo |
+| `${CLAUDE_PROJECT_DIR}` | **El directorio donde se lanzó la sesión** (path absoluto) — ⚠️ **no** la raíz del repo; ver §5.6 |
 | `${CLAUDE_PLUGIN_ROOT}` | Directorio del plugin — para hooks de plugin (cambia al actualizar) |
+
+⚠️ **Corrección del 29/07/2026.** Esta tabla decía antes que `CLAUDE_PROJECT_DIR` era «la raíz del proyecto». **Es falso**, y la confusión rompe hooks: la variable trae el directorio desde donde se abrió la sesión. Si alguien abre con `cd .claude/herramientas && claude`, la variable trae `…/.claude/herramientas`. Medido con el directorio bajo control de git, por si resolvía a la raíz de git: mismo resultado, el directorio de lanzamiento.
+
+### 5.6 Cómo encontrar la raíz del repo desde un hook
+
+Dos hechos que hay que combinar, porque cada uno por separado da un resultado equivocado:
+
+- **La variable sola no alcanza**, por lo de arriba: puede apuntar a un subdirectorio, y entonces cualquier ruta armada contra ella no existe.
+- **La búsqueda hacia arriba sola tampoco alcanza.** El directorio de trabajo del hook puede haber derivado a otro repo, y si ese repo también tiene `.claude/`, la búsqueda lo encuentra y el hook entrega las reglas **de ese otro repo**. No falla: acierta el repo equivocado.
+
+La forma que resuelve las dos cosas usa la variable como **punto de partida**, nunca como respuesta, y busca hacia arriba **siempre**:
+
+```js
+let f=require('fs'),p=require('path'),d=process.env.CLAUDE_PROJECT_DIR||process.cwd();
+while(!f.existsSync(p.join(d,'.claude'))&&p.dirname(d)!==d)d=p.dirname(d);
+require(p.join(d,'.claude/mi-script.js'))
+```
+
+Si la variable ya apunta a la raíz, el `while` corta en el primer paso y nunca llega al directorio de trabajo derivado: la protección contra el repo vecino se conserva. Si apunta a un subdirectorio, sube hasta la raíz en vez de romper.
+
+Tres detalles de la invocación con `node -e`, cada uno descubierto rompiendo algo:
+
+- **La lectura la hace Node, no el intérprete.** Escribir `$CLAUDE_PROJECT_DIR` dentro del `command` funciona en Claude Code, pero deja el texto atado a una sintaxis de expansión; leerla desde Node hace que el mismo texto sirva también en Codex CLI.
+- **Hace falta un argumento de relleno al final** (`… " nombre-del-script`). Con `node -e` los argumentos posicionales se corren un lugar, y sin el relleno `process.argv.slice(2)` se come el primer argumento real — así se perdía un `--quiet`.
+- **Un script que resuelve su propio directorio de trabajo necesita que se lo pasen ya resuelto** (`process.argv.push(p.join(d,'.claude/planes'))`). Si no, encuentra el script correcto pero mira el repo equivocado y devuelve hallazgos falsos.
+
+**Cómo se verificó:** los tres escenarios corridos el 29/07/2026 en este repo — variable apuntando a un subdirectorio, variable en la raíz con el directorio de trabajo derivado a un repo vecino con su propio `.claude/`, y sin variable (el caso Codex). Los tres resuelven la raíz correcta. El comportamiento de la variable lo midió el agente del repo `como-uso-claude` el 28/07/2026 con una sonda invocada por ruta absoluta, y se reprodujo acá.
+
+**Dato del mismo relevamiento, no reproducido en este repo:** Claude Code ejecuta los `command` de hook en **bash** (`C:\Program Files\Git\bin\bash.exe`), también en Windows. De las tres sintaxis de expansión, solo `$VAR` llega expandida; `%VAR%` llega literal y `$env:VAR` llega como `:VAR`. El intérprete no lo elige el usuario ni la terminal desde donde arranca.
 
 ---
 
@@ -351,6 +380,8 @@ Esto es el contrato de §4.2 en vivo: lee `data.prompt`, y si el modo está acti
 | El bloqueo no bloquea | Exit 2 en un evento **no** bloqueante (ej: `SessionStart`) no frena nada |
 | El deny de `PreToolUse` no llega al modelo | Se puso el `reason` en stdout con exit 0 pero sin el `permissionDecision`, o se usó exit 2 esperando que el stdout se leyera (con exit 2 se ignora stdout) |
 | El plugin no encuentra su script | Se usó `${CLAUDE_PROJECT_DIR}` en vez de `${CLAUDE_PLUGIN_ROOT}` |
+| El hook de repo se cae con `Cannot find module` | Se armó la ruta contra `CLAUDE_PROJECT_DIR` creyendo que es la raíz del repo, y la sesión se abrió en un subdirectorio (§5.6) |
+| El hook corre pero entrega los datos de otro repo | Se buscó la raíz hacia arriba desde el directorio de trabajo sin arrancar de la variable, y el directorio derivó a un repo vecino que también tiene `.claude/` (§5.6) |
 | Ruido en el transcript en cada arranque | Hook de `SessionStart` que imprime aunque no tenga nada que decir (falta un `--quiet` o `suppressOutput`) |
 
 ---

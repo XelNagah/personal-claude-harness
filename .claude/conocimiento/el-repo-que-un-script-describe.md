@@ -36,3 +36,9 @@ Dos corolarios que se siguen de lo mismo:
 **Cómo se verificó:** los tres casos son de esta máquina, el 26/07/2026, con salida textual del CLI y lectura del registro de plugins. El arreglo se probó en las tres situaciones —script corrido desde otra copia con el directorio de trabajo en el repo destino, corrido desde el repo propio, y apuntado por argumento— y en las tres devolvió el repo correcto.
 
 **Cuándo aplica / cuándo no:** aplica a cualquier script que describa o modifique "el repo actual" y que se distribuya (por plugin, por copia o por clon). **No** aplica a los lints co-ubicados que validan su propio subsistema por ruta relativa a sí mismos: esos sí quieren su ubicación, porque su objeto es la carpeta que los contiene.
+
+## El mismo error, un nivel más arriba
+
+Arreglar **dónde está** el script no arregla **qué repo mira** el script: son dos preguntas distintas y la segunda sobrevive al arreglo de la primera.
+
+El caso encontrado el 29/07/2026: al pasar los hooks de este repo a ruta absoluta, la raíz se tomó de `CLAUDE_PROJECT_DIR` dando por sentado que esa variable contesta *cuál es la raíz del repo*. Contesta otra cosa — *dónde arrancó la sesión* — y con la sesión abierta en un subdirectorio el hook se cae con `Cannot find module`. Misma familia: un dato que parece la respuesta, no falla ruidosamente, y contesta sobre otro objeto. Detalle y forma corregida en [`hooks-claude-code.md`](hooks-claude-code.md) §5.6.
