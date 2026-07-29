@@ -81,12 +81,17 @@ Por qué así:
 - **Se descartó renombrar los `INDICE.md` a descriptivos** (`REGLAS.md`, `CONOCIMIENTO.md`…): son 61 referencias por ruta más 42 relativas, para una mejora de lectura y no de comportamiento. Queda como cambio independiente si alguna vez se quiere.
 - **Se evaluó `-DESPLEGADO` y se prefirió `-LOCAL`** porque desde la perspectiva del usuario no queda claro que «desplegado» sea su propio repo. La colisión con el alcance `local` de la 0035 se midió y es débil: ese `local` nombra un alcance del CLI de plugins, no vocabulario del harness, y no se cruza con un nombre de archivo versionado.
 
-**Pendiente al ejecutar:** `conducta` y `subsistemas` tienen hoy una sección local **vacía**. Con la regla de no crear archivos vacíos, esa sección desaparece y el archivo local nace cuando el repo escriba su primera entrada — lo que toca el flujo de `registrar-regla` y `agregar-subsistema`.
+**Resuelto el 29/07/2026 (segunda sesión de `planificar`), asentado en la 0042:** el manifiesto lista sus Índices como texto fijo del Agente Multipropósito, que los conoce de antemano, y el nivelador lo sigue copiando literal. Donde el Agente Multipropósito tiene contenido —`subsistemas`, `conducta`, `herramientas`, `preferencias`— `amp:inicializar` instala también el Índice del Agente Desplegado ya declarado: frontmatter con nombre, origen y columnas, y la tabla sin filas. Con eso `registrar-regla` y `agregar-subsistema` **no cambian**: siguen agregando una fila a un archivo que existe. Las columnas del Índice del Agente Multipropósito las declara el Agente Multipropósito; el del Agente Desplegado declara al menos esas mismas y puede sumar las suyas.
 
 **Observación para el plan de nomenclatura, no para éste:** el autor señaló que `Agente con Propósito` y `Agente Desplegado` son en la práctica sinónimos —la única diferencia que sostiene el glosario es un despliegue recién instalado y todavía sin Propósito—, y que mantener dos entradas para eso cuesta más de lo que aporta. Fusionarlas toca la decisión 0034, que las separó deliberadamente.
 
 ## El trabajo
 
+0. **Tres arreglos que la partición arrastra**, medidos el 29/07/2026 y sin alternativa:
+
+   - **`AGENTS.md` gana la segunda línea de importación de preferencias.** Hoy importa un solo archivo (`AGENTS.md:63`); al mudarse las 5 preferencias del Agente Desplegado a su propio Índice, nadie las importa y salen del contexto. `lint-preferencias.js:29` chequea sólo `PREFERENCIAS.md`, así que seguiría en verde: pasa a exigir una importación **por cada Índice declarado**.
+   - **La Pantalla de bienvenida cuenta un Índice y para.** `mostrar-pantalla-bienvenida.js:65` — `indiceDe()` recorre una lista fija de nombres y devuelve el primero que existe; después de partir informaría 2 herramientas en vez de 8 y 13 preferencias en vez de 18. Pasa a sumar todos los Índices del subsistema.
+   - **Verificar el presupuesto de 220 palabras con el lint, no suponerlo.** Medido el 29/07/2026: `conducta` 214 · `semantica` 211 · `herramientas` 199 · `planes` 188 · `conocimiento` 155 · `decisiones` 140 · `subsistemas` 105.
 1. Partir los tres índices en dos archivos cada uno.
 2. Pasar `preferencias` a tabla, con sus 6 páginas de detalle.
 3. `MANIFIESTO.md` y `README.md` de preferencias; sacar la excepción de `lint-subsistemas.js:28` y la sección propia de `AGENTS.md`.
