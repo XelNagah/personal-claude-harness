@@ -5,12 +5,12 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node .claude/planes/lint-planes/lint-planes.js --quiet",
+            "command": "node -e \"let f=require('fs'),p=require('path'),d=process.env.CLAUDE_PROJECT_DIR||process.cwd();while(!f.existsSync(p.join(d,'.claude'))&&p.dirname(d)!==d)d=p.dirname(d);process.argv.push(p.join(d,'.claude/planes'));require(p.join(d,'.claude/planes/lint-planes/lint-planes.js'))\" lint-planes --quiet",
             "statusMessage": "Chequeando el ciclo de planes"
           },
           {
             "type": "command",
-            "command": "node .claude/conducta/establecer-conducta/establecer-conducta.js",
+            "command": "node -e \"let f=require('fs'),p=require('path'),d=process.env.CLAUDE_PROJECT_DIR||process.cwd();while(!f.existsSync(p.join(d,'.claude'))&&p.dirname(d)!==d)d=p.dirname(d);require(p.join(d,'.claude/conducta/establecer-conducta/establecer-conducta.js'))\" establecer-conducta",
             "statusMessage": "Estableciendo conducta"
           }
         ]
@@ -21,7 +21,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node .claude/conducta/establecer-conducta/establecer-conducta.js",
+            "command": "node -e \"let f=require('fs'),p=require('path'),d=process.env.CLAUDE_PROJECT_DIR||process.cwd();while(!f.existsSync(p.join(d,'.claude'))&&p.dirname(d)!==d)d=p.dirname(d);require(p.join(d,'.claude/conducta/establecer-conducta/establecer-conducta.js'))\" establecer-conducta",
             "statusMessage": "Estableciendo conducta"
           }
         ]
@@ -33,7 +33,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node .claude/conducta/establecer-conducta/establecer-conducta.js",
+            "command": "node -e \"let f=require('fs'),p=require('path'),d=process.env.CLAUDE_PROJECT_DIR||process.cwd();while(!f.existsSync(p.join(d,'.claude'))&&p.dirname(d)!==d)d=p.dirname(d);require(p.join(d,'.claude/conducta/establecer-conducta/establecer-conducta.js'))\" establecer-conducta",
             "statusMessage": "Estableciendo conducta"
           }
         ]

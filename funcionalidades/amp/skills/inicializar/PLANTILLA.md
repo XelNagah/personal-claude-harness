@@ -328,7 +328,7 @@ Hook — **registro doble**: el mismo script se registra en los dos formatos —
         "hooks": [
           {
             "type": "command",
-            "command": "node .claude/planes/lint-planes/lint-planes.js --quiet"
+            "command": "node -e \"let f=require('fs'),p=require('path'),d=process.env.CLAUDE_PROJECT_DIR||process.cwd();while(!f.existsSync(p.join(d,'.claude'))&&p.dirname(d)!==d)d=p.dirname(d);process.argv.push(p.join(d,'.claude/planes'));require(p.join(d,'.claude/planes/lint-planes/lint-planes.js'))\" lint-planes --quiet"
           }
         ]
       }
@@ -347,7 +347,7 @@ Hook — **registro doble**: el mismo script se registra en los dos formatos —
         "hooks": [
           {
             "type": "command",
-            "command": "node .claude/planes/lint-planes/lint-planes.js --quiet",
+            "command": "node -e \"let f=require('fs'),p=require('path'),d=process.env.CLAUDE_PROJECT_DIR||process.cwd();while(!f.existsSync(p.join(d,'.claude'))&&p.dirname(d)!==d)d=p.dirname(d);process.argv.push(p.join(d,'.claude/planes'));require(p.join(d,'.claude/planes/lint-planes/lint-planes.js'))\" lint-planes --quiet",
             "statusMessage": "Chequeando el ciclo de planes"
           }
         ]
@@ -2704,11 +2704,11 @@ Cableado del repartidor — **registro doble**: el mismo script se registra en t
         "hooks": [
           {
             "type": "command",
-            "command": "node .claude/planes/lint-planes/lint-planes.js --quiet"
+            "command": "node -e \"let f=require('fs'),p=require('path'),d=process.env.CLAUDE_PROJECT_DIR||process.cwd();while(!f.existsSync(p.join(d,'.claude'))&&p.dirname(d)!==d)d=p.dirname(d);process.argv.push(p.join(d,'.claude/planes'));require(p.join(d,'.claude/planes/lint-planes/lint-planes.js'))\" lint-planes --quiet"
           },
           {
             "type": "command",
-            "command": "node .claude/conducta/establecer-conducta/establecer-conducta.js"
+            "command": "node -e \"let f=require('fs'),p=require('path'),d=process.env.CLAUDE_PROJECT_DIR||process.cwd();while(!f.existsSync(p.join(d,'.claude'))&&p.dirname(d)!==d)d=p.dirname(d);require(p.join(d,'.claude/conducta/establecer-conducta/establecer-conducta.js'))\" establecer-conducta"
           }
         ]
       }
@@ -2718,7 +2718,7 @@ Cableado del repartidor — **registro doble**: el mismo script se registra en t
         "hooks": [
           {
             "type": "command",
-            "command": "node .claude/conducta/establecer-conducta/establecer-conducta.js"
+            "command": "node -e \"let f=require('fs'),p=require('path'),d=process.env.CLAUDE_PROJECT_DIR||process.cwd();while(!f.existsSync(p.join(d,'.claude'))&&p.dirname(d)!==d)d=p.dirname(d);require(p.join(d,'.claude/conducta/establecer-conducta/establecer-conducta.js'))\" establecer-conducta"
           }
         ]
       }
@@ -2729,7 +2729,7 @@ Cableado del repartidor — **registro doble**: el mismo script se registra en t
         "hooks": [
           {
             "type": "command",
-            "command": "node .claude/conducta/establecer-conducta/establecer-conducta.js"
+            "command": "node -e \"let f=require('fs'),p=require('path'),d=process.env.CLAUDE_PROJECT_DIR||process.cwd();while(!f.existsSync(p.join(d,'.claude'))&&p.dirname(d)!==d)d=p.dirname(d);require(p.join(d,'.claude/conducta/establecer-conducta/establecer-conducta.js'))\" establecer-conducta"
           }
         ]
       }
@@ -2748,7 +2748,7 @@ Cableado del repartidor — **registro doble**: el mismo script se registra en t
         "hooks": [
           {
             "type": "command",
-            "command": "node .claude/conducta/establecer-conducta/establecer-conducta.js"
+            "command": "node -e \"let f=require('fs'),p=require('path'),d=process.env.CLAUDE_PROJECT_DIR||process.cwd();while(!f.existsSync(p.join(d,'.claude'))&&p.dirname(d)!==d)d=p.dirname(d);require(p.join(d,'.claude/conducta/establecer-conducta/establecer-conducta.js'))\" establecer-conducta"
           }
         ]
       }
@@ -2758,7 +2758,7 @@ Cableado del repartidor — **registro doble**: el mismo script se registra en t
         "hooks": [
           {
             "type": "command",
-            "command": "node .claude/conducta/establecer-conducta/establecer-conducta.js"
+            "command": "node -e \"let f=require('fs'),p=require('path'),d=process.env.CLAUDE_PROJECT_DIR||process.cwd();while(!f.existsSync(p.join(d,'.claude'))&&p.dirname(d)!==d)d=p.dirname(d);require(p.join(d,'.claude/conducta/establecer-conducta/establecer-conducta.js'))\" establecer-conducta"
           }
         ]
       }
@@ -2769,7 +2769,7 @@ Cableado del repartidor — **registro doble**: el mismo script se registra en t
         "hooks": [
           {
             "type": "command",
-            "command": "node .claude/conducta/establecer-conducta/establecer-conducta.js"
+            "command": "node -e \"let f=require('fs'),p=require('path'),d=process.env.CLAUDE_PROJECT_DIR||process.cwd();while(!f.existsSync(p.join(d,'.claude'))&&p.dirname(d)!==d)d=p.dirname(d);require(p.join(d,'.claude/conducta/establecer-conducta/establecer-conducta.js'))\" establecer-conducta"
           }
         ]
       }
