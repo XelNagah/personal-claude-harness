@@ -57,7 +57,33 @@ Lo que se resolvió cambia la forma del paso 1 y responde dos de los tres abiert
 
 1. **Las columnas de la tabla de preferencias.** Propuesto: `Preferencia | Ámbito | Contenido | Detalle`. Se descartaron `Estado` (una acción pendiente no es un estado; lo pendiente en este repo es un plan) y `Momento` (duplica la columna de `conducta/INDICE.md`).
 2. **Un identificador estable no numérico.** Idea del autor: un código corto. Precisión a tener en cuenta: un hash del contenido cambia cuando cambia el texto, así que no da la referencia inmutable que se busca — tiene que ser un código asignado al crear la entrada.
-3. ~~**Los nombres de los seis archivos** que salen de partir los tres índices.~~ **Resuelto el 29/07/2026:** el nombre es descriptivo —dice qué lista— porque el origen lo declara el frontmatter y el nivelador lo lee de ahí. Falta elegir el nombre concreto de cada uno, que ahora es una discusión libre y chica.
+3. ~~**Los nombres de los seis archivos** que salen de partir los tres índices.~~ **Resuelto el 29/07/2026.** Ver abajo.
+
+## Nombres de archivo — resuelto el 29/07/2026
+
+**Ningún archivo existente se renombra.** El sufijo `-LOCAL` marca sólo al que suma el repo, y aparece únicamente donde conviven los dos orígenes:
+
+```
+subsistemas/   SUBSISTEMAS.md
+conducta/      INDICE.md
+conocimiento/  INDICE.md
+decisiones/    INDICE.md
+planes/        PLANES.md
+semantica/     GLOSARIO.md   TERMINOLOGIA-FARLOPA.md
+preferencias/  PREFERENCIAS.md   PREFERENCIAS-LOCAL.md
+herramientas/  INDICE.md         INDICE-LOCAL.md
+```
+
+Por qué así:
+
+- **Ninguna convención del tipo "el que no lleva marca es de tal origen" se sostiene**, porque hay subsistemas de los dos tipos: `subsistemas` y `conducta` sólo tienen contenido del Agente Multipropósito, y `conocimiento`, `decisiones`, `planes` y `semantica` sólo tienen del repo. Con el frontmatter declarando el origen, el nombre no tiene que decirlo: le queda una sola tarea, distinguir dos archivos que conviven en un directorio.
+- **`-LOCAL` es sólo el nombre de archivo.** Los encabezados de adentro conservan los términos ratificados el 28/07, y el frontmatter usa los mismos valores (`agente-multiproposito` / `agente-desplegado`).
+- **Se descartó renombrar los `INDICE.md` a descriptivos** (`REGLAS.md`, `CONOCIMIENTO.md`…): son 61 referencias por ruta más 42 relativas, para una mejora de lectura y no de comportamiento. Queda como cambio independiente si alguna vez se quiere.
+- **Se evaluó `-DESPLEGADO` y se prefirió `-LOCAL`** porque desde la perspectiva del usuario no queda claro que «desplegado» sea su propio repo. La colisión con el alcance `local` de la 0035 se midió y es débil: ese `local` nombra un alcance del CLI de plugins, no vocabulario del harness, y no se cruza con un nombre de archivo versionado.
+
+**Pendiente al ejecutar:** `conducta` y `subsistemas` tienen hoy una sección local **vacía**. Con la regla de no crear archivos vacíos, esa sección desaparece y el archivo local nace cuando el repo escriba su primera entrada — lo que toca el flujo de `registrar-regla` y `agregar-subsistema`.
+
+**Observación para el plan de nomenclatura, no para éste:** el autor señaló que `Agente con Propósito` y `Agente Desplegado` son en la práctica sinónimos —la única diferencia que sostiene el glosario es un despliegue recién instalado y todavía sin Propósito—, y que mantener dos entradas para eso cuesta más de lo que aporta. Fusionarlas toca la decisión 0034, que las separó deliberadamente.
 
 ## El trabajo
 
