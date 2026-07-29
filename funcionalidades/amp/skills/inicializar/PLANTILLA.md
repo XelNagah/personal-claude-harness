@@ -1,17 +1,22 @@
 # Plantilla del setup completo
 
-textos literales que el orquestador escribe. (Réplica de los textos de las piezas individuales; mantener sincronizado al cambiar una preferencia.)
+textos literales que el orquestador escribe. (Réplica de los textos de los plugins individuales; mantener sincronizado al cambiar una preferencia.)
 
-## §Preferencias — `.claude/preferencias/PREFERENCIAS.md` + sección de AGENTS.md
+## §Preferencias — `.claude/preferencias/PREFERENCIAS.md` + `PREFERENCIAS-LOCAL.md` + sección de AGENTS.md
 
-Separado por origen en dos secciones, igual que `conducta/INDICE.md` y `herramientas/INDICE.md`: **Preferencias del Agente Multipropósito** (el nivelado reemplaza esa sección entera) + **Preferencias del Agente Desplegado** (nunca se toca). Importado siempre al contexto — las preferencias son reglas de conducta: inline, no índice+fetch. Al editar acá la sección del Agente Multipropósito, **subir la versión del plugin**: la versión vive ahí, no en el encabezado, porque el Agente Desplegado no guarda ninguna.
+Separado por origen en **dos archivos**, igual que `conducta/` y `herramientas/`, y cada uno lo declara en su frontmatter: `PREFERENCIAS.md` (`origen: agente-multiproposito`, el nivelado lo reemplaza entero) y `PREFERENCIAS-LOCAL.md` (`origen: agente-desplegado`, nunca se abre). Los dos se importan siempre al contexto — las preferencias son reglas de conducta: inline, no índice+fetch. Al editar acá el archivo del Agente Multipropósito, **subir la versión del plugin**: la versión vive ahí, no en el encabezado, porque el Agente Desplegado no guarda ninguna.
 
 Contenido inicial de `.claude/preferencias/PREFERENCIAS.md`:
 
 ```markdown
+---
+indice: Preferencias
+origen: agente-multiproposito
+---
+
 # Preferencias
 
-Reglas de conducta del agente en este repo. Siempre en contexto (importado desde AGENTS.md). La sección del **Agente Multipropósito** viene del Agente Multipropósito y se actualiza al nivelar (no editarla acá: los ajustes de este repo van en la sección del **Agente Desplegado**, que el nivelado nunca toca).
+Reglas de conducta del agente en este repo. Siempre en contexto (importado desde AGENTS.md). Las preferencias se separan por origen en **dos archivos**, y cada uno lo declara en su frontmatter: este (`origen: agente-multiproposito`) viene del Agente Multipropósito y se actualiza al nivelar, que lo reemplaza entero — no editarlo acá; los ajustes de este repo van en [`PREFERENCIAS-LOCAL.md`](PREFERENCIAS-LOCAL.md) (`origen: agente-desplegado`), que el nivelado nunca abre.
 
 ## Preferencias del Agente Multipropósito
 
@@ -34,7 +39,19 @@ Reglas de conducta del agente en este repo. Siempre en contexto (importado desde
 - **Commits y descripciones de PR:** escribirlos en español, sin coautoría ni atribución a la IA, con título `<Área>: <Resumen>` y cuerpo `Antes, … Ahora, …`. El área es funcional y el cuerpo describe el cambio observable. Convención completa en `estilo-commits.md`.
 - **Tareas exploratorias con varias variables:** mantener un único archivo de estado desde la primera corrida y actualizarlo antes de informar cada resultado. Si responde a un plan, vive en su sección `## Estado`; si es independiente, en `conocimiento/<tema>/estado.md`. Convención completa en `archivo-de-estado.md`.
 
-## Preferencias del Agente Desplegado
+```
+
+Contenido inicial de `.claude/preferencias/PREFERENCIAS-LOCAL.md` — nace **declarado y sin entradas**, no vacío:
+
+```markdown
+---
+indice: Preferencias del Agente Desplegado
+origen: agente-desplegado
+---
+
+# Preferencias del Agente Desplegado
+
+Las que este repo suma para su Propósito. Siempre en contexto (importado desde AGENTS.md). El nivelador no toca este archivo. La convención completa está en [`PREFERENCIAS.md`](PREFERENCIAS.md).
 
 (ninguna todavía — agregar acá lo específico de este proyecto)
 ```
@@ -45,8 +62,9 @@ Sección de `AGENTS.md`:
 ## Preferencias (siempre cargadas)
 
 @.claude/preferencias/PREFERENCIAS.md
+@.claude/preferencias/PREFERENCIAS-LOCAL.md
 
-Al tocar las preferencias, correr el lint estructural **desde la raíz del repo** (chequea las dos secciones por origen + el `@import`):
+Al tocar las preferencias, correr el lint estructural **desde la raíz del repo** (chequea los dos archivos por origen + una línea de importación por cada uno):
 
 ​```bash
 node .claude/preferencias/lint-preferencias/lint-preferencias.js
@@ -61,18 +79,21 @@ node .claude/preferencias/lint-preferencias/lint-preferencias.js
 
 - La más vieja eran dos secciones inline en CLAUDE.md — "Preferencias de comunicación" (el primer bullet de Comunicación, como cita) y "Principios de trabajo" (los cuatro bullets). Textualmente iguales → migrar sin preguntar (borrar de CLAUDE.md, dejar el import); con diferencias → las diferencias van a la sección del Agente Desplegado y se reporta.
 - Después vino el par de encabezados `## Base (harness vN)` / `## Adaptaciones de este repo`, con la versión adentro del encabezado. **Los dos se renombran sin preguntar** a `## Preferencias del Agente Multipropósito` y `## Preferencias del Agente Desplegado`, conservando el contenido de cada uno: es renombre de encabezado, no reemplazo de contenido. La versión sale del encabezado y no se traslada a ningún lado — vive en el plugin.
-- Con los encabezados ya al día, la sección del Agente Multipropósito se reemplaza **entera y sin preguntar**: las diferencias entre versiones son de redacción, y lo propio del repo vive en la otra sección, que no se toca.
+- Después los dos orígenes vivieron como **dos secciones de un mismo archivo**. Se migran **partiendo el archivo**: la sección del Agente Desplegado pasa a `PREFERENCIAS-LOCAL.md` **con su contenido intacto**, los dos archivos estrenan frontmatter y `AGENTS.md` gana la segunda línea de importación. Si esa sección estaba vacía, el archivo nace igual, declarado y sin entradas.
+- Con los dos archivos ya al día, el del Agente Multipropósito se reemplaza **entero y sin preguntar**: las diferencias entre versiones son de redacción, y lo propio del repo vive en el otro archivo, que no se abre.
 
 ## §Subsistemas — bloque `## Subsistemas` en `AGENTS.md`
 
-Reemplaza el viejo "Mapa del repo" **y** las secciones de texto plano por-subsistema. La primera funcionalidad de subsistema que se instala crea la sección; cada una la asegura y agrega su propia línea `@.claude/<sub>/MANIFIESTO.md`. Cada manifiesto declara si su índice se carga (incluyendo o no `@INDICE.md`), así que la carga de datos ya no se decide acá.
+Reemplaza el viejo "Mapa del repo" **y** las secciones de texto plano por-subsistema. La primera funcionalidad de subsistema que se instala crea la sección; cada una la asegura y agrega su propia línea `@.claude/<sub>/MANIFIESTO.md`. Cada manifiesto lista sus Índices y declara si se cargan (incluyendo o no su línea de importación), así que la carga de datos ya no se decide acá.
 
 ```markdown
 ## Subsistemas (manifiestos siempre cargados)
 
-Cada subsistema tiene un **Manifiesto** (`.claude/<sub>/MANIFIESTO.md`): una descripción breve —qué es, cómo se usa, cuándo consultarlo— que va **siempre en contexto** y que **declara si su índice también se carga** incluyendo —o no— la línea `@INDICE.md`. Lo que se carga siempre es el manifiesto, no necesariamente el índice.
+Cada subsistema tiene un **Manifiesto** (`.claude/<sub>/MANIFIESTO.md`): una descripción breve —qué es, cómo se usa, cuándo consultarlo— que va **siempre en contexto** y que **lista sus Índices de Subsistema con el origen de cada uno** y declara si se cargan, incluyendo —o no— su línea de importación. Lo que se carga siempre es el manifiesto, no necesariamente el índice.
 
-Si tu agente no expande imports, **leé estos manifiestos al inicio de la sesión** (y, si el manifiesto importa su índice, ese índice también).
+Un subsistema tiene **uno o más Índices**: hay dos cuando su contenido viene de dos orígenes, y cada archivo lo declara en su frontmatter (`indice`, `origen`, `columnas`). El `origen` —`agente-multiproposito` o `agente-desplegado`— es lo que decide el trato del nivelador, no el nombre del archivo: el sufijo `-LOCAL` solo distingue dos archivos que conviven.
+
+Si tu agente no expande imports, **leé estos manifiestos al inicio de la sesión** (y, si el manifiesto importa sus índices, esos índices también).
 
 @.claude/subsistemas/MANIFIESTO.md
 @.claude/planes/MANIFIESTO.md
@@ -94,6 +115,97 @@ Contenido exacto (Node, sin dependencias, sin red):
 // Lint de la base de conocimiento: refs rotas, indice incompleto, huerfanos. Sin LLM, sin red.
 // Uso: node lint-conocimiento.js [<carpeta>]   (default: .claude/conocimiento)
 const fs = require('fs'), path = require('path');
+
+// --- Indices por frontmatter ---
+// Un subsistema tiene uno o mas Indices y cada archivo se declara a si mismo en un frontmatter
+// minimo (indice, origen, columnas). El lint los descubre por ese frontmatter y no por un nombre
+// fijo: el nombre dejo de codificar el origen, asi que deducirlo del nombre volveria a atarlos.
+// Se acepta la forma vieja —el archivo de siempre, sin frontmatter— mientras haya Agentes
+// Desplegados sin nivelar: ahi el origen queda en null y los chequeos que dependen de el no corren.
+const ORIGENES = ['agente-multiproposito', 'agente-desplegado'];
+const ETIQUETA_ORIGEN = { 'agente-multiproposito': 'Agente Multipropósito', 'agente-desplegado': 'Agente Desplegado' };
+function leerFrontmatter(txt) {
+  const m = /^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/.exec(txt);
+  if (!m) return null;
+  const campos = {};
+  for (const linea of m[1].split(/\r?\n/)) {
+    const kv = /^([a-zA-Z_][\w-]*):\s*(.*)$/.exec(linea);
+    if (!kv) continue;
+    const v = kv[2].trim();
+    campos[kv[1]] = /^\[.*\]$/.test(v)
+      ? v.slice(1, -1).split(',').map(x => x.trim().replace(/^['"]|['"]$/g, '')).filter(Boolean)
+      : v.replace(/^['"]|['"]$/g, '');
+  }
+  return campos;
+}
+// Encabezado real de la primera tabla markdown del archivo (null si no tiene tabla).
+function cabeceraTabla(txt) {
+  for (const linea of txt.split(/\r?\n/)) {
+    const t = linea.trim();
+    if (!t.startsWith('|')) continue;
+    const celdas = t.split('|').slice(1, -1).map(c => c.replace(/\*/g, '').trim());
+    if (/^:?-{2,}:?$/.test((celdas[0] || '').replace(/\s/g, ''))) continue;
+    return celdas;
+  }
+  return null;
+}
+// Indices de un subsistema: los .md de su carpeta con frontmatter `indice:`, mas los nombres
+// viejos que todavia no lo declaran. Da {archivo, nombre, texto, indice, origen, columnas, cabecera}.
+function indicesDe(dirSub, nombresViejos) {
+  const salida = [];
+  let entradas = [];
+  try { entradas = fs.readdirSync(dirSub); } catch (e) { return salida; }
+  for (const nombre of entradas.sort()) {
+    if (!nombre.endsWith('.md')) continue;
+    const archivo = path.join(dirSub, nombre);
+    let txt; try { txt = fs.readFileSync(archivo, 'utf8'); } catch (e) { continue; }
+    const fm = leerFrontmatter(txt);
+    const declarado = !!(fm && fm.indice);
+    if (!declarado && !(nombresViejos || []).includes(nombre)) continue;
+    salida.push({
+      archivo, nombre, texto: txt,
+      indice: declarado ? fm.indice : null,
+      origen: declarado ? (fm.origen || '') : null,
+      columnas: declarado && Array.isArray(fm.columnas) ? fm.columnas : null,
+      cabecera: cabeceraTabla(txt),
+    });
+  }
+  return salida;
+}
+// Dos controles sobre lo declarado. [a] Las columnas, en los DOS sentidos: la declarada que la
+// tabla no tiene y la que la tabla tiene sin declarar. Con un solo sentido el frontmatter puede
+// mentir por omision, y el codigo que ubica una columna por nombre —el repartidor de conducta
+// ubica Momento y Clase— deja de encontrarla sin emitir ningun error. [b] El manifiesto contra el
+// frontmatter: el manifiesto lista los Indices como texto fijo y el frontmatter es la autoridad;
+// sin compararlos, el mismo dato queda escrito en dos lugares que nada sincroniza.
+function problemasDeIndices(idxs, manifiestoTxt) {
+  const out = [];
+  const declarados = idxs.filter(i => i.indice);
+  for (const i of declarados) {
+    if (!ORIGENES.includes(i.origen)) out.push(`${i.nombre}: origen "${i.origen}" invalido (validos: ${ORIGENES.join(' / ')})`);
+    if (!i.columnas) continue;
+    if (!i.cabecera) { out.push(`${i.nombre}: declara columnas pero no se encontro la tabla`); continue; }
+    for (const c of i.columnas) if (!i.cabecera.includes(c)) out.push(`${i.nombre}: columna declarada "${c}" que la tabla no tiene`);
+    for (const c of i.cabecera) if (!i.columnas.includes(c)) out.push(`${i.nombre}: columna "${c}" en la tabla, sin declarar en el frontmatter`);
+  }
+  if (manifiestoTxt == null) return out;
+  const linea = /^\*\*[IÍ]ndices?:\*\*(.*)$/m.exec(manifiestoTxt);
+  if (!linea) {
+    if (declarados.length) out.push('MANIFIESTO.md: falta el campo Indices, que lista los Indices del subsistema con su origen');
+    return out;
+  }
+  const listados = [...linea[1].matchAll(/`([^`]+\.md)`\s*\(([^)]+)\)/g)].map(m => ({ nombre: m[1], origen: m[2].trim() }));
+  for (const i of declarados) {
+    const l = listados.find(x => x.nombre === i.nombre);
+    if (!l) out.push(`MANIFIESTO.md: no lista el Indice ${i.nombre}`);
+    else if (l.origen !== ETIQUETA_ORIGEN[i.origen]) out.push(`MANIFIESTO.md: ${i.nombre} figura como "${l.origen}" y su frontmatter dice "${i.origen}"`);
+  }
+  for (const l of listados) {
+    if (!declarados.some(i => i.nombre === l.nombre)) out.push(`MANIFIESTO.md: lista ${l.nombre}, que no existe o no declara frontmatter`);
+  }
+  return out;
+}
+// --- fin indices por frontmatter ---
 const root = path.resolve(process.argv[2] || '.claude/conocimiento');
 // '.respaldo-amp' son copias congeladas de .claude/ que dejaron corridas viejas del nivelador:
 // sus hallazgos ya no se pueden corregir y duplican el diagnostico real. No se barren.
@@ -214,13 +326,20 @@ for (const f of domain) {
   }
 }
 
-const indices = domain.filter(p => path.basename(p) === 'INDICE.md');
+// El Indice del subsistema se descubre por frontmatter; los sub-indices de una Carpeta se siguen
+// reconociendo por nombre (son entradas del subsistema, no Indices de Subsistema).
+const idxSub = indicesDe(root, ['INDICE.md']);
+const maniPath = path.join(root, 'MANIFIESTO.md');
+const problemasIndices = problemasDeIndices(idxSub, fs.existsSync(maniPath) ? fs.readFileSync(maniPath, 'utf8') : null);
+const archivosIndice = new Set(idxSub.map(i => path.resolve(i.archivo)));
+const esIndice = p => path.basename(p) === 'INDICE.md' || archivosIndice.has(path.resolve(p));
+const indices = domain.filter(esIndice);
 const idxText = new Map(indices.map(i => [i, read(i)]));
 const dirsIndice = new Set(indices.map(i => path.dirname(i)));
 const idxPorDir = new Map(indices.map(i => [path.dirname(i), i]));
 const gaps = [];
 for (const p of domain) {
-  const ownerDir = indiceAncestro(p, dirsIndice, path.basename(p) === 'INDICE.md');
+  const ownerDir = indiceAncestro(p, dirsIndice, esIndice(p));
   if (ownerDir === null) continue;                 // la raiz: sin indice ancestro
   const idx = idxPorDir.get(ownerDir);
   if (!indiceNombra(idxText.get(idx), p, ownerDir)) gaps.push([rel(idx), rel(p)]);
@@ -229,7 +348,7 @@ for (const p of domain) {
 const orphans = [];
 for (const p of domain) {
   const base = path.basename(p);
-  if (base === 'INDICE.md' || base === 'README.md') continue;
+  if (esIndice(p) || base === 'README.md') continue;
   if (referenced.has(rel(p))) continue;
   const ownerDir = indiceAncestro(p, dirsIndice, false);
   const idx = ownerDir === null ? null : idxPorDir.get(ownerDir);
@@ -248,6 +367,9 @@ if (!gaps.length) console.log('    (completo)');
 console.log(`\n[3] HUERFANOS (${orphans.length}):`);
 orphans.forEach(o => console.log(`    ${o}`));
 if (!orphans.length) console.log('    (ninguno)');
+console.log(`\n[4] INDICES DECLARADOS (${problemasIndices.length}):`);
+problemasIndices.forEach(p => console.log(`    ${p}`));
+if (!problemasIndices.length) console.log(`    (${idxSub.length} indice(s) de subsistema, coherentes con el manifiesto)`);
 ```
 
 ## §Planes — `.claude/planes/`
@@ -304,6 +426,12 @@ Editar la tabla de arriba (agregar/quitar filas o renombrar un estado). Reglas q
 Contenido inicial de `.claude/planes/PLANES.md`:
 
 ```markdown
+---
+indice: Registro de planes
+origen: agente-desplegado
+columnas: [Plan, Estado, Creado, Cerrado, Origen, Notas]
+---
+
 # Registro de planes
 
 Lo fino de cada plan vive acá, no en el nombre del archivo. Las carpetas dan el ciclo grueso: `pendientes/` (planes vivos: `Nuevo`, `En curso`, `Diferido`), `ejecutados/`, `descartados/` (con motivo).
@@ -386,6 +514,97 @@ Contenido exacto (Node, sin dependencias, sin red):
 // Estados y su mapeo (carpeta, terminal) se leen de ESTADOS.md: fuente de verdad configurable, no hardcodeada.
 // Uso: node lint-planes.js [<carpeta>] [--quiet] [--dias N]   (default: .claude/planes, N=30)
 const fs = require('fs'), path = require('path');
+
+// --- Indices por frontmatter ---
+// Un subsistema tiene uno o mas Indices y cada archivo se declara a si mismo en un frontmatter
+// minimo (indice, origen, columnas). El lint los descubre por ese frontmatter y no por un nombre
+// fijo: el nombre dejo de codificar el origen, asi que deducirlo del nombre volveria a atarlos.
+// Se acepta la forma vieja —el archivo de siempre, sin frontmatter— mientras haya Agentes
+// Desplegados sin nivelar: ahi el origen queda en null y los chequeos que dependen de el no corren.
+const ORIGENES = ['agente-multiproposito', 'agente-desplegado'];
+const ETIQUETA_ORIGEN = { 'agente-multiproposito': 'Agente Multipropósito', 'agente-desplegado': 'Agente Desplegado' };
+function leerFrontmatter(txt) {
+  const m = /^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/.exec(txt);
+  if (!m) return null;
+  const campos = {};
+  for (const linea of m[1].split(/\r?\n/)) {
+    const kv = /^([a-zA-Z_][\w-]*):\s*(.*)$/.exec(linea);
+    if (!kv) continue;
+    const v = kv[2].trim();
+    campos[kv[1]] = /^\[.*\]$/.test(v)
+      ? v.slice(1, -1).split(',').map(x => x.trim().replace(/^['"]|['"]$/g, '')).filter(Boolean)
+      : v.replace(/^['"]|['"]$/g, '');
+  }
+  return campos;
+}
+// Encabezado real de la primera tabla markdown del archivo (null si no tiene tabla).
+function cabeceraTabla(txt) {
+  for (const linea of txt.split(/\r?\n/)) {
+    const t = linea.trim();
+    if (!t.startsWith('|')) continue;
+    const celdas = t.split('|').slice(1, -1).map(c => c.replace(/\*/g, '').trim());
+    if (/^:?-{2,}:?$/.test((celdas[0] || '').replace(/\s/g, ''))) continue;
+    return celdas;
+  }
+  return null;
+}
+// Indices de un subsistema: los .md de su carpeta con frontmatter `indice:`, mas los nombres
+// viejos que todavia no lo declaran. Da {archivo, nombre, texto, indice, origen, columnas, cabecera}.
+function indicesDe(dirSub, nombresViejos) {
+  const salida = [];
+  let entradas = [];
+  try { entradas = fs.readdirSync(dirSub); } catch (e) { return salida; }
+  for (const nombre of entradas.sort()) {
+    if (!nombre.endsWith('.md')) continue;
+    const archivo = path.join(dirSub, nombre);
+    let txt; try { txt = fs.readFileSync(archivo, 'utf8'); } catch (e) { continue; }
+    const fm = leerFrontmatter(txt);
+    const declarado = !!(fm && fm.indice);
+    if (!declarado && !(nombresViejos || []).includes(nombre)) continue;
+    salida.push({
+      archivo, nombre, texto: txt,
+      indice: declarado ? fm.indice : null,
+      origen: declarado ? (fm.origen || '') : null,
+      columnas: declarado && Array.isArray(fm.columnas) ? fm.columnas : null,
+      cabecera: cabeceraTabla(txt),
+    });
+  }
+  return salida;
+}
+// Dos controles sobre lo declarado. [a] Las columnas, en los DOS sentidos: la declarada que la
+// tabla no tiene y la que la tabla tiene sin declarar. Con un solo sentido el frontmatter puede
+// mentir por omision, y el codigo que ubica una columna por nombre —el repartidor de conducta
+// ubica Momento y Clase— deja de encontrarla sin emitir ningun error. [b] El manifiesto contra el
+// frontmatter: el manifiesto lista los Indices como texto fijo y el frontmatter es la autoridad;
+// sin compararlos, el mismo dato queda escrito en dos lugares que nada sincroniza.
+function problemasDeIndices(idxs, manifiestoTxt) {
+  const out = [];
+  const declarados = idxs.filter(i => i.indice);
+  for (const i of declarados) {
+    if (!ORIGENES.includes(i.origen)) out.push(`${i.nombre}: origen "${i.origen}" invalido (validos: ${ORIGENES.join(' / ')})`);
+    if (!i.columnas) continue;
+    if (!i.cabecera) { out.push(`${i.nombre}: declara columnas pero no se encontro la tabla`); continue; }
+    for (const c of i.columnas) if (!i.cabecera.includes(c)) out.push(`${i.nombre}: columna declarada "${c}" que la tabla no tiene`);
+    for (const c of i.cabecera) if (!i.columnas.includes(c)) out.push(`${i.nombre}: columna "${c}" en la tabla, sin declarar en el frontmatter`);
+  }
+  if (manifiestoTxt == null) return out;
+  const linea = /^\*\*[IÍ]ndices?:\*\*(.*)$/m.exec(manifiestoTxt);
+  if (!linea) {
+    if (declarados.length) out.push('MANIFIESTO.md: falta el campo Indices, que lista los Indices del subsistema con su origen');
+    return out;
+  }
+  const listados = [...linea[1].matchAll(/`([^`]+\.md)`\s*\(([^)]+)\)/g)].map(m => ({ nombre: m[1], origen: m[2].trim() }));
+  for (const i of declarados) {
+    const l = listados.find(x => x.nombre === i.nombre);
+    if (!l) out.push(`MANIFIESTO.md: no lista el Indice ${i.nombre}`);
+    else if (l.origen !== ETIQUETA_ORIGEN[i.origen]) out.push(`MANIFIESTO.md: ${i.nombre} figura como "${l.origen}" y su frontmatter dice "${i.origen}"`);
+  }
+  for (const l of listados) {
+    if (!declarados.some(i => i.nombre === l.nombre)) out.push(`MANIFIESTO.md: lista ${l.nombre}, que no existe o no declara frontmatter`);
+  }
+  return out;
+}
+// --- fin indices por frontmatter ---
 const args = process.argv.slice(2);
 const quiet = args.includes('--quiet');
 const diasIdx = args.indexOf('--dias');
@@ -419,8 +638,11 @@ const CARPETAS = estados.size
 const carpetaDeEstado = e => (estados.get(e) || {}).carpeta;
 const esTerminal = e => !!(estados.get(e) || {}).terminal;
 
-const regPath = path.join(root, 'PLANES.md');
-const reg = fs.existsSync(regPath) ? fs.readFileSync(regPath, 'utf8') : '';
+const indices = indicesDe(root, ['PLANES.md']);
+const maniPath = path.join(root, 'MANIFIESTO.md');
+const problemasIndices = problemasDeIndices(indices, fs.existsSync(maniPath) ? fs.readFileSync(maniPath, 'utf8') : null);
+const nombresIndice = new Set(indices.map(i => i.nombre));
+const reg = indices.map(i => i.texto).join('\n');
 
 // filas: | Plan | Estado | Creado | Cerrado | Origen | Notas |
 const rows = [];
@@ -446,7 +668,8 @@ for (const c of CARPETAS) {
 
 const sueltos = fs.existsSync(root)
   ? fs.readdirSync(root, { withFileTypes: true })
-      .filter(e => e.isFile() && e.name.endsWith('.md') && !['PLANES.md', 'ESTADOS.md', 'MANIFIESTO.md', 'README.md'].includes(e.name)).map(e => e.name)
+      .filter(e => e.isFile() && e.name.endsWith('.md') && !nombresIndice.has(e.name)
+                   && !['PLANES.md', 'ESTADOS.md', 'MANIFIESTO.md', 'README.md'].includes(e.name)).map(e => e.name)
   : [];
 
 const norm = r => r.replace(/\\/g, '/').replace(/^\.\//, '');
@@ -494,6 +717,7 @@ for (const r of rows) {
 }
 
 const secciones = [
+  ['INDICES DECLARADOS (frontmatter vs tabla vs manifiesto)', problemasIndices],
   ['ESTADOS.md AUSENTE O VACIO (no se valida el estado)', estados.size ? [] : [estPath]],
   ['SUELTOS EN LA RAIZ (mover a una carpeta del ciclo)', sueltos],
   ['ARCHIVOS SIN FILA EN PLANES.md', sinFila],
@@ -523,6 +747,12 @@ for (const [titulo, items] of secciones) {
 Contenido inicial de `.claude/semantica/GLOSARIO.md` (tabla vacía — sin filas de ejemplo, para que el lint no las tome como conceptos reales):
 
 ```markdown
+---
+indice: Glosario del proyecto
+origen: agente-desplegado
+columnas: [Concepto, Definición, Alias, Propuestos, Detalle]
+---
+
 # Glosario del proyecto
 
 Terminología **legítima** del dominio de este repo. Una fila por concepto en la tabla de abajo:
@@ -550,6 +780,12 @@ Los términos **vetados no viven acá**: un veto es sobre la relación término�
 Registro par `.claude/semantica/TERMINOLOGIA-FARLOPA.md` (tabla vacía):
 
 ```markdown
+---
+indice: Terminología Farlopa
+origen: agente-desplegado
+columnas: [Término, Significado vetado, Cómo decirlo, Control]
+---
+
 # Terminología Farlopa
 
 *Farlop Terminology* (EN). Registro par del glosario: las **relaciones término→significado vetadas** del dominio. Cada fila prohíbe un término **en un significado específico**, no el término en sí — el mismo término con otro significado puede ser legítimo (`plomería`=cañerías en un repo de fontanería es válido; `plomería`=infraestructura interna de software es farlopa). Por eso la columna del medio: fija el significado que se veta.
@@ -581,11 +817,115 @@ Lint `.claude/semantica/lint-semantica/lint-semantica.js` (Node, sin dependencia
 // el agente juzga el significado al leer la marca. Sin LLM, sin red.
 // Uso: node lint-semantica.js [<carpeta>]   (default: .claude/semantica)
 const fs = require('fs'), path = require('path');
+
+// --- Indices por frontmatter ---
+// Un subsistema tiene uno o mas Indices y cada archivo se declara a si mismo en un frontmatter
+// minimo (indice, origen, columnas). El lint los descubre por ese frontmatter y no por un nombre
+// fijo: el nombre dejo de codificar el origen, asi que deducirlo del nombre volveria a atarlos.
+// Se acepta la forma vieja —el archivo de siempre, sin frontmatter— mientras haya Agentes
+// Desplegados sin nivelar: ahi el origen queda en null y los chequeos que dependen de el no corren.
+const ORIGENES = ['agente-multiproposito', 'agente-desplegado'];
+const ETIQUETA_ORIGEN = { 'agente-multiproposito': 'Agente Multipropósito', 'agente-desplegado': 'Agente Desplegado' };
+function leerFrontmatter(txt) {
+  const m = /^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/.exec(txt);
+  if (!m) return null;
+  const campos = {};
+  for (const linea of m[1].split(/\r?\n/)) {
+    const kv = /^([a-zA-Z_][\w-]*):\s*(.*)$/.exec(linea);
+    if (!kv) continue;
+    const v = kv[2].trim();
+    campos[kv[1]] = /^\[.*\]$/.test(v)
+      ? v.slice(1, -1).split(',').map(x => x.trim().replace(/^['"]|['"]$/g, '')).filter(Boolean)
+      : v.replace(/^['"]|['"]$/g, '');
+  }
+  return campos;
+}
+// Encabezado real de la primera tabla markdown del archivo (null si no tiene tabla).
+function cabeceraTabla(txt) {
+  for (const linea of txt.split(/\r?\n/)) {
+    const t = linea.trim();
+    if (!t.startsWith('|')) continue;
+    const celdas = t.split('|').slice(1, -1).map(c => c.replace(/\*/g, '').trim());
+    if (/^:?-{2,}:?$/.test((celdas[0] || '').replace(/\s/g, ''))) continue;
+    return celdas;
+  }
+  return null;
+}
+// Indices de un subsistema: los .md de su carpeta con frontmatter `indice:`, mas los nombres
+// viejos que todavia no lo declaran. Da {archivo, nombre, texto, indice, origen, columnas, cabecera}.
+function indicesDe(dirSub, nombresViejos) {
+  const salida = [];
+  let entradas = [];
+  try { entradas = fs.readdirSync(dirSub); } catch (e) { return salida; }
+  for (const nombre of entradas.sort()) {
+    if (!nombre.endsWith('.md')) continue;
+    const archivo = path.join(dirSub, nombre);
+    let txt; try { txt = fs.readFileSync(archivo, 'utf8'); } catch (e) { continue; }
+    const fm = leerFrontmatter(txt);
+    const declarado = !!(fm && fm.indice);
+    if (!declarado && !(nombresViejos || []).includes(nombre)) continue;
+    salida.push({
+      archivo, nombre, texto: txt,
+      indice: declarado ? fm.indice : null,
+      origen: declarado ? (fm.origen || '') : null,
+      columnas: declarado && Array.isArray(fm.columnas) ? fm.columnas : null,
+      cabecera: cabeceraTabla(txt),
+    });
+  }
+  return salida;
+}
+// Dos controles sobre lo declarado. [a] Las columnas, en los DOS sentidos: la declarada que la
+// tabla no tiene y la que la tabla tiene sin declarar. Con un solo sentido el frontmatter puede
+// mentir por omision, y el codigo que ubica una columna por nombre —el repartidor de conducta
+// ubica Momento y Clase— deja de encontrarla sin emitir ningun error. [b] El manifiesto contra el
+// frontmatter: el manifiesto lista los Indices como texto fijo y el frontmatter es la autoridad;
+// sin compararlos, el mismo dato queda escrito en dos lugares que nada sincroniza.
+function problemasDeIndices(idxs, manifiestoTxt) {
+  const out = [];
+  const declarados = idxs.filter(i => i.indice);
+  for (const i of declarados) {
+    if (!ORIGENES.includes(i.origen)) out.push(`${i.nombre}: origen "${i.origen}" invalido (validos: ${ORIGENES.join(' / ')})`);
+    if (!i.columnas) continue;
+    if (!i.cabecera) { out.push(`${i.nombre}: declara columnas pero no se encontro la tabla`); continue; }
+    for (const c of i.columnas) if (!i.cabecera.includes(c)) out.push(`${i.nombre}: columna declarada "${c}" que la tabla no tiene`);
+    for (const c of i.cabecera) if (!i.columnas.includes(c)) out.push(`${i.nombre}: columna "${c}" en la tabla, sin declarar en el frontmatter`);
+  }
+  if (manifiestoTxt == null) return out;
+  const linea = /^\*\*[IÍ]ndices?:\*\*(.*)$/m.exec(manifiestoTxt);
+  if (!linea) {
+    if (declarados.length) out.push('MANIFIESTO.md: falta el campo Indices, que lista los Indices del subsistema con su origen');
+    return out;
+  }
+  const listados = [...linea[1].matchAll(/`([^`]+\.md)`\s*\(([^)]+)\)/g)].map(m => ({ nombre: m[1], origen: m[2].trim() }));
+  for (const i of declarados) {
+    const l = listados.find(x => x.nombre === i.nombre);
+    if (!l) out.push(`MANIFIESTO.md: no lista el Indice ${i.nombre}`);
+    else if (l.origen !== ETIQUETA_ORIGEN[i.origen]) out.push(`MANIFIESTO.md: ${i.nombre} figura como "${l.origen}" y su frontmatter dice "${i.origen}"`);
+  }
+  for (const l of listados) {
+    if (!declarados.some(i => i.nombre === l.nombre)) out.push(`MANIFIESTO.md: lista ${l.nombre}, que no existe o no declara frontmatter`);
+  }
+  return out;
+}
+// --- fin indices por frontmatter ---
 const root = path.resolve(process.argv[2] || '.claude/semantica');
-const glosPath = path.join(root, 'GLOSARIO.md');
-const farlPath = path.join(root, 'TERMINOLOGIA-FARLOPA.md');
-const txt = fs.existsSync(glosPath) ? fs.readFileSync(glosPath, 'utf8') : '';
-const farlTxt = fs.existsSync(farlPath) ? fs.readFileSync(farlPath, 'utf8') : '';
+// Los dos registros se descubren por frontmatter y se distinguen por sus COLUMNAS declaradas, que
+// es lo que dice cual es cual: aca la division no es por origen sino por funcion. Si el frontmatter
+// no esta todavia, se cae a los nombres de siempre.
+const indices = indicesDe(root, ['GLOSARIO.md', 'TERMINOLOGIA-FARLOPA.md']);
+const maniPath = path.join(root, 'MANIFIESTO.md');
+const problemasIndices = problemasDeIndices(indices, fs.existsSync(maniPath) ? fs.readFileSync(maniPath, 'utf8') : null);
+const nombresIndice = new Set(indices.map(i => i.nombre));
+const conColumna = (col, nombreViejo) => {
+  const hit = indices.find(i => (i.columnas || i.cabecera || []).includes(col));
+  return hit || indices.find(i => i.nombre === nombreViejo) || null;
+};
+const glosario = conColumna('Concepto', 'GLOSARIO.md');
+const farlopa = conColumna('Significado vetado', 'TERMINOLOGIA-FARLOPA.md');
+const glosPath = glosario ? glosario.archivo : path.join(root, 'GLOSARIO.md');
+const farlPath = farlopa ? farlopa.archivo : path.join(root, 'TERMINOLOGIA-FARLOPA.md');
+const txt = glosario ? glosario.texto : '';
+const farlTxt = farlopa ? farlopa.texto : '';
 
 // La raiz del repo se deduce de la ubicacion del propio lint: .claude/<sub>/lint-<sub>/ -> 3 arriba.
 // La profundidad la fija el instalador; no depende de desde donde se invoque.
@@ -659,7 +999,7 @@ for (const r of rows) {
 
 // [2] paginas .md huerfanas (en semantica/, no referenciadas por la tabla)
 // Los dos registros y la infra del subsistema no son paginas de detalle: se excluyen.
-const NO_HUERFANO = new Set(['GLOSARIO.md', 'TERMINOLOGIA-FARLOPA.md', 'INDICE.md', 'MANIFIESTO.md', 'README.md']);
+const NO_HUERFANO = new Set([...nombresIndice, 'GLOSARIO.md', 'TERMINOLOGIA-FARLOPA.md', 'INDICE.md', 'MANIFIESTO.md', 'README.md']);
 const huerfanos = [];
 if (fs.existsSync(root)) {
   for (const f of fs.readdirSync(root)) {
@@ -775,7 +1115,10 @@ if (!colisionesAlias.length && !contradicciones.length) console.log('    (ningun
 console.log(`\n[4] PROPUESTOS PENDIENTES DE RATIFICACION (${propuestos.length}):`);
 propuestos.forEach(([p, c]) => console.log(`    "${p}"  propuesto para  ${c}`));
 if (!propuestos.length) console.log('    (ninguno)');
-console.log(`\n[5] APARICIONES DE VETADOS (prosa: ${apariciones.prosa.length}, codigo: ${apariciones.codigo.length}):`);
+console.log(`\n[5] INDICES DECLARADOS (${problemasIndices.length}):`);
+problemasIndices.forEach(p => console.log(`    ${p}`));
+if (!problemasIndices.length) console.log(`    (${nombresIndice.size} indice(s), coherentes con el manifiesto)`);
+console.log(`\n[6] APARICIONES DE VETADOS (prosa: ${apariciones.prosa.length}, codigo: ${apariciones.codigo.length}):`);
 console.log('  prosa (reescribir):');
 apariciones.prosa.forEach(([f, t]) => console.log(`    ${f}  "${t}"`));
 if (!apariciones.prosa.length) console.log('    (ninguna)');
@@ -789,6 +1132,12 @@ if (!apariciones.codigo.length) console.log('    (ninguna)');
 Contenido inicial de `.claude/decisiones/INDICE.md` (tabla vacía — sin filas de ejemplo):
 
 ```markdown
+---
+indice: Decisiones del proyecto
+origen: agente-desplegado
+columnas: [N°, Decisión, Fecha, Estado, Detalle]
+---
+
 # Decisiones del proyecto
 
 Registro de las decisiones **estructurales al propósito del repo**: las que definen cómo es o qué hace el repo en lo esencial, o que eligen un camino entre varios de forma que **condiciona el trabajo futuro**. **No** van las operativas triviales o efímeras ("busqué X en internet", "usé tal flag"). Ante la duda: ¿esto condiciona el repo a futuro? Sí → va.
@@ -825,9 +1174,103 @@ Lint `.claude/decisiones/lint-decisiones/lint-decisiones.js` (Node, sin dependen
 // Lint del registro de decisiones: numeracion, links de detalle, huerfanos, superseded. Sin LLM, sin red.
 // Uso: node lint-decisiones.js [<carpeta>]   (default: .claude/decisiones)
 const fs = require('fs'), path = require('path');
+
+// --- Indices por frontmatter ---
+// Un subsistema tiene uno o mas Indices y cada archivo se declara a si mismo en un frontmatter
+// minimo (indice, origen, columnas). El lint los descubre por ese frontmatter y no por un nombre
+// fijo: el nombre dejo de codificar el origen, asi que deducirlo del nombre volveria a atarlos.
+// Se acepta la forma vieja —el archivo de siempre, sin frontmatter— mientras haya Agentes
+// Desplegados sin nivelar: ahi el origen queda en null y los chequeos que dependen de el no corren.
+const ORIGENES = ['agente-multiproposito', 'agente-desplegado'];
+const ETIQUETA_ORIGEN = { 'agente-multiproposito': 'Agente Multipropósito', 'agente-desplegado': 'Agente Desplegado' };
+function leerFrontmatter(txt) {
+  const m = /^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/.exec(txt);
+  if (!m) return null;
+  const campos = {};
+  for (const linea of m[1].split(/\r?\n/)) {
+    const kv = /^([a-zA-Z_][\w-]*):\s*(.*)$/.exec(linea);
+    if (!kv) continue;
+    const v = kv[2].trim();
+    campos[kv[1]] = /^\[.*\]$/.test(v)
+      ? v.slice(1, -1).split(',').map(x => x.trim().replace(/^['"]|['"]$/g, '')).filter(Boolean)
+      : v.replace(/^['"]|['"]$/g, '');
+  }
+  return campos;
+}
+// Encabezado real de la primera tabla markdown del archivo (null si no tiene tabla).
+function cabeceraTabla(txt) {
+  for (const linea of txt.split(/\r?\n/)) {
+    const t = linea.trim();
+    if (!t.startsWith('|')) continue;
+    const celdas = t.split('|').slice(1, -1).map(c => c.replace(/\*/g, '').trim());
+    if (/^:?-{2,}:?$/.test((celdas[0] || '').replace(/\s/g, ''))) continue;
+    return celdas;
+  }
+  return null;
+}
+// Indices de un subsistema: los .md de su carpeta con frontmatter `indice:`, mas los nombres
+// viejos que todavia no lo declaran. Da {archivo, nombre, texto, indice, origen, columnas, cabecera}.
+function indicesDe(dirSub, nombresViejos) {
+  const salida = [];
+  let entradas = [];
+  try { entradas = fs.readdirSync(dirSub); } catch (e) { return salida; }
+  for (const nombre of entradas.sort()) {
+    if (!nombre.endsWith('.md')) continue;
+    const archivo = path.join(dirSub, nombre);
+    let txt; try { txt = fs.readFileSync(archivo, 'utf8'); } catch (e) { continue; }
+    const fm = leerFrontmatter(txt);
+    const declarado = !!(fm && fm.indice);
+    if (!declarado && !(nombresViejos || []).includes(nombre)) continue;
+    salida.push({
+      archivo, nombre, texto: txt,
+      indice: declarado ? fm.indice : null,
+      origen: declarado ? (fm.origen || '') : null,
+      columnas: declarado && Array.isArray(fm.columnas) ? fm.columnas : null,
+      cabecera: cabeceraTabla(txt),
+    });
+  }
+  return salida;
+}
+// Dos controles sobre lo declarado. [a] Las columnas, en los DOS sentidos: la declarada que la
+// tabla no tiene y la que la tabla tiene sin declarar. Con un solo sentido el frontmatter puede
+// mentir por omision, y el codigo que ubica una columna por nombre —el repartidor de conducta
+// ubica Momento y Clase— deja de encontrarla sin emitir ningun error. [b] El manifiesto contra el
+// frontmatter: el manifiesto lista los Indices como texto fijo y el frontmatter es la autoridad;
+// sin compararlos, el mismo dato queda escrito en dos lugares que nada sincroniza.
+function problemasDeIndices(idxs, manifiestoTxt) {
+  const out = [];
+  const declarados = idxs.filter(i => i.indice);
+  for (const i of declarados) {
+    if (!ORIGENES.includes(i.origen)) out.push(`${i.nombre}: origen "${i.origen}" invalido (validos: ${ORIGENES.join(' / ')})`);
+    if (!i.columnas) continue;
+    if (!i.cabecera) { out.push(`${i.nombre}: declara columnas pero no se encontro la tabla`); continue; }
+    for (const c of i.columnas) if (!i.cabecera.includes(c)) out.push(`${i.nombre}: columna declarada "${c}" que la tabla no tiene`);
+    for (const c of i.cabecera) if (!i.columnas.includes(c)) out.push(`${i.nombre}: columna "${c}" en la tabla, sin declarar en el frontmatter`);
+  }
+  if (manifiestoTxt == null) return out;
+  const linea = /^\*\*[IÍ]ndices?:\*\*(.*)$/m.exec(manifiestoTxt);
+  if (!linea) {
+    if (declarados.length) out.push('MANIFIESTO.md: falta el campo Indices, que lista los Indices del subsistema con su origen');
+    return out;
+  }
+  const listados = [...linea[1].matchAll(/`([^`]+\.md)`\s*\(([^)]+)\)/g)].map(m => ({ nombre: m[1], origen: m[2].trim() }));
+  for (const i of declarados) {
+    const l = listados.find(x => x.nombre === i.nombre);
+    if (!l) out.push(`MANIFIESTO.md: no lista el Indice ${i.nombre}`);
+    else if (l.origen !== ETIQUETA_ORIGEN[i.origen]) out.push(`MANIFIESTO.md: ${i.nombre} figura como "${l.origen}" y su frontmatter dice "${i.origen}"`);
+  }
+  for (const l of listados) {
+    if (!declarados.some(i => i.nombre === l.nombre)) out.push(`MANIFIESTO.md: lista ${l.nombre}, que no existe o no declara frontmatter`);
+  }
+  return out;
+}
+// --- fin indices por frontmatter ---
 const root = path.resolve(process.argv[2] || '.claude/decisiones');
-const mainPath = path.join(root, 'INDICE.md');
-const txt = fs.existsSync(mainPath) ? fs.readFileSync(mainPath, 'utf8') : '';
+const indices = indicesDe(root, ['INDICE.md']);
+const maniPath = path.join(root, 'MANIFIESTO.md');
+const problemasIndices = problemasDeIndices(indices, fs.existsSync(maniPath) ? fs.readFileSync(maniPath, 'utf8') : null);
+const nombresIndice = new Set(indices.map(i => i.nombre));
+const txt = indices.map(i => i.texto).join('\n');
 const pad = n => String(n).padStart(4, '0');
 
 // La raiz del repo se deduce de la ubicacion del propio lint: .claude/<sub>/lint-<sub>/ -> 3 arriba.
@@ -886,7 +1329,7 @@ for (const r of rows) {
 const huerfanos = [];
 if (fs.existsSync(root)) {
   for (const f of fs.readdirSync(root)) {
-    if (!f.endsWith('.md') || ['INDICE.md', 'MANIFIESTO.md', 'README.md'].includes(f)) continue;
+    if (!f.endsWith('.md') || nombresIndice.has(f) || ['INDICE.md', 'MANIFIESTO.md', 'README.md'].includes(f)) continue;
     if (!referenced.has(f)) huerfanos.push(f);
   }
 }
@@ -914,18 +1357,27 @@ if (!huerfanos.length) console.log('    (ninguna)');
 console.log(`\n[4] SUPERSEDED ROTAS (${supRotas.length}):`);
 supRotas.forEach(([n, r]) => console.log(`    ${n}  ->  ${r}   [decision inexistente]`));
 if (!supRotas.length) console.log('    (ninguna)');
+console.log(`\n[5] INDICES DECLARADOS (${problemasIndices.length}):`);
+problemasIndices.forEach(p => console.log(`    ${p}`));
+if (!problemasIndices.length) console.log(`    (${nombresIndice.size} indice(s), coherentes con el manifiesto)`);
 ```
 
 ## §Herramientas — `.claude/herramientas/`
 
-Contenido inicial de `.claude/herramientas/INDICE.md` (dos secciones por origen: `## Herramientas del Agente Multipropósito` poblada con la Herramienta que manda el Agente Multipropósito + `## Herramientas del Agente Desplegado` con la tabla vacía — sin filas de ejemplo):
+Contenido inicial de `.claude/herramientas/INDICE.md` (un archivo por origen: este, poblado con la Herramienta que manda el Agente Multipropósito, e `INDICE-LOCAL.md`, declarado y con la tabla vacía — sin filas de ejemplo):
 
 ```markdown
+---
+indice: Herramientas del proyecto
+origen: agente-multiproposito
+columnas: [Herramienta, Tipo, Qué hace, Cómo se invoca, Estado]
+---
+
 # Herramientas del proyecto
 
 Registro de las **Herramientas** del repo: las *tools* que el **Propósito** del repo requiere y el agente invoca para tareas repetibles. Tipos: `script`, `skill` local del repo, `MCP` local. Una fila por Herramienta. Ordena las herramientas desordenadas: qué es cada una, cómo se invoca, si sigue vigente.
 
-> Los **lints de subsistema** (`lint-subsistemas`, `lint-semantica`, …) **no** van acá: son infraestructura del Patrón de cada subsistema y viven con su subsistema (`.claude/<sub>/lint-<sub>/`). Acá solo van Herramientas del Agente Desplegado.
+> Los **lints de subsistema** (`lint-subsistemas`, `lint-semantica`, …) **no** van acá: son infraestructura del Patrón de cada subsistema y viven con su subsistema (`.claude/<sub>/lint-<sub>/`). En estos dos archivos solo van Herramientas.
 
 - **Herramienta** — nombre; si es tipo `script` con carpeta local, link a `<tool>/` (adentro, README + código). Si es `skill` o `MCP`, link a donde vive (`.claude/skills/<skill>/`, `.mcp.json`).
 - **Tipo** — `script` | `skill` | `mcp`.
@@ -933,19 +1385,29 @@ Registro de las **Herramientas** del repo: las *tools* que el **Propósito** del
 - **Cómo se invoca** — el comando (`script`), el nombre de skill que dispara el modelo (`skill`), o cómo se conecta y qué tool-calls expone (`mcp`).
 - **Estado** — `vigente`, `experimental` u `obsoleto` (los obsoletos se pueden depurar).
 
-> **Origen del contenido:** las Herramientas se separan por origen en dos secciones — **Herramientas del Agente Multipropósito** (las manda el Agente Multipropósito; el nivelador `amp:actualizar` reemplaza esa sección entera al poner al día un Agente con Propósito) y **Herramientas del Agente Desplegado** (las suma cada repo; el nivelador no las toca). Mismo molde que `conducta/INDICE.md` y que las dos secciones de `PREFERENCIAS.md`.
+> **Origen del contenido:** las Herramientas se separan por origen en **dos archivos**, y cada uno lo declara en su frontmatter — este (`origen: agente-multiproposito`, las manda el Agente Multipropósito; el nivelador `amp:actualizar` lo reemplaza entero al poner al día un Agente con Propósito) e [`INDICE-LOCAL.md`](INDICE-LOCAL.md) (`origen: agente-desplegado`, las suma cada repo; el nivelador no lo abre). Mismo molde que `conducta/` y que los dos archivos de `preferencias/`.
 
 ## Herramientas del Agente Multipropósito
 
-Las que instala el Agente Multipropósito (origen **Base**). El nivelador reemplaza **esta sección entera**; nunca abre la de abajo.
+Las que instala el Agente Multipropósito. El nivelador reemplaza **este archivo entero**; nunca abre el del Agente Desplegado.
 
 | Herramienta | Tipo | Qué hace | Cómo se invoca | Estado |
 |-------------|------|----------|----------------|--------|
 | [actualizar-plugins](actualizar-plugins/) | script | Pone al día los plugins que este Agente con Propósito tiene habilitados en esta máquina —los que le traen su Agente Multipropósito— y detecta los cuatro desfases: el marketplace bajado que no trajo lo publicado, el plugin que falta traer, el silencioso —traído pero no cargado, porque la sesión arrancó antes— y la dependencia que el repo nunca declaró (`SIN DECLARAR`, que deja al plugin que la pide sin cargar y sin señal); marca aparte los plugins `RETIRADO` (nombres que el marketplace dejó de ofrecer ⇒ migración, no actualización). Sin `--aplicar` solo diagnostica; acepta ruta para apuntarlo a otro repo | `node .claude/herramientas/actualizar-plugins/actualizar-plugins.js [--aplicar] [rutaRepo]` | vigente |
+```
 
-## Herramientas del Agente Desplegado
+Contenido inicial de `.claude/herramientas/INDICE-LOCAL.md` — nace **declarado y sin filas**, no vacío:
 
-Las que este repo suma para su Propósito (origen **aprendido**). El nivelador **no toca esta sección**.
+```markdown
+---
+indice: Herramientas del Agente Desplegado
+origen: agente-desplegado
+columnas: [Herramienta, Tipo, Qué hace, Cómo se invoca, Estado]
+---
+
+# Herramientas del Agente Desplegado
+
+Las que este repo suma para su Propósito. El nivelador **no toca este archivo**. Las columnas y la convención completa están en [`INDICE.md`](INDICE.md).
 
 | Herramienta | Tipo | Qué hace | Cómo se invoca | Estado |
 |-------------|------|----------|----------------|--------|
@@ -973,9 +1435,104 @@ Lint `.claude/herramientas/lint-herramientas/lint-herramientas.js` (Node, sin de
 // filas colgadas (link a subdir local inexistente), refs por ruta de lint en settings. Sin LLM, sin red.
 // Uso: node lint-herramientas.js [<carpeta herramientas>]   (default: .claude/herramientas)
 const fs = require('fs'), path = require('path');
+
+// --- Indices por frontmatter ---
+// Un subsistema tiene uno o mas Indices y cada archivo se declara a si mismo en un frontmatter
+// minimo (indice, origen, columnas). El lint los descubre por ese frontmatter y no por un nombre
+// fijo: el nombre dejo de codificar el origen, asi que deducirlo del nombre volveria a atarlos.
+// Se acepta la forma vieja —el archivo de siempre, sin frontmatter— mientras haya Agentes
+// Desplegados sin nivelar: ahi el origen queda en null y los chequeos que dependen de el no corren.
+const ORIGENES = ['agente-multiproposito', 'agente-desplegado'];
+const ETIQUETA_ORIGEN = { 'agente-multiproposito': 'Agente Multipropósito', 'agente-desplegado': 'Agente Desplegado' };
+function leerFrontmatter(txt) {
+  const m = /^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/.exec(txt);
+  if (!m) return null;
+  const campos = {};
+  for (const linea of m[1].split(/\r?\n/)) {
+    const kv = /^([a-zA-Z_][\w-]*):\s*(.*)$/.exec(linea);
+    if (!kv) continue;
+    const v = kv[2].trim();
+    campos[kv[1]] = /^\[.*\]$/.test(v)
+      ? v.slice(1, -1).split(',').map(x => x.trim().replace(/^['"]|['"]$/g, '')).filter(Boolean)
+      : v.replace(/^['"]|['"]$/g, '');
+  }
+  return campos;
+}
+// Encabezado real de la primera tabla markdown del archivo (null si no tiene tabla).
+function cabeceraTabla(txt) {
+  for (const linea of txt.split(/\r?\n/)) {
+    const t = linea.trim();
+    if (!t.startsWith('|')) continue;
+    const celdas = t.split('|').slice(1, -1).map(c => c.replace(/\*/g, '').trim());
+    if (/^:?-{2,}:?$/.test((celdas[0] || '').replace(/\s/g, ''))) continue;
+    return celdas;
+  }
+  return null;
+}
+// Indices de un subsistema: los .md de su carpeta con frontmatter `indice:`, mas los nombres
+// viejos que todavia no lo declaran. Da {archivo, nombre, texto, indice, origen, columnas, cabecera}.
+function indicesDe(dirSub, nombresViejos) {
+  const salida = [];
+  let entradas = [];
+  try { entradas = fs.readdirSync(dirSub); } catch (e) { return salida; }
+  for (const nombre of entradas.sort()) {
+    if (!nombre.endsWith('.md')) continue;
+    const archivo = path.join(dirSub, nombre);
+    let txt; try { txt = fs.readFileSync(archivo, 'utf8'); } catch (e) { continue; }
+    const fm = leerFrontmatter(txt);
+    const declarado = !!(fm && fm.indice);
+    if (!declarado && !(nombresViejos || []).includes(nombre)) continue;
+    salida.push({
+      archivo, nombre, texto: txt,
+      indice: declarado ? fm.indice : null,
+      origen: declarado ? (fm.origen || '') : null,
+      columnas: declarado && Array.isArray(fm.columnas) ? fm.columnas : null,
+      cabecera: cabeceraTabla(txt),
+    });
+  }
+  return salida;
+}
+// Dos controles sobre lo declarado. [a] Las columnas, en los DOS sentidos: la declarada que la
+// tabla no tiene y la que la tabla tiene sin declarar. Con un solo sentido el frontmatter puede
+// mentir por omision, y el codigo que ubica una columna por nombre —el repartidor de conducta
+// ubica Momento y Clase— deja de encontrarla sin emitir ningun error. [b] El manifiesto contra el
+// frontmatter: el manifiesto lista los Indices como texto fijo y el frontmatter es la autoridad;
+// sin compararlos, el mismo dato queda escrito en dos lugares que nada sincroniza.
+function problemasDeIndices(idxs, manifiestoTxt) {
+  const out = [];
+  const declarados = idxs.filter(i => i.indice);
+  for (const i of declarados) {
+    if (!ORIGENES.includes(i.origen)) out.push(`${i.nombre}: origen "${i.origen}" invalido (validos: ${ORIGENES.join(' / ')})`);
+    if (!i.columnas) continue;
+    if (!i.cabecera) { out.push(`${i.nombre}: declara columnas pero no se encontro la tabla`); continue; }
+    for (const c of i.columnas) if (!i.cabecera.includes(c)) out.push(`${i.nombre}: columna declarada "${c}" que la tabla no tiene`);
+    for (const c of i.cabecera) if (!i.columnas.includes(c)) out.push(`${i.nombre}: columna "${c}" en la tabla, sin declarar en el frontmatter`);
+  }
+  if (manifiestoTxt == null) return out;
+  const linea = /^\*\*[IÍ]ndices?:\*\*(.*)$/m.exec(manifiestoTxt);
+  if (!linea) {
+    if (declarados.length) out.push('MANIFIESTO.md: falta el campo Indices, que lista los Indices del subsistema con su origen');
+    return out;
+  }
+  const listados = [...linea[1].matchAll(/`([^`]+\.md)`\s*\(([^)]+)\)/g)].map(m => ({ nombre: m[1], origen: m[2].trim() }));
+  for (const i of declarados) {
+    const l = listados.find(x => x.nombre === i.nombre);
+    if (!l) out.push(`MANIFIESTO.md: no lista el Indice ${i.nombre}`);
+    else if (l.origen !== ETIQUETA_ORIGEN[i.origen]) out.push(`MANIFIESTO.md: ${i.nombre} figura como "${l.origen}" y su frontmatter dice "${i.origen}"`);
+  }
+  for (const l of listados) {
+    if (!declarados.some(i => i.nombre === l.nombre)) out.push(`MANIFIESTO.md: lista ${l.nombre}, que no existe o no declara frontmatter`);
+  }
+  return out;
+}
+// --- fin indices por frontmatter ---
 const root = path.resolve(process.argv[2] || '.claude/herramientas');
-const idxPath = path.join(root, 'INDICE.md');
-const idx = fs.existsSync(idxPath) ? fs.readFileSync(idxPath, 'utf8') : '';
+// El registro se reparte entre uno o dos Indices (uno por origen): las filas salen de todos.
+const indices = indicesDe(root, ['INDICE.md']);
+const maniPath = path.join(root, 'MANIFIESTO.md');
+const problemasIndices = problemasDeIndices(indices, fs.existsSync(maniPath) ? fs.readFileSync(maniPath, 'utf8') : null);
+const nombresIndice = new Set(indices.map(i => i.nombre));
+const idx = indices.map(i => i.texto).join('\n');
 
 // subdirectorios = herramientas tipo script/tool que viven aca (skill/MCP viven en su casa nativa).
 // El lint co-ubicado del propio subsistema (lint-<sub>) NO es una Herramienta: se excluye.
@@ -1042,6 +1599,9 @@ if (!colgadas.length) console.log('    (ninguna)');
 console.log(`\n[4] REFS POR RUTA DE LINT ROTAS EN SETTINGS (${refsRotas.length}):`);
 refsRotas.forEach(([f, p]) => console.log(`    ${f}  ->  ${p}   [no existe]`));
 if (!refsRotas.length) console.log('    (ninguna)');
+console.log(`\n[5] INDICES DECLARADOS (${problemasIndices.length}):`);
+problemasIndices.forEach(p => console.log(`    ${p}`));
+if (!problemasIndices.length) console.log(`    (${nombresIndice.size} indice(s), coherentes con el manifiesto)`);
 ```
 
 ## §Script — actualizar-plugins — `.claude/herramientas/actualizar-plugins/actualizar-plugins.js`
@@ -1744,7 +2304,6 @@ if (!filas.length) {
     console.log('a mano. `claude plugin prune` NO sirve para limpiar acá: solo mira el alcance de usuario.');
   }
 }
-
 ```
 
 Ficha `.claude/herramientas/actualizar-plugins/README.md`:
@@ -1900,63 +2459,11 @@ Sin `process.exit(1)`: reporta, no frena — es capa mecánica, el juicio queda 
 
 Subsistema posterior; sigue el molde de los demás (su manifiesto está arriba, en §Manifiesto (conducta)). A diferencia del resto trae un **hook repartidor** además del lint, y su registro **no se carga en contexto**: lo entrega el hook en el momento que corresponde. Ninguno de estos textos cita números de decisión del harness: enuncian la razón inline (se instalan en el repo destino).
 
-Contenido inicial de `.claude/conducta/MOMENTOS.md` (vocabulario de momentos; lo lee el lint):
+El vocabulario de momentos, `.claude/conducta/MOMENTOS.md`, está en §Componentes de Subsistema — ahí vive la única copia, la que se mantiene al día contra el archivo vivo.
 
-````markdown
-# Momentos de conducta
+El registro de reglas, `.claude/conducta/INDICE.md`, y el del Agente Desplegado, `INDICE-LOCAL.md`, están en §Componentes de Subsistema — ahí viven las únicas copias.
 
-Vocabulario de los **momentos** válidos a los que una regla de conducta puede atarse. Un momento es un **evento de hook + una condición que la máquina evalúa sin juicio**; es agente-agnóstico, y su realización depende de que el agente tenga un repartidor para ese evento. Este archivo es el punto de partida del registro de momentos: hoy alcanza el vocabulario (nombre · qué representa · evento · disponibilidad). Crece a las columnas completas (condición fina, disponibilidad por agente) cuando se sumen repartidores nuevos. El `lint-conducta` lo lee para validar que toda regla apunte a un momento existente y que ninguna regla `vigente` cuelgue de un momento sin repartidor.
-
-- **Momento** — nombre canónico, en español corriente.
-- **Qué representa** — el punto del flujo, en una línea.
-- **Evento de hook** — el evento que lo dispara (+ condición, si la hay).
-- **Disponibilidad** — `activo` (hay repartidor construido que lo entrega) o `declarado` (definido, sin repartidor todavía → sus reglas van en estado `pendiente`).
-
-| Momento | Qué representa | Evento de hook | Disponibilidad |
-|---------|----------------|----------------|----------------|
-| al arrancar la sesión | Al iniciar la sesión, sin condición. Su realización corre una Herramienta y reenvía su salida; hoy muestra la Pantalla de bienvenida (bloque de estado → `systemMessage`, visible al usuario). | `SessionStart` | activo |
-| cada turno | Antes de cada respuesta del agente, sin condición. | `UserPromptSubmit` | activo |
-| al escribir | Al escribir o editar un `.md` de **cualquier parte del repo** — lo que el repo publica incluido, no solo los registros del Agente Multipropósito—, salvo el directorio de borradores `tmp/`. El `additionalContext` llega **junto al resultado** de la tool: es un recordatorio posterior a la escritura. El `deny`, en cambio, **sí** es previo: frena la escritura antes de que el archivo exista. | `PreToolUse` sobre `Write`\|`Edit`\|`apply_patch`, condición: **alguna** ruta tocada es `.md` fuera de `tmp/` | activo |
-| al cerrar tarea | Al terminar de responder una tarea. | `Stop` | declarado |
-
-> Paridad: `cada turno` (`UserPromptSubmit` + `additionalContext`) tiene paridad plena Claude Code ↔ Codex (conocimiento `hooks-claude-code`). `al arrancar la sesión` (`SessionStart` → `systemMessage`) anda en Claude Code, Codex y Gemini; Cursor no tiene banner nativo y degrada sin caja. `al escribir` **también corre en Codex** desde abril de 2026: toda edición pasa por `apply_patch`, que dispara `PreToolUse` y matchea como `apply_patch`, `Edit` o `Write` (conocimiento `hooks-codex-cli`; hasta entonces solo disparaba para Bash y el momento figuraba acá como Claude-first). Con una salvedad: **el `deny` todavía no frena en Codex** —el archivo se escribe igual, bug abierto del CLI—, así que ahí una regla `bloquear` degrada a aviso hasta que lo arreglen; se emite igual para que empiece a frenar sola el día que ocurra. Los momentos `declarado` esperan su repartidor.
-````
-
-Contenido inicial de `.claude/conducta/INDICE.md` (registro de reglas; `## Reglas del Agente Multipropósito` poblada por el Agente Multipropósito, `## Reglas del Agente Desplegado` vacía para que la llene cada repo):
-
-````markdown
-# Reglas de conducta
-
-Registro de las **reglas de conducta** del repo: cada fila ata un **momento** (del vocabulario en `MOMENTOS.md`) a una **acción**, para asegurar "cuando hagas X, asegurate de Y". El hook repartidor `establecer-conducta/` lee este registro **vivo** en cada momento y entrega la regla que corresponde — agregar o cambiar una regla **no toca la config del hook**. Una fila por regla.
-
-- **Regla** — qué asegura, en una frase (verbo).
-- **Momento** — a qué momento se ata; tiene que existir en `MOMENTOS.md`.
-- **Clase** — `inyectar` (el agente lee un texto y actúa con su juicio) · `correr` (una Herramienta lo resuelve sin juicio) · `bloquear` (se frena la acción; solo donde Y es sin juicio y el falso positivo es imposible).
-- **Contenido** — el texto a inyectar (`inyectar`), la Herramienta a correr (`correr`) o la condición de bloqueo (`bloquear`).
-- **Estado** — `vigente` (se entrega) · `pendiente` (declarada, su momento aún no tiene repartidor) · `obsoleto` (no se entrega; se puede depurar).
-
-> **Origen del contenido:** las reglas se separan por origen en dos secciones — **Reglas del Agente Multipropósito** (las manda el Agente Multipropósito; el nivelador `amp:actualizar` las reemplaza enteras al poner al día un Agente con Propósito) y **Reglas del Agente Desplegado** (las suma cada repo; el nivelador no las toca). Hoy tienen repartidor los momentos `al arrancar la sesión` (`SessionStart`, clase `correr`), `cada turno` (`UserPromptSubmit`) y `al escribir` (`PreToolUse`); la regla de momento `al cerrar tarea` (`Stop`) queda en `pendiente` (honesta, sin entregar) hasta que se sume su repartidor.
-
-## Reglas del Agente Multipropósito
-
-Las que instala el Agente Multipropósito (origen **Base**). El nivelador `amp:actualizar` reemplaza **esta sección entera** al poner al día un Agente con Propósito; nunca abre la de abajo.
-
-| Regla | Momento | Clase | Contenido | Estado |
-|-------|---------|-------|-----------|--------|
-| Mostrar la Pantalla de bienvenida al arrancar | al arrancar la sesión | correr | conducta/mostrar-pantalla-bienvenida/mostrar-pantalla-bienvenida.js --hook | vigente |
-| Respetar las preferencias cargadas | cada turno | inyectar | Antes de responder, respetá las preferencias ya cargadas (PREFERENCIAS.md). | vigente |
-| No acuñar terminología del dominio | cada turno | inyectar | No acuñes términos del dominio (usá el glosario, proponé en Propuestos, nunca uses vetados). Antes de una palabra de origen inglés, aplicá el test: ¿la diría tal cual un desarrollador hispanohablante en una charla en español (`commit`, `deploy`, `parsear`, `hardcodear`, `bug`) o es una metáfora o modismo del inglés (`churn`, `wedge`, `dogfooding`, `staleness`, `feasibility`)? Lo segundo → traducilo, le resulta raro al usuario. Ante la duda, traducí. | vigente |
-| Preguntar antes de redefinir o remover algo canónico | cada turno | inyectar | Antes de **remover, renombrar o redefinir** algo canónico (una definición del glosario, una decisión) o con dependientes: proponé y esperá la ratificación del usuario. El agente propone; ratificar, vetar y redefinir son potestad del usuario. Aplica también a **definiciones y remociones**, no solo al alta de un término. | vigente |
-| Contrastar contra la sabiduría del repo al escribir | al escribir | inyectar | Acabás de escribir un `.md`. Si es de `.claude/`, contrastalo contra el test de demarcación (¿va en este subsistema?); si es de lo que el repo publica, acordate de que ese texto lo hereda quien lo instale. En los dos casos: ¿contradice algo asentado?, ¿usaste un término vetado o inventado? Corregí si hace falta. | vigente |
-| Frenar la terminología vetada antes de que se escriba | al escribir | bloquear | conducta/detectar-terminologia-vetada/detectar-terminologia-vetada.js | vigente |
-| Registrar en el subsistema cuando algo cambia | al cerrar tarea | inyectar | Si en esta tarea cambió algo que otro subsistema debe saber (decisión, conocimiento, semántica, herramientas, conducta o catálogo de subsistemas), registralo antes de cerrar. | pendiente |
-
-## Reglas del Agente Desplegado
-
-Las que cada repo suma para su Propósito (origen **aprendido**). El nivelador **no toca esta sección**. Hoy vacía: cuando el repo sume una regla propia, va acá con las mismas columnas que la tabla de arriba.
-````
-
-> **Nota sobre la primera regla Base:** el texto de arriba es el mínimo genérico. En un repo con preferencias propias (fechas, ejemplos del dominio, ubicación de temporales), esa fila se afina para nombrar esas preferencias — pero esa afinación es del Propósito y no la escribe la instalación.
+> **Nota sobre la regla `Respetar las preferencias cargadas`:** su `Contenido` nombra preferencias concretas (fechas, ejemplos del dominio, ubicación de temporales). Un repo con preferencias propias afina esa fila para nombrar las suyas — esa afinación es del Propósito, no de la instalación.
 
 Hook repartidor `.claude/conducta/establecer-conducta/establecer-conducta.js` — **no es una Herramienta** (infra co-ubicada del subsistema, como el lint). Contenido exacto (Node, sin dependencias, sin red):
 
@@ -1999,8 +2506,24 @@ Hook repartidor `.claude/conducta/establecer-conducta/establecer-conducta.js` �
 // Uso a mano (probar): echo {"hook_event_name":"SessionStart"} | node establecer-conducta.js
 const fs = require('fs'), path = require('path');
 const { execSync } = require('child_process');
-const idxPath = path.resolve(__dirname, '..', 'INDICE.md');
+const dirSub = path.resolve(__dirname, '..');
 const repoRoot = path.resolve(__dirname, '..', '..', '..');   // .../conducta/establecer-conducta -> repo
+
+// -- los Indices de reglas del subsistema --------------------------------
+// Son los .md del subsistema que se declaran Indice en su frontmatter (uno por origen), con
+// INDICE.md de respaldo para la forma vieja. El repartidor los lee a TODOS: quedarse con el del
+// Agente Multiproposito dejaria sin entregar las reglas que el repo sumo, y sin ninguna senal.
+function indicesDeReglas() {
+  let nombres = [];
+  try { nombres = fs.readdirSync(dirSub).filter(n => n.endsWith('.md')).sort(); } catch (e) { return []; }
+  const declarados = nombres.filter(n => {
+    let txt; try { txt = fs.readFileSync(path.join(dirSub, n), 'utf8'); } catch (e) { return false; }
+    const fm = /^---\r?\n([\s\S]*?)\r?\n---/.exec(txt);
+    return !!(fm && /^indice:\s*\S/m.test(fm[1]));
+  });
+  const elegidos = declarados.length ? declarados : ['INDICE.md'];
+  return elegidos.map(n => path.join(dirSub, n)).filter(p => fs.existsSync(p));
+}
 
 // -- rutas que toca una escritura ---------------------------------------
 // Dos formas, segun el agente:
@@ -2062,9 +2585,12 @@ function leerReglas(txt) {
 
 // Devuelve las reglas del registro que matchean (clase, vigente, momento) con Contenido.
 function reglasDe(momento, clase) {
-  if (!momento || !fs.existsSync(idxPath)) return [];
-  return leerReglas(fs.readFileSync(idxPath, 'utf8'))
-    .filter(r => r.clase === clase && r.estado === 'vigente' && r.momento === momento && r.contenido);
+  if (!momento) return [];
+  const filas = [];
+  for (const p of indicesDeReglas()) {
+    try { filas.push(...leerReglas(fs.readFileSync(p, 'utf8'))); } catch (e) { /* un indice ilegible no frena el turno */ }
+  }
+  return filas.filter(r => r.clase === clase && r.estado === 'vigente' && r.momento === momento && r.contenido);
 }
 
 // -- inyectar: texto para el modelo -------------------------------------
@@ -2428,10 +2954,12 @@ const HOOK = process.argv.slice(2).includes('--hook');
 const SUSTANTIVO = {
   memoria: 'memorias', semantica: 'términos', decisiones: 'decisiones',
   herramientas: 'herramientas', planes: 'planes', conocimiento: 'páginas',
-  preferencias: 'preferencias',
+  preferencias: 'preferencias', conducta: 'reglas', subsistemas: 'subsistemas',
 };
-// Archivo de índice del subsistema, por prioridad (nombres no uniformes entre subsistemas).
-const INDICES = ['INDICE.md', 'MEMORIA.md', 'PLANES.md', 'PREFERENCIAS.md', 'GLOSARIO.md'];
+// Nombres de índice de la forma vieja, para el subsistema que todavía no declara frontmatter.
+// Van todos los que existan, no el primero: `semantica` tiene dos y quedarse con uno la subcontaba.
+const INDICES = ['INDICE.md', 'MEMORIA.md', 'PLANES.md', 'PREFERENCIAS.md', 'GLOSARIO.md',
+                 'TERMINOLOGIA-FARLOPA.md', 'SUBSISTEMAS.md'];
 
 function existe(p) { try { return fs.existsSync(p); } catch { return false; } }
 function leer(p) { try { return fs.readFileSync(p, 'utf8'); } catch { return ''; } }
@@ -2448,13 +2976,23 @@ function descubrirSubsistemas() {
   return out.sort((a, b) => a.nombre.localeCompare(b.nombre));
 }
 
-// --- índice del subsistema ---
-function indiceDe(dir) {
-  for (const cand of INDICES) {
-    const p = path.join(dir, cand);
-    if (existe(p)) return p;
-  }
-  return null;
+// --- Índices del subsistema ---
+// Un subsistema puede tener más de un Índice (uno por origen), y cada archivo lo declara en su
+// frontmatter. Se cuentan TODOS: quedarse con el primero informaba 2 herramientas donde hay 8.
+// Sin frontmatter se cae a los nombres de la forma vieja, y ahí sí es el primero que exista.
+function frontmatterDe(txt) {
+  const m = /^---\r?\n([\s\S]*?)\r?\n---/.exec(txt || '');
+  return m ? m[1] : null;
+}
+function indicesDe(dir) {
+  let nombres = [];
+  try { nombres = fs.readdirSync(dir).filter(n => n.endsWith('.md')).sort(); } catch { return []; }
+  const declarados = nombres.filter(n => {
+    const fm = frontmatterDe(leer(path.join(dir, n)));
+    return !!(fm && /^indice:\s*\S/m.test(fm));
+  });
+  if (declarados.length) return declarados.map(n => path.join(dir, n));
+  return INDICES.map(c => path.join(dir, c)).filter(existe);
 }
 
 // --- conteo genérico de entradas: filas de tabla, si no hay tabla, bullets con link ---
@@ -2463,8 +3001,9 @@ function contarEntradas(txt) {
   const pipe = lineas.filter(l => l.trim().startsWith('|'));
   const sep = pipe.filter(l => /^\s*\|[\s:|-]+\|\s*$/.test(l)); // separadores |---|
   if (sep.length) return pipe.length - sep.length - sep.length; // -headers -separadores
-  const bullets = lineas.filter(l => /^\s*[-*]\s+\[/.test(l));  // - [texto](link)
-  return bullets.length;
+  const conLink = lineas.filter(l => /^\s*[-*]\s+\[/.test(l));  // - [texto](link)
+  if (conLink.length) return conLink.length;
+  return lineas.filter(l => /^\s*[-*]\s+\S/.test(l)).length;    // bullets sin link (preferencias)
 }
 
 // --- enriquecimientos baratos por subsistema conocido ---
@@ -2502,15 +3041,38 @@ function detallePlanes(txt, estadosTxt) {
   const partes = orden.map(carp => `${cont[carp] || 0} ${carp}`);
   return `(${partes.join(' · ')})`;
 }
-// Las dos secciones por origen. Se aceptan los encabezados viejos ("## Base (harness vN)" /
-// "## Adaptaciones") mientras haya Agentes Desplegados sin nivelar. La version ya no se muestra:
-// vive en el plugin, no en el encabezado.
-function detallePreferencias(txt) {
+// Cuántas preferencias sumó este repo. El total ya está en el renglón; lo que no se ve sin abrir
+// el archivo es cuántas son propias, así que ese es el único número que se desglosa. Con
+// frontmatter cada archivo dice de qué origen es; sin frontmatter (forma vieja) los dos orígenes
+// viven adentro de un archivo, partidos por encabezado, y se aceptan además los viejos
+// ("## Base (harness vN)" / "## Adaptaciones") mientras haya Agentes Desplegados sin nivelar.
+function detallePreferencias(archivos) {
   const contar = t => t ? t.split(/\r?\n/).filter(l => /^\s*[-*]\s+\S/.test(l)).length : 0;
-  const partes = txt.split(/^##\s+(?:Preferencias del Agente Desplegado|Adaptaciones)\b[^\n]*$/mi);
-  const arriba = partes[0].split(/^##\s+(?:Preferencias del Agente Multiprop[oó]sito|Base)\b[^\n]*$/mi)[1];
-  const rioArriba = contar(arriba), delRepo = contar(partes[1]);
-  return `${rioArriba} del Agente Multipropósito · ${delRepo} del Agente Desplegado`;
+  let delRepo = 0, declarado = false;
+  for (const f of archivos) {
+    const t = leer(f), fm = frontmatterDe(t);
+    const m = fm && /^origen:\s*(\S+)/m.exec(fm);
+    if (!m) continue;
+    declarado = true;
+    if (m[1] === 'agente-desplegado') delRepo += contar(t);
+  }
+  if (!declarado) {
+    const txt = archivos.length ? leer(archivos[0]) : '';
+    delRepo = contar(txt.split(/^##\s+(?:Preferencias del Agente Desplegado|Adaptaciones)\b[^\n]*$/mi)[1]);
+  }
+  return `(${delRepo} propias del repo)`;
+}
+// Semántica guarda dos cosas de NATURALEZA distinta —vocabulario legítimo y relaciones vetadas—,
+// y el total solo no contesta ninguna de las dos preguntas que se le hacen al subsistema. Por eso
+// se abre; los subsistemas cuyos dos Índices guardan lo mismo (cambia el origen, no la naturaleza)
+// muestran un número solo. Cuál Índice es cuál sale de las columnas que declara, no de su nombre.
+function detalleSemantica(archivos) {
+  let legitimos = 0, vetados = 0;
+  for (const f of archivos) {
+    const t = leer(f), n = contarEntradas(t);
+    if (/Significado vetado/.test(t)) vetados += n; else legitimos += n;
+  }
+  return vetados ? `(${legitimos} legítimos · ${vetados} vetados)` : '';
 }
 
 // --- correr el lint del subsistema y contar hallazgos (misma heurística que ejecutar-control-cierre) ---
@@ -2551,12 +3113,13 @@ const subs = descubrirSubsistemas();
 const filas = [];
 let hallazgosTotal = 0, lintPeor = 'ok';
 for (const s of subs) {
-  const idx = indiceDe(s.dir);
-  const txt = idx ? leer(idx) : '';
-  let cuenta = idx ? contarEntradas(txt) : 0;
+  const idxs = indicesDe(s.dir);
+  const txt = idxs.map(leer).join('\n');
+  let cuenta = idxs.length ? contarEntradas(txt) : 0;
   let extra = '';
   if (s.nombre === 'planes') extra = detallePlanes(txt, leer(path.join(s.dir, 'ESTADOS.md')));
-  if (s.nombre === 'preferencias') { extra = detallePreferencias(txt); cuenta = null; }
+  if (s.nombre === 'preferencias') extra = detallePreferencias(idxs);
+  if (s.nombre === 'semantica') extra = detalleSemantica(idxs);
   let lint = { estado: 'n/d', hallazgos: null };
   if (!SIN_LINT) {
     lint = correrLint(s.lint);
@@ -2564,9 +3127,10 @@ for (const s of subs) {
     if (lint.estado === 'error') lintPeor = 'error';
     else if (lint.estado === 'hallazgos' && lintPeor !== 'error') lintPeor = 'hallazgos';
   }
-  // En planes el `extra` ya trae los sustantivos (pendientes/ejecutados/descartados):
-  // el sustantivo "planes" sería redundante y desborda el marco → se omite (queda "34 (…)").
-  const sustantivo = s.nombre === 'planes' ? '' : (SUSTANTIVO[s.nombre] || 'entradas');
+  // Donde hay desglose, el `extra` ya trae los sustantivos (pendientes/ejecutados, legítimos/
+  // vetados, propias del repo): repetir el del subsistema sería redundante y desborda el marco,
+  // así que se omite y queda "80 (…)". El renglón ya dice de qué subsistema se trata.
+  const sustantivo = extra ? '' : (SUSTANTIVO[s.nombre] || 'entradas');
   filas.push({ nombre: s.nombre, cuenta, extra, sustantivo, lint });
 }
 
@@ -2798,6 +3362,97 @@ Lint `.claude/conducta/lint-conducta/lint-conducta.js` (Node, sin dependencias, 
 // propio subsistema (por eso no comparte el fragmento repoRoot de los otros lints).
 // Uso: node lint-conducta.js [<carpeta conducta>]   (default: .claude/conducta)
 const fs = require('fs'), path = require('path');
+
+// --- Indices por frontmatter ---
+// Un subsistema tiene uno o mas Indices y cada archivo se declara a si mismo en un frontmatter
+// minimo (indice, origen, columnas). El lint los descubre por ese frontmatter y no por un nombre
+// fijo: el nombre dejo de codificar el origen, asi que deducirlo del nombre volveria a atarlos.
+// Se acepta la forma vieja —el archivo de siempre, sin frontmatter— mientras haya Agentes
+// Desplegados sin nivelar: ahi el origen queda en null y los chequeos que dependen de el no corren.
+const ORIGENES = ['agente-multiproposito', 'agente-desplegado'];
+const ETIQUETA_ORIGEN = { 'agente-multiproposito': 'Agente Multipropósito', 'agente-desplegado': 'Agente Desplegado' };
+function leerFrontmatter(txt) {
+  const m = /^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/.exec(txt);
+  if (!m) return null;
+  const campos = {};
+  for (const linea of m[1].split(/\r?\n/)) {
+    const kv = /^([a-zA-Z_][\w-]*):\s*(.*)$/.exec(linea);
+    if (!kv) continue;
+    const v = kv[2].trim();
+    campos[kv[1]] = /^\[.*\]$/.test(v)
+      ? v.slice(1, -1).split(',').map(x => x.trim().replace(/^['"]|['"]$/g, '')).filter(Boolean)
+      : v.replace(/^['"]|['"]$/g, '');
+  }
+  return campos;
+}
+// Encabezado real de la primera tabla markdown del archivo (null si no tiene tabla).
+function cabeceraTabla(txt) {
+  for (const linea of txt.split(/\r?\n/)) {
+    const t = linea.trim();
+    if (!t.startsWith('|')) continue;
+    const celdas = t.split('|').slice(1, -1).map(c => c.replace(/\*/g, '').trim());
+    if (/^:?-{2,}:?$/.test((celdas[0] || '').replace(/\s/g, ''))) continue;
+    return celdas;
+  }
+  return null;
+}
+// Indices de un subsistema: los .md de su carpeta con frontmatter `indice:`, mas los nombres
+// viejos que todavia no lo declaran. Da {archivo, nombre, texto, indice, origen, columnas, cabecera}.
+function indicesDe(dirSub, nombresViejos) {
+  const salida = [];
+  let entradas = [];
+  try { entradas = fs.readdirSync(dirSub); } catch (e) { return salida; }
+  for (const nombre of entradas.sort()) {
+    if (!nombre.endsWith('.md')) continue;
+    const archivo = path.join(dirSub, nombre);
+    let txt; try { txt = fs.readFileSync(archivo, 'utf8'); } catch (e) { continue; }
+    const fm = leerFrontmatter(txt);
+    const declarado = !!(fm && fm.indice);
+    if (!declarado && !(nombresViejos || []).includes(nombre)) continue;
+    salida.push({
+      archivo, nombre, texto: txt,
+      indice: declarado ? fm.indice : null,
+      origen: declarado ? (fm.origen || '') : null,
+      columnas: declarado && Array.isArray(fm.columnas) ? fm.columnas : null,
+      cabecera: cabeceraTabla(txt),
+    });
+  }
+  return salida;
+}
+// Dos controles sobre lo declarado. [a] Las columnas, en los DOS sentidos: la declarada que la
+// tabla no tiene y la que la tabla tiene sin declarar. Con un solo sentido el frontmatter puede
+// mentir por omision, y el codigo que ubica una columna por nombre —el repartidor de conducta
+// ubica Momento y Clase— deja de encontrarla sin emitir ningun error. [b] El manifiesto contra el
+// frontmatter: el manifiesto lista los Indices como texto fijo y el frontmatter es la autoridad;
+// sin compararlos, el mismo dato queda escrito en dos lugares que nada sincroniza.
+function problemasDeIndices(idxs, manifiestoTxt) {
+  const out = [];
+  const declarados = idxs.filter(i => i.indice);
+  for (const i of declarados) {
+    if (!ORIGENES.includes(i.origen)) out.push(`${i.nombre}: origen "${i.origen}" invalido (validos: ${ORIGENES.join(' / ')})`);
+    if (!i.columnas) continue;
+    if (!i.cabecera) { out.push(`${i.nombre}: declara columnas pero no se encontro la tabla`); continue; }
+    for (const c of i.columnas) if (!i.cabecera.includes(c)) out.push(`${i.nombre}: columna declarada "${c}" que la tabla no tiene`);
+    for (const c of i.cabecera) if (!i.columnas.includes(c)) out.push(`${i.nombre}: columna "${c}" en la tabla, sin declarar en el frontmatter`);
+  }
+  if (manifiestoTxt == null) return out;
+  const linea = /^\*\*[IÍ]ndices?:\*\*(.*)$/m.exec(manifiestoTxt);
+  if (!linea) {
+    if (declarados.length) out.push('MANIFIESTO.md: falta el campo Indices, que lista los Indices del subsistema con su origen');
+    return out;
+  }
+  const listados = [...linea[1].matchAll(/`([^`]+\.md)`\s*\(([^)]+)\)/g)].map(m => ({ nombre: m[1], origen: m[2].trim() }));
+  for (const i of declarados) {
+    const l = listados.find(x => x.nombre === i.nombre);
+    if (!l) out.push(`MANIFIESTO.md: no lista el Indice ${i.nombre}`);
+    else if (l.origen !== ETIQUETA_ORIGEN[i.origen]) out.push(`MANIFIESTO.md: ${i.nombre} figura como "${l.origen}" y su frontmatter dice "${i.origen}"`);
+  }
+  for (const l of listados) {
+    if (!declarados.some(i => i.nombre === l.nombre)) out.push(`MANIFIESTO.md: lista ${l.nombre}, que no existe o no declara frontmatter`);
+  }
+  return out;
+}
+// --- fin indices por frontmatter ---
 // La ruta es el primer argumento que NO sea una bandera: con `--quiet` primero, tomarlo por
 // posicion daba una carpeta inexistente y el lint reportaba que faltaban MOMENTOS.md e INDICE.md.
 const root = path.resolve(process.argv.slice(2).find(a => !a.startsWith('--')) || '.claude/conducta');
@@ -2827,7 +3482,7 @@ function filasTabla(txt, requeridas) {
   return { cols, filas: out };
 }
 
-const problemas = { estructura: [], momentoInexistente: [], claseInvalida: [], estadoInvalido: [], inyectarSinTexto: [], vigenteSinRepartidor: [] };
+const problemas = { estructura: [], indices: [], momentoInexistente: [], claseInvalida: [], estadoInvalido: [], inyectarSinTexto: [], vigenteSinRepartidor: [] };
 
 // -- vocabulario de momentos --------------------------------------------
 const momPath = path.join(root, 'MOMENTOS.md');
@@ -2840,13 +3495,17 @@ else {
 }
 
 // -- registro de reglas -------------------------------------------------
-const idxPath = path.join(root, 'INDICE.md');
-if (!fs.existsSync(idxPath)) problemas.estructura.push('falta INDICE.md (registro de reglas)');
-else {
+// Las reglas se reparten entre uno o dos Indices (uno por origen) y el repartidor los lee a todos:
+// mirar uno solo dejaria las reglas del otro sin validar, calladas.
+const indices = indicesDe(root, ['INDICE.md']);
+const maniPath = path.join(root, 'MANIFIESTO.md');
+problemas.indices.push(...problemasDeIndices(indices, fs.existsSync(maniPath) ? fs.readFileSync(maniPath, 'utf8') : null));
+if (!indices.length) problemas.estructura.push('falta el Indice de reglas (INDICE.md)');
+for (const idx of indices) {
   const requeridas = ['regla', 'momento', 'clase', 'contenido', 'estado'];
-  const { cols, filas } = filasTabla(fs.readFileSync(idxPath, 'utf8'), requeridas);
-  if (!cols) problemas.estructura.push(`INDICE.md: no se encontro la tabla (columnas ${requeridas.join(', ')})`);
-  else for (const f of filas) {
+  const { cols, filas } = filasTabla(idx.texto, requeridas);
+  if (!cols) { problemas.estructura.push(`${idx.nombre}: no se encontro la tabla (columnas ${requeridas.join(', ')})`); continue; }
+  for (const f of filas) {
     const regla = f.regla || '(sin nombre)';
     const momento = f.momento.toLowerCase(), clase = f.clase.toLowerCase(), estado = f.estado.toLowerCase();
     if (!momentos.has(momento)) problemas.momentoInexistente.push(`"${regla}" -> momento "${f.momento}" no esta en MOMENTOS.md`);
@@ -2862,6 +3521,7 @@ else {
 // -- salida -------------------------------------------------------------
 const secciones = [
   ['ESTRUCTURA', problemas.estructura],
+  ['INDICES DECLARADOS (frontmatter vs tabla vs manifiesto)', problemas.indices],
   ['MOMENTO INEXISTENTE (regla apunta a un momento fuera de MOMENTOS.md)', problemas.momentoInexistente],
   ['CLASE INVALIDA', problemas.claseInvalida],
   ['ESTADO INVALIDO', problemas.estadoInvalido],
@@ -2904,14 +3564,119 @@ Contenido exacto (Node, sin dependencias, sin red):
 // NO detecta contradicciones semanticas (eso es la capa semantica, a pedido).
 // Uso: node lint-preferencias.js [<carpeta .claude>]   (default: .claude)
 const fs = require('fs'), path = require('path');
+
+// --- Indices por frontmatter ---
+// Un subsistema tiene uno o mas Indices y cada archivo se declara a si mismo en un frontmatter
+// minimo (indice, origen, columnas). El lint los descubre por ese frontmatter y no por un nombre
+// fijo: el nombre dejo de codificar el origen, asi que deducirlo del nombre volveria a atarlos.
+// Se acepta la forma vieja —el archivo de siempre, sin frontmatter— mientras haya Agentes
+// Desplegados sin nivelar: ahi el origen queda en null y los chequeos que dependen de el no corren.
+const ORIGENES = ['agente-multiproposito', 'agente-desplegado'];
+const ETIQUETA_ORIGEN = { 'agente-multiproposito': 'Agente Multipropósito', 'agente-desplegado': 'Agente Desplegado' };
+function leerFrontmatter(txt) {
+  const m = /^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/.exec(txt);
+  if (!m) return null;
+  const campos = {};
+  for (const linea of m[1].split(/\r?\n/)) {
+    const kv = /^([a-zA-Z_][\w-]*):\s*(.*)$/.exec(linea);
+    if (!kv) continue;
+    const v = kv[2].trim();
+    campos[kv[1]] = /^\[.*\]$/.test(v)
+      ? v.slice(1, -1).split(',').map(x => x.trim().replace(/^['"]|['"]$/g, '')).filter(Boolean)
+      : v.replace(/^['"]|['"]$/g, '');
+  }
+  return campos;
+}
+// Encabezado real de la primera tabla markdown del archivo (null si no tiene tabla).
+function cabeceraTabla(txt) {
+  for (const linea of txt.split(/\r?\n/)) {
+    const t = linea.trim();
+    if (!t.startsWith('|')) continue;
+    const celdas = t.split('|').slice(1, -1).map(c => c.replace(/\*/g, '').trim());
+    if (/^:?-{2,}:?$/.test((celdas[0] || '').replace(/\s/g, ''))) continue;
+    return celdas;
+  }
+  return null;
+}
+// Indices de un subsistema: los .md de su carpeta con frontmatter `indice:`, mas los nombres
+// viejos que todavia no lo declaran. Da {archivo, nombre, texto, indice, origen, columnas, cabecera}.
+function indicesDe(dirSub, nombresViejos) {
+  const salida = [];
+  let entradas = [];
+  try { entradas = fs.readdirSync(dirSub); } catch (e) { return salida; }
+  for (const nombre of entradas.sort()) {
+    if (!nombre.endsWith('.md')) continue;
+    const archivo = path.join(dirSub, nombre);
+    let txt; try { txt = fs.readFileSync(archivo, 'utf8'); } catch (e) { continue; }
+    const fm = leerFrontmatter(txt);
+    const declarado = !!(fm && fm.indice);
+    if (!declarado && !(nombresViejos || []).includes(nombre)) continue;
+    salida.push({
+      archivo, nombre, texto: txt,
+      indice: declarado ? fm.indice : null,
+      origen: declarado ? (fm.origen || '') : null,
+      columnas: declarado && Array.isArray(fm.columnas) ? fm.columnas : null,
+      cabecera: cabeceraTabla(txt),
+    });
+  }
+  return salida;
+}
+// Dos controles sobre lo declarado. [a] Las columnas, en los DOS sentidos: la declarada que la
+// tabla no tiene y la que la tabla tiene sin declarar. Con un solo sentido el frontmatter puede
+// mentir por omision, y el codigo que ubica una columna por nombre —el repartidor de conducta
+// ubica Momento y Clase— deja de encontrarla sin emitir ningun error. [b] El manifiesto contra el
+// frontmatter: el manifiesto lista los Indices como texto fijo y el frontmatter es la autoridad;
+// sin compararlos, el mismo dato queda escrito en dos lugares que nada sincroniza.
+function problemasDeIndices(idxs, manifiestoTxt) {
+  const out = [];
+  const declarados = idxs.filter(i => i.indice);
+  for (const i of declarados) {
+    if (!ORIGENES.includes(i.origen)) out.push(`${i.nombre}: origen "${i.origen}" invalido (validos: ${ORIGENES.join(' / ')})`);
+    if (!i.columnas) continue;
+    if (!i.cabecera) { out.push(`${i.nombre}: declara columnas pero no se encontro la tabla`); continue; }
+    for (const c of i.columnas) if (!i.cabecera.includes(c)) out.push(`${i.nombre}: columna declarada "${c}" que la tabla no tiene`);
+    for (const c of i.cabecera) if (!i.columnas.includes(c)) out.push(`${i.nombre}: columna "${c}" en la tabla, sin declarar en el frontmatter`);
+  }
+  if (manifiestoTxt == null) return out;
+  const linea = /^\*\*[IÍ]ndices?:\*\*(.*)$/m.exec(manifiestoTxt);
+  if (!linea) {
+    if (declarados.length) out.push('MANIFIESTO.md: falta el campo Indices, que lista los Indices del subsistema con su origen');
+    return out;
+  }
+  const listados = [...linea[1].matchAll(/`([^`]+\.md)`\s*\(([^)]+)\)/g)].map(m => ({ nombre: m[1], origen: m[2].trim() }));
+  for (const i of declarados) {
+    const l = listados.find(x => x.nombre === i.nombre);
+    if (!l) out.push(`MANIFIESTO.md: no lista el Indice ${i.nombre}`);
+    else if (l.origen !== ETIQUETA_ORIGEN[i.origen]) out.push(`MANIFIESTO.md: ${i.nombre} figura como "${l.origen}" y su frontmatter dice "${i.origen}"`);
+  }
+  for (const l of listados) {
+    if (!declarados.some(i => i.nombre === l.nombre)) out.push(`MANIFIESTO.md: lista ${l.nombre}, que no existe o no declara frontmatter`);
+  }
+  return out;
+}
+// --- fin indices por frontmatter ---
 const claudeDir = path.resolve(process.argv[2] || '.claude');
-const prefFile = path.join(claudeDir, 'preferencias', 'PREFERENCIAS.md');
+const dirPref = path.join(claudeDir, 'preferencias');
 const problems = [];
 
-if (!fs.existsSync(prefFile)) {
-  problems.push('no existe preferencias/PREFERENCIAS.md');
+// Un Indice por origen. La forma vieja —un solo archivo con las dos secciones adentro— se acepta
+// mientras haya Agentes Desplegados sin nivelar; ahi el corte se chequea por encabezado.
+const indices = indicesDe(dirPref, ['PREFERENCIAS.md']);
+const declarados = indices.filter(i => i.indice);
+const maniPath = path.join(dirPref, 'MANIFIESTO.md');
+problems.push(...problemasDeIndices(indices, fs.existsSync(maniPath) ? fs.readFileSync(maniPath, 'utf8') : null));
+
+if (!indices.length) {
+  problems.push('no existe ningun Indice de preferencias en preferencias/ (PREFERENCIAS.md)');
+} else if (declarados.length) {
+  for (const origen of ORIGENES) {
+    if (!declarados.some(i => i.origen === origen)) problems.push(`ningun Indice de preferencias declara origen "${origen}"`);
+  }
+  for (const i of declarados) {
+    if (i.texto.replace(/^---[\s\S]*?\n---/, '').trim().length < 50) problems.push(`${i.nombre} casi vacio (sin contenido util)`);
+  }
 } else {
-  const txt = fs.readFileSync(prefFile, 'utf8');
+  const txt = indices[0].texto;
   // Los nombres viejos ("## Base" / "## Adaptaciones") se aceptan mientras haya Agentes
   // Desplegados sin nivelar: el nivelador los migra, y hasta entonces el lint no debe fallar.
   if (!/^##\s+(Preferencias del Agente Multiprop[oó]sito|Base)\b/mi.test(txt)) problems.push('falta la seccion "## Preferencias del Agente Multiproposito"');
@@ -2919,60 +3684,70 @@ if (!fs.existsSync(prefFile)) {
   if (txt.trim().length < 50) problems.push('PREFERENCIAS.md casi vacio (sin contenido util)');
 }
 
-// @import en el punto de entrada (las preferencias tienen que estar siempre en contexto).
+// Una linea de importacion POR CADA Indice declarado: las preferencias tienen que estar siempre en
+// contexto, y con dos archivos un solo import deja al otro afuera sin que nada lo marque.
 // Fuente: AGENTS.md en la raiz; layouts legacy: CLAUDE.md en la raiz o dentro de <config>/.
 const root = path.dirname(claudeDir);
 const entradas = [path.join(root, 'AGENTS.md'), path.join(root, 'CLAUDE.md'), path.join(claudeDir, 'CLAUDE.md')]
   .filter(f => fs.existsSync(f));
 if (entradas.length) {
+  const textos = entradas.map(f => fs.readFileSync(f, 'utf8'));
   // el import lleva el prefijo segun donde viva el punto de entrada: @preferencias/... o @.claude/preferencias/...
-  const importa = entradas.some(f => /@[\w./-]*preferencias\/PREFERENCIAS\.md/.test(fs.readFileSync(f, 'utf8')));
-  if (!importa) {
-    problems.push('ningun punto de entrada (AGENTS.md/CLAUDE.md) importa @preferencias/PREFERENCIAS.md (no queda en contexto)');
+  for (const i of (indices.length ? indices : [])) {
+    const re = new RegExp('@[\\w./-]*preferencias/' + i.nombre.replace(/\./g, '\\.'));
+    if (!textos.some(t => re.test(t)))
+      problems.push(`ningun punto de entrada (AGENTS.md/CLAUDE.md) importa @preferencias/${i.nombre} (no queda en contexto)`);
   }
 } else {
   problems.push('no existe punto de entrada (AGENTS.md o CLAUDE.md; no se pudo verificar el @import)');
 }
 
-console.log(`== LINT PREFERENCIAS: ${prefFile} ==`);
+console.log(`== LINT PREFERENCIAS: ${dirPref} ==`);
 console.log(`hallazgos: ${problems.length}\n`);
 if (!problems.length) console.log('    (ok)');
 else problems.forEach(p => console.log(`    [x] ${p}`));
 ```
 
 
-## §Piezas vigentes del Agente Multipropósito — copias textuales
+## §Componentes de Subsistema que se copian tal cual
 
-Estas piezas se instalan en sus rutas indicadas. Cada bloque es copia literal de la fuente viva del Agente Multipropósito.
+Estos Componentes de Subsistema se instalan en sus rutas indicadas. Cada bloque es copia literal del archivo vivo del Agente Multipropósito.
 
 ### `.claude/subsistemas/MANIFIESTO.md`
 
 ````markdown
 # Subsistemas — manifiesto de subsistema
 
-Este directorio cataloga los subsistemas instalados del Agente Multipropósito. `SUBSISTEMAS.md` separa los que pertenecen a la Base de los que nacieron del Propósito y apunta a la casa de cada uno; no guarda el contenido de esos subsistemas.
+Este directorio cataloga los subsistemas instalados del Agente Multipropósito y apunta a la casa de cada uno; no guarda el contenido de esos subsistemas. Un archivo por origen: los que pertenecen a la Base y los que nacieron del Propósito.
 
-**Disparador:** consultar el catálogo para descubrir qué casas existen y quién debe recibir una pieza de Aprendizaje. Escribir al agregar, retirar o cambiar de origen un subsistema.
+**Disparador:** consultar el catálogo para descubrir qué casas existen y quién debe recibir un Componente de Subsistema de Aprendizaje. Escribir al agregar, retirar o cambiar de origen un subsistema.
 
-**Skills:** `agregar-subsistema` (crea una casa nueva siguiendo el Patrón) y `reubicar-aprendizaje` (coordina con las habilidades dueñas el reparto guiado de piezas antiguas).
+**Skills:** `agregar-subsistema` (crea una casa nueva siguiendo el Patrón) y `reubicar-aprendizaje` (coordina con las habilidades dueñas el reparto guiado de los Componentes de Subsistema antiguos).
 
-**Índice: se carga siempre** (liviano). Al cerrar una tarea que cambió el catálogo o sus casas, correr:
+**Índices:** `SUBSISTEMAS.md` (Agente Multipropósito) · `SUBSISTEMAS-LOCAL.md` (Agente Desplegado). **Se cargan siempre** (livianos). Al cerrar una tarea que cambió el catálogo o sus casas, correr:
 
 ```bash
 node .claude/subsistemas/lint-subsistemas/lint-subsistemas.js
 ```
 
 @SUBSISTEMAS.md
+@SUBSISTEMAS-LOCAL.md
 ````
 
 ### `.claude/subsistemas/SUBSISTEMAS.md`
 
 ````markdown
+---
+indice: Subsistemas
+origen: agente-multiproposito
+columnas: [Subsistema, Qué guarda, Operación]
+---
+
 # Subsistemas
 
-Catálogo de casas persistentes del Agente Multipropósito. La Base la mantiene `amp:actualizar`; el Propósito puede sumar casas con `agregar-subsistema`.
+Catálogo de casas persistentes del Agente Multipropósito, separado por origen en **dos archivos** que lo declaran en su frontmatter: este (`origen: agente-multiproposito`, lo mantiene `amp:actualizar`, que lo reemplaza entero) y [`SUBSISTEMAS-LOCAL.md`](SUBSISTEMAS-LOCAL.md) (`origen: agente-desplegado`, las casas que suma el Propósito con `agregar-subsistema`; el nivelador no lo abre).
 
-## Subsistemas Base
+## Subsistemas del Agente Multipropósito
 
 | Subsistema | Qué guarda | Operación |
 |---|---|---|
@@ -2984,8 +3759,22 @@ Catálogo de casas persistentes del Agente Multipropósito. La Base la mantiene 
 | [decisiones](../decisiones/) | Decisiones estructurales | `registrar-decision` |
 | [herramientas](../herramientas/) | Herramientas repetibles y su registro | `registrar-herramienta` |
 | [conducta](../conducta/) | Reglas entregadas en el momento de actuar | `registrar-regla` |
+````
 
-## Subsistemas del Propósito
+### `.claude/subsistemas/SUBSISTEMAS-LOCAL.md`
+
+Nace **declarado y sin filas**, no vacío: el manifiesto que se instala lo nombra, y `agregar-subsistema` escribe siempre sobre un archivo que existe.
+
+````markdown
+---
+indice: Subsistemas del Agente Desplegado
+origen: agente-desplegado
+columnas: [Subsistema, Qué guarda, Operación]
+---
+
+# Subsistemas del Agente Desplegado
+
+Las casas que este repo suma para su Propósito con `agregar-subsistema`. El nivelador no toca este archivo. Las columnas y la convención completa están en [`SUBSISTEMAS.md`](SUBSISTEMAS.md).
 
 | Subsistema | Qué guarda | Operación |
 |---|---|---|
@@ -2996,11 +3785,11 @@ Catálogo de casas persistentes del Agente Multipropósito. La Base la mantiene 
 ````markdown
 # Subsistemas
 
-Un subsistema es una casa persistente con propósito propio. Sigue el Patrón mínimo: manifiesto para saber cuándo usarlo, índice o registro para descubrir sus piezas, entradas propias y un lint mecánico.
+Un subsistema es una casa persistente con propósito propio. Sigue el Patrón mínimo: manifiesto para saber cuándo usarlo, índice o registro para descubrir sus entradas, entradas propias y un lint mecánico.
 
-`SUBSISTEMAS.md` es el catálogo, no un segundo índice de todo el contenido. La separación Base/Propósito permite que el actualizador reemplace las filas que distribuye sin tocar las casas creadas por el repo.
+`SUBSISTEMAS.md` es el catálogo, no un segundo índice de todo el contenido. La separación por origen en dos archivos —`SUBSISTEMAS.md` y `SUBSISTEMAS-LOCAL.md`, cada uno declarado en su frontmatter— permite que el actualizador reemplace entero el que distribuye sin abrir el de las casas creadas por el repo.
 
-La reubicación de Aprendizaje antiguo se hace pieza por pieza. `reubicar-aprendizaje` inventaría las piezas, pide a la habilidad del destino que evalúe pertenencia y no mueve ni parte nada sin confirmación explícita del usuario.
+La reubicación de Aprendizaje antiguo se hace de a un Componente de Subsistema por vez. `reubicar-aprendizaje` los inventaría, pide a la habilidad del destino que evalúe pertenencia y no mueve ni parte nada sin confirmación explícita del usuario.
 ````
 
 ### `.claude/subsistemas/lint-subsistemas/README.md`
@@ -3023,17 +3812,112 @@ node .claude/subsistemas/lint-subsistemas/lint-subsistemas.js
 const fs = require('fs');
 const path = require('path');
 
+// --- Indices por frontmatter ---
+// Un subsistema tiene uno o mas Indices y cada archivo se declara a si mismo en un frontmatter
+// minimo (indice, origen, columnas). El lint los descubre por ese frontmatter y no por un nombre
+// fijo: el nombre dejo de codificar el origen, asi que deducirlo del nombre volveria a atarlos.
+// Se acepta la forma vieja —el archivo de siempre, sin frontmatter— mientras haya Agentes
+// Desplegados sin nivelar: ahi el origen queda en null y los chequeos que dependen de el no corren.
+const ORIGENES = ['agente-multiproposito', 'agente-desplegado'];
+const ETIQUETA_ORIGEN = { 'agente-multiproposito': 'Agente Multipropósito', 'agente-desplegado': 'Agente Desplegado' };
+function leerFrontmatter(txt) {
+  const m = /^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/.exec(txt);
+  if (!m) return null;
+  const campos = {};
+  for (const linea of m[1].split(/\r?\n/)) {
+    const kv = /^([a-zA-Z_][\w-]*):\s*(.*)$/.exec(linea);
+    if (!kv) continue;
+    const v = kv[2].trim();
+    campos[kv[1]] = /^\[.*\]$/.test(v)
+      ? v.slice(1, -1).split(',').map(x => x.trim().replace(/^['"]|['"]$/g, '')).filter(Boolean)
+      : v.replace(/^['"]|['"]$/g, '');
+  }
+  return campos;
+}
+// Encabezado real de la primera tabla markdown del archivo (null si no tiene tabla).
+function cabeceraTabla(txt) {
+  for (const linea of txt.split(/\r?\n/)) {
+    const t = linea.trim();
+    if (!t.startsWith('|')) continue;
+    const celdas = t.split('|').slice(1, -1).map(c => c.replace(/\*/g, '').trim());
+    if (/^:?-{2,}:?$/.test((celdas[0] || '').replace(/\s/g, ''))) continue;
+    return celdas;
+  }
+  return null;
+}
+// Indices de un subsistema: los .md de su carpeta con frontmatter `indice:`, mas los nombres
+// viejos que todavia no lo declaran. Da {archivo, nombre, texto, indice, origen, columnas, cabecera}.
+function indicesDe(dirSub, nombresViejos) {
+  const salida = [];
+  let entradas = [];
+  try { entradas = fs.readdirSync(dirSub); } catch (e) { return salida; }
+  for (const nombre of entradas.sort()) {
+    if (!nombre.endsWith('.md')) continue;
+    const archivo = path.join(dirSub, nombre);
+    let txt; try { txt = fs.readFileSync(archivo, 'utf8'); } catch (e) { continue; }
+    const fm = leerFrontmatter(txt);
+    const declarado = !!(fm && fm.indice);
+    if (!declarado && !(nombresViejos || []).includes(nombre)) continue;
+    salida.push({
+      archivo, nombre, texto: txt,
+      indice: declarado ? fm.indice : null,
+      origen: declarado ? (fm.origen || '') : null,
+      columnas: declarado && Array.isArray(fm.columnas) ? fm.columnas : null,
+      cabecera: cabeceraTabla(txt),
+    });
+  }
+  return salida;
+}
+// Dos controles sobre lo declarado. [a] Las columnas, en los DOS sentidos: la declarada que la
+// tabla no tiene y la que la tabla tiene sin declarar. Con un solo sentido el frontmatter puede
+// mentir por omision, y el codigo que ubica una columna por nombre —el repartidor de conducta
+// ubica Momento y Clase— deja de encontrarla sin emitir ningun error. [b] El manifiesto contra el
+// frontmatter: el manifiesto lista los Indices como texto fijo y el frontmatter es la autoridad;
+// sin compararlos, el mismo dato queda escrito en dos lugares que nada sincroniza.
+function problemasDeIndices(idxs, manifiestoTxt) {
+  const out = [];
+  const declarados = idxs.filter(i => i.indice);
+  for (const i of declarados) {
+    if (!ORIGENES.includes(i.origen)) out.push(`${i.nombre}: origen "${i.origen}" invalido (validos: ${ORIGENES.join(' / ')})`);
+    if (!i.columnas) continue;
+    if (!i.cabecera) { out.push(`${i.nombre}: declara columnas pero no se encontro la tabla`); continue; }
+    for (const c of i.columnas) if (!i.cabecera.includes(c)) out.push(`${i.nombre}: columna declarada "${c}" que la tabla no tiene`);
+    for (const c of i.cabecera) if (!i.columnas.includes(c)) out.push(`${i.nombre}: columna "${c}" en la tabla, sin declarar en el frontmatter`);
+  }
+  if (manifiestoTxt == null) return out;
+  const linea = /^\*\*[IÍ]ndices?:\*\*(.*)$/m.exec(manifiestoTxt);
+  if (!linea) {
+    if (declarados.length) out.push('MANIFIESTO.md: falta el campo Indices, que lista los Indices del subsistema con su origen');
+    return out;
+  }
+  const listados = [...linea[1].matchAll(/`([^`]+\.md)`\s*\(([^)]+)\)/g)].map(m => ({ nombre: m[1], origen: m[2].trim() }));
+  for (const i of declarados) {
+    const l = listados.find(x => x.nombre === i.nombre);
+    if (!l) out.push(`MANIFIESTO.md: no lista el Indice ${i.nombre}`);
+    else if (l.origen !== ETIQUETA_ORIGEN[i.origen]) out.push(`MANIFIESTO.md: ${i.nombre} figura como "${l.origen}" y su frontmatter dice "${i.origen}"`);
+  }
+  for (const l of listados) {
+    if (!declarados.some(i => i.nombre === l.nombre)) out.push(`MANIFIESTO.md: lista ${l.nombre}, que no existe o no declara frontmatter`);
+  }
+  return out;
+}
+// --- fin indices por frontmatter ---
+
 const claude = path.resolve(process.argv[2] || '.claude');
-const catalogo = path.join(claude, 'subsistemas', 'SUBSISTEMAS.md');
+const dirCatalogo = path.join(claude, 'subsistemas');
 const ignorar = new Set(['skills', 'tmp']);
 const errores = [];
 
-if (!fs.existsSync(catalogo)) {
-  console.error('[!] Falta .claude/subsistemas/SUBSISTEMAS.md');
+// El catalogo se reparte entre uno o dos Indices (uno por origen); las filas salen de todos.
+const catalogos = indicesDe(dirCatalogo, ['SUBSISTEMAS.md']);
+if (!catalogos.length) {
+  console.error('[!] Falta el Indice del catalogo en .claude/subsistemas/ (SUBSISTEMAS.md)');
   process.exit(1);
 }
+const maniPath = path.join(dirCatalogo, 'MANIFIESTO.md');
+errores.push(...problemasDeIndices(catalogos, fs.existsSync(maniPath) ? fs.readFileSync(maniPath, 'utf8') : null));
 
-const texto = fs.readFileSync(catalogo, 'utf8');
+const texto = catalogos.map(i => i.texto).join('\n');
 const filas = [...texto.matchAll(/^\|\s*\[([^\]]+)\]\(([^)]+)\)\s*\|/gm)]
   .map(([, nombre, enlace]) => ({ nombre: nombre.trim(), enlace: enlace.trim() }));
 const nombres = filas.map(f => f.nombre);
@@ -3043,7 +3927,7 @@ for (const nombre of new Set(nombres)) {
 }
 
 for (const fila of filas) {
-  const destino = path.resolve(path.dirname(catalogo), fila.enlace);
+  const destino = path.resolve(dirCatalogo, fila.enlace);
   if (!fs.existsSync(destino) || !fs.statSync(destino).isDirectory()) errores.push(`casa inexistente: ${fila.nombre} -> ${fila.enlace}`);
   else if (!fs.existsSync(path.join(destino, 'MANIFIESTO.md')) && fila.nombre !== 'preferencias')
     errores.push(`sin MANIFIESTO.md: ${fila.nombre}`);
@@ -3159,7 +4043,7 @@ Relacionado: [[flujo-planes]] (consultar/registrar decisiones al cerrar planes).
 ````markdown
 # Herramientas
 
-Las **Herramientas** del repo son las *tools* que el **Propósito** del repo requiere y el agente invoca para tareas repetibles. Tipos: `script`, `skill` local del repo, `MCP` local. Viven catalogadas en `.claude/herramientas/INDICE.md` — tabla (Herramienta | Tipo | Qué hace | Cómo se invoca | Estado). Cada fila apunta a donde vive la tool: un `script` en su carpeta `<tool>/` bajo herramientas, una `skill` en `.claude/skills/<skill>/`, un `MCP` en `.mcp.json`.
+Las **Herramientas** del repo son las *tools* que el **Propósito** del repo requiere y el agente invoca para tareas repetibles. Tipos: `script`, `skill` local del repo, `MCP` local. Viven catalogadas en `.claude/herramientas/INDICE.md` y `INDICE-LOCAL.md` —un archivo por origen, declarado en su frontmatter— con la misma tabla (Herramienta | Tipo | Qué hace | Cómo se invoca | Estado). Cada fila apunta a donde vive la tool: un `script` en su carpeta `<tool>/` bajo herramientas, una `skill` en `.claude/skills/<skill>/`, un `MCP` en `.mcp.json`.
 
 **Distinción clave:** los **lints de subsistema** (`lint-subsistemas`, `lint-semantica`, …) **no** son Herramientas. Son infraestructura del Patrón de cada subsistema (índice + entradas + **lint**) y viven con su subsistema. En el registro de Herramientas solo van tools del Propósito.
 
@@ -3167,7 +4051,7 @@ Las **Herramientas** del repo son las *tools* que el **Propósito** del repo req
 
 **How to apply:**
 
-1. Toda Herramienta nueva va al registro `.claude/herramientas/INDICE.md` (una fila), con su `Tipo`. Un `script` vive en `.claude/herramientas/<tool>/` con su `README.md` (nunca suelto); una `skill`/`MCP` se apunta a donde vive.
+1. Toda Herramienta nueva del repo va al registro `.claude/herramientas/INDICE-LOCAL.md` (una fila), con su `Tipo`. Un `script` vive en `.claude/herramientas/<tool>/` con su `README.md` (nunca suelto); una `skill`/`MCP` se apunta a donde vive.
 2. Marcar `Estado`; los `obsoleto` se pueden depurar.
 3. ⚠️ **Refs por ruta:** una tool referenciada por ruta en `settings.local.json`/`settings.json` (regla de permiso), en `.gitignore` o en un hook NO se mueve/renombra alegremente — rompe el match por prefijo exacto y se pierde la pre-autorización (en headless, denegación directa). Antes de mover, grep su ruta; si aparece, actualizar la referencia en el mismo paso.
 4. **Al cerrar** una tarea que tocó Herramientas, correr el lint: `node .claude/herramientas/lint-herramientas/lint-herramientas.js` (README por herramienta local, registro completo, filas colgadas, refs por ruta de lint en settings).
@@ -3184,7 +4068,7 @@ Relacionado: [[flujo-planes]], [[base-conocimiento]].
 
 El subsistema `conducta` asegura comportamientos del tipo **"cuando hagas X, asegurate de Y"**: ata **momentos** del flujo a **acciones**. Vive en `.claude/conducta/`:
 
-- `INDICE.md` — el **registro de reglas**: cada fila ata un momento a una acción (`Regla | Momento | Clase | Contenido | Estado`). Separado por origen en dos secciones: **Reglas del Agente Multipropósito** (el nivelador las reemplaza enteras) y **Reglas del Agente Desplegado** (las suma cada repo; el nivelador no las toca).
+- `INDICE.md` e `INDICE-LOCAL.md` — el **registro de reglas**: cada fila ata un momento a una acción (`Regla | Momento | Clase | Contenido | Estado`). Separado por origen en **dos archivos**, cada uno con su frontmatter: `INDICE.md` (`origen: agente-multiproposito`, el nivelador lo reemplaza entero) e `INDICE-LOCAL.md` (`origen: agente-desplegado`, lo suma cada repo; el nivelador no lo abre). El repartidor lee los dos.
 - `MOMENTOS.md` — el **vocabulario de momentos**: un momento es un **evento de hook + una condición que la máquina evalúa sin juicio** (`cada turno` = `UserPromptSubmit`; `al escribir` = `PreToolUse` sobre un `.md` de **cualquier parte del repo** salvo `tmp/`; `al cerrar tarea` = `Stop`, aún sin repartidor).
 - `establecer-conducta/` — el **hook repartidor**: un mismo script sirve a varios eventos; resuelve qué momento realiza el evento que lo disparó, lee el registro **vivo** y despacha las reglas `vigente` de ese momento según su clase, **combinando** el texto de las `inyectar` con lo que midan las `bloquear`. Agregar o cambiar una regla **no toca el hook**.
 - `lint-conducta/` — valida que toda regla apunte a un momento existente, con clase/estado válidos, y que ninguna regla `vigente` cuelgue de un momento sin repartidor.
@@ -3198,7 +4082,7 @@ El subsistema `conducta` asegura comportamientos del tipo **"cuando hagas X, ase
 **How to apply:**
 
 1. **En el flujo normal, no consultar `INDICE.md` a mano** — el hook entrega la regla que corresponde a cada momento.
-2. **Para agregar una regla:** elegir un momento existente de `MOMENTOS.md` (o declarar uno nuevo, en `declarado` hasta que tenga repartidor), sumar la fila a la sección que corresponda (`Reglas del Agente Multipropósito` si viene con el Agente Multipropósito, `Reglas del Agente Desplegado` si es de este repo), y correr el lint. Una regla `vigente` no puede colgar de un momento sin repartidor: va en `pendiente`.
+2. **Para agregar una regla:** elegir un momento existente de `MOMENTOS.md` (o declarar uno nuevo, en `declarado` hasta que tenga repartidor), sumar la fila al archivo que corresponda (`INDICE.md` si viene con el Agente Multipropósito, `INDICE-LOCAL.md` si es de este repo), y correr el lint. Una regla `vigente` no puede colgar de un momento sin repartidor: va en `pendiente`.
 3. **Al cerrar** una tarea que tocó conducta, correr el lint: `node .claude/conducta/lint-conducta/lint-conducta.js`.
 
 Relacionado: [[flujo-planes]] (construcción del subsistema por plan), [[semantica]] (el control de terminología consume los momentos `cada turno` y `al escribir`).
@@ -3256,7 +4140,7 @@ Relacionado: [[flujo-planes]].
 ````markdown
 # Conducta — manifiesto de subsistema
 
-El subsistema `conducta` asegura comportamientos del tipo "cuando hagas X, asegurate de Y": ata **momentos** del flujo a **acciones** (inyectar un texto, correr una Herramienta, bloquear). Sus reglas viven en `INDICE.md`, sus momentos en `MOMENTOS.md` y el hook `establecer-conducta/` las entrega. Trae las reglas del Agente Multipropósito y admite las del Agente Desplegado. Modelo completo en `README.md`.
+El subsistema `conducta` asegura comportamientos del tipo "cuando hagas X, asegurate de Y": ata **momentos** del flujo a **acciones** (inyectar un texto, correr una Herramienta, bloquear). Sus momentos viven en `MOMENTOS.md` y el hook `establecer-conducta/` entrega las reglas de sus dos registros. Modelo completo en `README.md`.
 
 Al escribir un `.md` de cualquier parte del repo, el control `detectar-terminologia-vetada/` **rechaza** el texto con un término vetado sin uso legítimo posible e **informa** los que dependen del significado: citarlo no se frena, usarlo sí.
 
@@ -3264,7 +4148,7 @@ Al escribir un `.md` de cualquier parte del repo, el control `detectar-terminolo
 
 **Skills:** `registrar-regla` (alta, modificación o baja guiada de una regla y su momento); instalación con `amp:inicializar`.
 
-**Índice: NO se carga siempre**: cargar las reglas al arranque es el modo de falla que este subsistema corrige — una regla cargada al inicio se recita, no se obedece (conocimiento `modos-de-falla-ante-reglas-escritas`). Se consulta solo para gestionarlo. Al cerrar una tarea que tocó `conducta`, correr el lint desde la raíz:
+**Índices:** `INDICE.md` (Agente Multipropósito) · `INDICE-LOCAL.md` (Agente Desplegado). **No se cargan siempre**: una regla cargada al inicio se recita, no se obedece (conocimiento `modos-de-falla-ante-reglas-escritas`). Al cerrar una tarea que tocó `conducta`, correr el lint desde la raíz:
 
 ```bash
 node .claude/conducta/lint-conducta/lint-conducta.js
@@ -3274,6 +4158,12 @@ node .claude/conducta/lint-conducta/lint-conducta.js
 ### `.claude/conducta/INDICE.md`
 
 ````markdown
+---
+indice: Reglas de conducta
+origen: agente-multiproposito
+columnas: [Regla, Momento, Clase, Contenido, Estado]
+---
+
 # Reglas de conducta
 
 Registro de las **reglas de conducta** del repo: cada fila ata un **momento** (del vocabulario en `MOMENTOS.md`) a una **acción**, para asegurar "cuando hagas X, asegurate de Y". El hook repartidor `establecer-conducta/` lee este registro **vivo** en cada momento y entrega la regla que corresponde — agregar o cambiar una regla **no toca la config del hook**. Una fila por regla.
@@ -3284,11 +4174,11 @@ Registro de las **reglas de conducta** del repo: cada fila ata un **momento** (d
 - **Contenido** — el texto a inyectar (`inyectar`), la Herramienta a correr (`correr`) o la condición de bloqueo (`bloquear`).
 - **Estado** — `vigente` (se entrega) · `pendiente` (declarada, su momento aún no tiene repartidor) · `obsoleto` (no se entrega; se puede depurar).
 
-> **Origen del contenido:** las reglas se separan por origen en dos secciones — **Reglas del Agente Multipropósito** (las manda el Agente Multipropósito; el nivelador `amp:actualizar` las reemplaza enteras al poner al día un Agente con Propósito) y **Reglas del Agente Desplegado** (las suma cada repo; el nivelador no las toca). Hoy tienen repartidor los momentos `al arrancar la sesión` (`SessionStart`, clase `correr`), `cada turno` (`UserPromptSubmit`) y `al escribir` (`PreToolUse`); la regla de momento `al cerrar tarea` (`Stop`) queda en `pendiente` (honesta, sin entregar) hasta que se sume su repartidor.
+> **Origen del contenido:** las reglas se separan por origen en **dos archivos**, y cada uno lo declara en su frontmatter — este (`origen: agente-multiproposito`, las manda el Agente Multipropósito; el nivelador `amp:actualizar` lo reemplaza entero al poner al día un Agente con Propósito) e [`INDICE-LOCAL.md`](INDICE-LOCAL.md) (`origen: agente-desplegado`, las suma cada repo; el nivelador no lo abre). El repartidor lee los dos. Hoy tienen repartidor los momentos `al arrancar la sesión` (`SessionStart`, clase `correr`), `cada turno` (`UserPromptSubmit`) y `al escribir` (`PreToolUse`); la regla de momento `al cerrar tarea` (`Stop`) queda en `pendiente` (honesta, sin entregar) hasta que se sume su repartidor.
 
 ## Reglas del Agente Multipropósito
 
-Las que instala el Agente Multipropósito (origen **Base**). El nivelador `amp:actualizar` reemplaza **esta sección entera** al poner al día un Agente con Propósito; nunca abre la de abajo.
+Las que instala el Agente Multipropósito. El nivelador `amp:actualizar` reemplaza **este archivo entero** al poner al día un Agente con Propósito; nunca abre el del Agente Desplegado.
 
 | Regla | Momento | Clase | Contenido | Estado |
 |-------|---------|-------|-----------|--------|
@@ -3301,10 +4191,46 @@ Las que instala el Agente Multipropósito (origen **Base**). El nivelador `amp:a
 | Mantener el archivo de estado antes de informar | cada turno | inyectar | Si la tarea es exploratoria y tiene varias variables, actualizá su único archivo de estado antes de informar un resultado; al retomar, leelo primero. | vigente |
 | Aplicar el estilo de commits antes de confirmar | al crear un commit | inyectar | Antes de crear un commit o redactar una descripción de PR, leé `preferencias/estilo-commits.md` y verificá el texto contra esas reglas. | pendiente |
 | Registrar en el subsistema cuando algo cambia | al cerrar tarea | inyectar | Si en esta tarea cambió algo que otro subsistema debe saber (decisión, conocimiento, semántica, herramientas, conducta o catálogo de subsistemas), registralo antes de cerrar. | pendiente |
+````
 
-## Reglas del Agente Desplegado
+### `.claude/conducta/INDICE-LOCAL.md`
 
-Las que cada repo suma para su Propósito (origen **aprendido**). El nivelador **no toca esta sección**. Hoy vacía: cuando el repo sume una regla propia, va acá con las mismas columnas que la tabla de arriba.
+Nace **declarado y sin filas**, no vacío: el manifiesto que se instala lo nombra, `registrar-regla` escribe siempre sobre un archivo que existe, y el repartidor lo lee junto al otro.
+
+````markdown
+---
+indice: Reglas de conducta del Agente Desplegado
+origen: agente-desplegado
+columnas: [Regla, Momento, Clase, Contenido, Estado]
+---
+
+# Reglas de conducta del Agente Desplegado
+
+Las que este repo suma para su Propósito. El nivelador no toca este archivo; el repartidor `establecer-conducta/` sí lo lee. Las columnas y la convención completa están en [`INDICE.md`](INDICE.md).
+
+| Regla | Momento | Clase | Contenido | Estado |
+|-------|---------|-------|-----------|--------|
+````
+
+### `.claude/conocimiento/INDICE.md`
+
+Índice raíz del subsistema: solo punteros, una línea por página. Nace **declarado y sin páginas**.
+
+````markdown
+---
+indice: Índice de la base de conocimiento
+origen: agente-desplegado
+---
+
+# Índice de la base de conocimiento
+
+Índice raíz de lo que el agente **sabe** sobre este proyecto. Solo punteros — una línea por página o sección, nunca contenido.
+
+Los markdown de la raíz del repo (README y REGISTRO) son **documentación del proyecto**, no conocimiento de agente: no se listan acá.
+
+Convención completa en el [README del subsistema](README.md).
+
+## Páginas
 ````
 
 ### `.claude/conducta/MOMENTOS.md`
@@ -3343,7 +4269,7 @@ Los planes se persisten en este directorio (`planes/`): `pendientes/` (planes vi
 
 **Flujo de trabajo:** multi-paso (abrir → transicionar → cerrar con lint); detalle en `README.md`.
 
-**Índice: NO se carga siempre** (`PLANES.md` es el registro más pesado del repo); se consulta a demanda, no en cada arranque. Al cerrar una tarea que tocó planes, correr el lint desde la raíz del repo:
+**Índices:** `PLANES.md` (Agente Desplegado). **No se carga siempre** (es el registro más pesado del repo); se consulta a demanda, no en cada arranque. Al cerrar una tarea que tocó planes, correr el lint desde la raíz del repo:
 
 ```bash
 node .claude/planes/lint-planes/lint-planes.js
@@ -3361,7 +4287,7 @@ Todo lo que el agente **sabe** vive en una ubicación única: este directorio (`
 
 **Skills:** `registrar-conocimiento` (asienta una página del dominio, evita duplicar, indexa y corre el lint) y `buscar-conocimiento` (recorre el repo y propone páginas nuevas); instalación con `inicializar-conocimiento`.
 
-**Índice: se carga siempre** (liviano). Al cerrar una tarea que escribió conocimiento, correr el lint desde la raíz del repo:
+**Índices:** `INDICE.md` (Agente Desplegado). **Se carga siempre** (liviano). Al cerrar una tarea que escribió conocimiento, correr el lint desde la raíz del repo:
 
 ```bash
 node .claude/conocimiento/lint-conocimiento/lint-conocimiento.js
@@ -3377,13 +4303,13 @@ Chequea refs rotas, índice incompleto y huérfanos. Convención completa en `RE
 ````markdown
 # Semántica — manifiesto de subsistema
 
-El subsistema `semántica` mantiene la coherencia semántica del dominio en el tiempo. Vive en este directorio (`semantica/`) con **dos registros pares**, ninguno cargado en contexto siempre: `GLOSARIO.md` (terminología legítima —concepto → definición, con alias y propuestos—) y `TERMINOLOGIA-FARLOPA.md` (relaciones vetadas, columnas `Término | Significado vetado | Cómo decirlo`). **Lo vetado es la relación término→significado, no el término**: el mismo término con otro significado puede ser legítimo; por eso la columna del medio, y por eso nada vetado se queda en el glosario.
+El subsistema `semántica` mantiene la coherencia semántica del dominio en el tiempo. Vive en este directorio (`semantica/`) con **dos registros pares**: `GLOSARIO.md` (terminología legítima —concepto → definición, con alias y propuestos—) y `TERMINOLOGIA-FARLOPA.md` (relaciones vetadas, columnas `Término | Significado vetado | Cómo decirlo`). **Lo vetado es la relación término→significado, no el término**: el mismo término con otro significado puede ser legítimo; por eso la columna del medio, y por eso nada vetado se queda en el glosario.
 
 **Disparador:** consultar ambos registros al planificar y analizar; no acuñar términos propios, preferir los del usuario. Proponer una entrada (columna `Propuestos` del glosario) al detectar un término del dominio sin registrar. El agente solo **propone**: ratificar (a alias) y vetar (a Terminología Farlopa) son potestad del usuario.
 
 **Skills:** `converger-terminologia` (recorre el texto del repo contra los dos registros: detecta sinónimos, anglicismos y desvíos, y propone ratificar, vetar o reescribir); instalación con `inicializar-semantica`.
 
-**Índice: NO se carga siempre** — los registros se consultan a demanda. El **lint marca por término** (lo mecánico); el **agente juzga el significado** al leer la marca. Al cerrar una tarea que tocó semántica, correr el lint desde la raíz del repo:
+**Índices:** `GLOSARIO.md` (Agente Desplegado) · `TERMINOLOGIA-FARLOPA.md` (Agente Desplegado). **No se cargan siempre** — se consultan a demanda. El **lint marca por término** (lo mecánico); el **agente juzga el significado** al leer la marca. Al cerrar una tarea que tocó semántica, correr el lint desde la raíz del repo:
 
 ```bash
 node .claude/semantica/lint-semantica/lint-semantica.js
@@ -3403,7 +4329,7 @@ Las decisiones **estructurales al propósito del repo** (no las operativas trivi
 
 **Skills:** `registrar-decision` (juzga si es estructural, chequea que no re-decida ni contradiga, numera, redacta y corre el lint); instalación con `inicializar-decisiones`.
 
-**Índice: NO se carga siempre** (segundo registro más pesado) — se consulta al planificar y analizar. Al cerrar una tarea que registró decisiones, correr el lint desde la raíz del repo:
+**Índices:** `INDICE.md` (Agente Desplegado). **No se carga siempre** (segundo registro más pesado) — se consulta al planificar y analizar. Al cerrar una tarea que registró decisiones, correr el lint desde la raíz del repo:
 
 ```bash
 node .claude/decisiones/lint-decisiones/lint-decisiones.js
@@ -3417,15 +4343,15 @@ Convención completa en `README.md`.
 ````markdown
 # Herramientas — manifiesto de subsistema
 
-Las **Herramientas** del repo — las *tools* que el Propósito requiere (tipos `script`, `skill` local, `MCP` local) — viven en este directorio (`herramientas/`), listadas en `INDICE.md` (tabla Herramienta | Tipo | Qué hace | Cómo se invoca | Estado). Los **lints de subsistema no son Herramientas**: son infra del Patrón y viven con su subsistema.
+Las **Herramientas** del repo — las *tools* que el Propósito requiere (tipos `script`, `skill` local, `MCP` local) — viven en este directorio (`herramientas/`), en una tabla Herramienta | Tipo | Qué hace | Cómo se invoca | Estado. Los **lints de subsistema no son Herramientas**: son infra del Patrón y viven con su subsistema.
 
-El registro se separa **por origen** en dos secciones: **Herramientas del Agente Multipropósito** (el nivelador reemplaza esa sección entera) y **Herramientas del Agente Desplegado** (las suma cada repo; el nivelador no las toca). Una Herramienta nueva del repo va siempre a la segunda.
+El registro se separa **por origen** en dos archivos: el del Agente Multipropósito (el nivelador lo reemplaza entero) y el del Agente Desplegado (lo suma cada repo; el nivelador no lo abre). Una Herramienta nueva del repo va siempre al segundo.
 
 **Disparador:** consultar el índice para saber qué tools existen y cómo se invocan; registrar una Herramienta al fabricar o adoptar una tool repetible del Propósito. ⚠️ Una tool referenciada por ruta en `settings`, `.gitignore` o un hook no se mueve sin actualizar esa referencia (rompe el match por prefijo).
 
 **Skills:** `registrar-herramienta` (alta o actualización guiada de una Herramienta, su ficha y su fila); instalación con `amp:inicializar`.
 
-**Índice: se carga siempre** (liviano). Al cerrar una tarea que tocó Herramientas, correr el lint desde la raíz del repo:
+**Índices:** `INDICE.md` (Agente Multipropósito) · `INDICE-LOCAL.md` (Agente Desplegado). **Se cargan siempre** (livianos). Al cerrar una tarea que tocó Herramientas, correr el lint desde la raíz del repo:
 
 ```bash
 node .claude/herramientas/lint-herramientas/lint-herramientas.js
@@ -3434,4 +4360,5 @@ node .claude/herramientas/lint-herramientas/lint-herramientas.js
 Convención completa en `README.md`.
 
 @INDICE.md
+@INDICE-LOCAL.md
 ````

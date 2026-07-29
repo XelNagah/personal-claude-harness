@@ -8,7 +8,7 @@ Los planes se persisten en este directorio (`planes/`): `pendientes/` (planes vi
 
 **Flujo de trabajo:** multi-paso (abrir → transicionar → cerrar con lint); detalle en `README.md`.
 
-**Índice: NO se carga siempre** (`PLANES.md` es el registro más pesado del repo); se consulta a demanda, no en cada arranque. Al cerrar una tarea que tocó planes, correr el lint desde la raíz del repo:
+**Índices:** `PLANES.md` (Agente Desplegado). **No se carga siempre** (es el registro más pesado del repo); se consulta a demanda, no en cada arranque. Al cerrar una tarea que tocó planes, correr el lint desde la raíz del repo:
 
 ```bash
 node .claude/planes/lint-planes/lint-planes.js

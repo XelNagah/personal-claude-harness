@@ -36,8 +36,24 @@
 // Uso a mano (probar): echo {"hook_event_name":"SessionStart"} | node establecer-conducta.js
 const fs = require('fs'), path = require('path');
 const { execSync } = require('child_process');
-const idxPath = path.resolve(__dirname, '..', 'INDICE.md');
+const dirSub = path.resolve(__dirname, '..');
 const repoRoot = path.resolve(__dirname, '..', '..', '..');   // .../conducta/establecer-conducta -> repo
+
+// -- los Indices de reglas del subsistema --------------------------------
+// Son los .md del subsistema que se declaran Indice en su frontmatter (uno por origen), con
+// INDICE.md de respaldo para la forma vieja. El repartidor los lee a TODOS: quedarse con el del
+// Agente Multiproposito dejaria sin entregar las reglas que el repo sumo, y sin ninguna senal.
+function indicesDeReglas() {
+  let nombres = [];
+  try { nombres = fs.readdirSync(dirSub).filter(n => n.endsWith('.md')).sort(); } catch (e) { return []; }
+  const declarados = nombres.filter(n => {
+    let txt; try { txt = fs.readFileSync(path.join(dirSub, n), 'utf8'); } catch (e) { return false; }
+    const fm = /^---\r?\n([\s\S]*?)\r?\n---/.exec(txt);
+    return !!(fm && /^indice:\s*\S/m.test(fm[1]));
+  });
+  const elegidos = declarados.length ? declarados : ['INDICE.md'];
+  return elegidos.map(n => path.join(dirSub, n)).filter(p => fs.existsSync(p));
+}
 
 // -- rutas que toca una escritura ---------------------------------------
 // Dos formas, segun el agente:
@@ -99,9 +115,12 @@ function leerReglas(txt) {
 
 // Devuelve las reglas del registro que matchean (clase, vigente, momento) con Contenido.
 function reglasDe(momento, clase) {
-  if (!momento || !fs.existsSync(idxPath)) return [];
-  return leerReglas(fs.readFileSync(idxPath, 'utf8'))
-    .filter(r => r.clase === clase && r.estado === 'vigente' && r.momento === momento && r.contenido);
+  if (!momento) return [];
+  const filas = [];
+  for (const p of indicesDeReglas()) {
+    try { filas.push(...leerReglas(fs.readFileSync(p, 'utf8'))); } catch (e) { /* un indice ilegible no frena el turno */ }
+  }
+  return filas.filter(r => r.clase === clase && r.estado === 'vigente' && r.momento === momento && r.contenido);
 }
 
 // -- inyectar: texto para el modelo -------------------------------------

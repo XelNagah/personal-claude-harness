@@ -7,5 +7,5 @@ description: Agrega un subsistema del Propósito al catálogo y al disco siguien
 
 1. Confirmar que no existe un subsistema cuyo sentido cubra el caso.
 2. Proponer nombre, propósito, entradas, índice, README, lint y habilidad de operación.
-3. Con aprobación, crear la carpeta y registrarla en `SUBSISTEMAS.md` como Subsistema del Propósito.
+3. Con aprobación, crear la carpeta y registrarla en `SUBSISTEMAS-LOCAL.md`, el catálogo del Agente Desplegado (ya existe declarado); nunca en `SUBSISTEMAS.md`, que es del Agente Multipropósito.
 4. Cablear su manifiesto al punto de entrada y validar el catálogo y el subsistema.

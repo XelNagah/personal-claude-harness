@@ -1,6 +1,11 @@
+---
+indice: Preferencias
+origen: agente-multiproposito
+---
+
 # Preferencias
 
-Reglas de conducta del agente en este repo. Siempre en contexto (importado desde AGENTS.md). La sección del **Agente Multipropósito** viene del Agente Multipropósito y se actualiza al nivelar (no editarla acá: los ajustes de este repo van en la sección del **Agente Desplegado**, que el nivelado nunca toca).
+Reglas de conducta del agente en este repo. Siempre en contexto (importado desde AGENTS.md). Las preferencias se separan por origen en **dos archivos**, y cada uno lo declara en su frontmatter: este (`origen: agente-multiproposito`) viene del Agente Multipropósito y se actualiza al nivelar, que lo reemplaza entero — no editarlo acá; los ajustes de este repo van en [`PREFERENCIAS-LOCAL.md`](PREFERENCIAS-LOCAL.md) (`origen: agente-desplegado`), que el nivelado nunca abre.
 
 ## Preferencias del Agente Multipropósito
 
@@ -22,11 +27,3 @@ Reglas de conducta del agente en este repo. Siempre en contexto (importado desde
 - **La sigla nunca sola en lo que queda escrito.** En documentación, registros, comentarios y textos que viajan a otros repos, el nombre del dominio va **completo**. La sigla puede **acompañarlo** —`Agente Multipropósito (AMP)`— y conviene presentarla así en la primera mención, para que el lector la reconozca cuando la encuentre; lo que no se hace es usarla **en lugar** del nombre. En la conversación es libre. Que un alias esté registrado en el glosario dice qué significa ese término, **no** autoriza a sustituir el nombre por él en el texto escrito.
 - **Commits y descripciones de PR:** escribirlos en español, sin coautoría ni atribución a la IA, con título `<Área>: <Resumen>` y cuerpo `Antes, … Ahora, …`. El área es funcional y el cuerpo describe el cambio observable. Convención completa en `estilo-commits.md`.
 - **Tareas exploratorias con varias variables:** mantener un único archivo de estado desde la primera corrida y actualizarlo antes de informar cada resultado. Si responde a un plan, vive en su sección `## Estado`; si es independiente, en `conocimiento/<tema>/estado.md`. Convención completa en `archivo-de-estado.md`.
-
-## Preferencias del Agente Desplegado
-
-- **Fechas en formato argentino** al hablar con el usuario: `DD/MM/AAAA` (`21/07/2026`) o en palabras (`21 de julio de 2026`). Nunca `MM/DD` ni ISO en la conversación. ⚠️ Esto es **solo la conversación**: los formatos de los registros no se tocan — `AA-MM-DD` en `PLANES.md` y `AAAA-MM-DD` en `decisiones/INDICE.md` son datos con lint.
-- Ejemplos y analogías: usar el dominio del repo o casos neutros. **Nada de analogías deportivas** (fútbol, jugadores, plantel). Si un ejemplo necesita un dominio inventado, preferir uno ya presente en el repo o un caso real ya decidido.
-- **Archivos temporales de trabajo** (handoffs, notas de sesión, borradores) van en **`.claude/tmp/`** dentro del repo, no en la raíz ni en el directorio temporal del sistema — así se referencian con ruta corta relativa y un agente limpio los encuentra. `.claude/tmp/` está gitignoreado. (Adaptación de este repo: pisa la regla global de usar el scratchpad del sistema.)
-- **Al comparar alternativas, no contar como costo de una opción algo que ya está comprometido en todas.** Si el trabajo se va a hacer igual por otro motivo, es precio ya pagado: sumarlo a una sola opción la hace ver artificialmente cara y empuja la decisión hacia el lado equivocado. (Candidato a subir a las preferencias del Agente Multipropósito y propagarse: es un criterio universal de comparación, no específico de este repo.)
-- **Al enumerar** tres o más elementos en una respuesta, presentarlos en **lista de bullets**, no en una sola línea de texto corrido — es más fácil de escanear que un párrafo donde todo pesa igual. (Candidato a subir a las preferencias del Agente Multipropósito y propagarse: es estilo universal, no específico de este repo.)

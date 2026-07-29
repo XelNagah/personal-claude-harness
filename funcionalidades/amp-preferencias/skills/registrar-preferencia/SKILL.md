@@ -1,11 +1,11 @@
 ---
 name: registrar-preferencia
-description: Detecta un feedback recurrente del usuario y propone registrarlo como preferencia en PREFERENCIAS.md — redacta la regla, decide si va a la sección del Agente Desplegado o amerita subirla al Agente Multipropósito, y corre el lint. Use when el usuario corrige lo mismo por segunda vez, dice "que esto sea una preferencia", "anotalo como regla", o al cerrar una sesión con correcciones repetidas.
+description: Detecta un feedback recurrente del usuario y propone registrarlo como preferencia — redacta la regla, decide si va al Índice del Agente Desplegado o amerita subirla al Agente Multipropósito, y corre el lint. Use when el usuario corrige lo mismo por segunda vez, dice "que esto sea una preferencia", "anotalo como regla", o al cerrar una sesión con correcciones repetidas.
 ---
 
 # Registrar una preferencia
 
-Convierte un feedback recurrente en regla de conducta persistida (`.claude/preferencias/PREFERENCIAS.md`), para que deje de depender de que el usuario lo repita. Es la "nivelación de preferencias" que la separación por origen prevé pero que nadie ejecutaba.
+Convierte un feedback recurrente en regla de conducta persistida (`.claude/preferencias/`), para que deje de depender de que el usuario lo repita. Es la "nivelación de preferencias" que la separación por origen prevé pero que nadie ejecutaba.
 
 ## Cuándo dispara
 
@@ -17,9 +17,9 @@ Convierte un feedback recurrente en regla de conducta persistida (`.claude/prefe
 
 1. **Aislar la regla.** ¿Qué conducta concreta pide el usuario, en general y no solo en el caso puntual? Redactarla como las existentes: **accionable y verificable en el punto de acción**, con el porqué si no es obvio. No registrar la anécdota — registrar la regla que la anécdota revela.
 2. **Chequear las preferencias existentes**: ¿ya hay una regla que lo cubre? → quizás el problema no es que falte la regla sino que no se cumple (eso no se arregla re-escribiéndola — decirlo). ¿Hay una parecida? → proponer **afinarla** en vez de agregar otra.
-3. **Decidir el destino** (la estructura son las dos secciones por origen):
-   - **Preferencias del Agente Desplegado** — la regla es específica de este proyecto. Destino normal: es la única sección editable localmente.
-   - **Preferencias del Agente Multipropósito** — la regla vale para todos los repos del usuario. Esa sección **no se edita localmente**: viene del Agente Multipropósito y se actualiza al nivelar. Proponer llevarla al repo que la publica (donde editarla implica subir la versión del plugin y propagar); mientras tanto puede vivir en la sección del Agente Desplegado.
+3. **Decidir el destino** (la estructura es un archivo por origen):
+   - **`PREFERENCIAS-LOCAL.md`** (Índice del Agente Desplegado) — la regla es específica de este proyecto. Destino normal: es el único archivo editable localmente.
+   - **`PREFERENCIAS.md`** (Índice del Agente Multipropósito) — la regla vale para todos los repos del usuario. Ese archivo **no se edita localmente**: viene del Agente Multipropósito y se actualiza al nivelar. Proponer llevarla al repo que la publica (donde editarla implica subir la versión del plugin y propagar); mientras tanto puede vivir en el del Agente Desplegado.
 4. **Confirmar con el usuario** el texto exacto y el destino — las preferencias son conducta del agente: nada se asienta sin ok.
 5. **Escribir y cerrar con el lint** desde la raíz del repo:
 

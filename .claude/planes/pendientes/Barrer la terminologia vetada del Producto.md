@@ -23,7 +23,7 @@ Los barridos de terminología se hicieron sobre `.claude/` —el Agente Multipro
 
 > *"Los archivos del Agente Multipropósito que ponemos en la raíz tienen que estar en el lint y los chequeos también. Que no se nos escapen. Deben ser parte de los que me siguen propagando la terminología farlopa."*
 
-O sea: el Producto no puede quedar fuera del control. Dos piezas:
+O sea: el Producto no puede quedar fuera del control. Dos partes:
 
 1. **Que falle, no que informe.** Un término vetado en `.claude/` lo lee el autor; uno en la Plantilla lo hereda cada Agente con Propósito. Candidato: `lint-harness` —que ya mira `funcionalidades/`— falla ante vetados en el Producto, mientras `lint-semantica` los sigue reportando como información para el repo.
 2. **Revisar la cobertura del resto.** `lint-semantica` llega a la raíz; `lint-planes` y `lint-preferencias` no la miran para nada, y `lint-decisiones`, `lint-conocimiento`, `lint-memoria` y `lint-conducta` apenas. Hay que verificar cuáles **deberían** mirarla y hoy no lo hacen.
@@ -142,7 +142,7 @@ Versiones: `amp` 0.6.18, `amp-semantica` 0.5.2 (falta publicar y actualizar).
 
 ### Qué hay que tocar
 
-| Pieza | Cambio |
+| Componente de Subsistema | Cambio |
 |---|---|
 | `establecer-conducta.js` | condición del momento (todo `.md` salvo `tmp/`); leer `tool_input.command` de `apply_patch` y extraer todas las rutas; combinar `inyectar` + `correr` |
 | `.codex/hooks.json` | cablear `PreToolUse` con matcher `Write\|Edit` |
@@ -150,7 +150,7 @@ Versiones: `amp` 0.6.18, `amp-semantica` 0.5.2 (falta publicar y actualizar).
 | `conducta/INDICE.md` | reescribir el texto de la regla `al escribir` + sumar la regla `correr` |
 | Herramienta de detección | co-ubicada con `conducta`, como la Pantalla de bienvenida (0030/0008); emite `deny` o `additionalContext` según el término |
 | `TERMINOLOGIA-FARLOPA.md` | columna `Control` (`bloquea` / `avisa`), si se ratifica |
-| `PLANTILLA.md` + versiones | propagar las cinco piezas y subir versión |
+| `PLANTILLA.md` + versiones | propagar los cinco Componentes de Subsistema y subir versión |
 
 Pendiente de ratificación: el **texto exacto** de las dos reglas, antes de asentarlas.
 

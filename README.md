@@ -63,7 +63,7 @@ flowchart TD
     C -->|vuelve a trabajar, sabiendo más| W
 ```
 
-Para que ese "lo persiste" sea confiable, cada subsistema sigue el mismo **patrón manifiesto + índice + entradas + lint**. El **manifiesto** es una descripción breve —qué es el subsistema, cuándo consultarlo, cuándo escribirlo— que va **siempre en contexto** y que además declara si su índice se carga o no. El `INDICE.md` contiene **entradas**; cada entrada puede abrir un **documento** de detalle (opcional) o una **carpeta con su propio índice** (recursión). Un **lint mecánico** valida la coherencia — sin LLM, sin red.
+Para que ese "lo persiste" sea confiable, cada subsistema sigue el mismo **patrón manifiesto + índice + entradas + lint**. El **manifiesto** es una descripción breve —qué es el subsistema, cuándo consultarlo, cuándo escribirlo— que va **siempre en contexto** y que además lista sus índices con el origen de cada uno y declara si se cargan. Un subsistema tiene **uno o más índices**: dos cuando su contenido viene de dos orígenes —lo que manda el Agente Multipropósito y lo que suma el repo—, y cada archivo lo declara en un frontmatter (`indice`, `origen`, `columnas`). El índice contiene **entradas**; cada entrada puede abrir un **documento** de detalle (opcional) o una **carpeta con su propio índice** (recursión). Un **lint mecánico** valida la coherencia — sin LLM, sin red.
 
 ```mermaid
 flowchart TD
@@ -112,7 +112,7 @@ En un repo que ya tiene el Agente Multipropósito, pedile al agente:
 amp:actualizar
 ```
 
-Es el único punto de entrada. Primero verifica el marketplace y los plugins; solo pide reiniciar si cambió lo que está cargado. Después nivela la Base. Si encuentra una generación retirada, como `memoria/`, instala la casa nueva, retira automáticamente la infraestructura y los duplicados Base conocidos, y pregunta pieza por pieza solo por el Aprendizaje del Propósito: nunca informa “al día” mientras la migración siga pendiente.
+Es el único punto de entrada. Primero verifica el marketplace y los plugins; solo pide reiniciar si cambió lo que está cargado. Después nivela la Base. Si encuentra una generación retirada, como `memoria/`, instala la casa nueva, retira automáticamente la infraestructura y los duplicados Base conocidos, y pregunta de a un Componente de Subsistema por vez solo por el Aprendizaje del Propósito: nunca informa “al día” mientras la migración siga pendiente.
 
 📄 **[Manual de instalación completo](docs/INSTALAR.md)** — paso a paso, actualización, instalación para Codex / Cursor / Gemini, y problemas frecuentes.
 
@@ -149,7 +149,7 @@ El harness soporta **Claude Code** y **Codex CLI**. Ambos leen `AGENTS.md`; Clau
 
 ## Uso avanzado
 
-- **El conjunto entra completo** — no se instalan piezas sueltas: `amp` trae los seis `amp-<sub>` por dependencias, en alcance `project`. Es a propósito — el harness aplica a los repos que lo usan, no a todos los que abras.
+- **El conjunto entra completo** — no se instalan plugins sueltos: `amp` trae los seis `amp-<sub>` por dependencias, en alcance `project`. Es a propósito — el harness aplica a los repos que lo usan, no a todos los que abras.
 - **Codex CLI** — después de registrar el marketplace, ejecutar `node <checkout-harness>/.claude/herramientas/instalar-plugins-codex/instalar-plugins-codex.js --aplicar` para instalar el paquete completo.
 
 - **Actualización automática** — el install es un `git clone` por debajo. Este repo es público, así que no hace falta autenticación; si lo forkeás en privado, exportá `GITHUB_TOKEN` con alcance `repo` para que la actualización en segundo plano funcione.

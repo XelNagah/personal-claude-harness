@@ -1,6 +1,6 @@
 ---
 name: actualizar
-description: Nivela el .claude/ de un Agente con Propósito ya instalado contra la Base actual. Pisa Base con respaldo, preserva el Aprendizaje y conduce los reacomodos viejos que requieren juicio. En particular, si encuentra la generación retirada memoria/, retira automáticamente su infraestructura y sus ocho piezas conocidas del Agente Multipropósito; solo coordina pieza por pieza el Aprendizaje restante. No informa "al día" hasta que memoria desaparece o queda esperando una confirmación explícita del usuario. También actualiza y migra plugins retirados antes de tocar archivos. Use when el usuario dice "nivelá el Agente Multipropósito", "actualizá el harness del repo", "poné al día el .claude", "amp:actualizar", o al detectar un Agente con Propósito cuyo Agente Multipropósito quedó viejo.
+description: Nivela el .claude/ de un Agente con Propósito ya instalado contra la Base actual. Pisa Base con respaldo, preserva el Aprendizaje y conduce los reacomodos viejos que requieren juicio. En particular, si encuentra la generación retirada memoria/, retira automáticamente su infraestructura y sus ocho Componentes de Subsistema conocidos del Agente Multipropósito; solo coordina de a uno por vez el Aprendizaje restante. No informa "al día" hasta que memoria desaparece o queda esperando una confirmación explícita del usuario. También actualiza y migra plugins retirados antes de tocar archivos. Use when el usuario dice "nivelá el Agente Multipropósito", "actualizá el harness del repo", "poné al día el .claude", "amp:actualizar", o al detectar un Agente con Propósito cuyo Agente Multipropósito quedó viejo.
 ---
 
 # amp:actualizar — nivelador del harness
@@ -12,7 +12,7 @@ Pone al día el `.claude/` de un **Agente con Propósito**: actualiza el Agente 
 Un Agente con Propósito son dos cosas superpuestas, y la separación por origen **disuelve** el problema de "qué puedo pisar sin borrar lo aprendido":
 
 - **Base** = el **Agente Multipropósito** que tiene adentro (lint, `MANIFIESTO`, estructura, `MOMENTOS`, secciones `## Reglas del Agente Multipropósito`, cableado del hook) → **se pisa**, respaldando antes. Es lo único que esta skill actualiza.
-- **Aprendizaje** = las entradas que acumuló persiguiendo su Propósito (términos del glosario, planes, decisiones, conocimiento, `## Reglas del Agente Desplegado`) → **no se pisa ni se reclasifica en silencio**. Cuando una forma retirada lo contiene, esta skill conduce su reubicación y pide confirmación pieza por pieza.
+- **Aprendizaje** = las entradas que acumuló persiguiendo su Propósito (términos del glosario, planes, decisiones, conocimiento, y todo lo que viva en un Índice con `origen: agente-desplegado`) → **no se pisa ni se reclasifica en silencio**. Cuando una forma retirada lo contiene, esta skill conduce su reubicación y pide confirmación de a un Componente de Subsistema por vez.
 - **Reacomodo legacy** (formas viejas anteriores a 0027 que puedan enredar el Aprendizaje) → **se pregunta antes**, bloqueante.
 
 **Primera corrida sobre un Agente con Propósito viejo = migración** (instala la Base nueva, renombra formas conocidas y reubica el Aprendizaje que quedó en casas retiradas). Las siguientes = reconciliación limpia (todo "ya estaba").
@@ -21,8 +21,8 @@ Un Agente con Propósito son dos cosas superpuestas, y la separación por origen
 
 La presencia de `.claude/memoria/` significa **migración incompleta**, aunque todos sus archivos sean válidos para la versión vieja. Nunca responder “ya estaba al día” ni “nada para nivelar” mientras exista. El único cierre válido es uno de estos:
 
-- `memoria/` ya no existe, todas sus piezas fueron reubicadas o descartadas con confirmación y los lints quedan verdes;
-- el flujo está detenido esperando **una decisión concreta** del usuario sobre la pieza que se mostró textual.
+- `memoria/` ya no existe, todos sus Componentes de Subsistema fueron reubicados o descartados con confirmación y los lints quedan verdes;
+- el flujo está detenido esperando **una decisión concreta** del usuario sobre el Componente de Subsistema que se mostró textual.
 
 No mandar al usuario a invocar otra skill: `amp:actualizar` llama y coordina `amp-subsistemas:reubicar-aprendizaje` como un paso interno.
 
@@ -79,10 +79,10 @@ El repo quedó con nombres de plugin que el marketplace ya no ofrece. **No se ar
    ```
    Muestra el plan en cuatro grupos: **Base** (instalar/pisar), **Renombres legacy**, **Divergente** (requiere ok) y **Ya estaba**. Presentárselo al usuario.
 
-   ⚠️ **«Nada para nivelar» no se reporta sin mirar.** El detector compara el **contenido** de los scripts Base contra la PLANTILLA, no solo su presencia — pero la lista de piezas que conoce está escrita a mano en su código, así que una pieza nueva que nadie haya agregado ahí **no se busca y no aparece**. Si el repo tiene el Agente Multipropósito de una versión anterior y el detector devuelve cero, desconfiar: contrastar a mano las piezas de `conducta/` y los tres eventos de hook en los dos archivos de cableado antes de declararlo al día.
+   ⚠️ **«Nada para nivelar» no se reporta sin mirar.** El detector compara el **contenido** de los scripts Base contra la PLANTILLA, no solo su presencia — pero la lista de Componentes de Subsistema que conoce está escrita a mano en su código, así que un Componente de Subsistema nuevo que nadie haya agregado ahí **no se busca y no aparece**. Si el repo tiene el Agente Multipropósito de una versión anterior y el detector devuelve cero, desconfiar: contrastar a mano los Componentes de Subsistema de `conducta/` y los tres eventos de hook en los dos archivos de cableado antes de declararlo al día.
 2. **Si el usuario pidió solo la vista previa → terminar acá.** Nada se escribió.
 3. **Confirmar el plan.** Los **Divergentes** se preguntan uno por uno (son bloqueantes): no se toca nada de ese grupo sin ok explícito. Ejemplo típico: `conducta/INDICE.md` con reglas pero sin el corte Base/Propósito — repartirlas exige decidir cuáles son Base y cuáles del Propósito; eso lo decide el usuario.
-4. **Respaldo.** Antes de escribir una sola pieza Base:
+4. **Respaldo.** Antes de escribir un solo Componente de Subsistema del Agente Multipropósito:
    ```bash
    node <ruta-de-esta-skill>/amp-actualizar.js --respaldo
    ```
@@ -95,29 +95,37 @@ El repo quedó con nombres de plugin que el marketplace ya no ofrece. **No se ar
 5. **Aplicar Base** (el grupo Base del plan). La fuente canónica es la PLANTILLA única de `amp:inicializar` (una sección por subsistema). Para cada ítem:
    - **Subsistema ausente** (p. ej. `conducta/`) → correr `amp:inicializar` (idempotente: instala los subsistemas ausentes desde su PLANTILLA consolidada y preserva lo que ya está).
    - **`MANIFIESTO`/lint/estructura vieja** → tomar el contenido canónico de la sección del subsistema en la PLANTILLA de `amp:inicializar` y **pisar** el archivo Base. (A diferencia de la reconciliación normal de `amp:inicializar`, que preserva lo existente, acá el archivo Base **se pisa** — es del harness. El contenido aprendido del mismo subsistema no se toca.)
-   - **`contenido viejo`** (un script Base instalado que difiere del de la PLANTILLA) → **pisarlo con el bloque de la PLANTILLA**, entero y tal cual. Es el caso más frecuente al poner al día un repo que ya tenía el Agente Multipropósito: la pieza está, pero en la versión de cuando se instaló. No hay nada que preservar — los scripts Base no se ajustan por repo; lo que el repo aprendió vive en sus registros, no en el código del harness.
+   - **`contenido viejo`** (un script Base instalado que difiere del de la PLANTILLA) → **pisarlo con el bloque de la PLANTILLA**, entero y tal cual. Es el caso más frecuente al poner al día un repo que ya tenía el Agente Multipropósito: el Componente de Subsistema está, pero en la versión de cuando se instaló. No hay nada que preservar — los scripts Base no se ajustan por repo; lo que el repo aprendió vive en sus registros, no en el código del harness.
    - **Hook sin cablear** → merge del bloque de cableado de `conducta` en `.claude/settings.json` (y `.codex/hooks.json`), sin pisar hooks existentes.
-   - **`conducta/INDICE.md` sin las secciones** (y sin reglas propias que repartir) → agregar `## Reglas del Agente Multipropósito` (con las reglas actuales del Agente Multipropósito) y `## Reglas del Agente Desplegado` (vacía).
-   - **Generación con `memoria/`** → instalar primero el subsistema `subsistemas/`, sus tres piezas del Agente Multipropósito (`MANIFIESTO.md`, `SUBSISTEMAS.md`, `README.md`) y su lint. No borrar todavía ninguna pieza aprendida.
+   - **`conducta/INDICE.md` sin el corte por origen** (y sin reglas propias que repartir) → instalar `INDICE.md` con las reglas actuales del Agente Multipropósito e `INDICE-LOCAL.md` declarado y sin filas.
+   - **Índice del Agente Desplegado ausente** (`SUBSISTEMAS-LOCAL.md`, `PREFERENCIAS-LOCAL.md`, `INDICE-LOCAL.md` de herramientas o de conducta) → crearlo **declarado y sin filas** desde la PLANTILLA. No es un archivo vacío: el manifiesto instalado lo nombra y las skills de alta escriben sobre él.
+   - **Generación con `memoria/`** → instalar primero el subsistema `subsistemas/`, sus tres Componentes de Subsistema del Agente Multipropósito (`MANIFIESTO.md`, `SUBSISTEMAS.md`, `README.md`) y su lint. No borrar todavía ningún Componente de Subsistema aprendido.
 6. **Aplicar Renombres** (el caso con más juicio — preservar lo aprendido):
    - **`glosario`→`semantica`:**
      1. Mover la carpeta `.claude/glosario/` → `.claude/semantica/` y `lint-glosario/` → `lint-semantica/` (renombrar también `lint-glosario.js` → `lint-semantica.js`).
      2. Correr `amp:inicializar` en reconciliación: pone al día el mecanismo de semántica (lint nuevo, `MANIFIESTO`, estructura de columnas) **preservando** `GLOSARIO.md` y `TERMINOLOGIA-FARLOPA.md` con sus términos. Verificar que ningún término se haya perdido.
      3. Migrar las referencias: en `AGENTS.md`, `@.claude/glosario/MANIFIESTO.md` → `@.claude/semantica/MANIFIESTO.md`; el prefijo de skill `glosario:` → `semantica:` donde aparezca; y toda referencia por ruta al lint renombrado (settings, hooks).
-   - **Encabezados de los tres índices separados por origen** (`preferencias/PREFERENCIAS.md`, `conducta/INDICE.md`, `herramientas/INDICE.md`): el detector lista cada encabezado viejo con su nombre nuevo.
+   - **Encabezados de los índices separados por origen** (`preferencias/PREFERENCIAS.md`, `conducta/INDICE.md`, `herramientas/INDICE.md`): el detector lista cada encabezado viejo con su nombre nuevo.
      1. Reemplazar **solo la línea del encabezado**, dejando intacto todo el contenido de esa sección. No es un reemplazo de contenido: la sección del Agente Desplegado sigue siendo del repo y no se toca aunque cambie de nombre.
      2. En `preferencias/PREFERENCIAS.md` el encabezado viejo llevaba adentro un número de versión (`## Base (harness vN)`). **Ese número se descarta y no se traslada a ningún lado**: la versión vive en el plugin, y un Agente Desplegado no guarda ninguna.
-     3. Recién con los encabezados al día, aplicar el reemplazo de la sección del Agente Multipropósito del punto 5. Al revés, el reemplazo no encuentra la sección y el repo queda con dos.
-     4. Cerrar corriendo el lint de cada subsistema tocado.
+     3. Cerrar corriendo el lint de cada subsistema tocado.
+   - **Índice todavía sin frontmatter** (`sin frontmatter de Indice`): agregarle al tope el bloque `indice` / `origen` / `columnas` que la PLANTILLA trae para ese archivo, sin tocar el resto. En `conocimiento` y `preferencias`, que no son tabla, el campo `columnas` **no va**. El `origen` es lo que después decide el trato del nivelador, así que un valor equivocado acá pisa contenido del repo: si el archivo no es uno de los conocidos, preguntar antes de asignarlo.
+   - **Índice partido por origen** (`partir por origen`): el subsistema todavía tiene los dos orígenes adentro de un archivo.
+     1. Crear el archivo del Agente Desplegado (`-LOCAL`) con su frontmatter y **mover ahí la sección del Agente Desplegado con su contenido intacto** — filas, bullets, texto suelto y todo. Es una mudanza, no un reemplazo.
+     2. Sacar esa sección del archivo que queda, que pasa a ser el del Agente Multipropósito.
+     3. Si la sección estaba vacía, el archivo nace igual: declarado y sin filas.
+     4. En `preferencias`, sumar en `AGENTS.md` la segunda línea de importación — sin ella las preferencias del repo salen del contexto y **ningún lint lo marcaba** antes de este cambio.
+     5. Recién con los dos archivos al día, aplicar el reemplazo del archivo del Agente Multipropósito del punto 5. Al revés, el reemplazo se lleva puesto contenido del repo.
+     6. Cerrar corriendo el lint de cada subsistema tocado: compara las columnas declaradas contra la tabla real y el manifiesto contra el frontmatter.
 7. **Migrar `memoria/` retirada — responsabilidad de esta skill.**
    1. Inventariar `memoria/` en tres grupos, **antes de hacer cualquier pregunta**:
       - infraestructura Base retirada: `MANIFIESTO.md`, `MEMORIA.md`, `README.md` y `lint-memoria/`;
-      - las ocho piezas conocidas del Agente Multipropósito que distribuía la generación anterior;
+      - los ocho Componentes de Subsistema conocidos del Agente Multipropósito que distribuía la generación anterior;
       - Aprendizaje restante del Propósito.
    2. Retirar automáticamente la infraestructura vieja cuando la Base `subsistemas/` ya está instalada.
-   3. Reconciliar automáticamente las ocho piezas conocidas del Agente Multipropósito. **No pedir confirmación por ellas**: comprobar primero que su destino actual exista y cubra el comportamiento; después retirar el duplicado viejo.
+   3. Reconciliar automáticamente los ocho Componentes de Subsistema conocidos del Agente Multipropósito. **No pedir confirmación por ellas**: comprobar primero que su destino actual exista y cubra el comportamiento; después retirar el duplicado viejo.
 
-      | Pieza Base retirada | Destino actual |
+      | Componente de Subsistema retirado | Destino actual |
       |---|---|
       | `feedback_flujo_planes.md` | `.claude/planes/README.md` |
       | `feedback_semantica.md` | `.claude/semantica/README.md` |
@@ -128,12 +136,12 @@ El repo quedó con nombres de plugin que el marketplace ya no ofrece. **No se ar
       | `feedback_estilo_commits.md` | `.claude/preferencias/estilo-commits.md` + regla Base de conducta correspondiente |
       | `feedback_archivo_de_estado.md` | `.claude/preferencias/archivo-de-estado.md` + regla Base de conducta correspondiente |
 
-      Si una pieza con uno de esos nombres contiene una adición propia del repo que no está cubierta por el destino, **solo esa adición** pasa al grupo de Aprendizaje; no se pregunta si se mueve el bloque Base entero.
-   4. Recién con el Aprendizaje restante, invocar internamente `amp-subsistemas:reubicar-aprendizaje`: mostrar **una pieza por vez**, proponer destino y texto resultante, y esperar confirmación explícita antes de mover, partir o descartar.
+      Si un Componente de Subsistema con uno de esos nombres contiene una adición propia del repo que no está cubierta por el destino, **solo esa adición** pasa al grupo de Aprendizaje; no se pregunta si se mueve el bloque Base entero.
+   4. Recién con el Aprendizaje restante, invocar internamente `amp-subsistemas:reubicar-aprendizaje`: mostrar **un Componente de Subsistema por vez**, proponer destino y texto resultante, y esperar confirmación explícita antes de mover, partir o descartar.
    5. Reparar índices, vínculos y referencias después de cada confirmación.
-   6. Cuando no queda ninguna pieza, retirar el directorio `memoria/`, correr nuevamente la vista previa y verificar que no aparezca la migración.
+   6. Cuando no queda ninguno, retirar el directorio `memoria/`, correr nuevamente la vista previa y verificar que no aparezca la migración.
 
-   Si la sesión debe detenerse por una confirmación, informar exactamente qué pieza espera decisión. No presentar la migración como terminada.
+   Si la sesión debe detenerse por una confirmación, informar exactamente qué Componente de Subsistema espera decisión. No presentar la migración como terminada.
 8. **Otros Divergentes** — aplicar solo lo que el usuario aprobó en el paso 3.
 9. **Reporte final.** Volver a correr la vista previa. Solo si da cero acciones y no existe `memoria/`, resumir lo hecho en los tres grupos (`pisado/instalado` · `ya estaba` · `divergente resuelto`) y **qué pasó con el respaldo**: si se omitió (git lo cubre) o dónde quedó, con la ruta absoluta. Cuando se hizo, decir que es **de un solo uso**: sirve hasta que el usuario verifique que el repo quedó bien, y después se borra.
 

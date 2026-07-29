@@ -6,7 +6,7 @@ Las decisiones **estructurales al propósito del repo** (no las operativas trivi
 
 **Skills:** `registrar-decision` (juzga si es estructural, chequea que no re-decida ni contradiga, numera, redacta y corre el lint); instalación con `inicializar-decisiones`.
 
-**Índice: NO se carga siempre** (segundo registro más pesado) — se consulta al planificar y analizar. Al cerrar una tarea que registró decisiones, correr el lint desde la raíz del repo:
+**Índices:** `INDICE.md` (Agente Desplegado). **No se carga siempre** (segundo registro más pesado) — se consulta al planificar y analizar. Al cerrar una tarea que registró decisiones, correr el lint desde la raíz del repo:
 
 ```bash
 node .claude/decisiones/lint-decisiones/lint-decisiones.js

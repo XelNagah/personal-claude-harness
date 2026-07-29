@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // amp-actualizar.js — motor mecanico del nivelador del harness (decision 0028).
-// Barre el .claude/ del repo actual (process.cwd()), clasifica cada pieza contra la estructura
+// Barre el .claude/ del repo actual (process.cwd()), clasifica cada archivo y carpeta contra la estructura
 // objetivo del harness y emite el plan/reporte. Ademas hace el respaldo. La parte de JUICIO
 // (confirmar el plan, migrar terminos, preguntar ante lo divergente, escribir el contenido Base
 // delegando en los inicializar-<sub>) vive en el SKILL; aca vive solo lo determinista (dec. 0009).
@@ -34,7 +34,7 @@ const leer = p => { try { return fs.readFileSync(p, 'utf8'); } catch { return ''
 
 // Renombres conocidos (carpeta vieja -> nueva). Extensible: se suman los que aparezcan (dec. 0028).
 // Los renombres puramente estructurales viven aca. Memoria -> subsistemas NO es un renombre:
-// requiere clasificar el Aprendizaje pieza por pieza y por eso se reporta como migracion guiada.
+// requiere clasificar el Aprendizaje de a un Componente de Subsistema por vez y por eso se reporta como migracion guiada.
 const RENOMBRES = [
   { viejo: 'glosario', nuevo: 'semantica', que: 'subsistema', lintViejo: 'lint-glosario', lintNuevo: 'lint-semantica' },
 ];
@@ -54,9 +54,42 @@ const ENCABEZADOS_RENOMBRADOS = [
   { archivo: 'herramientas/INDICE.md',       viejo: /^##\s+Herramientas del Prop[oó]sito\b[^\n]*$/mi, nuevo: '## Herramientas del Agente Desplegado' },
 ];
 
+// Indices de Subsistema por subsistema Base: los archivos que listan sus entradas. Cada uno se
+// declara a si mismo en un frontmatter minimo (indice, origen, columnas), y ES ESE `origen` —no el
+// nombre del archivo— lo que decide el trato del nivelador: `agente-multiproposito` se reemplaza
+// entero, `agente-desplegado` no se abre. Deducirlo de la posicion de una seccion obligaba a entrar
+// al archivo del repo para pisar media parte; con un archivo por origen se pisa uno y listo.
+const INDICES_BASE = {
+  subsistemas: ['SUBSISTEMAS.md'],
+  preferencias: ['PREFERENCIAS.md'],
+  planes: ['PLANES.md'],
+  conocimiento: ['INDICE.md'],
+  semantica: ['GLOSARIO.md', 'TERMINOLOGIA-FARLOPA.md'],
+  decisiones: ['INDICE.md'],
+  herramientas: ['INDICE.md'],
+  conducta: ['INDICE.md'],
+};
+
+// Los cuatro subsistemas cuyo contenido viene de los dos origenes. Un Agente Desplegado que todavia
+// tenga un solo archivo con las dos secciones adentro se migra PARTIENDOLO: el frontmatter en los
+// dos y el contenido de cada seccion conservado. Donde la seccion del repo estaba vacia, el archivo
+// del Agente Desplegado igual nace —declarado y sin filas— porque el manifiesto instalado lo nombra.
+const INDICES_PARTIDOS = [
+  { sub: 'subsistemas',  amp: 'SUBSISTEMAS.md', local: 'SUBSISTEMAS-LOCAL.md', seccionLocal: /^##\s+Subsistemas del (?:Agente Desplegado|Prop[oó]sito)\b/mi },
+  { sub: 'preferencias', amp: 'PREFERENCIAS.md', local: 'PREFERENCIAS-LOCAL.md', seccionLocal: /^##\s+(?:Preferencias del Agente Desplegado|Adaptaciones)\b/mi },
+  { sub: 'conducta',     amp: 'INDICE.md',      local: 'INDICE-LOCAL.md',      seccionLocal: /^##\s+Reglas del (?:Agente Desplegado|Prop[oó]sito)\b/mi },
+  { sub: 'herramientas', amp: 'INDICE.md',      local: 'INDICE-LOCAL.md',      seccionLocal: /^##\s+Herramientas del (?:Agente Desplegado|Prop[oó]sito)\b/mi },
+];
+
+// frontmatter de un Indice: se lo considera declarado cuando trae el campo `indice`.
+function declaraIndice(archivo) {
+  const fm = /^---\r?\n([\s\S]*?)\r?\n---/.exec(leer(archivo));
+  return !!(fm && /^indice:\s*\S/m.test(fm[1]));
+}
+
 // Estas ocho entradas eran Base distribuida por la generación memoria/. Sus destinos ya forman
 // parte de la Base actual, así que actualizar las reconcilia sin preguntarle al usuario. Cualquier
-// otro .md es Aprendizaje; si una de estas piezas fue ampliada por el repo, la skill preserva solo
+// otro .md es Aprendizaje; si uno de estos Componentes de Subsistema fue ampliado por el repo, la skill preserva solo
 // esa adición y pide decisión sobre ella, no sobre el bloque Base.
 const MEMORIAS_BASE_RETIRADAS = new Set([
   'feedback_flujo_planes.md',
@@ -69,7 +102,7 @@ const MEMORIAS_BASE_RETIRADAS = new Set([
   'feedback_conducta.md',
 ]);
 
-// Subsistemas Base esperados por el harness al dia (carpetas bajo .claude/).
+// Subsistemas del Agente Multiproposito esperados por el harness al dia (carpetas bajo .claude/).
 const SUBSISTEMAS = ['subsistemas', 'planes', 'conocimiento', 'semantica', 'decisiones', 'herramientas', 'conducta'];
 
 // Herramientas que el harness manda (origen Base) y que todo repo al dia deberia tener bajo
@@ -78,7 +111,7 @@ const SUBSISTEMAS = ['subsistemas', 'planes', 'conocimiento', 'semantica', 'deci
 const HERRAMIENTAS_BASE = ['actualizar-plugins'];
 
 // -- contenido Base: comparar el archivo instalado contra la PLANTILLA -----
-// Chequear que la pieza EXISTA no alcanza: un consumidor que ya tiene el script en su version vieja
+// Chequear que el Componente de Subsistema EXISTA no alcanza: un consumidor que ya tiene el script en su version vieja
 // se lo queda para siempre y nunca recibe una mejora. La fuente del contenido es la PLANTILLA de
 // `amp:inicializar`, que viaja en el mismo plugin que este script — por eso se resuelve desde
 // __dirname y no desde el repo: la plantilla es del Producto, el repo es el destino.
@@ -117,7 +150,7 @@ const CONTENIDO_BASE = [
 function chequearContenido(add) {
   for (const [rel, ancla] of CONTENIDO_BASE) {
     const destino = path.join(claude, rel);
-    if (!existe(destino)) continue;                 // la ausencia ya la reporta el chequeo de piezas
+    if (!existe(destino)) continue;                 // la ausencia ya la reporta el chequeo de Componentes
     const bloque = bloqueCon(ancla);
     // Sin fuente no se puede comparar — pero callarse deja el repo informado "al dia" sin haberlo
     // mirado, que es justo el modo de falla que este chequeo viene a cerrar. Se reporta.
@@ -133,7 +166,8 @@ function manifiestoCompleto(txt, sub) {
   if (!/^#\s+\S/m.test(txt)) return false;
   if (!/Disparador/.test(txt)) return false;
   if (!/\*\*Skills\b/.test(txt)) return false;
-  if (!/(NO\s+)?se carga siempre/i.test(txt)) return false;
+  if (!/(NO\s+)?se carga[n]? siempre/i.test(txt)) return false;
+  if (!/^\*\*[IÍ]ndices?:\*\*/m.test(txt)) return false;   // lista sus Indices con el origen de cada uno
   if (!new RegExp('node \\.claude/' + sub + '/lint-' + sub + '/').test(txt)) return false;
   return true;
 }
@@ -151,19 +185,19 @@ function clasificar() {
 
   // Memoria fue retirada. Su presencia nunca puede terminar en "Repo al dia": primero se instala
   // la Base nueva y despues la skill coordina reubicar-aprendizaje, con confirmacion del usuario
-  // para cada pieza aprendida. El detector no intenta clasificar contenido: solo impide el falso verde.
+  // para cada Componente de Subsistema aprendido. El detector no intenta clasificar contenido: solo impide el falso verde.
   const memoriaLegacy = path.join(claude, 'memoria');
   if (esDir(memoriaLegacy)) {
-    const piezas = fs.readdirSync(memoriaLegacy, { withFileTypes: true })
+    const componentes = fs.readdirSync(memoriaLegacy, { withFileTypes: true })
       .filter(e => e.isFile() && e.name.endsWith('.md') && !['MEMORIA.md', 'MANIFIESTO.md', 'README.md'].includes(e.name))
       .map(e => e.name);
-    const baseConocida = piezas.filter(nombre => MEMORIAS_BASE_RETIRADAS.has(nombre)).length;
-    const aprendizaje = piezas.length - baseConocida;
+    const baseConocida = componentes.filter(nombre => MEMORIAS_BASE_RETIRADAS.has(nombre)).length;
+    const aprendizaje = componentes.length - baseConocida;
     add(
       'divergente',
       '!',
       'memoria/ → subsistemas/',
-      `migracion pendiente: retirar automaticamente ${baseConocida} pieza(s) Base conocida(s) y decidir solo sobre ${aprendizaje} pieza(s) de Aprendizaje antes de informar que el repo esta al dia`
+      `migracion pendiente: retirar automaticamente ${baseConocida} Componente(s) de Subsistema conocido(s) del Agente Multiproposito y decidir solo sobre ${aprendizaje} de Aprendizaje antes de informar que el repo esta al dia`
     );
   }
 
@@ -186,7 +220,26 @@ function clasificar() {
     if (m) add('renombre', '→', `${e.archivo}: ${m[0].trim()}`, `renombrar el encabezado a "${e.nuevo}" conservando el contenido de la seccion`);
   }
 
-  // [2] subsistemas Base: presentes / ausentes / con piezas faltantes
+  // [1c] Indices sin declarar y partición por origen pendiente
+  for (const [sub, archivos] of Object.entries(INDICES_BASE)) {
+    if (!esDir(path.join(claude, sub))) continue;     // subsistema ausente: ya se reporta abajo
+    for (const nombre of archivos) {
+      const f = path.join(claude, sub, nombre);
+      if (existe(f) && !declaraIndice(f))
+        add('renombre', '→', `${sub}/${nombre}`, 'sin frontmatter de Indice: declarar `indice`, `origen` y `columnas` (el origen deja de deducirse del nombre)');
+    }
+  }
+  for (const p of INDICES_PARTIDOS) {
+    const dir = path.join(claude, p.sub);
+    if (!esDir(dir)) continue;
+    const fAmp = path.join(dir, p.amp), fLocal = path.join(dir, p.local);
+    if (existe(fAmp) && p.seccionLocal.test(leer(fAmp)))
+      add('renombre', '→', `${p.sub}/${p.amp} → ${p.local}`, `partir por origen: mover la seccion del Agente Desplegado a ${p.local} CONSERVANDO su contenido; el archivo que queda es el del Agente Multiproposito`);
+    else if (!existe(fLocal) && existe(fAmp))
+      add('base', '+', `${p.sub}/${p.local}`, 'Indice del Agente Desplegado ausente: nace declarado y sin filas (el manifiesto instalado lo nombra)');
+  }
+
+  // [2] subsistemas Base: presentes / ausentes / con Componentes de Subsistema faltantes
   for (const sub of SUBSISTEMAS) {
     const dir = path.join(claude, sub);
     // si es el destino de un renombre y todavia esta como carpeta vieja, ya se reporto arriba
@@ -207,7 +260,7 @@ function clasificar() {
 
   // [2b] Herramientas de rio arriba: viven DENTRO de herramientas/, asi que un subsistema presente puede
   // igual estar incompleto. Sin este chequeo, un repo al que le falta una Herramienta de rio arriba se
-  // informa "ya estaba" — que es lo que pasa cuando se clasifica por subsistema y no por pieza.
+  // informa "ya estaba" — que es lo que pasa cuando se clasifica por subsistema y no por Componente de Subsistema.
   const dirHerr = path.join(claude, 'herramientas');
   if (esDir(dirHerr)) {
     for (const h of HERRAMIENTAS_BASE) {
@@ -223,13 +276,13 @@ function clasificar() {
     }
   }
 
-  // [3] conducta: piezas propias + corte Base/Proposito + la Pantalla de bienvenida
+  // [3] conducta: Componentes de Subsistema propios + corte Base/Proposito + la Pantalla de bienvenida
   const cond = path.join(claude, 'conducta');
   if (esDir(cond)) {
-    for (const pieza of [['MOMENTOS.md', 'archivo'], ['establecer-conducta', 'hook'], ['lint-conducta', 'lint'],
+    for (const componente of [['MOMENTOS.md', 'archivo'], ['establecer-conducta', 'hook'], ['lint-conducta', 'lint'],
                          ['mostrar-pantalla-bienvenida', 'Herramienta de la Pantalla de bienvenida'],
                          ['detectar-terminologia-vetada', 'control de terminologia del momento «al escribir»']]) {
-      if (!existe(path.join(cond, pieza[0]))) add('base', '~', `conducta/${pieza[0]}`, `${pieza[1]} ausente: instalar`);
+      if (!existe(path.join(cond, componente[0]))) add('base', '~', `conducta/${componente[0]}`, `${componente[1]} ausente: instalar`);
     }
     // El momento "al arrancar la sesion" es lo que dispara la Pantalla; sin el, la regla no se entrega.
     const momentos = path.join(cond, 'MOMENTOS.md');
@@ -239,9 +292,12 @@ function clasificar() {
     const indice = path.join(cond, 'INDICE.md');
     if (existe(indice)) {
       const t = leer(indice);
-      // Acepta las dos formas: el corte existe igual con los encabezados viejos, que [1b] migra.
-      const tieneCorte = /##\s+Reglas (Base|del Agente Multiprop[oó]sito)/i.test(t)
-                      && /##\s+Reglas del (Prop[oó]sito|Agente Desplegado)/i.test(t);
+      // Acepta las tres formas: el corte por origen puede estar entre dos archivos (la forma al
+      // dia), o entre dos secciones de este —con los encabezados nuevos o con los viejos, que
+      // [1b] migra—. Lo que no puede pasar es que haya reglas y ningun corte.
+      const tieneCorte = existe(path.join(cond, 'INDICE-LOCAL.md'))
+                      || (/##\s+Reglas (Base|del Agente Multiprop[oó]sito)/i.test(t)
+                          && /##\s+Reglas del (Prop[oó]sito|Agente Desplegado)/i.test(t));
       const tieneReglas = /\|\s*inyectar\s*\||\|\s*correr\s*\||\|\s*bloquear\s*\|/i.test(t);
       if (!tieneCorte && tieneReglas)
         add('divergente', '?', 'conducta/INDICE.md', 'reglas sin corte por origen: repartir requiere decidir cuales vienen de rio arriba y cuales son del Agente Desplegado');

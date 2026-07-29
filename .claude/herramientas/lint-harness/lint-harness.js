@@ -95,16 +95,17 @@ if (fs.existsSync(path.join(repo, '.claude', 'CLAUDE.md'))) entrada.push('.claud
 // Compara los bloques ```markdown que definen una memoria (---\nname: X) entre las PLANTILLA.md
 // de cada funcionalidad y la del orquestador setup-completo (ambas usan .claude literal).
 // Ademas de las memorias, se comparan los FRAGMENTOS de codigo que deben viajar identicos en
-// todos los lints (no el lint entero: cada subsistema tiene el suyo, pero comparten piezas).
+// todos los lints (no el lint entero: cada subsistema tiene el suyo, pero comparten fragmentos).
 // Se identifican por su comentario ancla. Los fragmentos NO se normalizan como las memorias:
 // deben coincidir caracter a caracter (solo se unifica el fin de linea).
-// Son tres piezas con alcance distinto: la raiz del repo la usan los 5 lints; la resolucion de
+// Son tres fragmentos con alcance distinto: la raiz del repo la usan los 5 lints; la resolucion de
 // refs solo los 4 que validan links .md (lint-herramientas valida rutas en settings, no refs);
 // la atribucion por ancestro solo los 2 que recorren subarbol (lint-conocimiento y lint-memoria).
 const FRAGMENTOS = [
   { nombre: 'raiz del repo', re: /\/\/ La raiz del repo se deduce[\s\S]*?const repoRoot = path\.resolve\(__dirname, '\.\.', '\.\.', '\.\.'\);/g },
   { nombre: 'resolucion de refs', re: /const dentroDelRepo = p => \{[\s\S]*?\n\}\n/g },
   { nombre: 'atribucion por ancestro', re: /\/\/ --- Atribucion por ancestro[\s\S]*?\/\/ --- fin atribucion por ancestro ---/g },
+  { nombre: 'indices por frontmatter', re: /\/\/ --- Indices por frontmatter ---[\s\S]*?\/\/ --- fin indices por frontmatter ---/g },
 ];
 
 const bloques = new Map(); // name -> [{archivo, hash}]
@@ -159,6 +160,40 @@ for (const [name, arr] of bloques) {
   if (hashes.size > 1) divergentes.push(`"${name}": ${arr.map(a => `${a.archivo} (${a.hash})`).join('  vs  ')}`);
 }
 
+// -- [4b] un destino, un solo bloque en la PLANTILLA ---------------------
+// Cada archivo que el instalador escribe se declara UNA vez. Dos bloques para el mismo destino no
+// son redundancia inofensiva: nada los sincroniza, se separan solos y despues nada decide cual se
+// instala. Paso con conducta/INDICE.md y conducta/MOMENTOS.md, que estuvieron duplicados entre dos
+// secciones hasta que una quedo vieja (un momento y dos reglas de menos) sin que ningun lint lo viera.
+const DECLARA_DESTINO = [
+  /^### `(\.claude\/[^`]+)`/gm,                       // catalogo de copias textuales
+  /Contenido inicial de `(\.claude\/[^`]+)`/g,        // bloque presentado en la seccion del subsistema
+  /^## §Script — (?:[^`]*)`(\.claude\/[^`]+)`/gm,     // seccion de script
+];
+const destinosDuplicados = [];
+for (const f of enDisco) {
+  const skillsDir = path.join(funcDir, f, 'skills');
+  if (!fs.existsSync(skillsDir)) continue;
+  for (const s of fs.readdirSync(skillsDir)) {
+    const pl = path.join(skillsDir, s, 'PLANTILLA.md');
+    if (!fs.existsSync(pl)) continue;
+    const txt = fs.readFileSync(pl, 'utf8').replace(/\r\n/g, '\n');
+    const porDestino = new Map();
+    for (const re of DECLARA_DESTINO) {
+      re.lastIndex = 0;
+      let m;
+      while ((m = re.exec(txt))) {
+        const linea = txt.slice(0, m.index).split('\n').length;
+        porDestino.set(m[1], (porDestino.get(m[1]) || []).concat(linea));
+      }
+    }
+    const rel = path.relative(repo, pl).replace(/\\/g, '/');
+    for (const [destino, lineas] of porDestino) {
+      if (lineas.length > 1) destinosDuplicados.push(`${rel}: ${destino} declarado ${lineas.length} veces (lineas ${lineas.sort((a, b) => a - b).join(', ')})`);
+    }
+  }
+}
+
 // -- [6] tamaño de los manifiestos de subsistema (dec. 0017) -------------
 // El MANIFIESTO.md de cada subsistema va SIEMPRE en el contexto de arranque (via @import
 // desde AGENTS.md); si engorda, infla cada sesion. La regla es "breve". Chequeo preventivo
@@ -185,7 +220,10 @@ if (fs.existsSync(claudeDir)) {
 // Se aceptan los encabezados viejos (`## Base (harness vN)` / `## Adaptaciones`) mientras haya
 // Agentes Desplegados sin nivelar. OJO: si el encabezado cambia y este patron no, la funcion
 // devuelve null y el chequeo pasa en verde SIN comparar nada (falso verde), por eso el aviso.
-const RE_BASE_PREF = /(## (?:Preferencias del Agente Multiprop[oó]sito|Base \(harness[^\n]*\))[^\n]*)\n([\s\S]*?)\n## (?:Preferencias del Agente Desplegado|Adaptaciones)/;
+// El corte de abajo no puede ser solo la seccion del Agente Desplegado: desde que las preferencias
+// se partieron en un archivo por origen, esa seccion ya no esta y la del Agente Multiproposito
+// llega hasta el proximo encabezado, el cierre del bloque de la plantilla, o el fin del archivo.
+const RE_BASE_PREF = /(## (?:Preferencias del Agente Multiprop[oó]sito|Base \(harness[^\n]*\))[^\n]*)\n([\s\S]*?)(?=\n## |\n```|$)/;
 function extraerBase(txt) {
   const m = txt.match(RE_BASE_PREF);
   return m ? (m[1] + '\n' + m[2]).replace(/\s+/g, ' ').trim() : null;
@@ -244,7 +282,9 @@ if (fs.existsSync(claudeDir)) {
     if (!/^#\s+\S/m.test(t)) faltan.push('titulo H1');
     if (!/Disparador/.test(t)) faltan.push('campo Disparador');
     if (!/\*\*Skills\b/.test(t)) faltan.push('campo Skills (dec. 0023)');
-    const cargaM = /(NO\s+)?se carga siempre/i.exec(t);
+    // sexto campo (dec. 0042): la lista de Indices del subsistema con el origen de cada uno.
+    if (!/^\*\*[IÍ]ndices?:\*\*/m.test(t)) faltan.push('campo Índices (lista sus Indices con el origen de cada uno)');
+    const cargaM = /(NO\s+)?se carga[n]? siempre/i.exec(t);
     const cargaNo = !!(cargaM && /NO/i.test(cargaM[1] || ''));
     const cargaSi = !!(cargaM && !cargaNo);
     if (!cargaM) faltan.push('declaracion de carga del indice');
@@ -416,6 +456,7 @@ const secciones = [
   ['FUNCIONALIDADES INCOMPLETAS (archivos clave)', incompletas],
   ['VERSION EN DISCO DISTINTA DE LA INSTALADA', versionDesfasada],
   ['BLOQUES VERBATIM DIVERGENTES ENTRE PLANTILLAS', divergentes],
+  ['DESTINOS DECLARADOS MAS DE UNA VEZ EN UNA PLANTILLA', destinosDuplicados],
   ['BASE DE PREFERENCIAS DIVERGENTE (PREFERENCIAS.md vs PLANTILLAS)', baseDivergente],
   [`MANIFIESTOS QUE ENGORDARON (> ${LIMITE_MANIFIESTO} palabras)`, manifiestosLargos],
   ['MANIFIESTOS SIN CAMPOS MINIMOS (dec. 0019)', manifiestosSinCampos],

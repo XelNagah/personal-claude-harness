@@ -82,7 +82,7 @@ Dos cosas que deja el episodio, más allá del término:
 
 ## 5.b `casa` — metáfora sin registrar, hallada el 29/07/2026
 
-`casa` nombra el directorio donde vive un subsistema (*"catálogo de casas persistentes"*, *"quién debe recibir una pieza de Aprendizaje"*). **No está en el glosario ni en el registro de vetados**, así que ningún control la mira, y circula **42 veces** en texto vivo: 17 en la `PLANTILLA` que viaja, 4 en el manifiesto de subsistemas, el resto repartido.
+`casa` nombra el directorio donde vive un subsistema (*"catálogo de casas persistentes"*, *"descubrir qué casas existen"*). **No está en el glosario ni en el registro de vetados**, así que ningún control la mira, y circula **42 veces** en texto vivo: 17 en la `PLANTILLA` que viaja, 4 en el manifiesto de subsistemas, el resto repartido.
 
 Es una metáfora, no un término técnico, y el reemplazo literal ya existe en el propio vocabulario del repo: **directorio** para el lugar, **subsistema** para lo que lo ocupa. El autor la marcó al leerla en una decisión propuesta (*"¿un subsistema es una casa?"*), que es la señal de perplejidad que este plan usa como criterio.
 

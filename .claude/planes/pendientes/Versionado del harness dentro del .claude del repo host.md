@@ -8,7 +8,7 @@ El harness se instala dentro del `.claude/` de un **repo host** (el repo del Pro
 
 Javier probó en la oficina poner un **sub-git** (un repositorio git independiente, anidado) adentro de `.claude/`. Eso **funciona** para versionar el harness aparte del Producto.
 
-**Pero queda un hueco:** `AGENTS.md` —la fuente única de instrucciones del repo (decisión 0010)— vive en la **raíz del repo host**, un nivel **arriba** de `.claude/`, y también está gitignoreado por el host. Git no puede incluir en un repositorio archivos que están fuera (arriba) de su directorio raíz. Entonces el sub-git de `.claude/` versiona todos los subsistemas pero **deja afuera justo la pieza de entrada**.
+**Pero queda un hueco:** `AGENTS.md` —la fuente única de instrucciones del repo (decisión 0010)— vive en la **raíz del repo host**, un nivel **arriba** de `.claude/`, y también está gitignoreado por el host. Git no puede incluir en un repositorio archivos que están fuera (arriba) de su directorio raíz. Entonces el sub-git de `.claude/` versiona todos los subsistemas pero **deja afuera justo el archivo de entrada**.
 
 Ejemplo concreto de la mecánica:
 
@@ -67,7 +67,7 @@ Alternativas a evaluar, con su consecuencia:
 ### 4. El hueco del `AGENTS.md`: alternativas concretas
 
 - **(a) Adaptador en raíz + real adentro** (la idea de Javier). Ventaja: reusa un patrón ya probado (`CLAUDE.md`). Riesgo: los agentes sin imports, descrito arriba.
-- **(b) `AGENTS.md` real en raíz y versionado por el host** (dejar de ignorarlo). Ventaja: todos los agentes lo leen tal cual, cero riesgo de degradación. Costo: la pieza de entrada del harness queda en la historia del Producto, separada del resto del harness.
+- **(b) `AGENTS.md` real en raíz y versionado por el host** (dejar de ignorarlo). Ventaja: todos los agentes lo leen tal cual, cero riesgo de degradación. Costo: el archivo de entrada del harness queda en la historia del Producto, separada del resto del harness.
 - **(c) `AGENTS.md` de raíz generado** desde `.claude/AGENTS.md` por una Herramienta (concatenación literal, no puntero). Ventaja: el archivo de raíz tiene contenido completo para cualquier agente, y la fuente única vive versionada adentro. Costo: hay que regenerar y hay dos copias que pueden divergir. Nota: es exactamente el mismo problema que ya tiene abierto el plan `Restaurar la portabilidad copiar y pegar del orquestador` (puntero vs. contenido concatenado) ⇒ **posible mecanismo compartido**.
 - **(d) Junction/symlink** de `raíz/AGENTS.md` → `.claude/AGENTS.md`. El contenido real lo ve cualquier lector; el archivo ignorado es solo el enlace. Costo: portabilidad (Windows/Unix), y git puede tratarlo distinto según plataforma.
 - **(e) No resolverlo**: aceptar que `AGENTS.md` queda sin versionar, dado que es reinstalable desde el harness. Costo: se pierden las **Adaptaciones** locales que ese archivo pueda tener.

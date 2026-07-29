@@ -18,7 +18,7 @@ Hoy la Base ya está cargada de criterio personal:
 
 Y fuera de preferencias hay más: la memoria de estilo de commits impone **commits en español y sin co-autoría de IA** a todo repo que se inicialice.
 
-**Consecuencia concreta:** alguien instala el harness para un proyecto en inglés y recibe "nomenclatura en español para el dominio" como si fuera parte del producto. No tiene forma de saber que eso es gusto del autor y no una pieza del sistema — están en el mismo bloque, con el mismo número de versión, y el nivelado se lo va a reimponer cada vez que actualice.
+**Consecuencia concreta:** alguien instala el harness para un proyecto en inglés y recibe "nomenclatura en español para el dominio" como si fuera parte del producto. No tiene forma de saber que eso es gusto del autor y no una parte del sistema — están en el mismo bloque, con el mismo número de versión, y el nivelado se lo va a reimponer cada vez que actualice.
 
 ## Direcciones a evaluar
 

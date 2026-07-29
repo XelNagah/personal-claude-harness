@@ -4,7 +4,7 @@
 
 ## Contexto
 
-El harness nació para Claude Code: punto de entrada `CLAUDE.md` con `@imports`, skills `SKILL.md`, hook `SessionStart`, marketplace de plugins. El contenido de los subsistemas siempre fue agnóstico (markdown + lints Node), pero un agente distinto (Codex CLI) abría un repo instalado y no veía nada. Se buscó una arquitectura con una única fuente de verdad por pieza y adaptadores mínimos por agente, con **paridad de comportamiento Claude Code ↔ Codex CLI** como objetivo (otros agentes, best-effort vía estándares).
+El harness nació para Claude Code: punto de entrada `CLAUDE.md` con `@imports`, skills `SKILL.md`, hook `SessionStart`, marketplace de plugins. El contenido de los subsistemas siempre fue agnóstico (markdown + lints Node), pero un agente distinto (Codex CLI) abría un repo instalado y no veía nada. Se buscó una arquitectura con una única fuente de verdad por archivo y adaptadores mínimos por agente, con **paridad de comportamiento Claude Code ↔ Codex CLI** como objetivo (otros agentes, best-effort vía estándares).
 
 La investigación de estándares (2026-07-19, fuentes primarias) cambió el tablero: `AGENTS.md` es hoy estándar de la Linux Foundation leído nativo por Codex/Cursor/Gemini CLI/Copilot (Claude Code es el único grande que no lo lee, y su doc oficial recomienda `CLAUDE.md` con `@AGENTS.md`); el formato `SKILL.md` se abrió como estándar Agent Skills y lo adoptaron todos los agentes objetivo (ubicación convergente `.agents/skills/` / `~/.agents/skills/`, con symlinks soportados); y los hooks con `SessionStart` ya existen también en Codex, Gemini y Cursor (mismo modelo, registro distinto).
 

@@ -41,10 +41,12 @@ const HOOK = process.argv.slice(2).includes('--hook');
 const SUSTANTIVO = {
   memoria: 'memorias', semantica: 'términos', decisiones: 'decisiones',
   herramientas: 'herramientas', planes: 'planes', conocimiento: 'páginas',
-  preferencias: 'preferencias',
+  preferencias: 'preferencias', conducta: 'reglas', subsistemas: 'subsistemas',
 };
-// Archivo de índice del subsistema, por prioridad (nombres no uniformes entre subsistemas).
-const INDICES = ['INDICE.md', 'MEMORIA.md', 'PLANES.md', 'PREFERENCIAS.md', 'GLOSARIO.md'];
+// Nombres de índice de la forma vieja, para el subsistema que todavía no declara frontmatter.
+// Van todos los que existan, no el primero: `semantica` tiene dos y quedarse con uno la subcontaba.
+const INDICES = ['INDICE.md', 'MEMORIA.md', 'PLANES.md', 'PREFERENCIAS.md', 'GLOSARIO.md',
+                 'TERMINOLOGIA-FARLOPA.md', 'SUBSISTEMAS.md'];
 
 function existe(p) { try { return fs.existsSync(p); } catch { return false; } }
 function leer(p) { try { return fs.readFileSync(p, 'utf8'); } catch { return ''; } }
@@ -61,13 +63,23 @@ function descubrirSubsistemas() {
   return out.sort((a, b) => a.nombre.localeCompare(b.nombre));
 }
 
-// --- índice del subsistema ---
-function indiceDe(dir) {
-  for (const cand of INDICES) {
-    const p = path.join(dir, cand);
-    if (existe(p)) return p;
-  }
-  return null;
+// --- Índices del subsistema ---
+// Un subsistema puede tener más de un Índice (uno por origen), y cada archivo lo declara en su
+// frontmatter. Se cuentan TODOS: quedarse con el primero informaba 2 herramientas donde hay 8.
+// Sin frontmatter se cae a los nombres de la forma vieja, y ahí sí es el primero que exista.
+function frontmatterDe(txt) {
+  const m = /^---\r?\n([\s\S]*?)\r?\n---/.exec(txt || '');
+  return m ? m[1] : null;
+}
+function indicesDe(dir) {
+  let nombres = [];
+  try { nombres = fs.readdirSync(dir).filter(n => n.endsWith('.md')).sort(); } catch { return []; }
+  const declarados = nombres.filter(n => {
+    const fm = frontmatterDe(leer(path.join(dir, n)));
+    return !!(fm && /^indice:\s*\S/m.test(fm));
+  });
+  if (declarados.length) return declarados.map(n => path.join(dir, n));
+  return INDICES.map(c => path.join(dir, c)).filter(existe);
 }
 
 // --- conteo genérico de entradas: filas de tabla, si no hay tabla, bullets con link ---
@@ -76,8 +88,9 @@ function contarEntradas(txt) {
   const pipe = lineas.filter(l => l.trim().startsWith('|'));
   const sep = pipe.filter(l => /^\s*\|[\s:|-]+\|\s*$/.test(l)); // separadores |---|
   if (sep.length) return pipe.length - sep.length - sep.length; // -headers -separadores
-  const bullets = lineas.filter(l => /^\s*[-*]\s+\[/.test(l));  // - [texto](link)
-  return bullets.length;
+  const conLink = lineas.filter(l => /^\s*[-*]\s+\[/.test(l));  // - [texto](link)
+  if (conLink.length) return conLink.length;
+  return lineas.filter(l => /^\s*[-*]\s+\S/.test(l)).length;    // bullets sin link (preferencias)
 }
 
 // --- enriquecimientos baratos por subsistema conocido ---
@@ -115,15 +128,38 @@ function detallePlanes(txt, estadosTxt) {
   const partes = orden.map(carp => `${cont[carp] || 0} ${carp}`);
   return `(${partes.join(' · ')})`;
 }
-// Las dos secciones por origen. Se aceptan los encabezados viejos ("## Base (harness vN)" /
-// "## Adaptaciones") mientras haya Agentes Desplegados sin nivelar. La version ya no se muestra:
-// vive en el plugin, no en el encabezado.
-function detallePreferencias(txt) {
+// Cuántas preferencias sumó este repo. El total ya está en el renglón; lo que no se ve sin abrir
+// el archivo es cuántas son propias, así que ese es el único número que se desglosa. Con
+// frontmatter cada archivo dice de qué origen es; sin frontmatter (forma vieja) los dos orígenes
+// viven adentro de un archivo, partidos por encabezado, y se aceptan además los viejos
+// ("## Base (harness vN)" / "## Adaptaciones") mientras haya Agentes Desplegados sin nivelar.
+function detallePreferencias(archivos) {
   const contar = t => t ? t.split(/\r?\n/).filter(l => /^\s*[-*]\s+\S/.test(l)).length : 0;
-  const partes = txt.split(/^##\s+(?:Preferencias del Agente Desplegado|Adaptaciones)\b[^\n]*$/mi);
-  const arriba = partes[0].split(/^##\s+(?:Preferencias del Agente Multiprop[oó]sito|Base)\b[^\n]*$/mi)[1];
-  const rioArriba = contar(arriba), delRepo = contar(partes[1]);
-  return `${rioArriba} del Agente Multipropósito · ${delRepo} del Agente Desplegado`;
+  let delRepo = 0, declarado = false;
+  for (const f of archivos) {
+    const t = leer(f), fm = frontmatterDe(t);
+    const m = fm && /^origen:\s*(\S+)/m.exec(fm);
+    if (!m) continue;
+    declarado = true;
+    if (m[1] === 'agente-desplegado') delRepo += contar(t);
+  }
+  if (!declarado) {
+    const txt = archivos.length ? leer(archivos[0]) : '';
+    delRepo = contar(txt.split(/^##\s+(?:Preferencias del Agente Desplegado|Adaptaciones)\b[^\n]*$/mi)[1]);
+  }
+  return `(${delRepo} propias del repo)`;
+}
+// Semántica guarda dos cosas de NATURALEZA distinta —vocabulario legítimo y relaciones vetadas—,
+// y el total solo no contesta ninguna de las dos preguntas que se le hacen al subsistema. Por eso
+// se abre; los subsistemas cuyos dos Índices guardan lo mismo (cambia el origen, no la naturaleza)
+// muestran un número solo. Cuál Índice es cuál sale de las columnas que declara, no de su nombre.
+function detalleSemantica(archivos) {
+  let legitimos = 0, vetados = 0;
+  for (const f of archivos) {
+    const t = leer(f), n = contarEntradas(t);
+    if (/Significado vetado/.test(t)) vetados += n; else legitimos += n;
+  }
+  return vetados ? `(${legitimos} legítimos · ${vetados} vetados)` : '';
 }
 
 // --- correr el lint del subsistema y contar hallazgos (misma heurística que ejecutar-control-cierre) ---
@@ -164,12 +200,13 @@ const subs = descubrirSubsistemas();
 const filas = [];
 let hallazgosTotal = 0, lintPeor = 'ok';
 for (const s of subs) {
-  const idx = indiceDe(s.dir);
-  const txt = idx ? leer(idx) : '';
-  let cuenta = idx ? contarEntradas(txt) : 0;
+  const idxs = indicesDe(s.dir);
+  const txt = idxs.map(leer).join('\n');
+  let cuenta = idxs.length ? contarEntradas(txt) : 0;
   let extra = '';
   if (s.nombre === 'planes') extra = detallePlanes(txt, leer(path.join(s.dir, 'ESTADOS.md')));
-  if (s.nombre === 'preferencias') { extra = detallePreferencias(txt); cuenta = null; }
+  if (s.nombre === 'preferencias') extra = detallePreferencias(idxs);
+  if (s.nombre === 'semantica') extra = detalleSemantica(idxs);
   let lint = { estado: 'n/d', hallazgos: null };
   if (!SIN_LINT) {
     lint = correrLint(s.lint);
@@ -177,9 +214,10 @@ for (const s of subs) {
     if (lint.estado === 'error') lintPeor = 'error';
     else if (lint.estado === 'hallazgos' && lintPeor !== 'error') lintPeor = 'hallazgos';
   }
-  // En planes el `extra` ya trae los sustantivos (pendientes/ejecutados/descartados):
-  // el sustantivo "planes" sería redundante y desborda el marco → se omite (queda "34 (…)").
-  const sustantivo = s.nombre === 'planes' ? '' : (SUSTANTIVO[s.nombre] || 'entradas');
+  // Donde hay desglose, el `extra` ya trae los sustantivos (pendientes/ejecutados, legítimos/
+  // vetados, propias del repo): repetir el del subsistema sería redundante y desborda el marco,
+  // así que se omite y queda "80 (…)". El renglón ya dice de qué subsistema se trata.
+  const sustantivo = extra ? '' : (SUSTANTIVO[s.nombre] || 'entradas');
   filas.push({ nombre: s.nombre, cuenta, extra, sustantivo, lint });
 }
 

@@ -1,3 +1,8 @@
+---
+indice: Índice de la base de conocimiento
+origen: agente-desplegado
+---
+
 # Índice de la base de conocimiento
 
 Índice raíz de lo que el agente **sabe** sobre este proyecto. Solo punteros — una línea por página o sección, nunca contenido.

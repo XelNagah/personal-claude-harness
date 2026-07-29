@@ -1,8 +1,14 @@
+---
+indice: Subsistemas
+origen: agente-multiproposito
+columnas: [Subsistema, Qué guarda, Operación]
+---
+
 # Subsistemas
 
-Catálogo de casas persistentes del Agente Multipropósito. La Base la mantiene `amp:actualizar`; el Propósito puede sumar casas con `agregar-subsistema`.
+Catálogo de casas persistentes del Agente Multipropósito, separado por origen en **dos archivos** que lo declaran en su frontmatter: este (`origen: agente-multiproposito`, lo mantiene `amp:actualizar`, que lo reemplaza entero) y [`SUBSISTEMAS-LOCAL.md`](SUBSISTEMAS-LOCAL.md) (`origen: agente-desplegado`, las casas que suma el Propósito con `agregar-subsistema`; el nivelador no lo abre).
 
-## Subsistemas Base
+## Subsistemas del Agente Multipropósito
 
 | Subsistema | Qué guarda | Operación |
 |---|---|---|
@@ -14,8 +20,3 @@ Catálogo de casas persistentes del Agente Multipropósito. La Base la mantiene 
 | [decisiones](../decisiones/) | Decisiones estructurales | `registrar-decision` |
 | [herramientas](../herramientas/) | Herramientas repetibles y su registro | `registrar-herramienta` |
 | [conducta](../conducta/) | Reglas entregadas en el momento de actuar | `registrar-regla` |
-
-## Subsistemas del Propósito
-
-| Subsistema | Qué guarda | Operación |
-|---|---|---|

@@ -68,13 +68,13 @@ El "mecanismo a decidir una vez" (que este plan compartía con *Hook de preferen
 
 La **decisión 0003** fija integridad en dos capas: mecánica (lints `.js`, sin LLM) **obligatoria**, y semántica (contradicciones, incompatibilidades, desactualización — requiere LLM) *"hoy informal, pendiente de formalizar"*. Lo que pide este plan **es** esa capa semántica, acotada a un punto de disparo concreto. No es una capa nueva: es formalizar la que 0003 dejó pendiente, empezando por el caso más barato.
 
-Se cruza con el plan [Capa semantica de coherencia](Capa%20semantica%20de%20coherencia%20-%20contradicciones%20e%20incompatibilidades.md) (Diferido desde 26-07-18), que ataca lo transversal entre subsistemas. Este es más chico y más concreto: una sola pieza (el plan), un solo momento (al escribirlo).
+Se cruza con el plan [Capa semantica de coherencia](Capa%20semantica%20de%20coherencia%20-%20contradicciones%20e%20incompatibilidades.md) (Diferido desde 26-07-18), que ataca lo transversal entre subsistemas. Este es más chico y más concreto: un solo archivo (el plan), un solo momento (al escribirlo).
 
 ## Preguntas a resolver (ninguna decidida)
 
 1. **¿Qué parte es mecánica y qué parte necesita LLM?** Separables: barrer el texto contra los términos canónicos y sus alias es mecánico (lo hace un `.js`); juzgar si un término nuevo es acuñación o palabra del usuario, o si el plan contradice una decisión vigente, no lo es. La parte mecánica podría ser un lint; la semántica, un paso de skill o un hook que re-inyecta.
 2. **¿Cuál es el punto de disparo?** Candidatos: hook sobre `Write`/`Edit` con ruta bajo `.claude/planes/` (el más limpio: patrón de ruta concreto); paso obligatorio al final de `planificar` y `ciclo-de-plan`; o al cerrar el plan. Ojo: escribir un plan no siempre pasa por esas skills.
-3. **¿Solo planes, o toda pieza que el agente escribe?** El incidente fue en un plan, pero el mismo riesgo corre en memorias, páginas de conocimiento y decisiones. Empezar por planes es acotado; extender después es más trabajo pero cubre el hueco real.
+3. **¿Solo planes, o todo archivo que el agente escribe?** El incidente fue en un plan, pero el mismo riesgo corre en memorias, páginas de conocimiento y decisiones. Empezar por planes es acotado; extender después es más trabajo pero cubre el hueco real.
 4. **¿Qué hace el control cuando encuentra algo?** Frena y pregunta (Control, según el glosario), o informa y sigue. El glosario ya define `Control` como *"chequeo que frena el avance si no se cumple"* — usar ese umbral evita inventar semántica nueva.
 
 ## Pasos (después de resolver lo de arriba)

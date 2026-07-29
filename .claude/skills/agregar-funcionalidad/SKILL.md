@@ -1,6 +1,6 @@
 ---
 name: agregar-funcionalidad
-description: Da de alta una funcionalidad/plugin nueva en el harness — carpeta con plugin.json/README/skill, marketplace.json, fila en REGISTRO.md, orquestador si aplica — y valida. Use when el usuario dice "agregá una funcionalidad", "creá el plugin", "sumá esta pieza al harness".
+description: Da de alta una funcionalidad/plugin nueva en el harness — carpeta con plugin.json/README/skill, marketplace.json, fila en REGISTRO.md, orquestador si aplica — y valida. Use when el usuario dice "agregá una funcionalidad", "creá el plugin", "sumá esta funcionalidad al harness".
 ---
 
 # Agregar una funcionalidad al harness
