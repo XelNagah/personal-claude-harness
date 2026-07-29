@@ -53,6 +53,12 @@ Con dos secciones, el actualizador tiene que abrir el archivo y reemplazar media
 3. `MANIFIESTO.md` y `README.md` de preferencias; sacar la excepción de `lint-subsistemas.js:28` y la sección propia de `AGENTS.md`.
 4. Llevar los tres lints al Patrón: referencias, huérfanos, completitud, y que existan los dos archivos.
 5. Reemplazar los encabezados viejos por los ratificados. Son unas 100 apariciones en texto vivo, que el lint de semántica ya marca.
+
+   **Medido el 29/07/2026, lo que no se ve a simple vista:**
+
+   - En `funcionalidades/` —el texto que viaja— son **43 apariciones en 6 archivos**: `Adaptaciones` 17, `Reglas Base` 7, `Reglas del Propósito` 6, `piezas Base` 6, `Herramientas del Propósito` 4, `Herramientas Base` 3. El grueso está en `PLANTILLA.md`. Es el único chequeo en rojo del control de cierre.
+   - **Solo 11 de esas 43 son texto suelto** (`las ocho piezas Base conocidas`, `sin pisar adaptaciones locales`). Las otras **32 nombran los títulos de sección**, así que se acomodan solas una vez renombrados los títulos — pero renombrarlas antes deja instrucciones que mandan a secciones inexistentes. El orden es: primero los títulos, después las frases.
+   - **Tres archivos de código tienen la cadena cableada**, no solo texto: `lint-preferencias.js` valida el título con `/^##\s+Adaptaciones\b/mi`, y `lint-harness.js` y `mostrar-pantalla-bienvenida.js` la buscan también. Mientras haya Agentes Desplegados sin migrar conviene que el lint acepte el nombre viejo y el nuevo.
 6. Propagar a lo que viaja (`amp:inicializar` y su `PLANTILLA.md`, `amp-preferencias`, `amp:actualizar`) y verificar con `lint-harness`.
 7. Migrar los Agentes Desplegados que ya tienen la forma vieja.
 
