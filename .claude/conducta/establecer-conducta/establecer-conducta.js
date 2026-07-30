@@ -15,7 +15,7 @@
 //   - inyectar: arma un texto y lo emite como additionalContext (llega al modelo).
 //   - correr:   ejecuta la Herramienta cuya ruta es el Contenido de la regla y REENVIA su stdout
 //               tal cual (ej. la Pantalla de bienvenida emite {systemMessage} en SessionStart:
-//               ese campo es el unico que pinta la terminal del usuario). No se combina: es para
+//               ese campo es el unico que escribe en la terminal del usuario). No se combina: es para
 //               momentos donde la salida del hijo ES la respuesta del hook.
 //   - bloquear: ejecuta la Herramienta cuya ruta es el Contenido y LEE su respuesta. Si trae
 //               permissionDecision 'deny', se emite ese deny solo (frena la accion; el

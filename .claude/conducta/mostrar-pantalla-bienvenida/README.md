@@ -24,4 +24,4 @@ En `settings.json` el `SessionStart` llama al repartidor `establecer-conducta`, 
 
 ## Emisión (verificado)
 
-Un `SessionStart` hook **no pinta un banner** propio como el logo del CLI. El único campo que se pinta en la terminal del usuario es `systemMessage`; el stdout crudo iría a `additionalContext`, que solo ve el modelo. Por eso `--hook` emite `{"systemMessage": <caja>}`. Sin `--hook`, la caja va envuelta en cerca de código para el transcript (skill `amp:info` y corridas a mano).
+Un `SessionStart` hook **no muestra un banner** propio como el logo del CLI. El único campo que se muestra en la terminal del usuario es `systemMessage`; el stdout crudo iría a `additionalContext`, que solo ve el modelo. Por eso `--hook` emite `{"systemMessage": <caja>}`. Sin `--hook`, la caja va envuelta en cerca de código para el transcript (skill `amp:info` y corridas a mano).

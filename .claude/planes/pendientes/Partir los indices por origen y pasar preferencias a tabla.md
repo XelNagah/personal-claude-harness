@@ -144,8 +144,12 @@ Alcance: el mismo parseo está en los otros lints y en el repartidor de conducta
 
 ### Terminología detectada al pasar (29/07/2026)
 
-- **`pintar`** en el sentido de mostrar en pantalla. No es solo del agente: ya está escrito en el glosario, en la fila de Pantalla de bienvenida (*"Se pinta en la terminal del usuario vía el campo `systemMessage`"*), y en el comentario de `establecer-conducta.js`. Pendiente de ratificación y barrido.
-- **`slug`**. Lo usó el agente al proponer, el autor lo marcó. Pendiente de ratificación.
+**Resuelto el 29/07/2026.** Los dos salieron a la luz igual: el agente los usó en la conversación y el autor los marcó. El control `al escribir` no mira la conversación, y ninguno de los dos aparecía como falla.
+
+- **`pintar`** en el sentido de mostrar en pantalla. **Vetado y barrido**, control `avisa` (la palabra tiene usos legítimos en español corriente y la máquina no puede distinguirlos). Eran 16 apariciones vivas: 8 en `PLANTILLA.md`, 6 en `conducta/` (los dos scripts y sus dos README), 1 en el glosario —fila de Pantalla de bienvenida— y 1 en la decisión 0012. Reemplazos según el caso: `mostrar`, `emitir`, `escribir en la terminal`.
+- **`slug`** — **no había nada que ratificar: estaba vetado desde el 2026-07-19**, control `bloquea`, y nunca se barrió. Es el caso literal que documenta el conocimiento `terminologia-canonica`, punto 2 (*"Ratificación sin ejecución"*): el término se veta, no se barre, y el texto normativo lo sigue enseñando — por eso el agente lo reusó. Sobrevivía además **por estar entre comillas simples invertidas**, que es exactamente lo que el bloqueo saltea. Barridas las 8 vivas: 5 en `PLANTILLA.md` —que el plan `Barrer la terminologia vetada del Producto` ya contabilizaba— y 3 en `.claude/` que ese plan no cubría, porque barre el Producto: `planes/README.md` y `decisiones/README.md` ×2. Quedaron como `<nombre-estable>.md` y `NNNN-nombre.md`.
+
+**Lo que el episodio deja a la vista, sin resolver:** un término vetado con control `bloquea` puede vivir años en el texto normativo si sus apariciones están entre comillas simples invertidas, y nada lo señala como falla. Candidato a plan propio o al de barrido del Producto.
 
 ## Falta decidir
 
@@ -157,8 +161,8 @@ Alcance: el mismo parseo está en los otros lints y en el repartidor de conducta
 6. ~~**Cómo queda `conducta`**, cuyo `Contenido` es dato operativo y no descripción.~~ **Resuelto el 29/07/2026.** Ver arriba.
 7. ~~**Cómo queda `planes`**, que hoy no tiene Descripción.~~ **Resuelto el 29/07/2026.** Ver arriba.
 8. ~~**Cómo queda `semantica/TERMINOLOGIA-FARLOPA`**, cuyo `Significado vetado` describe lo vetado y no la entrada.~~ **Resuelto el 29/07/2026.** Ver arriba.
-9. **Si `slug` y `pintar` se vetan.** El autor los marcó como ajenos al dominio el 29/07/2026; falta la ratificación y su fila en Terminología Farlopa. `pintar` además ya está escrito en el glosario y en un comentario del repartidor de conducta.
-10. **Cómo se llama el campo del frontmatter** que declara qué representa la `Descripción` de cada Índice. Propuesto: `descripcion:`.
+9. ~~**Si `slug` y `pintar` se vetan.**~~ **Resuelto el 29/07/2026:** `pintar` vetado y barrido; `slug` ya estaba vetado y se barrió. Ver arriba.
+10. ~~**Cómo se llama el campo del frontmatter** que declara qué representa la `Descripción` de cada Índice.~~ **Resuelto el 29/07/2026:** `descripcion:`, una palabra en minúscula y sin acento, igual que `indice`, `origen` y `columnas`.
 11. **Si `Significado Farlopa` entra al glosario** como concepto, o alcanza con que lo declare el frontmatter del registro.
 12. **Asentar la decisión estructural**, que modifica la 0042: núcleo obligatorio, código con prefijo de origen, nombres fijos de columna con declaración en el frontmatter, orden ascendente por Código.
 

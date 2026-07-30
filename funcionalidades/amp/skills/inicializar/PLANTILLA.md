@@ -1148,13 +1148,13 @@ Una fila por decisión:
 - **Decisión** — qué se decidió y por qué, en una frase (para las simples).
 - **Fecha** — `AAAA-MM-DD`.
 - **Estado** — `vigente` o `reemplazada por NNNN`. Para revertir no se borra: se agrega una nueva y se marca la vieja.
-- **Detalle** — link a `NNNN-slug.md` **solo si la decisión requiere conceptualización mayor** (contexto, alternativas, consecuencias); `—` si es simple.
+- **Detalle** — link a `NNNN-nombre.md` **solo si la decisión requiere conceptualización mayor** (contexto, alternativas, consecuencias); `—` si es simple.
 
 | N° | Decisión | Fecha | Estado | Detalle |
 |----|----------|-------|--------|---------|
 ```
 
-Formato de una página de detalle `.claude/decisiones/NNNN-slug.md` (solo decisiones complejas):
+Formato de una página de detalle `.claude/decisiones/NNNN-nombre.md` (solo decisiones complejas):
 
 ```markdown
 # NNNN — Título corto de la decisión
@@ -2485,7 +2485,7 @@ Hook repartidor `.claude/conducta/establecer-conducta/establecer-conducta.js` �
 //   - inyectar: arma un texto y lo emite como additionalContext (llega al modelo).
 //   - correr:   ejecuta la Herramienta cuya ruta es el Contenido de la regla y REENVIA su stdout
 //               tal cual (ej. la Pantalla de bienvenida emite {systemMessage} en SessionStart:
-//               ese campo es el unico que pinta la terminal del usuario). No se combina: es para
+//               ese campo es el unico que escribe en la terminal del usuario). No se combina: es para
 //               momentos donde la salida del hijo ES la respuesta del hook.
 //   - bloquear: ejecuta la Herramienta cuya ruta es el Contenido y LEE su respuesta. Si trae
 //               permissionDecision 'deny', se emite ese deny solo (frena la accion; el
@@ -2697,7 +2697,7 @@ Eventos que realiza hoy:
 | Clase | Qué hace | Se combina |
 |-------|----------|------------|
 | `inyectar` | Emite el `Contenido` de la regla como `additionalContext` | sí |
-| `correr` | Ejecuta la Herramienta cuya ruta es el `Contenido` y **reenvía su salida tal cual** (la Pantalla de bienvenida emite `systemMessage`, el único campo que pinta la terminal) | no: su salida **es** la respuesta del hook |
+| `correr` | Ejecuta la Herramienta cuya ruta es el `Contenido` y **reenvía su salida tal cual** (la Pantalla de bienvenida emite `systemMessage`, el único campo que escribe en la terminal) | no: su salida **es** la respuesta del hook |
 | `bloquear` | Ejecuta la Herramienta y **lee su respuesta**: un `deny` frena la acción y se emite solo; un `additionalContext` se suma al de las reglas `inyectar` | sí |
 
 En un mismo momento conviven el texto fijo de las `inyectar` —que vive en el registro y lo nivela el Agente Multipropósito— y los datos medidos de las `bloquear`, que produce un programa. Se emiten juntos, uno abajo del otro.
@@ -2931,7 +2931,7 @@ Script de la Pantalla de bienvenida `.claude/conducta/mostrar-pantalla-bienvenid
 // Sin process.exit(1): informa, no falla.
 //
 // Por qué --hook: el stdout crudo de un SessionStart hook va a `additionalContext` (lo ve
-// el modelo, NO el usuario). El único campo que se pinta en la terminal del usuario es
+// el modelo, NO el usuario). El único campo que se muestra en la terminal del usuario es
 // `systemMessage`. Con --hook se emite ese JSON, sin cerca de código (los backticks saldrían
 // literales). Sin --hook, la caja va con cerca ``` para conservar monospace en el transcript.
 
@@ -2941,7 +2941,7 @@ const { spawnSync } = require('child_process');
 
 // El repo es el DIRECTORIO DE TRABAJO, no la ubicacion del script. Deducirlo desde __dirname
 // hacia arriba funciona solo mientras el script viva adentro del repo que describe: corrido desde
-// otra copia —el marketplace bajado, una prueba, un repo apuntado— pinta la Pantalla del repo
+// otra copia —el marketplace bajado, una prueba, un repo apuntado— muestra la Pantalla del repo
 // equivocado sin avisar. Se acepta una ruta por argumento para inspeccionar otro repo a proposito.
 const RUTA_ARG = process.argv.slice(2).find(a => !a.startsWith('--'));
 const REPO = RUTA_ARG ? path.resolve(RUTA_ARG) : process.cwd();
@@ -3198,7 +3198,7 @@ boxLines.push(regla('╚', '═', '╝'));
 const box = boxLines.join('\n');
 
 // --hook: emitir JSON {"systemMessage": <caja>} → único campo que la terminal del usuario
-// pinta en SessionStart (sin cerca ```: los backticks saldrían literales). Sin --hook:
+// se muestra en SessionStart (sin cerca ```: los backticks saldrían literales). Sin --hook:
 // caja envuelta en cerca de código para el transcript (skill amp:info + corridas a mano).
 // Si falta la Identidad, no alcanza con mostrar «<sin definir>» al usuario: `systemMessage` va a
 // la terminal y el modelo NO lo ve, asi que nadie queda a cargo de resolverlo y el repo se queda
@@ -3260,7 +3260,7 @@ En `settings.json` el `SessionStart` llama al repartidor `establecer-conducta`, 
 
 ## Emisión (verificado)
 
-Un `SessionStart` hook **no pinta un banner** propio como el logo del CLI. El único campo que se pinta en la terminal del usuario es `systemMessage`; el stdout crudo iría a `additionalContext`, que solo ve el modelo. Por eso `--hook` emite `{"systemMessage": <caja>}`. Sin `--hook`, la caja va envuelta en cerca de código para el transcript (skill `amp:info` y corridas a mano).
+Un `SessionStart` hook **no muestra un banner** propio como el logo del CLI. El único campo que se muestra en la terminal del usuario es `systemMessage`; el stdout crudo iría a `additionalContext`, que solo ve el modelo. Por eso `--hook` emite `{"systemMessage": <caja>}`. Sin `--hook`, la caja va envuelta en cerca de código para el transcript (skill `amp:info` y corridas a mano).
 ````
 
 Cableado del repartidor — **registro doble**: el mismo script se registra en tres eventos de Claude Code (`SessionStart` + `UserPromptSubmit` + `PreToolUse`) y en dos de Codex. **Merge, nunca pisar:** sumar estas entradas a las que ya existan; si la entrada de `establecer-conducta` ya está, no duplicar. En particular el `SessionStart` del repartidor (que corre la Pantalla de bienvenida) se **mergea con el `SessionStart` de planes** (`lint-planes --quiet`) bajo el mismo evento, sin pisarlo — quedan las dos entradas en la lista de `hooks`.
@@ -3350,7 +3350,7 @@ Cableado del repartidor — **registro doble**: el mismo script se registra en t
 ```
 
 > El matcher `Write|Edit` alcanza igual en Codex: toda edición de archivos pasa por `apply_patch`, que dispara `PreToolUse` y matchea como `apply_patch`, `Edit` o `Write`. La salvedad es el `deny`, que **hoy no frena** la escritura en Codex (bug abierto del CLI): ahí una regla `bloquear` degrada a aviso. Conocimiento `hooks-codex-cli`.
-> En Codex el momento `al arrancar la sesión` **corre igual el repartidor** (mismo `SessionStart`), pero Codex **no soporta `SessionStart` → `systemMessage`** de la misma forma que Claude Code: la caja de la Pantalla de bienvenida sale solo si el agente pinta `systemMessage`; si no, degrada sin caja (la corrida no falla).
+> En Codex el momento `al arrancar la sesión` **corre igual el repartidor** (mismo `SessionStart`), pero Codex **no soporta `SessionStart` → `systemMessage`** de la misma forma que Claude Code: la caja de la Pantalla de bienvenida sale solo si el agente muestra `systemMessage`; si no, degrada sin caja (la corrida no falla).
 > ⚠️ Codex carga hooks de proyecto solo si la carpeta `.codex/` del repo es de **confianza** (revisar con `/hooks`) y con `features.hooks` habilitado en su config. La confianza se registra contra el texto del hook, así que **cada actualización que lo cambie lo vuelve a frenar hasta que se lo apruebe de nuevo**. Avisarle al usuario al instalar y al nivelar.
 
 Lint `.claude/conducta/lint-conducta/lint-conducta.js` (Node, sin dependencias, sin red):
@@ -3962,7 +3962,7 @@ Persistir y gestionar planes bajo `.claude/planes/` con tres subcarpetas: `pendi
 
 **How to apply:**
 
-1. **Al crear un plan:** copiar a `.claude/planes/pendientes/<slug-estable>.md` (sin fecha en el nombre) y agregar su fila en `PLANES.md`: Estado (de `ESTADOS.md`), Creado, Origen si se desprende de otro plan.
+1. **Al crear un plan:** copiar a `.claude/planes/pendientes/<nombre-estable>.md` (sin fecha en el nombre) y agregar su fila en `PLANES.md`: Estado (de `ESTADOS.md`), Creado, Origen si se desprende de otro plan.
 2. **Cada actualización al plan** se replica en la versión persistida — es la fuente de verdad, no el archivo del plans-folder del harness. Los cambios de estado se reflejan en `PLANES.md`, y el archivo se mueve a la carpeta que el estado indica.
 3. **Al detectar evidencia de implementación** (commit, mensaje del user, código verificado, otro agente): pasar a `Ejecutado` y mover a `ejecutados/` **sin renombrar**, completar `Cerrado` en el registro y revisar primero los encabezados. Si ya hay una sección de implementación (`## Implementación` o `## Notas de implementación`, con cualquier nivel), conservar su contenido y normalizar solo el título a **`## Notas de implementación`** si corresponde; solo si no existe, agregarla (cómo se implementó vs planificado, hash de commit, cosas notables). Nunca crear una sección vacía que duplique notas legacy.
 4. **Descartar es un cierre válido:** `Descartado`, mover a `descartados/`, completar `Cerrado` y una línea de motivo en Notas (p. ej. "superseded por <plan>").
@@ -4024,7 +4024,7 @@ Relacionado: [[flujo-planes]] (consultar la semántica al planificar/analizar), 
 ````markdown
 # Decisiones
 
-Las decisiones **estructurales al propósito del repo** se asientan en `.claude/decisiones/INDICE.md`: una tabla donde cada fila es una decisión (N° secuencial, qué se decidió y por qué, fecha, estado, y link a página de detalle si requiere conceptualización mayor). Misma estructura que el glosario: lo simple vive en la fila, lo complejo en su `NNNN-slug.md`.
+Las decisiones **estructurales al propósito del repo** se asientan en `.claude/decisiones/INDICE.md`: una tabla donde cada fila es una decisión (N° secuencial, qué se decidió y por qué, fecha, estado, y link a página de detalle si requiere conceptualización mayor). Misma estructura que el glosario: lo simple vive en la fila, lo complejo en su `NNNN-nombre.md`.
 
 **Why:** coherencia decisional a lo largo de la vida del repo — no re-decidir ni contradecir lo estructural. Acotado a lo estructural (no lo operativo trivial) para que el registro siga siendo señal y no ruido — es lo que hacía la "A" de ADR, generalizada a repos de cualquier propósito.
 
@@ -4032,7 +4032,7 @@ Las decisiones **estructurales al propósito del repo** se asientan en `.claude/
 
 1. **Qué registrar:** decisiones que definen cómo es / qué hace el repo en lo esencial, o que eligen un camino que condiciona el trabajo futuro. **No** las triviales o efímeras ("busqué en internet", "usé tal comando").
 2. **Al planificar o analizar**, consultar las decisiones previas: no re-abrir lo cerrado ni contradecirlo. Reemplazar, no borrar: agregar la nueva y marcar la vieja `reemplazada por NNNN`.
-3. **Simple** → una fila, Detalle en `—`. **Compleja** (contexto, alternativas, consecuencias) → fila + página `NNNN-slug.md`.
+3. **Simple** → una fila, Detalle en `—`. **Compleja** (contexto, alternativas, consecuencias) → fila + página `NNNN-nombre.md`.
 4. **Al cerrar** una tarea que registró decisiones, correr el lint: `node .claude/decisiones/lint-decisiones/lint-decisiones.js` (numeración, links de detalle, huérfanos, superseded).
 
 Relacionado: [[flujo-planes]] (consultar/registrar decisiones al cerrar planes).

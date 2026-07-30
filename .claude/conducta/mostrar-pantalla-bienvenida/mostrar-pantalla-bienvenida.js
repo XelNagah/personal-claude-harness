@@ -18,7 +18,7 @@
 // Sin process.exit(1): informa, no falla.
 //
 // Por qué --hook: el stdout crudo de un SessionStart hook va a `additionalContext` (lo ve
-// el modelo, NO el usuario). El único campo que se pinta en la terminal del usuario es
+// el modelo, NO el usuario). El único campo que se muestra en la terminal del usuario es
 // `systemMessage`. Con --hook se emite ese JSON, sin cerca de código (los backticks saldrían
 // literales). Sin --hook, la caja va con cerca ``` para conservar monospace en el transcript.
 
@@ -28,7 +28,7 @@ const { spawnSync } = require('child_process');
 
 // El repo es el DIRECTORIO DE TRABAJO, no la ubicacion del script. Deducirlo desde __dirname
 // hacia arriba funciona solo mientras el script viva adentro del repo que describe: corrido desde
-// otra copia —el marketplace bajado, una prueba, un repo apuntado— pinta la Pantalla del repo
+// otra copia —el marketplace bajado, una prueba, un repo apuntado— muestra la Pantalla del repo
 // equivocado sin avisar. Se acepta una ruta por argumento para inspeccionar otro repo a proposito.
 const RUTA_ARG = process.argv.slice(2).find(a => !a.startsWith('--'));
 const REPO = RUTA_ARG ? path.resolve(RUTA_ARG) : process.cwd();
@@ -285,7 +285,7 @@ boxLines.push(regla('╚', '═', '╝'));
 const box = boxLines.join('\n');
 
 // --hook: emitir JSON {"systemMessage": <caja>} → único campo que la terminal del usuario
-// pinta en SessionStart (sin cerca ```: los backticks saldrían literales). Sin --hook:
+// se muestra en SessionStart (sin cerca ```: los backticks saldrían literales). Sin --hook:
 // caja envuelta en cerca de código para el transcript (skill amp:info + corridas a mano).
 // Si falta la Identidad, no alcanza con mostrar «<sin definir>» al usuario: `systemMessage` va a
 // la terminal y el modelo NO lo ve, asi que nadie queda a cargo de resolverlo y el repo se queda

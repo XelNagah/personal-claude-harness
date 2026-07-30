@@ -9,11 +9,13 @@
 | Término | Veces | Vetado desde |
 |---|---|---|
 | `prosa` | 12 | 2026-07-23 |
-| `slug` · `capa` | 5 c/u | — · 2026-07-25 |
+| `slug` · `capa` | 5 c/u | 2026-07-19 · 2026-07-25 |
 | `linkear` | 4 | — |
 | `verbatim` | 3 | 2026-07-23 |
 | `plomería` | 2 | — |
 | `wedge` · `staleness` · `leveleo` · `levelear` · `gate` · `feasibility` · `dogfooding` · `cruce` · `churn` | 1 c/u | varias |
+
+**Adelantado el 29/07/2026, fuera de este plan:** las 5 de `slug` en `PLANTILLA.md` ya se barrieron, junto con 3 apariciones vivas en `.claude/` que este plan no cubría (`planes/README.md`, `decisiones/README.md` ×2) — quedaron como `<nombre-estable>.md` y `NNNN-nombre.md`. Salieron a la luz porque el agente reusó el término en una conversación: el control `al escribir` no mira la conversación, y las apariciones sobrevivían **porque estaban entre comillas simples invertidas**, que es justo lo que el bloqueo saltea. Las 36 restantes siguen pendientes.
 
 Los barridos de terminología se hicieron sobre `.claude/` —el Agente Multipropósito instalado acá— y **nunca sobre el Producto**. O sea que cada repo consumidor recibe, hasta hoy, textos escritos con el vocabulario que este repo prohibió hace tres días o más.
 
