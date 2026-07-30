@@ -3864,25 +3864,32 @@ node .claude/subsistemas/lint-subsistemas/lint-subsistemas.js
 ---
 indice: Subsistemas
 origen: agente-multiproposito
-columnas: [Subsistema, Qué guarda, Operación]
+columnas: [Código, Nombre, Descripción, Operación, Detalle]
+descripcion: qué guarda ese subsistema
 ---
 
 # Subsistemas
 
 Catálogo de casas persistentes del Agente Multipropósito, separado por origen en **dos archivos** que lo declaran en su frontmatter: este (`origen: agente-multiproposito`, lo mantiene `amp:actualizar`, que lo reemplaza entero) y [`SUBSISTEMAS-LOCAL.md`](SUBSISTEMAS-LOCAL.md) (`origen: agente-desplegado`, las casas que suma el Propósito con `agregar-subsistema`; el nivelador no lo abre).
 
+- **Código** — `Base-NNNN`. Se asigna al crear la entrada y no se reusa.
+- **Nombre** — el nombre del subsistema, que es también el de su carpeta.
+- **Descripción** — qué guarda, en una línea.
+- **Operación** — las skills que lo operan.
+- **Detalle** — su casa: la carpeta con su manifiesto y sus Índices.
+
 ## Subsistemas del Agente Multipropósito
 
-| Subsistema | Qué guarda | Operación |
-|---|---|---|
-| [subsistemas](./) | Catálogo y coordinación entre casas | `agregar-subsistema`, `reubicar-aprendizaje` |
-| [preferencias](../preferencias/) | Preferencias del usuario, las del Agente Multipropósito y las del repo | `registrar-preferencia` |
-| [planes](../planes/) | Planes y su ciclo de vida | `ciclo-de-plan` |
-| [conocimiento](../conocimiento/) | Lo que el agente sabe y necesita reutilizar | `registrar-conocimiento`, `buscar-conocimiento` |
-| [semantica](../semantica/) | Vocabulario legítimo y relaciones vetadas | `converger-terminologia` |
-| [decisiones](../decisiones/) | Decisiones estructurales | `registrar-decision` |
-| [herramientas](../herramientas/) | Herramientas repetibles y su registro | `registrar-herramienta` |
-| [conducta](../conducta/) | Reglas entregadas en el momento de actuar | `registrar-regla` |
+| Código | Nombre | Descripción | Operación | Detalle |
+|---|---|---|---|---|
+| Base-0001 | subsistemas | Catálogo y coordinación entre casas | `agregar-subsistema`, `reubicar-aprendizaje` | [subsistemas/](./) |
+| Base-0002 | preferencias | Preferencias del usuario, las del Agente Multipropósito y las del repo | `registrar-preferencia` | [preferencias/](../preferencias/) |
+| Base-0003 | planes | Planes y su ciclo de vida | `ciclo-de-plan` | [planes/](../planes/) |
+| Base-0004 | conocimiento | Lo que el agente sabe y necesita reutilizar | `registrar-conocimiento`, `buscar-conocimiento` | [conocimiento/](../conocimiento/) |
+| Base-0005 | semantica | Vocabulario legítimo y relaciones vetadas | `converger-terminologia` | [semantica/](../semantica/) |
+| Base-0006 | decisiones | Decisiones estructurales | `registrar-decision` | [decisiones/](../decisiones/) |
+| Base-0007 | herramientas | Herramientas repetibles y su registro | `registrar-herramienta` | [herramientas/](../herramientas/) |
+| Base-0008 | conducta | Reglas entregadas en el momento de actuar | `registrar-regla` | [conducta/](../conducta/) |
 ````
 
 ### `.claude/subsistemas/SUBSISTEMAS-LOCAL.md`
@@ -3893,15 +3900,16 @@ Nace **declarado y sin filas**, no vacío: el manifiesto que se instala lo nombr
 ---
 indice: Subsistemas del Agente Desplegado
 origen: agente-desplegado
-columnas: [Subsistema, Qué guarda, Operación]
+columnas: [Código, Nombre, Descripción, Operación, Detalle]
+descripcion: qué guarda ese subsistema
 ---
 
 # Subsistemas del Agente Desplegado
 
 Las casas que este repo suma para su Propósito con `agregar-subsistema`. El nivelador no toca este archivo. Las columnas y la convención completa están en [`SUBSISTEMAS.md`](SUBSISTEMAS.md).
 
-| Subsistema | Qué guarda | Operación |
-|---|---|---|
+| Código | Nombre | Descripción | Operación | Detalle |
+|---|---|---|---|---|
 ````
 
 ### `.claude/subsistemas/README.md`
@@ -4041,9 +4049,52 @@ if (!catalogos.length) {
 const maniPath = path.join(dirCatalogo, 'MANIFIESTO.md');
 errores.push(...problemasDeIndices(catalogos, fs.existsSync(maniPath) ? fs.readFileSync(maniPath, 'utf8') : null));
 
-const texto = catalogos.map(i => i.texto).join('\n');
-const filas = [...texto.matchAll(/^\|\s*\[([^\]]+)\]\(([^)]+)\)\s*\|/gm)]
-  .map(([, nombre, enlace]) => ({ nombre: nombre.trim(), enlace: enlace.trim() }));
+// --- las filas del catalogo, leidas por encabezado ------------------------
+// Se ubica cada dato por el NOMBRE de su columna, no por su posicion: con el nucleo la primera
+// celda es el Codigo y la casa se mudo a `Detalle`, asi que buscar un link en la celda inicial
+// dejaba de encontrar filas y el catalogo se leia vacio, sin emitir ningun error.
+// Y se separan las celdas RESPETANDO las tuberias escapadas (`\|`): partir por "|" a secas corre
+// las columnas de cualquier fila que nombre otra tabla adentro de una celda.
+function celdasDe(linea) {
+  return linea.trim().replace(/^\|/, '').replace(/\|$/, '')
+    .split(/(?<!\\)\|/).map(c => c.replace(/\\\|/g, '|').trim());
+}
+function filasDe(idx) {
+  const lineas = idx.texto.split(/\r?\n/).map(l => l.trim()).filter(l => l.startsWith('|'));
+  if (lineas.length < 2) return [];
+  const cab = celdasDe(lineas[0]).map(c => c.replace(/\*/g, '').trim());
+  const out = [];
+  for (const l of lineas.slice(1)) {
+    const c = celdasDe(l);
+    if (/^:?-{2,}:?$/.test((c[0] || '').replace(/\s/g, ''))) continue;
+    const fila = {};
+    cab.forEach((n, k) => { fila[n] = c[k] !== undefined ? c[k] : ''; });
+    out.push(fila);
+  }
+  return out;
+}
+
+// El prefijo del codigo es el origen: un `Local-` en el Indice del Agente Multiproposito significa
+// que la fila se escribio en el archivo equivocado.
+const PREFIJO = { 'agente-multiproposito': 'Base', 'agente-desplegado': 'Local' };
+const filas = [];
+const codigosVistos = new Set();
+for (const i of catalogos) {
+  const esperado = PREFIJO[i.origen];
+  for (const f of filasDe(i)) {
+    const cod = f['Código'] || '', nombre = f['Nombre'] || '';
+    const enlace = (/\]\(([^)]+)\)/.exec(f['Detalle'] || '') || [])[1] || '';
+    if (esperado) {
+      if (!new RegExp(`^${esperado}-\\d{4}$`).test(cod))
+        errores.push(`${i.nombre}: codigo "${cod}" no tiene la forma ${esperado}-NNNN que pide su origen`);
+      else if (codigosVistos.has(cod)) errores.push(`${i.nombre}: codigo duplicado ${cod}`);
+      else codigosVistos.add(cod);
+    }
+    if (!nombre) errores.push(`${i.nombre}: la fila ${cod || '(sin codigo)'} no tiene Nombre`);
+    if (!(f['Descripción'] || '').trim()) errores.push(`${i.nombre}: ${cod} no tiene Descripción`);
+    filas.push({ nombre, enlace });
+  }
+}
 const nombres = filas.map(f => f.nombre);
 
 for (const nombre of new Set(nombres)) {
@@ -4051,6 +4102,7 @@ for (const nombre of new Set(nombres)) {
 }
 
 for (const fila of filas) {
+  if (!fila.enlace) { errores.push(`sin casa en Detalle: ${fila.nombre}`); continue; }
   const destino = path.resolve(dirCatalogo, fila.enlace);
   if (!fs.existsSync(destino) || !fs.statSync(destino).isDirectory()) errores.push(`casa inexistente: ${fila.nombre} -> ${fila.enlace}`);
   else if (!fs.existsSync(path.join(destino, 'MANIFIESTO.md')))

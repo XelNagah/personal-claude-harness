@@ -239,6 +239,14 @@ Por qué así:
 
       **Pendiente de este subpaso:** el nivelador detecta el manifiesto ausente pero **no** la conversión de bullets a tabla, ni el `README.md` ausente, ni la sección `## Preferencias` que hay que borrar de `AGENTS.md`. Los diecisiete Agentes Desplegados con la forma vieja necesitan esas tres detecciones antes de migrarse (punto 7 del trabajo).
    3. Los otros nueve al núcleo: sumar `Código`, `Nombre`, `Descripción` y `Detalle` donde falten, renombrar encabezados, ordenar las filas por Código y sumar el campo del frontmatter que declara qué representa la Descripción.
+
+      **`subsistemas` hecho el 29/07/2026.** Sus dos Índices pasan a `Código | Nombre | Descripción | Operación | Detalle`, con `Operación` como columna operativa y la casa mudada del nombre a `Detalle`. Ocho filas `Base-0001`–`Base-0008`. Lo que apareció al hacerlo:
+
+      - **El lint leía las filas buscando un link en la primera celda** (`/^\|\s*\[([^\]]+)\]\(([^)]+)\)\s*\|/`). Con el núcleo esa celda es el Código, así que el catálogo se habría leído **vacío, sin emitir ningún error** — el mismo modo de falla silencioso que motiva todo el plan. Ahora ubica cada dato por el nombre de su columna.
+      - Ganó los controles del núcleo (prefijo del código según el origen, códigos sin repetir, Nombre y Descripción presentes, `Detalle` que apunta a una casa con manifiesto) y el separado de celdas que respeta `\|`. **Nueve controles probados contra un caso bueno y uno malo.**
+      - `agregar-subsistema` aprende a asignar el Código. Versión: `amp-subsistemas` 0.4.0.
+
+      **Quedan ocho:** `planes`, `conocimiento`, `decisiones`, `herramientas` ×2, `conducta` ×2 y `semantica` ×2.
    4. `conducta`: renombrar la clase `correr` a `Ejecutar`, capitalizar las tres y mudarlas a `CLASES.md`, que el lint pasa a leer en vez de la lista escrita a mano en `lint-conducta.js:103`.
    5. `planes`: migrar las 80 filas, verificando en cada una qué parte de `Notas` ya está en el archivo del plan.
    6. `semantica`: `Significado vetado` a `Significado Farlopa`, y `mostrar-pantalla-bienvenida.js:160` pasa a distinguir los registros por el `indice:` del frontmatter.
