@@ -372,13 +372,13 @@ try {
 // no texto para reescribir. El texto que se escribe literal en el repo destino siempre viene
 // marcado ```markdown, que es lo que el instalador copia.
 const LENG_TEXTO = new Set(['markdown', 'md', 'text', 'txt']);
-// Unica via de excepcion: apariciones que el propio registro de farlopa declara legitimas, porque
-// el veto es sobre la relacion termino->significado y el lint solo ve el termino. Se identifican
-// por un fragmento del texto, no por linea. Lo demas NO se exime: se corrige el texto.
-const USOS_LEGITIMOS = [
-  { term: 'capa', fragmento: 'capa mecánica', motivo: 'nivel de integridad mecánica/semántica, legítimo por el propio registro' },
-  { term: 'capa', fragmento: 'capa semántica', motivo: 'nivel de integridad mecánica/semántica, legítimo por el propio registro' },
-];
+// Sin lista de excepciones por fragmento, a proposito. Hubo una —eximia `capa mecánica` y
+// `capa semántica` del termino `capa`— y se retiro el 30/07/2026 al reformularse esa fila del
+// registro: donde el termino ajeno se monta sobre una palabra corriente del espanol, lo que se
+// registra es la EXPRESION (`capa de plugins`), no la palabra. Asi el registro sigue enumerando lo
+// prohibido, que es finito, en vez de lo permitido, que no lo es. La fila `capa` marcaba 37
+// apariciones y acertaba en ninguna; reformulada marca 0 y sigue cazando el uso ajeno.
+const USOS_LEGITIMOS = [];
 const escRe = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 const vetadosProductoTerms = [...new Set(vetadosProducto)];
 const vetadoEnProducto = [];      // texto que viaja: cuenta como hallazgo
@@ -408,6 +408,12 @@ function barrerProducto(archivo) {
     const link = /\]\(([^)]*)\)/g;
     while ((m = link.exec(l))) spans.push([m.index, m.index + m[0].length]);
     if (/^name:\s*\S/.test(l)) spans.push([0, l.length]);
+    // Las COMILLAS son la marca de cita del espanol: nombrar un termino para explicar su veto no es
+    // usarlo. Sin esto, un plan o una pagina que documenta un barrido no se puede escribir. La
+    // cursiva queda afuera a proposito (marca cita pero tambien enfasis).
+    for (const reCita of [/"[^"\n]*"/g, /[“”][^“”\n]*[“”]/g, /«[^»\n]*»/g]) {
+      let c; while ((c = reCita.exec(l))) spans.push([c.index, c.index + c[0].length]);
+    }
     return spans;
   };
   const emitir = (linea, nro, viaja) => {
@@ -460,6 +466,59 @@ if (vetadosProductoTerms.length && fs.existsSync(funcDir)) {
   })(funcDir);
 }
 
+// -- [11] script embebido en una PLANTILLA distinto del instalado en .claude/ ---
+// El chequeo de mas arriba compara PLANTILLA contra PLANTILLA; nadie comparaba PLANTILLA contra
+// `.claude/`. Con eso, arreglar un lint en el repo y olvidar su copia embebida dejaba el defecto
+// viajando a cada Agente Desplegado con el control de cierre en verde. Medido el 30/07/2026: pasó
+// con cuatro lints y con el control de terminología en la misma sesión. Es el hueco que el plan
+// `Sacar la duplicación entre el Producto y el Agente instalado` viene a cerrar de raíz; hasta que
+// eso pase, al menos la divergencia se ve.
+//
+// El destino de cada bloque es la última ruta `.claude/**.js` nombrada antes de su cerca de código.
+function plantillasDelRepo() {
+  const out = [];
+  for (const f of enDisco) {
+    const skillsDir = path.join(funcDir, f, 'skills');
+    if (!fs.existsSync(skillsDir)) continue;
+    for (const s of fs.readdirSync(skillsDir)) {
+      const p = path.join(skillsDir, s, 'PLANTILLA.md');
+      if (fs.existsSync(p)) out.push(p);
+    }
+  }
+  return out;
+}
+const embebidoDivergente = [];
+for (const plantilla of plantillasDelRepo()) {
+  let txt; try { txt = fs.readFileSync(plantilla, 'utf8'); } catch { continue; }
+  const lineas = txt.split(/\r?\n/);
+  let destino = null, dentro = false, buf = [], desde = 0;
+  for (let i = 0; i < lineas.length; i++) {
+    const l = lineas[i];
+    if (!dentro) {
+      const m = l.match(/`(\.claude\/[^`]+\.js)`/);
+      if (m) destino = m[1];
+      if (/^```js\s*$/.test(l)) { dentro = true; buf = []; desde = i + 2; }
+      continue;
+    }
+    if (/^```\s*$/.test(l)) {
+      dentro = false;
+      if (!destino) continue;
+      const enDiscoPath = path.join(repo, destino);
+      const rel = path.relative(repo, plantilla).replace(/\\/g, '/');
+      if (!fs.existsSync(enDiscoPath)) { embebidoDivergente.push(`${destino}  — embebido en ${rel}:${desde} pero no existe en disco`); continue; }
+      const norm = s => s.replace(/\r\n/g, '\n').replace(/\s+$/, '');
+      const real = norm(fs.readFileSync(enDiscoPath, 'utf8'));
+      const tpl = norm(buf.join('\n'));
+      if (real === tpl) continue;
+      const a = real.split('\n'), c = tpl.split('\n');
+      let k = 0; while (k < Math.max(a.length, c.length) && a[k] === c[k]) k++;
+      embebidoDivergente.push(`${destino}  — difiere de ${rel}:${desde} desde la linea ${k + 1} (disco ${a.length} lineas, plantilla ${c.length})`);
+      continue;
+    }
+    buf.push(l);
+  }
+}
+
 // -- salida --------------------------------------------------------------
 const secciones = [
   ['PUNTO DE ENTRADA (AGENTS.md + adaptador CLAUDE.md)', entrada],
@@ -469,6 +528,7 @@ const secciones = [
   ['FUNCIONALIDADES INCOMPLETAS (archivos clave)', incompletas],
   ['VERSION EN DISCO DISTINTA DE LA INSTALADA', versionDesfasada],
   ['BLOQUES VERBATIM DIVERGENTES ENTRE PLANTILLAS', divergentes],
+  ['SCRIPT EMBEBIDO DISTINTO DEL INSTALADO EN .claude/', embebidoDivergente],
   ['DESTINOS DECLARADOS MAS DE UNA VEZ EN UNA PLANTILLA', destinosDuplicados],
   ['BASE DE PREFERENCIAS DIVERGENTE (PREFERENCIAS.md vs PLANTILLAS)', baseDivergente],
   [`MANIFIESTOS QUE ENGORDARON (> ${LIMITE_MANIFIESTO} palabras)`, manifiestosLargos],

@@ -1,6 +1,6 @@
 # Terminología farlopa: la deriva terminológica de los agentes
 
-Un agente de código, al trabajar sobre un repo sesión tras sesión, **va incorporando términos propios al dominio del proyecto** sin que nadie los ratifique: anglicismos crudos (`workflow`, `stale`, `bump`), calcos (`baldes` por *buckets*, `semilla` por *seed*), falsos amigos (`sigilo` por *sigil*), metáforas privadas (`cementerio de tools`, `plomería`) y jerga acuñada al vuelo. Cada uno entra porque en ese instante le resultó cómodo al agente; ninguno pasó por el autor.
+Un agente de código, al trabajar sobre un repo sesión tras sesión, **va incorporando términos propios al dominio del proyecto** sin que nadie los ratifique: anglicismos crudos (`workflow`, `stale`, `bump`), copias literales del inglés (`baldes` por *buckets*, `semilla` por *seed*), falsos amigos (`sigilo` por *sigil*), metáforas privadas (`cementerio de tools`, `plomería`) y jerga acuñada al vuelo. Cada uno entra porque en ese instante le resultó cómodo al agente; ninguno pasó por el autor.
 
 El efecto es acumulativo y silencioso. El agente recita y reusa esos términos como si fueran dominio establecido, los propaga a memorias, planes, documentación y código, y **eventualmente los menciona en una conversación generando una inconfundible expresión de perplejidad en el autor**, que se encuentra frente a conceptos de su propio proyecto que le resultan absolutamente alienígenas. El repo, que debería ser legible para quien lo gobierna, se vuelve un dialecto ajeno.
 

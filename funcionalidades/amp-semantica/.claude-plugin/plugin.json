@@ -1,6 +1,6 @@
 {
   "name": "amp-semantica",
   "description": "Subsistema semántica: glosario y Terminología Farlopa. Incluye converger-terminologia; el usuario ratifica y veta.",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "author": { "name": "jllarens", "email": "jllarens@gmail.com" }
 }

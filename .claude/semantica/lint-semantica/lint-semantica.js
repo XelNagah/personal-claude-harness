@@ -122,9 +122,21 @@ const farlPath = farlopa ? farlopa.archivo : path.join(root, 'TERMINOLOGIA-FARLO
 const txt = glosario ? glosario.texto : '';
 const farlTxt = farlopa ? farlopa.texto : '';
 
-// La raiz del repo se deduce de la ubicacion del propio lint: .claude/<sub>/lint-<sub>/ -> 3 arriba.
-// La profundidad la fija el instalador; no depende de desde donde se invoque.
-const repoRoot = path.resolve(__dirname, '..', '..', '..');
+// El repo se deriva de `root` —la carpeta del subsistema que se esta mirando—, NUNCA de la ubicacion
+// de este script. En cuanto hay una segunda copia (un plugin instalado, un marketplace bajado, otro
+// repo con el harness) deducirlo desde __dirname describe el repo equivocado, y no falla: contesta.
+// Derivandolo de `root`, la carpeta que se lee y el repo que se barre salen de la misma fuente y no
+// pueden divergir. Conocimiento `el-repo-que-un-script-describe`.
+function repoDe(carpetaSubsistema) {
+  let d = path.resolve(carpetaSubsistema);
+  for (;;) {
+    if (fs.existsSync(path.join(d, '.claude'))) return d;
+    const padre = path.dirname(d);
+    if (padre === d) return path.resolve(carpetaSubsistema, '..', '..');   // sin `.claude` arriba
+    d = padre;
+  }
+}
+const repoRoot = repoDe(root);
 const dentroDelRepo = p => {
   const r = path.resolve(p);
   return r === repoRoot || r.startsWith(repoRoot + path.sep);
@@ -190,9 +202,15 @@ const rows = filasDe(txt, 'alias').map(f => ({
 
 // Solo interesa el termino (los vetados); el significado lo juzga el agente.
 const vetados = [];   // termino pelado, en minuscula
+// Se cuentan aparte las FILAS, porque no son lo mismo que los terminos: una fila puede vetar varias
+// formas hermanas (`levelear / leveleo / leveling` son tres terminos en una relacion). Sin esta
+// distincion el lint decia `vetados: 54` y la Pantalla de bienvenida `39 vetados`, los dos con la
+// misma palabra para cosas distintas, y no habia manera de saber cual miraba que.
+let relacionesVetadas = 0;
 for (const f of filasDe(farlTxt, 'c[oó]mo decirlo')) {
   const termino = primeraDe(f, ['Nombre', 'Término']);
   if (!termino) continue;
+  relacionesVetadas++;
   for (const v of splitFarlop(termino)) vetados.push(v.toLowerCase());
 }
 
@@ -270,7 +288,12 @@ function walkRepo(dir, acc) {
   }
   return acc;
 }
-// mapear code-spans inline y fences para separar prosa de codigo (igual que lint-conocimiento)
+// mapear code-spans inline y fences para separar texto plano de codigo (igual que lint-conocimiento)
+// Ademas de las comillas simples invertidas se mapean las COMILLAS, que en espanol son la marca de
+// cita: nombrar un termino para explicar su veto es legitimo y frecuente —la pagina de conocimiento
+// `terminologia-canonica` y los planes que documentan un barrido no pueden hacer otra cosa—, y sin
+// esta exencion esas menciones se informaban como texto a reescribir. La CURSIVA queda afuera a
+// proposito: marca cita pero tambien enfasis, asi que eximirla dejaria pasar el uso real.
 function codeSpans(t) {
   const runs = []; let m; const re = /`+/g;
   while ((m = re.exec(t))) runs.push([m.index, m[0].length]);
@@ -281,10 +304,25 @@ function codeSpans(t) {
     if (j < runs.length) { spans.push([open, runs[j][0] + runs[j][1]]); i = j + 1; }
     else i++;
   }
+  for (const reCita of [/"[^"\n]*"/g, /[“”][^“”\n]*[“”]/g, /«[^»\n]*»/g]) {
+    let c; while ((c = reCita.exec(t))) spans.push([c.index, c.index + c[0].length]);
+  }
   return spans;
 }
 const enCodeSpan = (spans, idx) => spans.some(([s, e]) => idx >= s && idx < e);
-const esc = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+// Dos cosas que `\b` no puede hacer, y que el control `detectar-terminologia-vetada` ya resolvia:
+//  - `\b` es del alfabeto ingles, asi que trata los acentos como separador: `\bcapa\b` encontraba
+//    `capa` adentro de una palabra acentuada, y un termino que empieza o termina con acento quedaba
+//    con limites en el lugar equivocado. Se usan limites propios, con las letras del espanol.
+//  - un termino de varias palabras (`capa de plugins`) solo matcheaba con exactamente un espacio
+//    entre cada una: con dos espacios, o partido en dos lineas, no se encontraba.
+// Y `\b` no funciona en absoluto si el termino arranca con un caracter que no es letra, lo que hacia
+// inservible cualquier veto sobre un encabezado como `## Adaptaciones`.
+const LETRA = 'A-Za-zÁÉÍÓÚÜÑáéíóúüñ0-9_';
+const esc = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/\s+/g, '\\s+');
+// Devuelve la expresion que ubica un termino con limites de palabra propios. El grupo 1 es lo que
+// viene antes del termino, asi que el desplazamiento del hallazgo es `m.index + m[1].length`.
+const reTermino = (term, flags) => new RegExp(`(^|[^${LETRA}])(${esc(term)})(?=[^${LETRA}]|$)`, flags);
 const vetadosTerms = [...vetadoSet];
 const apariciones = { prosa: [], codigo: [] };
 if (vetadosTerms.length) {
@@ -294,26 +332,33 @@ if (vetadosTerms.length) {
     const nombre = path.basename(f);
     // nombre de archivo/carpeta que contiene un vetado -> codigo (tocarlo es refactor)
     for (const term of vetadosTerms) {
-      const re = new RegExp('\\b' + esc(term) + '\\b', 'i');
-      if (re.test(nombre)) apariciones.codigo.push([rel(f), term, 'nombre de archivo']);
+      if (reTermino(term, 'i').test(nombre)) apariciones.codigo.push([rel(f), term, 'nombre de archivo']);
     }
     if (ext !== '.md' && !CODE_EXT.has(ext)) continue;  // binarios y otros: solo el nombre
     let contenido; try { contenido = fs.readFileSync(f, 'utf8'); } catch { continue; }
     const spans = ext === '.md' ? codeSpans(contenido) : null;
     for (const term of vetadosTerms) {
-      const re = new RegExp('\\b' + esc(term) + '\\b', 'gi');
+      const re = reTermino(term, 'gi');
       let m;
       while ((m = re.exec(contenido))) {
-        const balde = (ext === '.md' && !enCodeSpan(spans, m.index)) ? 'prosa' : 'codigo';
-        const linea = contenido.slice(0, m.index).split('\n').length;
-        apariciones[balde].push([rel(f) + ':' + linea, term]);
+        // El grupo 1 es el caracter de antes del termino: el hallazgo empieza despues de el.
+        const donde = m.index + m[1].length;
+        const grupo = (ext === '.md' && !enCodeSpan(spans, donde)) ? 'prosa' : 'codigo';
+        const linea = contenido.slice(0, donde).split('\n').length;
+        apariciones[grupo].push([rel(f) + ':' + linea, term]);
+        // El limite de la derecha es un lookahead, asi que no consume: sin esto, dos apariciones
+        // pegadas por un solo separador se saltearian.
+        re.lastIndex = donde + m[2].length;
       }
     }
   }
 }
 
 console.log(`== LINT SEMANTICA: ${root} ==`);
-console.log(`conceptos: ${rows.length} | vetados: ${vetadosTerms.length}\n`);
+// Se dice QUE mide cada numero: la Pantalla de bienvenida cuenta entradas del registro (una por
+// relacion vetada) y este lint cuenta terminos, porque es lo que busca en el texto. Los dos estan
+// bien; lo que faltaba era decirlo.
+console.log(`conceptos: ${rows.length} | vetado: ${relacionesVetadas} relaciones (${vetadosTerms.length} términos)\n`);
 console.log(`[1] LINKS DE DETALLE ROTOS (${refsRotas.length}):`);
 refsRotas.forEach(([c, t]) => console.log(`    ${c}  ->  ${t}   [no existe]`));
 if (!refsRotas.length) console.log('    (ninguno)');

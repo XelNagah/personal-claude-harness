@@ -12,7 +12,7 @@ Ejemplos de lo que solo existe en la mitad 2:
 - Cómo `conducta` se apoya en los otros seis subsistemas **sin** reimplementarlos (decisión 0021).
 - Por qué `herramientas` y los lints son cosas distintas aunque ambos sean archivos `.js` (decisión 0008).
 
-## Idea semilla (Javier, 26-07-23)
+## Idea original (Javier, 26-07-23)
 
 Una **Skill del Agente Multipropósito** (decisión 0009: transversal, sin subsistema dueño, empaquetada como funcionalidad propia — como `planificar`). Trae una **estructura general** de la explicación del conjunto y **recorta** a lo que aplica en cada repo consumidor (un repo con `conducta` sin instalar no lo explica; los conteos/estado salen de `amp-info`).
 

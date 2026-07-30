@@ -8,7 +8,7 @@ Que un Agente pueda **reiniciarse y continuar**: terminar su propia sesión y de
 
 El hueco es real y ya está documentado del otro lado: el README de `actualizar-plugins` termina en *"Después hay que reiniciar la sesión"* y ahí se corta — nada reinicia. Lo mismo pasa cuando el contexto se llenó, cuando un plugin se actualizó a mitad de sesión, o cuando la conversación acumuló ruido que ensucia el trabajo que falta. En los tres casos el usuario hace lo mismo a mano: pedir el handoff, cerrar la ventana, abrir otra, pegar el handoff.
 
-## Idea semilla
+## Idea original
 
 Lo más básico posible, tal como lo planteó Javier:
 

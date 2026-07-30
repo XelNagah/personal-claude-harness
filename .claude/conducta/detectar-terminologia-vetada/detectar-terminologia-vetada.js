@@ -59,10 +59,23 @@ function leerRegistro() {
 
 // -- texto en el que se busca: sin bloques de codigo ni tramos citados ---
 // Se reemplaza por espacios (no se borra) para no pegar palabras que estaban separadas.
+//
+// Las COMILLAS cuentan como cita igual que las comillas simples invertidas: en espanol son la
+// marca de cita, y sin ellas no se puede escribir sobre la propia terminologia. La pagina de
+// conocimiento `terminologia-canonica` y los planes que cuentan como se barrio un termino tienen
+// que nombrarlo para explicarlo.
+//
+// La CURSIVA no se exime a proposito: en espanol marca cita PERO tambien enfasis, asi que eximirla
+// dejaria pasar el uso real — un termino vetado en cursiva suele estar puesto para recalcarlo, no
+// para nombrarlo. Entre perder una cita en cursiva y perder una deteccion, se elige lo primero: la
+// cita se puede reescribir con comillas, la deteccion perdida no se recupera.
 function textoDesnudo(txt) {
   return txt
     .replace(/```[\s\S]*?```/g, m => ' '.repeat(m.length))     // bloques de codigo
     .replace(/`[^`\n]*`/g, m => ' '.repeat(m.length))          // tramos entre comillas simples invertidas
+    .replace(/"[^"\n]*"/g, m => ' '.repeat(m.length))          // cita entre comillas rectas
+    .replace(/[“”][^“”\n]*[“”]/g, m => ' '.repeat(m.length))  // comillas tipograficas
+    .replace(/«[^»\n]*»/g, m => ' '.repeat(m.length))          // comillas angulares
     .replace(/^\s{4,}\S.*$/gm, m => ' '.repeat(m.length));     // bloques indentados
 }
 

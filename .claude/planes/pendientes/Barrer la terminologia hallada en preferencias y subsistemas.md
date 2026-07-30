@@ -45,11 +45,11 @@ Es el punto más barato: mecánico, sin discusión de fondo, y hoy ensucia lo qu
 | Término hallado | Compite con | Dónde | Propuesta |
 |---|---|---|---|
 | `consumidor` / `consumidores` / `repo consumidor` | **Agente con Propósito** (el repo) y **Agente Desplegado** (la instalación) | 106 apariciones: decisiones 0024, 0028, 0033, 0036, manifiestos, varios `README.md`. Los dos canónicos juntos suman 9 | vetar; elegir el canónico según se hable del repo o de la instalación |
-| `guarda` (calco de *guard*) | **Control** — el glosario ya define *chequeo que frena el avance* | decisión 0024: *"`lint-harness` gana una guarda que falla si…"* | vetar en ese significado; el verbo *guardar* es legítimo y no se toca |
+| `guarda` (copiado de *guard*) | **Control** — el glosario ya define *chequeo que frena el avance* | decisión 0024: *"`lint-harness` gana una guarda que falla si…"* | vetar en ese significado; el verbo *guardar* es legítimo y no se toca |
 | `orquestador` | la habilidad `amp:inicializar` | 37 apariciones. La 0029 dice que el orquestador fue **absorbido**: el concepto ya no existe y el término siguió circulando | vetar; nombrar la habilidad |
 | `sembrar` / `siembra` / `sembradas` | ya vetado como `semilla` = contenido inicial | 0027 y 0036 | extender la fila existente a las formas verbales: hoy el lint las deja pasar |
 | `casa` / `casa de datos` | **Subsistema** | 32 apariciones: `AGENTS.md`, `SUBSISTEMAS.md`, el manifiesto y el `README.md` de subsistemas | decidir entre ratificarlo como otra forma de decir Subsistema o barrerlo |
-| `cableado` / `cablear` (calco de *wiring*) | — | 22, incluido el título de la decisión 0019 | vetar → *conexión* / *conectar* |
+| `cableado` / `cablear` (copiado de *wiring*) | — | 22, incluido el título de la decisión 0019 | vetar → *conexión* / *conectar* |
 | `sabiduría del repo` | — | 8, y una es el nombre de una regla de conducta que se instala en cada Agente con Propósito | decidir entre ratificarlo o reemplazarlo por *lo asentado en los subsistemas* |
 
 ## 3. Un concepto con dos nombres
@@ -68,7 +68,7 @@ Propuesta: fijar la regla de uso — `harness` solo para el género (un setup de
 Aplicando el test que ya inyecta la regla de conducta (¿lo diría tal cual un desarrollador hispanohablante, o es metáfora del inglés?):
 
 - **Pasan, no se tocan:** `flag`, `default`, `scope`, `matchea`, `hardcodear`, `hook`.
-- **Candidatos a veto:** `runtime` (0017, 0022, 0023), `inline` (0023, 0024), `hop` (0017, 0019), `fallback` (0011), `legacy` (0028), `soft` (0025), `launcher` y `cross-agente` (0012), `à la carte` (0029), `río arriba` (0027, calco de *upstream*), `Claude-first` (`MOMENTOS.md`).
+- **Candidatos a veto:** `runtime` (0017, 0022, 0023), `inline` (0023, 0024), `hop` (0017, 0019), `fallback` (0011), `legacy` (0028), `soft` (0025), `launcher` y `cross-agente` (0012), `à la carte` (0029), `río arriba` (0027, copiado de *upstream*), `Claude-first` (`MOMENTOS.md`).
 - **`escaparate`** (0031) es castellano pero peninsular; en la Argentina se dice *vidriera*.
 
 **`río arriba` se disparó y se barrió el mismo día (29/07/2026).** Estaba listado arriba como candidato con **1** aparición, en la 0027. El renombre de las etiquetas de origen lo usó como reemplazo sin haber leído este plan y lo llevó a **36**, de las cuales 21 en `funcionalidades/` — texto que viaja y que llegó a publicarse. Barridas las 32 introducidas, contra el término ratificado (`del Agente Multipropósito`). **Quedan las 4 preexistentes** —la 0027, este plan que lo cita, `Separar origen Base y aprendido` y su fila en `PLANES.md`— a la espera de que el veto se ratifique.
