@@ -53,6 +53,22 @@ Su nombre además usa el alias `harness` en lugar del nombre, contra la preferen
 - Qué pasa con los `.js` de los lints, que también están duplicados adentro de la Plantilla como bloques de código. ⚠️ Al copiarlos por marcadores, **el reemplazo va por función, nunca por string**: `String.replace` interpreta `$&` en el texto de reemplazo y varios lints contienen literalmente `'\\$&'`; con string el bloque se duplica adentro de sí mismo. Ya pasó y hubo que restaurar desde git.
 - El hueco de `lint-harness` con el manifiesto divergente.
 
+## Lo medido el 30/07/2026, y la dirección que eligió el usuario
+
+Este plan quedó como el único pendiente del análisis crítico de ese día. Lo que se agregó:
+
+**La premisa de arriba está incompleta.** El plan dice que no se puede tener una sola copia porque *ahí solo llegó la carpeta del plugin*. Medido: el **marketplace bajado** (`~/.claude/plugins/marketplaces/<marketplace>/`) tiene el **repo completo** —punto de entrada, `REGISTRO.md`, `docs/` y las nueve carpetas de `funcionalidades/`—, y `amp:actualizar` **ya lee de esa ruta**, describiéndola como *la del marketplace bajado, que siempre está*. Así que el texto no está obligado a viajar copiado adentro del instalador.
+
+**La dirección que eligió el usuario es más fuerte que leer del marketplace.** No se trata de que el instalador lea los archivos en vez de llevarlos copiados: se trata de que **los lints no se copien nunca al repo** y se invoquen desde el plugin. Con eso la duplicación desaparece de raíz y actualizar un lint pasa a ser actualizar el plugin, sin nivelar archivos.
+
+Y el marco con el que hay que decidirlo, en palabras del usuario: **el marketplace es la única forma de instalar el Agente Multipropósito.** La instalación por separado se dejó de mantener a propósito —con ella desaparecieron muchos scripts y bastante terminología ajena—, así que un problema que solo aparece en una forma no estándar de instalar es **secundario**: no puede seguir costando la estructura que hoy sostiene alternativas que nadie usa.
+
+**Lo único que falta medir antes de prometer el cambio.** Hoy `settings.json` invoca el lint por la ruta `.claude/planes/lint-planes/lint-planes.js`. Si el archivo vive en el plugin, la ruta incluye la versión (`…/amp/0.12.0/…`), que cambia en cada publicación. Claude Code tiene una variable para eso; hay que confirmar **que funcione dentro de un hook** y qué hace Codex, que resuelve las rutas distinto. Sin eso resuelto, mover los lints deja los hooks apuntando a una ruta que se rompe en la próxima versión — el defecto que el manifiesto de herramientas ya advierte.
+
+**Qué cambió mientras tanto, y qué no.** El riesgo de que las copias se separen sin aviso **ya está cubierto**: `lint-harness` ganó el control `SCRIPT EMBEBIDO DISTINTO DEL INSTALADO EN .claude/`, que compara cada script embebido contra su archivo entero y dice desde qué línea difiere. Se estrenó el mismo día y avisó tres veces. Eso responde el pendiente que este plan dejaba abierto —*hay que revisar por qué `lint-harness` no pescó la divergencia*—: no la pescaba porque comparaba las plantillas **entre sí** y por fragmentos, nunca la plantilla contra `.claude/`.
+
+**Pero el control no reemplaza este plan:** mientras el texto viva dos veces, lo único que se puede hacer es ver la divergencia a tiempo. Medido ese día: al arreglar cinco scripts hubo que propagar cinco veces a mano, y en dos de ellas la copia habría salido publicada a medias si el control no hubiera existido.
+
 ## Cruces
 
 - `Canal de instalacion por copia` (Diferido) — otro canal de instalación; no cubre esto, pero si se hace, cambia dónde vive la fuente.
