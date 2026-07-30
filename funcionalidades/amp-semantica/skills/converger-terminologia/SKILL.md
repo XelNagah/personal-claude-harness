@@ -24,7 +24,7 @@ La semántica solo da coherencia si el repo la usa: los sinónimos improvisados 
    - **ratificar como alias** (forma válida alternativa, al glosario),
    - **vetar / reemplazar por el canónico** (el término no va más en ese significado: fila en Terminología Farlopa),
    - **asentar como concepto nuevo** (no competía: era un hueco del glosario).
-5. **Aplicar solo lo ratificado:** actualizar los registros; reescribir el texto plano de los reemplazos aprobados; dejar el grupo de código como lista informativa para refactors deliberados.
+5. **Aplicar solo lo ratificado:** actualizar los registros; reescribir el texto plano de los reemplazos aprobados; dejar el grupo de código como lista informativa para refactors deliberados. Las filas de los dos registros llevan `Código` adelante: `Local-NNNN`, **el mayor de ese Índice más uno** —nunca la cantidad de filas más uno, que repetiría un código ya usado si alguna vez se retiró una entrada—, y un código retirado deja un hueco que no se reusa. En el glosario, `Nombre` es el concepto y `Descripción` su definición; en Terminología Farlopa, `Nombre` es el término y `Descripción` es el **Significado Farlopa**, el significado que se veta.
 6. **Cerrar con el lint** desde la raíz del repo:
 
    ```bash

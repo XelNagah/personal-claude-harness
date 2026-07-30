@@ -1,12 +1,20 @@
 ---
 indice: Terminología Farlopa
 origen: agente-desplegado
-columnas: [Término, Significado vetado, Cómo decirlo, Control]
+columnas: [Código, Nombre, Descripción, Cómo decirlo, Control, Detalle]
+descripcion: el Significado Farlopa — el significado que este registro veta para ese término
 ---
 
 # Terminología Farlopa
 
-*Farlop Terminology* (EN). Registro par del glosario: las **relaciones término→significado vetadas** del dominio. Cada fila prohíbe un término **en un significado específico**, no el término en sí — el mismo término con otro significado puede ser legítimo (`plomería`=cañerías en un repo de fontanería es válido; `plomería`=infraestructura interna de software es farlopa). Por eso la columna del medio: fija el significado que se veta.
+*Farlop Terminology* (EN). Registro par del glosario: las **relaciones término→significado vetadas** del dominio. Cada fila prohíbe un término **en un significado específico**, no el término en sí — el mismo término con otro significado puede ser legítimo (`plomería`=cañerías en un repo de fontanería es válido; `plomería`=infraestructura interna de software es farlopa). Por eso la `Descripción` de cada fila es el **Significado Farlopa**: fija cuál es el significado que se veta.
+
+- **Código** — `Local-NNNN`. Se asigna al crear la entrada y no se reusa.
+- **Nombre** — el término, o los términos hermanos que comparten el veto.
+- **Descripción** — el **Significado Farlopa**: el significado que este registro veta para ese término.
+- **Cómo decirlo** — el canónico que lo reemplaza.
+- **Control** — ver abajo.
+- **Detalle** — `—`, o la página donde se conceptualiza el veto.
 
 Son términos farlopa —ambiguos o semánticamente incomprensibles para el autor del repo— que los agentes van incorporando al dominio a medida que el proyecto avanza. Sin limpieza, el agente eventualmente los menciona y genera una inconfundible expresión de perplejidad en el autor frente a conceptos que le resultan absolutamente alienígenas. El fenómeno es universal —le pasa a cualquier repo trabajado con agentes— y es el **origen del subsistema semántica**. Ver la página de conocimiento [terminología farlopa](../conocimiento/terminologia-farlopa.md).
 
@@ -25,47 +33,47 @@ Vacío se lee como `avisa`. **El bloqueo mira solo las apariciones fuera de comi
 
 ## Relaciones vetadas
 
-| Término | Significado vetado | Cómo decirlo | Control |
-|---------|--------------------|--------------|---------|
-| `artefacto` | un archivo o una carpeta del repo | Componente de Subsistema cuando pertenece a uno; si no, `archivo` o `carpeta` | avisa |
-| `pieza` | un Componente de Subsistema (archivo o carpeta de un subsistema) | Componente de Subsistema | avisa |
-| `gate` | un Control (chequeo que frena el avance) | Control | bloquea |
-| `prosa` | el texto corriente de los `.md` | texto plano | avisa |
-| `levelear` / `leveleo` / `leveling` | poner al día una instalación existente | nivelar | bloquea |
-| `verbatim` / `byte-exact` / `byte-check` | copia idéntica carácter a carácter | Textual / carácter a carácter | bloquea |
-| `dogfooding` / `dogfood` | cualquier uso | el Agente Multipropósito probándose a sí mismo / usarlo sobre el propio repo | bloquea |
-| `Workflow` | cualquier uso (como encabezado o sustantivo) | flujo de trabajo | avisa |
-| `bump` / `bumpear` | cualquier uso | subir la versión | bloquea |
-| `reconcile-on-use` | cualquier uso | se ponen al día cuando se usan | bloquea |
-| `slug` | cualquier uso (como identificador) | nombre estable (sin fecha) | bloquea |
-| `baldes` | cualquier uso (como agrupación) | grupos | avisa |
-| `linkea` / `linkear` | cualquier uso | apunta a / enlaza | bloquea |
-| `semilla` | contenido inicial de un registro o archivo | contenido inicial | avisa |
-| `stale` / `staleness` | cualquier uso | desactualizado / desactualización | bloquea |
-| `cementerio de tools` | un conjunto de herramientas sin ordenar | herramientas desordenadas | avisa |
-| `sigilo` | símbolo (calco de *sigil*) — no *sigilo*=discreción, que es legítimo | símbolo | avisa |
-| `plomería` | infraestructura o mecánica interna de software | infraestructura interna | avisa |
-| `tripa` / `tripas` | el contenido interno de una Herramienta (código + archivos de trabajo dentro de su carpeta, que ningún índice lista) | contenido interno de la Herramienta | avisa |
-| `static` | cualquier uso | config fija / estático | avisa |
-| `binding` | cualquier uso | atadura / vínculo | avisa |
-| `dispatcher` | cualquier uso | hook repartidor | avisa |
-| `catch-all` | cualquier uso | sin filtro / que atrapa todo | bloquea |
-| `feasibility` | cualquier uso | viabilidad | bloquea |
-| `stress-test` | cualquier uso | cuestionar a fondo | bloquea |
-| `thin` / `thin-first` | cualquier uso | fino / empezar fino | avisa |
-| `churn` | cualquier uso | trajín / movimiento (o «rotación» si es de clientes o datos) | bloquea |
-| `wedge` | cualquier uso | cuña / palanca / punto de entrada (según contexto) | bloquea |
-| `reconciler` | el nivelador consolidado (`amp-actualizar`) | nivelador (glosario: *Nivelar*) | bloquea |
-| `install-prompts` | los inicializadores del setup | skills de instalación / inicializadores | bloquea |
-| `reforma de disco` | reorganizar el árbol de carpetas del repo | reorganizar el árbol de carpetas | avisa |
-| `cruce` | la pregunta pivote que reconfigura el resto del análisis; o la relación con decisiones ya tomadas | **pregunta de fondo** (la que manda) / **dependencias** (relación con lo ya decidido) | avisa |
-| `huevo-y-gallina` / `huevo y gallina` | la dependencia circular donde A necesita a B y B necesita a A (calco de *chicken-and-egg*) | **dependencia circular** / problema de arranque | avisa |
-| `capa` | una **fase** de un proceso (p. ej. las dos de poner al día un Agente con Propósito: plugins y archivos) — NO el nivel de integridad *mecánica* / *semántica*, que es legítimo y está asentado en una decisión | **fase** | avisa |
-| `ciclo-de-plan` | el nombre de la habilidad que opera el subsistema planes | nombrar cada habilidad por su verbo (`registrar-plan`, `analizar-plan`…); el **ciclo** en sí es del subsistema, no de una habilidad — plan `Partir las mega-skills en habilidades de un verbo` | avisa |
-| `Herramientas Base` / `Reglas Base` / `preferencias Base` / `piezas Base` | etiqueta de origen de un grupo de registros. **`Base` sola no se veta**: la palabra es corriente (`base de conocimiento`) y además nombra legítimamente la parte no-aprendida de un Agente con Propósito, como la usa el glosario | `Herramientas del Agente Multipropósito`, `Reglas del Agente Multipropósito`, … | avisa |
-| `Herramientas del Propósito` / `Reglas del Propósito` | etiqueta de origen de los registros que suma un Agente Desplegado. **`del Propósito` a secas no se veta**: aparece en `Producto del Propósito`, concepto ratificado aparte | `Herramientas del Agente Desplegado`, `Reglas del Agente Desplegado`, … | avisa |
-| `Adaptaciones` | los registros que un Agente Desplegado suma a un índice (`## Adaptaciones de este repo`) | `Preferencias del Agente Desplegado` | avisa |
-| `pintar` | mostrar algo en la terminal o en pantalla | `mostrar`, `emitir` o `escribir en la terminal`, según el caso | avisa |
+| Código | Nombre | Descripción | Cómo decirlo | Control | Detalle |
+| --- | --- | --- | --- | --- | --- |
+| Local-0001 | `artefacto` | un archivo o una carpeta del repo | Componente de Subsistema cuando pertenece a uno; si no, `archivo` o `carpeta` | avisa | — |
+| Local-0002 | `pieza` | un Componente de Subsistema (archivo o carpeta de un subsistema) | Componente de Subsistema | avisa | — |
+| Local-0003 | `gate` | un Control (chequeo que frena el avance) | Control | bloquea | — |
+| Local-0004 | `prosa` | el texto corriente de los `.md` | texto plano | avisa | — |
+| Local-0005 | `levelear` / `leveleo` / `leveling` | poner al día una instalación existente | nivelar | bloquea | — |
+| Local-0006 | `verbatim` / `byte-exact` / `byte-check` | copia idéntica carácter a carácter | Textual / carácter a carácter | bloquea | — |
+| Local-0007 | `dogfooding` / `dogfood` | cualquier uso | el Agente Multipropósito probándose a sí mismo / usarlo sobre el propio repo | bloquea | — |
+| Local-0008 | `Workflow` | cualquier uso (como encabezado o sustantivo) | flujo de trabajo | avisa | — |
+| Local-0009 | `bump` / `bumpear` | cualquier uso | subir la versión | bloquea | — |
+| Local-0010 | `reconcile-on-use` | cualquier uso | se ponen al día cuando se usan | bloquea | — |
+| Local-0011 | `slug` | cualquier uso (como identificador) | nombre estable (sin fecha) | bloquea | — |
+| Local-0012 | `baldes` | cualquier uso (como agrupación) | grupos | avisa | — |
+| Local-0013 | `linkea` / `linkear` | cualquier uso | apunta a / enlaza | bloquea | — |
+| Local-0014 | `semilla` | contenido inicial de un registro o archivo | contenido inicial | avisa | — |
+| Local-0015 | `stale` / `staleness` | cualquier uso | desactualizado / desactualización | bloquea | — |
+| Local-0016 | `cementerio de tools` | un conjunto de herramientas sin ordenar | herramientas desordenadas | avisa | — |
+| Local-0017 | `sigilo` | símbolo (calco de *sigil*) — no *sigilo*=discreción, que es legítimo | símbolo | avisa | — |
+| Local-0018 | `plomería` | infraestructura o mecánica interna de software | infraestructura interna | avisa | — |
+| Local-0019 | `tripa` / `tripas` | el contenido interno de una Herramienta (código + archivos de trabajo dentro de su carpeta, que ningún índice lista) | contenido interno de la Herramienta | avisa | — |
+| Local-0020 | `static` | cualquier uso | config fija / estático | avisa | — |
+| Local-0021 | `binding` | cualquier uso | atadura / vínculo | avisa | — |
+| Local-0022 | `dispatcher` | cualquier uso | hook repartidor | avisa | — |
+| Local-0023 | `catch-all` | cualquier uso | sin filtro / que atrapa todo | bloquea | — |
+| Local-0024 | `feasibility` | cualquier uso | viabilidad | bloquea | — |
+| Local-0025 | `stress-test` | cualquier uso | cuestionar a fondo | bloquea | — |
+| Local-0026 | `thin` / `thin-first` | cualquier uso | fino / empezar fino | avisa | — |
+| Local-0027 | `churn` | cualquier uso | trajín / movimiento (o «rotación» si es de clientes o datos) | bloquea | — |
+| Local-0028 | `wedge` | cualquier uso | cuña / palanca / punto de entrada (según contexto) | bloquea | — |
+| Local-0029 | `reconciler` | el nivelador consolidado (`amp-actualizar`) | nivelador (glosario: *Nivelar*) | bloquea | — |
+| Local-0030 | `install-prompts` | los inicializadores del setup | skills de instalación / inicializadores | bloquea | — |
+| Local-0031 | `reforma de disco` | reorganizar el árbol de carpetas del repo | reorganizar el árbol de carpetas | avisa | — |
+| Local-0032 | `cruce` | la pregunta pivote que reconfigura el resto del análisis; o la relación con decisiones ya tomadas | **pregunta de fondo** (la que manda) / **dependencias** (relación con lo ya decidido) | avisa | — |
+| Local-0033 | `huevo-y-gallina` / `huevo y gallina` | la dependencia circular donde A necesita a B y B necesita a A (calco de *chicken-and-egg*) | **dependencia circular** / problema de arranque | avisa | — |
+| Local-0034 | `capa` | una **fase** de un proceso (p. ej. las dos de poner al día un Agente con Propósito: plugins y archivos) — NO el nivel de integridad *mecánica* / *semántica*, que es legítimo y está asentado en una decisión | **fase** | avisa | — |
+| Local-0035 | `ciclo-de-plan` | el nombre de la habilidad que opera el subsistema planes | nombrar cada habilidad por su verbo (`registrar-plan`, `analizar-plan`…); el **ciclo** en sí es del subsistema, no de una habilidad — plan `Partir las mega-skills en habilidades de un verbo` | avisa | — |
+| Local-0036 | `Herramientas Base` / `Reglas Base` / `preferencias Base` / `piezas Base` | etiqueta de origen de un grupo de registros. **`Base` sola no se veta**: la palabra es corriente (`base de conocimiento`) y además nombra legítimamente la parte no-aprendida de un Agente con Propósito, como la usa el glosario | `Herramientas del Agente Multipropósito`, `Reglas del Agente Multipropósito`, … | avisa | — |
+| Local-0037 | `Herramientas del Propósito` / `Reglas del Propósito` | etiqueta de origen de los registros que suma un Agente Desplegado. **`del Propósito` a secas no se veta**: aparece en `Producto del Propósito`, concepto ratificado aparte | `Herramientas del Agente Desplegado`, `Reglas del Agente Desplegado`, … | avisa | — |
+| Local-0038 | `Adaptaciones` | los registros que un Agente Desplegado suma a un índice (`## Adaptaciones de este repo`) | `Preferencias del Agente Desplegado` | avisa | — |
+| Local-0039 | `pintar` | mostrar algo en la terminal o en pantalla | `mostrar`, `emitir` o `escribir en la terminal`, según el caso | avisa | — |
 
 Ratificados por el usuario (barridos del 2026-07-19 y 2026-07-20; `dogfooding` el 2026-07-21; `tripa` y los anglicismos de mecanismo —`static`, `binding`, `dispatcher`, `catch-all`, `feasibility`, `stress-test`, `thin`— el 2026-07-22; `churn` y `wedge` el 2026-07-23; los cinco ex-`Vetados` del glosario —`artefacto`, `gate`, `prosa`, `levelear`, `verbatim`— migrados al registro el 2026-07-23; `reconciler`, `install-prompts`, `dogfood` y `reforma de disco` el 2026-07-24; `cruce` y `huevo-y-gallina` el 2026-07-24; `capa`=fase el 2026-07-25; `ciclo-de-plan` el 2026-07-26; las etiquetas de origen —`Herramientas Base` y sus hermanas, `Herramientas del Propósito`, `Reglas del Propósito` y `Adaptaciones`— el 2026-07-28; `pintar` el 2026-07-29). `payload` y `lookup` se evaluaron y **no** se vetaron: se entienden y se usan. `Base` sola se evaluó y **no** se vetó: es palabra corriente y además nombra legítimamente la parte no-aprendida de un Agente con Propósito; vetarla marcaba 673 apariciones, casi todas válidas, y un registro que marca todo entrena a ignorarlo. El texto vivo ya está barrido; este registro existe para que el lint cace **regresiones**.
 

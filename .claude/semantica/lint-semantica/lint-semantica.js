@@ -104,12 +104,19 @@ const indices = indicesDe(root, ['GLOSARIO.md', 'TERMINOLOGIA-FARLOPA.md']);
 const maniPath = path.join(root, 'MANIFIESTO.md');
 const problemasIndices = problemasDeIndices(indices, fs.existsSync(maniPath) ? fs.readFileSync(maniPath, 'utf8') : null);
 const nombresIndice = new Set(indices.map(i => i.nombre));
-const conColumna = (col, nombreViejo) => {
-  const hit = indices.find(i => (i.columnas || i.cabecera || []).includes(col));
-  return hit || indices.find(i => i.nombre === nombreViejo) || null;
+// Se prueban varias columnas testigo: la del nucleo primero y la vieja despues, que se acepta
+// mientras haya Agentes Desplegados sin nivelar. Con el nucleo las dos primeras columnas se
+// llaman igual en los dos registros (`Nombre`, `Descripcion`), asi que lo que distingue es una
+// columna propia de cada uno: `Alias` en el glosario, `Control` en Terminologia Farlopa.
+const conColumna = (cols, nombreViejo) => {
+  for (const col of cols) {
+    const hit = indices.find(i => (i.columnas || i.cabecera || []).includes(col));
+    if (hit) return hit;
+  }
+  return indices.find(i => i.nombre === nombreViejo) || null;
 };
-const glosario = conColumna('Concepto', 'GLOSARIO.md');
-const farlopa = conColumna('Significado vetado', 'TERMINOLOGIA-FARLOPA.md');
+const glosario = conColumna(['Alias', 'Concepto'], 'GLOSARIO.md');
+const farlopa = conColumna(['Control', 'Significado vetado'], 'TERMINOLOGIA-FARLOPA.md');
 const glosPath = glosario ? glosario.archivo : path.join(root, 'GLOSARIO.md');
 const farlPath = farlopa ? farlopa.archivo : path.join(root, 'TERMINOLOGIA-FARLOPA.md');
 const txt = glosario ? glosario.texto : '';
@@ -140,36 +147,53 @@ const splitTerms = s => (s || '').split(/[,;]/).map(x => x.trim()).filter(x => x
 // la columna Termino de la farlopa agrupa variantes con "/"; ademas viene con backticks
 const splitFarlop = s => (s || '').replace(/`/g, '').split(/[,;/]/).map(x => x.trim()).filter(x => x && x !== '—' && x !== '-');
 
-// parsear filas de GLOSARIO.md: | Concepto | Definicion | Alias | Propuestos | Detalle |
-const rows = [];
-for (const line of txt.split('\n')) {
-  const t = line.trim();
-  if (!t.startsWith('|')) continue;
-  const cells = t.split('|').slice(1, -1).map(c => c.trim());
-  if (cells.length < 5) continue;
-  const c0 = cells[0].replace(/[*\s]/g, '');
-  if (/^:?-{2,}:?$/.test(c0)) continue;                 // separador |---|
-  if (/^concepto$/i.test(c0)) continue;                  // header
-  rows.push({
-    concepto: cells[0].replace(/\*/g, '').trim(),
-    alias: cells[2],
-    propuestos: cells[3],
-    detalle: cells[4],
-  });
+// -- filas de los dos registros, leidas por NOMBRE de columna ---------------
+// Con el nucleo la primera celda es el Codigo, asi que leer por posicion hacia que el glosario
+// tomara el codigo como concepto y que Terminologia Farlopa listara `Local-0001` como termino
+// vetado: el registro entero dejaba de detectar nada, en verde y sin error.
+// Las celdas se separan RESPETANDO las tuberias escapadas (`\|`).
+function celdasDe(linea) {
+  return linea.trim().replace(/^\|/, '').replace(/\|$/, '')
+    .split(/(?<!\\)\|/).map(c => c.replace(/\\\|/g, '|').trim());
 }
+// Devuelve las filas como objetos {<columna>: valor}. El nombre de la columna del termino cambio
+// a `Nombre` con el nucleo; se acepta la forma vieja mientras haya Agentes Desplegados sin nivelar.
+function filasDe(texto, testigo) {
+  const lineas = texto.split('\n').map(l => l.trim()).filter(l => l.startsWith('|'));
+  let cab = null;
+  const out = [];
+  for (const l of lineas) {
+    const c = celdasDe(l);
+    if (!cab) {
+      const norm = c.map(x => x.replace(/\*/g, '').trim());
+      if (norm.some(x => new RegExp(`^${testigo}$`, 'i').test(x))) cab = norm;
+      continue;
+    }
+    if (/^:?-{2,}:?$/.test((c[0] || '').replace(/\s/g, ''))) continue;
+    const fila = {};
+    cab.forEach((n, k) => { fila[n] = c[k] !== undefined ? c[k] : ''; });
+    out.push(fila);
+  }
+  return out;
+}
+const primeraDe = (fila, nombres) => {
+  for (const n of nombres) if (fila[n] !== undefined) return fila[n];
+  return '';
+};
 
-// parsear filas de TERMINOLOGIA-FARLOPA.md: | Termino | Significado vetado | Como decirlo | Control |
-// Solo interesa la primera columna (los terminos vetados); el significado lo juzga el agente.
+const rows = filasDe(txt, 'alias').map(f => ({
+  concepto: primeraDe(f, ['Nombre', 'Concepto']).replace(/\*/g, '').trim(),
+  alias: f['Alias'] || '',
+  propuestos: f['Propuestos'] || '',
+  detalle: f['Detalle'] || '',
+})).filter(r => r.concepto);
+
+// Solo interesa el termino (los vetados); el significado lo juzga el agente.
 const vetados = [];   // termino pelado, en minuscula
-for (const line of farlTxt.split('\n')) {
-  const t = line.trim();
-  if (!t.startsWith('|')) continue;
-  const cells = t.split('|').slice(1, -1).map(c => c.trim());
-  if (cells.length < 3) continue;
-  const c0 = cells[0].replace(/[*`\s]/g, '');
-  if (/^:?-{2,}:?$/.test(c0)) continue;                 // separador |---|
-  if (/^t[eé]rmino$/i.test(c0)) continue;                // header
-  for (const v of splitFarlop(cells[0])) vetados.push(v.toLowerCase());
+for (const f of filasDe(farlTxt, 'c[oó]mo decirlo')) {
+  const termino = primeraDe(f, ['Nombre', 'Término']);
+  if (!termino) continue;
+  for (const v of splitFarlop(termino)) vetados.push(v.toLowerCase());
 }
 
 // [1] links de detalle rotos (en GLOSARIO.md)

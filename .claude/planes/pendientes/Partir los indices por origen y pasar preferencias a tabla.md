@@ -254,12 +254,20 @@ Por qué así:
       - En la plantilla, `herramientas/INDICE-LOCAL.md` y `conocimiento/INDICE.md` **solo cambian de encabezado**: nacen declarados y sin filas, así que el contenido de este repo no viaja.
       - `registrar-herramienta` y `registrar-conocimiento` aprenden a asignar el Código. Versiones: `amp-herramientas` 0.4.0, `amp-conocimiento` 0.7.0.
 
-      **Quedan cinco Índices, y los dos que faltan piden contenido nuevo, no solo cambio de forma:**
+      **`semantica` hecho el 30/07/2026.** Los dos registros al núcleo: 33 conceptos y 39 relaciones vetadas, todos `Local-NNNN`, y Terminología Farlopa estrena la columna `Detalle` que no tenía. `Significado vetado` pasó a `Significado Farlopa`, que ahora vive en el frontmatter y en el texto que encabeza la tabla. **Cuatro roturas silenciosas, y una de ellas es la peor de la sesión:**
+
+      - **El control de escritura dejó de frenar.** `detectar-terminologia-vetada` ubica su columna buscando el encabezado `término`; al renombrarse a `Nombre`, el encabezado no matcheaba, el registro se leía **vacío** y el control aceptaba cualquier término vetado. Sin error, sin aviso, y es el control que corre en cada escritura de `.md`.
+      - **`lint-semantica` leía por posición** en los dos registros: habría tomado el Código como concepto, y habría listado `Local-0001` como término vetado — el registro entero dejando de detectar nada, en verde.
+      - **`lint-harness` tomó `Código` como término vetado.** Salteaba el encabezado comparándolo contra la palabra `Término`; al no estar, la celda del encabezado entró a la lista y marcó **54 apariciones legítimas** del texto que viaja. Esta sí gritó — es la única de las cuatro que se hizo notar.
+      - **La Pantalla contaba mal dos métricas.** Distinguía los dos registros de semántica por la cadena `Significado vetado`, que desapareció ⇒ habría contado los vetados como legítimos; y contaba las preferencias del repo con un contador de bullets propio ⇒ informó `18 (0 propias del repo)` con las cinco filas a la vista.
+
+      Los cuatro ubican ahora por nombre de columna o por lo que el archivo declara de sí mismo, y aceptan la forma vieja mientras haya Agentes Desplegados sin nivelar. Versiones: `amp-semantica` 0.7.0, `amp-conducta` 0.4.0.
+
+      **Quedan tres Índices, y los tres piden contenido nuevo, no solo cambio de forma:**
 
       - `decisiones` — 43 filas que necesitan un **Nombre** cada una, que hoy no existe. Es texto nuevo en un registro canónico: se muestra antes de escribirlo.
       - `planes` — 80 filas y la migración de `Notas` a los archivos de plan, verificando en cada una qué parte ya está en el archivo.
       - `conducta` ×2 — 9 filas que necesitan una **Descripción** nueva, más el renombre de las clases y `CLASES.md`.
-      - `semantica` ×2 — mecánico, salvo el renombre a `Significado Farlopa`.
    4. `conducta`: renombrar la clase `correr` a `Ejecutar`, capitalizar las tres y mudarlas a `CLASES.md`, que el lint pasa a leer en vez de la lista escrita a mano en `lint-conducta.js:103`.
    5. `planes`: migrar las 80 filas, verificando en cada una qué parte de `Notas` ya está en el archivo del plan.
    6. `semantica`: `Significado vetado` a `Significado Farlopa`, y `mostrar-pantalla-bienvenida.js:160` pasa a distinguir los registros por el `indice:` del frontmatter.

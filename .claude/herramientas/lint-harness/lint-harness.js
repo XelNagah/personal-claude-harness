@@ -341,15 +341,28 @@ for (const js of buscarLints(path.join(repo, '.claude'), [])) {
 // que contiene los vetados por definicion.
 const farlopaPath = path.join(repo, '.claude', 'semantica', 'TERMINOLOGIA-FARLOPA.md');
 const vetadosProducto = [];
+// El termino se ubica por el NOMBRE de su columna, no por su posicion: con el nucleo la primera
+// celda es el Codigo, y saltear el encabezado por su texto —`Término`— dejo de funcionar apenas
+// esa columna se llamo `Nombre`, con lo que la palabra `Código` del encabezado entraba a la lista
+// de vetados y marcaba 54 apariciones legitimas del texto que viaja.
 try {
+  let cols = null;
   for (const line of fs.readFileSync(farlopaPath, 'utf8').split('\n')) {
     const t = line.trim();
     if (!t.startsWith('|')) continue;
     const cells = t.split('|').slice(1, -1).map(c => c.trim());
     if (cells.length < 3) continue;
-    const c0 = cells[0].replace(/[*`\s]/g, '');
-    if (/^:?-{2,}:?$/.test(c0) || /^t[eé]rmino$/i.test(c0)) continue;
-    for (const v of cells[0].replace(/`/g, '').split(/[,;/]/).map(x => x.trim()).filter(x => x && x !== '—' && x !== '-')) {
+    if (!cols) {
+      const norm = cells.map(c => c.replace(/\*/g, '').trim().toLowerCase());
+      // `Nombre` es la forma con nucleo; `Término` la vieja, que se acepta mientras haya Agentes
+      // Desplegados sin nivelar. Sin encabezado reconocible no se lee ninguna fila.
+      const i = norm.indexOf('nombre') >= 0 ? norm.indexOf('nombre') : norm.indexOf('término');
+      if (i >= 0 && norm.includes('cómo decirlo')) cols = { termino: i };
+      continue;
+    }
+    if (/^:?-{2,}:?$/.test(cells[0].replace(/[*`\s]/g, ''))) continue;
+    const celda = cells[cols.termino] || '';
+    for (const v of celda.replace(/`/g, '').split(/[,;/]/).map(x => x.trim()).filter(x => x && x !== '—' && x !== '-')) {
       vetadosProducto.push(v.toLowerCase());
     }
   }

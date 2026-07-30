@@ -745,31 +745,33 @@ Contenido inicial de `.claude/semantica/GLOSARIO.md` (tabla vacía — sin filas
 ---
 indice: Glosario del proyecto
 origen: agente-desplegado
-columnas: [Concepto, Definición, Alias, Propuestos, Detalle]
+columnas: [Código, Nombre, Descripción, Alias, Propuestos, Detalle]
+descripcion: la definición del concepto
 ---
 
 # Glosario del proyecto
 
 Terminología **legítima** del dominio de este repo. Una fila por concepto en la tabla de abajo:
 
-- **Concepto** — nombre canónico.
-- **Definición** — una o dos frases: qué ES el concepto (no qué hace).
+- **Código** — `Local-NNNN`. Se asigna al crear la entrada y no se reusa.
+- **Nombre** — el nombre canónico del concepto.
+- **Descripción** — la definición, en una o dos frases: qué ES el concepto (no qué hace).
 - **Alias** — otras formas de llamarlo, todas válidas, registradas para mapear; separadas por coma. `—` si no hay.
 - **Propuestos** — términos que el agente *sugiere* pero que **no se usan** hasta que el usuario los mueve a `Alias` (acá) o al registro de Terminología Farlopa (vetado). Es un buzón, no un estado de reposo. `—` si no hay.
 - **Detalle** — link a una página propia `<nombre>.md` **solo si el concepto es complejo** (fórmulas, ejemplos, contraejemplos). `—` si es simple.
 
 Solo términos **propios del dominio** (no conceptos generales de programación). Consultar al planificar y analizar. Ejemplo completo en el README de la funcionalidad `semantica`.
 
-Los términos **vetados no viven acá**: un veto es sobre la relación término→significado (el mismo término con otro significado puede ser legítimo), así que va al registro par [`TERMINOLOGIA-FARLOPA.md`](TERMINOLOGIA-FARLOPA.md), donde la columna del medio fija el significado vetado. El glosario solo lleva terminología legítima.
+Los términos **vetados no viven acá**: un veto es sobre la relación término→significado (el mismo término con otro significado puede ser legítimo), así que va al registro par [`TERMINOLOGIA-FARLOPA.md`](TERMINOLOGIA-FARLOPA.md), cuya `Descripción` es el **Significado Farlopa**: el que se veta para ese término. El glosario solo lleva terminología legítima.
 
 **Gobernanza (control del usuario):**
 
 - Toda entrada nueva —**concepto o alias**— pasa por el usuario. El agente puede *proponer* (columna `Propuestos`), pero no asienta nada en `Alias` ni veta nada por su cuenta: ratificar y vetar son potestad del usuario. Preferir las palabras del usuario a acuñar nuevas.
 - El agente **nunca usa**, ni en texto plano, memorias, planes o código, un término que esté en `Propuestos` o vetado en el registro de Terminología Farlopa.
-- Los alias válidos **se registran** (mapear "birra/chela = cerveza" evita confusión); los términos confusos o ajenos al dominio **se vetan** en el registro de Terminología Farlopa (dejan de usarse y se barren del texto vivo).
+- Los alias válidos **se registran** (mapear "birra/chela = cerveza" evita confusión); los términos confusos o ajenos al dominio **se vetan** en el registro de Terminología Farlopa (dejan de usarse y se barren del texto vivo). Vetar no borra el término del repo: lo marca para limpiar; la limpieza la guía el lint.
 
-| Concepto | Definición | Alias | Propuestos | Detalle |
-|----------|------------|-------|------------|---------|
+| Código | Nombre | Descripción | Alias | Propuestos | Detalle |
+| --- | --- | --- | --- | --- | --- |
 ```
 
 Registro par `.claude/semantica/TERMINOLOGIA-FARLOPA.md` (tabla vacía):
@@ -778,12 +780,22 @@ Registro par `.claude/semantica/TERMINOLOGIA-FARLOPA.md` (tabla vacía):
 ---
 indice: Terminología Farlopa
 origen: agente-desplegado
-columnas: [Término, Significado vetado, Cómo decirlo, Control]
+columnas: [Código, Nombre, Descripción, Cómo decirlo, Control, Detalle]
+descripcion: el Significado Farlopa — el significado que este registro veta para ese término
 ---
 
 # Terminología Farlopa
 
-*Farlop Terminology* (EN). Registro par del glosario: las **relaciones término→significado vetadas** del dominio. Cada fila prohíbe un término **en un significado específico**, no el término en sí — el mismo término con otro significado puede ser legítimo (`plomería`=cañerías en un repo de fontanería es válido; `plomería`=infraestructura interna de software es farlopa). Por eso la columna del medio: fija el significado que se veta.
+*Farlop Terminology* (EN). Registro par del glosario: las **relaciones término→significado vetadas** del dominio. Cada fila prohíbe un término **en un significado específico**, no el término en sí — el mismo término con otro significado puede ser legítimo (`plomería`=cañerías en un repo de fontanería es válido; `plomería`=infraestructura interna de software es farlopa). Por eso la `Descripción` de cada fila es el **Significado Farlopa**: fija cuál es el significado que se veta.
+
+- **Código** — `Local-NNNN`. Se asigna al crear la entrada y no se reusa.
+- **Nombre** — el término, o los términos hermanos que comparten el veto.
+- **Descripción** — el **Significado Farlopa**: el significado que este registro veta para ese término.
+- **Cómo decirlo** — el canónico que lo reemplaza.
+- **Control** — ver abajo.
+- **Detalle** — `—`, o la página donde se conceptualiza el veto.
+
+Son términos farlopa —ambiguos o semánticamente incomprensibles para el autor del repo— que los agentes van incorporando al dominio a medida que el proyecto avanza. Sin limpieza, el agente eventualmente los menciona y genera una inconfundible expresión de perplejidad en el autor frente a conceptos que le resultan absolutamente alienígenas. El fenómeno es universal —le pasa a cualquier repo trabajado con agentes— y es el **origen del subsistema semántica**. Ver la página de conocimiento [terminología farlopa](../conocimiento/terminologia-farlopa.md).
 
 El **lint marca por término** (lo mecánico: encuentra la palabra en el texto vivo); **el agente juzga el significado** al leer la marca (¿está usada en el sentido vetado o en uno legítimo?). El registro se calibra por repo: un anglicismo es farlopa para un lector hispanohablante y puede no serlo para uno angloparlante.
 
@@ -794,12 +806,14 @@ Dice qué hace el control del momento `al escribir` cuando encuentra el término
 - **`bloquea`** — la palabra está mal **siempre**, sin importar la frase, así que la escritura se rechaza y hay que corregirla antes. Son los anglicismos puros: `levelear` no tiene ningún uso válido en español.
 - **`avisa`** — la misma palabra puede estar bien o mal según qué signifique (`capa de configuración` es legítimo; `la segunda capa del proceso` está vetado). La máquina no puede decidirlo: informa los términos hallados y el agente juzga.
 
-Vacío se lee como `avisa`. **El bloqueo mira solo las apariciones fuera de comillas simples invertidas**, así que citar un término para hablar de él —como hace esta misma tabla— nunca se frena; se frena usarlo.
+Vacío se lee como `avisa`. **El bloqueo mira solo las apariciones fuera de comillas simples invertidas**, así que citar un término para hablar de él —como hace esta misma tabla, o la Base de preferencias al dar ejemplos— nunca se frena; se frena usarlo.
 
 **Gobernanza:** vetar es potestad del usuario; el agente solo propone. El agente **nunca usa** un término en el significado que este registro veta.
 
-| Término | Significado vetado | Cómo decirlo | Control |
-|---------|--------------------|--------------|---------|
+## Relaciones vetadas
+
+| Código | Nombre | Descripción | Cómo decirlo | Control | Detalle |
+| --- | --- | --- | --- | --- | --- |
 ```
 
 Lint `.claude/semantica/lint-semantica/lint-semantica.js` (Node, sin dependencias, sin red):
@@ -911,12 +925,19 @@ const indices = indicesDe(root, ['GLOSARIO.md', 'TERMINOLOGIA-FARLOPA.md']);
 const maniPath = path.join(root, 'MANIFIESTO.md');
 const problemasIndices = problemasDeIndices(indices, fs.existsSync(maniPath) ? fs.readFileSync(maniPath, 'utf8') : null);
 const nombresIndice = new Set(indices.map(i => i.nombre));
-const conColumna = (col, nombreViejo) => {
-  const hit = indices.find(i => (i.columnas || i.cabecera || []).includes(col));
-  return hit || indices.find(i => i.nombre === nombreViejo) || null;
+// Se prueban varias columnas testigo: la del nucleo primero y la vieja despues, que se acepta
+// mientras haya Agentes Desplegados sin nivelar. Con el nucleo las dos primeras columnas se
+// llaman igual en los dos registros (`Nombre`, `Descripcion`), asi que lo que distingue es una
+// columna propia de cada uno: `Alias` en el glosario, `Control` en Terminologia Farlopa.
+const conColumna = (cols, nombreViejo) => {
+  for (const col of cols) {
+    const hit = indices.find(i => (i.columnas || i.cabecera || []).includes(col));
+    if (hit) return hit;
+  }
+  return indices.find(i => i.nombre === nombreViejo) || null;
 };
-const glosario = conColumna('Concepto', 'GLOSARIO.md');
-const farlopa = conColumna('Significado vetado', 'TERMINOLOGIA-FARLOPA.md');
+const glosario = conColumna(['Alias', 'Concepto'], 'GLOSARIO.md');
+const farlopa = conColumna(['Control', 'Significado vetado'], 'TERMINOLOGIA-FARLOPA.md');
 const glosPath = glosario ? glosario.archivo : path.join(root, 'GLOSARIO.md');
 const farlPath = farlopa ? farlopa.archivo : path.join(root, 'TERMINOLOGIA-FARLOPA.md');
 const txt = glosario ? glosario.texto : '';
@@ -947,36 +968,53 @@ const splitTerms = s => (s || '').split(/[,;]/).map(x => x.trim()).filter(x => x
 // la columna Termino de la farlopa agrupa variantes con "/"; ademas viene con backticks
 const splitFarlop = s => (s || '').replace(/`/g, '').split(/[,;/]/).map(x => x.trim()).filter(x => x && x !== '—' && x !== '-');
 
-// parsear filas de GLOSARIO.md: | Concepto | Definicion | Alias | Propuestos | Detalle |
-const rows = [];
-for (const line of txt.split('\n')) {
-  const t = line.trim();
-  if (!t.startsWith('|')) continue;
-  const cells = t.split('|').slice(1, -1).map(c => c.trim());
-  if (cells.length < 5) continue;
-  const c0 = cells[0].replace(/[*\s]/g, '');
-  if (/^:?-{2,}:?$/.test(c0)) continue;                 // separador |---|
-  if (/^concepto$/i.test(c0)) continue;                  // header
-  rows.push({
-    concepto: cells[0].replace(/\*/g, '').trim(),
-    alias: cells[2],
-    propuestos: cells[3],
-    detalle: cells[4],
-  });
+// -- filas de los dos registros, leidas por NOMBRE de columna ---------------
+// Con el nucleo la primera celda es el Codigo, asi que leer por posicion hacia que el glosario
+// tomara el codigo como concepto y que Terminologia Farlopa listara `Local-0001` como termino
+// vetado: el registro entero dejaba de detectar nada, en verde y sin error.
+// Las celdas se separan RESPETANDO las tuberias escapadas (`\|`).
+function celdasDe(linea) {
+  return linea.trim().replace(/^\|/, '').replace(/\|$/, '')
+    .split(/(?<!\\)\|/).map(c => c.replace(/\\\|/g, '|').trim());
 }
+// Devuelve las filas como objetos {<columna>: valor}. El nombre de la columna del termino cambio
+// a `Nombre` con el nucleo; se acepta la forma vieja mientras haya Agentes Desplegados sin nivelar.
+function filasDe(texto, testigo) {
+  const lineas = texto.split('\n').map(l => l.trim()).filter(l => l.startsWith('|'));
+  let cab = null;
+  const out = [];
+  for (const l of lineas) {
+    const c = celdasDe(l);
+    if (!cab) {
+      const norm = c.map(x => x.replace(/\*/g, '').trim());
+      if (norm.some(x => new RegExp(`^${testigo}$`, 'i').test(x))) cab = norm;
+      continue;
+    }
+    if (/^:?-{2,}:?$/.test((c[0] || '').replace(/\s/g, ''))) continue;
+    const fila = {};
+    cab.forEach((n, k) => { fila[n] = c[k] !== undefined ? c[k] : ''; });
+    out.push(fila);
+  }
+  return out;
+}
+const primeraDe = (fila, nombres) => {
+  for (const n of nombres) if (fila[n] !== undefined) return fila[n];
+  return '';
+};
 
-// parsear filas de TERMINOLOGIA-FARLOPA.md: | Termino | Significado vetado | Como decirlo | Control |
-// Solo interesa la primera columna (los terminos vetados); el significado lo juzga el agente.
+const rows = filasDe(txt, 'alias').map(f => ({
+  concepto: primeraDe(f, ['Nombre', 'Concepto']).replace(/\*/g, '').trim(),
+  alias: f['Alias'] || '',
+  propuestos: f['Propuestos'] || '',
+  detalle: f['Detalle'] || '',
+})).filter(r => r.concepto);
+
+// Solo interesa el termino (los vetados); el significado lo juzga el agente.
 const vetados = [];   // termino pelado, en minuscula
-for (const line of farlTxt.split('\n')) {
-  const t = line.trim();
-  if (!t.startsWith('|')) continue;
-  const cells = t.split('|').slice(1, -1).map(c => c.trim());
-  if (cells.length < 3) continue;
-  const c0 = cells[0].replace(/[*`\s]/g, '');
-  if (/^:?-{2,}:?$/.test(c0)) continue;                 // separador |---|
-  if (/^t[eé]rmino$/i.test(c0)) continue;                // header
-  for (const v of splitFarlop(cells[0])) vetados.push(v.toLowerCase());
+for (const f of filasDe(farlTxt, 'c[oó]mo decirlo')) {
+  const termino = primeraDe(f, ['Nombre', 'Término']);
+  if (!termino) continue;
+  for (const v of splitFarlop(termino)) vetados.push(v.toLowerCase());
 }
 
 // [1] links de detalle rotos (en GLOSARIO.md)
@@ -2807,8 +2845,12 @@ function leerRegistro() {
     const celdas = l.split('|').slice(1, -1).map(c => c.trim());
     const norm = celdas.map(c => c.toLowerCase().replace(/\*/g, ''));
     if (!cols) {
-      if (norm.includes('término') && norm.includes('cómo decirlo')) {
-        cols = { termino: norm.indexOf('término'), como: norm.indexOf('cómo decirlo'), control: norm.indexOf('control') };
+      // El termino vive en `Nombre` desde que el registro tomo el nucleo de columnas; `Término` es
+      // la forma vieja y se acepta mientras haya Agentes Desplegados sin nivelar. Sin las dos, el
+      // encabezado no matchea, el registro se lee VACIO y el control deja de frenar nada — sin error.
+      const iTermino = norm.includes('nombre') ? norm.indexOf('nombre') : norm.indexOf('término');
+      if (iTermino >= 0 && norm.includes('cómo decirlo')) {
+        cols = { termino: iTermino, como: norm.indexOf('cómo decirlo'), control: norm.indexOf('control') };
       }
       continue;
     }
@@ -3084,7 +3126,10 @@ function detallePlanes(txt, estadosTxt) {
 // viven adentro de un archivo, partidos por encabezado, y se aceptan además los viejos
 // ("## Base (harness vN)" / "## Adaptaciones") mientras haya Agentes Desplegados sin nivelar.
 function detallePreferencias(archivos) {
-  const contar = t => t ? t.split(/\r?\n/).filter(l => /^\s*[-*]\s+\S/.test(l)).length : 0;
+  // Se cuenta con el contador generico —filas de tabla si hay tabla, si no bullets con link—, no
+  // con un contador de bullets propio: el registro paso de bullets a tabla y este numero se fue a
+  // cero, informando "0 propias del repo" con las cinco filas a la vista y sin emitir ninguna senal.
+  const contar = t => (t ? contarEntradas(t) : 0);
   let delRepo = 0, declarado = false;
   for (const f of archivos) {
     const t = leer(f), fm = frontmatterDe(t);
@@ -3107,7 +3152,15 @@ function detalleSemantica(archivos) {
   let legitimos = 0, vetados = 0;
   for (const f of archivos) {
     const t = leer(f), n = contarEntradas(t);
-    if (/Significado vetado/.test(t)) vetados += n; else legitimos += n;
+    // Cual registro es cual sale de lo que el archivo declara de si mismo: su `indice`, o su
+    // columna testigo `Control`. Antes se miraba la cadena `Significado vetado`, que era un
+    // encabezado de columna: al pasar el registro al nucleo de columnas esa cadena desaparecio
+    // y los vetados se habrian contado como legitimos, sin emitir ninguna senal.
+    const fm = /^---\r?\n([\s\S]*?)\r?\n---/.exec(t);
+    const esFarlopa = (fm && /^indice:.*Farlopa/mi.test(fm[1]))
+      || (fm && /^columnas:.*\bControl\b/mi.test(fm[1]))
+      || /Significado vetado/.test(t);
+    if (esFarlopa) vetados += n; else legitimos += n;
   }
   return vetados ? `(${legitimos} legítimos · ${vetados} vetados)` : '';
 }

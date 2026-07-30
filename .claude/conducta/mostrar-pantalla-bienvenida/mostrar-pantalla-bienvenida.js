@@ -134,7 +134,10 @@ function detallePlanes(txt, estadosTxt) {
 // viven adentro de un archivo, partidos por encabezado, y se aceptan además los viejos
 // ("## Base (harness vN)" / "## Adaptaciones") mientras haya Agentes Desplegados sin nivelar.
 function detallePreferencias(archivos) {
-  const contar = t => t ? t.split(/\r?\n/).filter(l => /^\s*[-*]\s+\S/.test(l)).length : 0;
+  // Se cuenta con el contador generico —filas de tabla si hay tabla, si no bullets con link—, no
+  // con un contador de bullets propio: el registro paso de bullets a tabla y este numero se fue a
+  // cero, informando "0 propias del repo" con las cinco filas a la vista y sin emitir ninguna senal.
+  const contar = t => (t ? contarEntradas(t) : 0);
   let delRepo = 0, declarado = false;
   for (const f of archivos) {
     const t = leer(f), fm = frontmatterDe(t);
@@ -157,7 +160,15 @@ function detalleSemantica(archivos) {
   let legitimos = 0, vetados = 0;
   for (const f of archivos) {
     const t = leer(f), n = contarEntradas(t);
-    if (/Significado vetado/.test(t)) vetados += n; else legitimos += n;
+    // Cual registro es cual sale de lo que el archivo declara de si mismo: su `indice`, o su
+    // columna testigo `Control`. Antes se miraba la cadena `Significado vetado`, que era un
+    // encabezado de columna: al pasar el registro al nucleo de columnas esa cadena desaparecio
+    // y los vetados se habrian contado como legitimos, sin emitir ninguna senal.
+    const fm = /^---\r?\n([\s\S]*?)\r?\n---/.exec(t);
+    const esFarlopa = (fm && /^indice:.*Farlopa/mi.test(fm[1]))
+      || (fm && /^columnas:.*\bControl\b/mi.test(fm[1]))
+      || /Significado vetado/.test(t);
+    if (esFarlopa) vetados += n; else legitimos += n;
   }
   return vetados ? `(${legitimos} legítimos · ${vetados} vetados)` : '';
 }

@@ -38,8 +38,12 @@ function leerRegistro() {
     const celdas = l.split('|').slice(1, -1).map(c => c.trim());
     const norm = celdas.map(c => c.toLowerCase().replace(/\*/g, ''));
     if (!cols) {
-      if (norm.includes('término') && norm.includes('cómo decirlo')) {
-        cols = { termino: norm.indexOf('término'), como: norm.indexOf('cómo decirlo'), control: norm.indexOf('control') };
+      // El termino vive en `Nombre` desde que el registro tomo el nucleo de columnas; `Término` es
+      // la forma vieja y se acepta mientras haya Agentes Desplegados sin nivelar. Sin las dos, el
+      // encabezado no matchea, el registro se lee VACIO y el control deja de frenar nada — sin error.
+      const iTermino = norm.includes('nombre') ? norm.indexOf('nombre') : norm.indexOf('término');
+      if (iTermino >= 0 && norm.includes('cómo decirlo')) {
+        cols = { termino: iTermino, como: norm.indexOf('cómo decirlo'), control: norm.indexOf('control') };
       }
       continue;
     }
