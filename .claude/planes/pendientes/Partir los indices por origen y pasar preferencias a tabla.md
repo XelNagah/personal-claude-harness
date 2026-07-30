@@ -222,6 +222,14 @@ Por qué así:
 
    1. Asentar la decisión estructural que modifica la 0042.
    2. `preferencias` a tabla, con sus páginas de detalle. Es el único que hoy no es tabla junto con `conocimiento`.
+
+      **Ejecutado el 29/07/2026.** Los dos archivos son tablas con el núcleo: 13 entradas `Base-0001`–`Base-0013` y 5 `Local-0001`–`Local-0005`, con `columnas` y `descripcion` en el frontmatter. Lo que cambió respecto de lo previsto:
+
+      - **No se crearon las 4 páginas de detalle nuevas.** El criterio ratificado es **norma contra elaboración**, no largo: lo que hace falta para obedecer queda en la celda —este registro está siempre en contexto, y lo que sale de la celda deja de estar cargado—; a la página va lo que no hace falta para obedecer (ejemplos, motivos, casos ya discutidos). Con ese corte, las cuatro reglas largas conservan su texto entero: son norma. Quedan las 2 páginas que ya existían, que dejan de ser huérfanas al declararse en la columna `Detalle`.
+      - **La nota «candidato a subir al Agente Multipropósito» salió de dos celdas** (`Local-0004`, `Local-0005`) a su plan propio: no es norma ni elaboración, y lo pendiente en este repo es un plan.
+      - **`registrar-preferencia` no sabía asignar el Código.** No estaba en el traspaso: sin eso, el próximo alta inventa un código o repite uno. Ganó el paso —`máximo + 1`, nunca `cantidad + 1`, sin reusar huecos— y las cuatro columnas con el criterio norma/elaboración.
+      - Propagado a `PLANTILLA.md` (el Índice del Agente Desplegado nace declarado, con encabezado y sin filas) y verificado con `lint-harness`. Versiones: `amp` 0.10.0, `amp-preferencias` 0.7.0. **Sin publicar.**
+      - **Pendiente de este subpaso:** `MANIFIESTO.md` y `README.md` de preferencias, sacar la excepción de `lint-subsistemas.js:123` y la sección propia de `AGENTS.md`, y llevar `lint-preferencias` al Patrón — hoy sigue chequeando solo las tres cosas viejas y no mira la tabla.
    3. Los otros nueve al núcleo: sumar `Código`, `Nombre`, `Descripción` y `Detalle` donde falten, renombrar encabezados, ordenar las filas por Código y sumar el campo del frontmatter que declara qué representa la Descripción.
    4. `conducta`: renombrar la clase `correr` a `Ejecutar`, capitalizar las tres y mudarlas a `CLASES.md`, que el lint pasa a leer en vez de la lista escrita a mano en `lint-conducta.js:103`.
    5. `planes`: migrar las 80 filas, verificando en cada una qué parte de `Notas` ya está en el archivo del plan.
