@@ -72,7 +72,10 @@ Reglas duras:
 
 ### 5. Indexar
 
-Una línea en el `INDICE.md` que corresponda: `- [Título](archivo.md) — <gancho de una línea>`. Solo el puntero; el índice nunca lleva contenido. Si se actualizó una página existente, revisar que su línea siga siendo fiel.
+Una fila en el `INDICE.md` que corresponda, con `Código | Nombre | Descripción | Detalle`. Solo el puntero; el índice nunca lleva contenido. Si se actualizó una página existente, revisar que su fila siga siendo fiel.
+
+- **Código** — `Local-NNNN`, porque el conocimiento lo acumula el Agente Desplegado. El número es **el mayor de ese Índice más uno**, nunca la cantidad de filas más uno: si alguna vez se retiró una página, contar filas repite un código ya usado. Un código retirado deja un hueco y no se reusa.
+- **Nombre** — el título de la página, sin link. **Descripción** — de qué trata, en una línea: lo suficiente para decidir si vale abrirla. **Detalle** — el link a la página, o a la carpeta con su propio índice.
 
 ### 6. Cerrar con el lint
 

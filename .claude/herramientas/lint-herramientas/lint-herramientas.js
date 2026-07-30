@@ -115,24 +115,61 @@ const sinReadme = tools.filter(t => !fs.existsSync(path.join(root, t, 'README.md
 // [2] carpeta local fuera del indice
 const fueraIndice = tools.filter(t => !idx.includes(t));
 
-// [3] filas del indice cuyo link apunta a un subdir LOCAL inexistente
+// [3] el nucleo de cada fila y los links que apuntan a un subdir LOCAL inexistente
 //     (se saltan links externos: ../skills/, .mcp.json, etc. — esos no viven bajo herramientas/)
-const colgadas = [];
-for (const line of idx.split('\n')) {
-  const t = line.trim();
-  if (!t.startsWith('|')) continue;
-  const cells = t.split('|').slice(1, -1).map(c => c.trim());
-  if (cells.length < 2) continue;
-  const c0 = cells[0];
-  if (/^:?-{2,}:?$/.test(c0.replace(/\s/g, ''))) continue;     // separador
-  if (/^herramienta$/i.test(c0.replace(/[*\s]/g, ''))) continue; // header
-  const m = /\]\(([^)]+?)\)/.exec(c0);                          // link [x](target)
-  if (!m) continue;                                             // fila sin link -> no se valida ruta
-  const target = m[1].trim();
-  if (target.startsWith('..') || target.includes('.json') || /^\w+:/.test(target)) continue; // externo
-  const name = target.replace(/\/$/, '').replace(/[`]/g, '').trim();
-  if (name && !fs.existsSync(path.join(root, name))) colgadas.push(name);
+// Cada dato se ubica por el NOMBRE de su columna, no por su posicion: con el nucleo la primera
+// celda es el Codigo y la carpeta se mudo a `Detalle`, asi que buscar el link en la celda inicial
+// no encontraba ninguno y el chequeo salia limpio sin validar una sola fila.
+// Y las celdas se separan RESPETANDO las tuberias escapadas (`\|`), que si no corren las columnas.
+function celdasDe(linea) {
+  return linea.trim().replace(/^\|/, '').replace(/\|$/, '')
+    .split(/(?<!\\)\|/).map(c => c.replace(/\\\|/g, '|').trim());
 }
+function filasDe(texto) {
+  const lineas = texto.split(/\r?\n/).map(l => l.trim()).filter(l => l.startsWith('|'));
+  if (lineas.length < 2) return [];
+  const cab = celdasDe(lineas[0]).map(c => c.replace(/\*/g, '').trim());
+  const out = [];
+  for (const l of lineas.slice(1)) {
+    const c = celdasDe(l);
+    if (/^:?-{2,}:?$/.test((c[0] || '').replace(/\s/g, ''))) continue;
+    const fila = {};
+    cab.forEach((n, k) => { fila[n] = c[k] !== undefined ? c[k] : ''; });
+    out.push(fila);
+  }
+  return out;
+}
+
+// El prefijo del codigo es el origen: un `Local-` en el Indice del Agente Multiproposito significa
+// que la fila se escribio en el archivo equivocado.
+const PREFIJO = { 'agente-multiproposito': 'Base', 'agente-desplegado': 'Local' };
+const colgadas = [], problemasNucleo = [];
+const codigosVistos = new Set();
+for (const i of indices) {
+  const esperado = PREFIJO[i.origen];
+  const nombresVistos = new Set();
+  for (const f of filasDe(i.texto)) {
+    const cod = f['Código'] || '', nombre = f['Nombre'] || '';
+    if (esperado) {
+      if (!new RegExp(`^${esperado}-\\d{4}$`).test(cod))
+        problemasNucleo.push(`${i.nombre}: codigo "${cod}" no tiene la forma ${esperado}-NNNN que pide su origen`);
+      else if (codigosVistos.has(cod)) problemasNucleo.push(`${i.nombre}: codigo duplicado ${cod}`);
+      else codigosVistos.add(cod);
+    }
+    if (!nombre) problemasNucleo.push(`${i.nombre}: la fila ${cod || '(sin codigo)'} no tiene Nombre`);
+    else if (nombresVistos.has(nombre.toLowerCase())) problemasNucleo.push(`${i.nombre}: nombre duplicado "${nombre}"`);
+    else nombresVistos.add(nombre.toLowerCase());
+    if (!(f['Descripción'] || '').trim()) problemasNucleo.push(`${i.nombre}: ${cod} no tiene Descripción`);
+
+    const m = /\]\(([^)]+?)\)/.exec(f['Detalle'] || '');
+    if (!m) continue;                                             // fila sin link -> no se valida ruta
+    const target = m[1].trim();
+    if (target.startsWith('..') || target.includes('.json') || /^\w+:/.test(target)) continue; // externo
+    const name = target.replace(/\/$/, '').replace(/[`]/g, '').trim();
+    if (name && !fs.existsSync(path.join(root, name))) colgadas.push(name);
+  }
+}
+problemasIndices.push(...problemasNucleo);
 
 // [4] refs por ruta a lints en settings que no resuelven (cualquier .claude/**/*.js|sh|...)
 // La raiz del repo se deduce de la ubicacion del propio lint: .claude/<sub>/lint-<sub>/ -> 3 arriba.

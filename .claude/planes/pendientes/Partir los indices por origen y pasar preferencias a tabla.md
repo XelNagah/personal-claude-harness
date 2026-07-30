@@ -246,7 +246,20 @@ Por qué así:
       - Ganó los controles del núcleo (prefijo del código según el origen, códigos sin repetir, Nombre y Descripción presentes, `Detalle` que apunta a una casa con manifiesto) y el separado de celdas que respeta `\|`. **Nueve controles probados contra un caso bueno y uno malo.**
       - `agregar-subsistema` aprende a asignar el Código. Versión: `amp-subsistemas` 0.4.0.
 
-      **Quedan ocho:** `planes`, `conocimiento`, `decisiones`, `herramientas` ×2, `conducta` ×2 y `semantica` ×2.
+      **`conocimiento` y `herramientas` hechos el 29/07/2026.**
+
+      - **`conocimiento/INDICE.md` deja de ser bullets y pasa a tabla**, 11 filas `Local-0001`–`Local-0011`. Su lint trabaja sobre links markdown genéricos, así que no hizo falta tocarlo.
+      - **`herramientas`**, los dos Índices a `Código | Nombre | Descripción | Tipo | Cómo se invoca | Estado | Detalle`: 2 filas Base y 6 Local, con la carpeta mudada del nombre a `Detalle`.
+      - **Tercer lint que leía por posición.** `lint-herramientas` sacaba el link de `cells[0]` para el chequeo de filas colgadas; con el núcleo esa celda es el Código, no tiene link, y el `if (!m) continue` **salteaba todas las filas**: reportaba cero no por estar limpio sino por no validar nada. Ahora lee por nombre de columna y suma los controles del núcleo. **Siete controles probados contra un caso bueno y uno malo.**
+      - En la plantilla, `herramientas/INDICE-LOCAL.md` y `conocimiento/INDICE.md` **solo cambian de encabezado**: nacen declarados y sin filas, así que el contenido de este repo no viaja.
+      - `registrar-herramienta` y `registrar-conocimiento` aprenden a asignar el Código. Versiones: `amp-herramientas` 0.4.0, `amp-conocimiento` 0.7.0.
+
+      **Quedan cinco Índices, y los dos que faltan piden contenido nuevo, no solo cambio de forma:**
+
+      - `decisiones` — 43 filas que necesitan un **Nombre** cada una, que hoy no existe. Es texto nuevo en un registro canónico: se muestra antes de escribirlo.
+      - `planes` — 80 filas y la migración de `Notas` a los archivos de plan, verificando en cada una qué parte ya está en el archivo.
+      - `conducta` ×2 — 9 filas que necesitan una **Descripción** nueva, más el renombre de las clases y `CLASES.md`.
+      - `semantica` ×2 — mecánico, salvo el renombre a `Significado Farlopa`.
    4. `conducta`: renombrar la clase `correr` a `Ejecutar`, capitalizar las tres y mudarlas a `CLASES.md`, que el lint pasa a leer en vez de la lista escrita a mano en `lint-conducta.js:103`.
    5. `planes`: migrar las 80 filas, verificando en cada una qué parte de `Notas` ya está en el archivo del plan.
    6. `semantica`: `Significado vetado` a `Significado Farlopa`, y `mostrar-pantalla-bienvenida.js:160` pasa a distinguir los registros por el `indice:` del frontmatter.
