@@ -19,7 +19,8 @@ Segura de re-correr: este es el modo de **"nivelar"** repos que ya tienen partes
   |----------|------------------------------|
   | `subsistemas/SUBSISTEMAS.md` | una fila por casa Base instalada; `SUBSISTEMAS-LOCAL.md` se preserva entero |
   | `conducta/MOMENTOS.md` | una fila por momento del vocabulario, incluido **al arrancar la sesión** (`SessionStart`) |
-  | `conducta/INDICE.md` | las reglas completas del Agente Multipropósito, incluidas **Mostrar la Pantalla de bienvenida al arrancar** (clase `correr`) y **Frenar la terminología vetada antes de que se escriba** (clase `bloquear`) |
+  | `conducta/CLASES.md` | las tres clases de acción (`Inyectar`, `Ejecutar`, `Bloquear`), que el lint lee para validar la columna `Clase` |
+  | `conducta/INDICE.md` | las reglas completas del Agente Multipropósito, incluidas **Mostrar la Pantalla de bienvenida al arrancar** (clase `Ejecutar`) y **Frenar la terminología vetada antes de que se escriba** (clase `Bloquear`) |
   | `herramientas/INDICE.md` | una fila por Herramienta instalada del Agente Multipropósito (hoy `actualizar-plugins`) |
   | los cuatro Índices del Agente Desplegado | `subsistemas/SUBSISTEMAS-LOCAL.md`, `preferencias/PREFERENCIAS-LOCAL.md`, `herramientas/INDICE-LOCAL.md` y `conducta/INDICE-LOCAL.md` **existen**, declarados y sin filas; si ya están, se preservan enteros |
   | `.claude/settings.json` y `.codex/hooks.json` → `hooks` | el repartidor `establecer-conducta` en los **tres** eventos, en **los dos** archivos: `SessionStart`, `UserPromptSubmit`, `PreToolUse` con matcher `Write\|Edit` — **por merge**, sin sacar los hooks que ya estén |
@@ -32,11 +33,11 @@ Segura de re-correr: este es el modo de **"nivelar"** repos que ya tienen partes
 
 ## Cableado de subsistemas
 
-`subsistemas/SUBSISTEMAS.md` es el catálogo de casas persistentes. Lo mantiene el harness y se reconcilia por fila; `SUBSISTEMAS-LOCAL.md` pertenece al repo y nunca se abre. Cada subsistema se cablea en `AGENTS.md` con **una línea `@.claude/<sub>/MANIFIESTO.md`** dentro de una **única sección `## Subsistemas`** (PLANTILLA §Subsistemas). Además de sus Índices, README y lint, cada paso crea `<sub>/MANIFIESTO.md` y asegura su línea. Cargan índice **subsistemas, conocimiento y herramientas**; NO cargan índice **planes, semántica, decisiones y conducta**. Preferencias se carga siempre mediante su sección propia.
+`subsistemas/SUBSISTEMAS.md` es el catálogo de casas persistentes. Lo mantiene el harness y se reconcilia por fila; `SUBSISTEMAS-LOCAL.md` pertenece al repo y nunca se abre. Cada subsistema se cablea en `AGENTS.md` con **una línea `@.claude/<sub>/MANIFIESTO.md`** dentro de una **única sección `## Subsistemas`** (PLANTILLA §Subsistemas). Además de sus Índices, README y lint, cada paso crea `<sub>/MANIFIESTO.md` y asegura su línea. Cargan índice **subsistemas, preferencias, conocimiento y herramientas**; NO cargan índice **planes, semántica, decisiones y conducta**.
 
 **Un Índice por origen.** Los cuatro subsistemas cuyo contenido viene de los dos orígenes —`subsistemas`, `preferencias`, `herramientas`, `conducta`— se instalan con **dos archivos**: el del Agente Multipropósito, poblado, y el del Agente Desplegado, **declarado y sin filas** (no vacío: el manifiesto lo nombra y las skills de alta escriben siempre sobre un archivo que existe). Cada archivo declara en su frontmatter `indice`, `origen` (`agente-multiproposito` | `agente-desplegado`) y `columnas`; **es ese `origen`, no el nombre, lo que decide qué se reemplaza**. Los otros cuatro subsistemas tienen un solo Índice. El manifiesto los lista a todos con el origen de cada uno, y el lint compara esa lista contra el frontmatter.
 
-**Migración (modelo viejo → nuevo).** Si el repo ya tenía secciones de texto plano por-subsistema ("## Memoria del proyecto", "## Glosario del proyecto", …) y/o el bloque "## Mapa del repo (siempre cargado)", `## Subsistemas` las **reemplaza**: al cablear cada subsistema, quitar su sección de texto plano vieja y su línea `@…INDICE`/`@…MEMORIA`/`@…PLANES` del Mapa; cuando el bloque Mapa queda sin líneas de subsistema, quitar también su encabezado. La sección `## Preferencias (siempre cargadas)` y la Descripción del proyecto **no se tocan**.
+**Migración (modelo viejo → nuevo).** Si el repo ya tenía secciones de texto plano por-subsistema ("## Memoria del proyecto", "## Glosario del proyecto", …) y/o el bloque "## Mapa del repo (siempre cargado)", `## Subsistemas` las **reemplaza**: al cablear cada subsistema, quitar su sección de texto plano vieja y su línea `@…INDICE`/`@…MEMORIA`/`@…PLANES` del Mapa; cuando el bloque Mapa queda sin líneas de subsistema, quitar también su encabezado. Si el repo todavía tiene una sección propia `## Preferencias (siempre cargadas)`, **se quita**: sus dos líneas de importación pasan al manifiesto de `preferencias`, que entra por `## Subsistemas`. La Descripción del proyecto **no se toca**.
 
 ## Estructura objetivo
 
@@ -96,6 +97,7 @@ Segura de re-correr: este es el modo de **"nivelar"** repos que ya tienen partes
         ├── INDICE.md         # reglas del Agente Multipropósito (frontmatter: origen, columnas)
         ├── INDICE-LOCAL.md   # reglas del Agente Desplegado (declarado, sin filas)
         ├── MOMENTOS.md       # vocabulario de momentos (lo lee el lint)
+        ├── CLASES.md         # vocabulario de clases de acción (lo lee el lint)
         ├── establecer-conducta/establecer-conducta.js   # hook repartidor
         ├── mostrar-pantalla-bienvenida/mostrar-pantalla-bienvenida.js  # Pantalla de bienvenida (Regla Base correr)
         ├── detectar-terminologia-vetada/detectar-terminologia-vetada.js  # control al escribir (Regla Base bloquear)
@@ -112,6 +114,6 @@ Segura de re-correr: este es el modo de **"nivelar"** repos que ya tienen partes
 5. **semántica** — instalar `README.md`, `MANIFIESTO.md`, `GLOSARIO.md`, `TERMINOLOGIA-FARLOPA.md` y `lint-semantica/`.
 6. **decisiones** — instalar `README.md`, `MANIFIESTO.md`, `INDICE.md` y `lint-decisiones/`.
 7. **herramientas** — instalar `README.md`, `MANIFIESTO.md`, `INDICE.md`, `INDICE-LOCAL.md`, `actualizar-plugins/` y `lint-herramientas/`; reconciliar sólo `INDICE.md` y preservar `INDICE-LOCAL.md`.
-8. **conducta** — instalar `README.md`, `MANIFIESTO.md`, `INDICE.md`, `INDICE-LOCAL.md`, `MOMENTOS.md`, el repartidor, la Pantalla de bienvenida, el control de terminología y `lint-conducta/`. Reconciliar sólo `INDICE.md`, preservar `INDICE-LOCAL.md` y cablear los tres eventos en Claude Code y Codex por merge.
+8. **conducta** — instalar `README.md`, `MANIFIESTO.md`, `INDICE.md`, `INDICE-LOCAL.md`, `MOMENTOS.md`, `CLASES.md`, el repartidor, la Pantalla de bienvenida, el control de terminología y `lint-conducta/`. Reconciliar sólo `INDICE.md`, preservar `INDICE-LOCAL.md` y cablear los tres eventos en Claude Code y Codex por merge.
 9. **Verificar.** Correr todos los lints instalados y `../actualizar/amp-actualizar.js --vista-previa`; debe dar `BASE — INSTALAR / PISAR (0)`.
 10. **Reportar.** Por subsistema: `agregado` / `ya estaba` / `divergente`. No hacer commit salvo pedido explícito.

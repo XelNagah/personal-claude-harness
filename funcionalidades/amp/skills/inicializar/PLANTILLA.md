@@ -2550,32 +2550,32 @@ Hook repartidor `.claude/conducta/establecer-conducta/establecer-conducta.js` �
 // Agregar/cambiar una regla NO toca este script: lee el registro en cada disparo.
 //
 // Eventos que realiza hoy (la realizacion del momento es agente-especifica):
-//   - UserPromptSubmit         -> momento `cada turno`            (sin condicion)      [clase inyectar]
+//   - UserPromptSubmit         -> momento `cada turno`            (sin condicion)      [clase Inyectar]
 //   - PreToolUse Write|Edit|apply_patch de un .md -> momento `al escribir` (condicion sin juicio)
-//                                                   [clases inyectar + bloquear, combinadas]
-//   - SessionStart             -> momento `al arrancar la sesion` (sin condicion)     [clase correr]
+//                                                   [clases Inyectar + Bloquear, combinadas]
+//   - SessionStart             -> momento `al arrancar la sesion` (sin condicion)     [clase Ejecutar]
 // El vocabulario de momentos vive en ../MOMENTOS.md; aca vive COMO se realiza cada uno.
 //
 // Tres clases de despacho:
-//   - inyectar: arma un texto y lo emite como additionalContext (llega al modelo).
-//   - correr:   ejecuta la Herramienta cuya ruta es el Contenido de la regla y REENVIA su stdout
+//   - Inyectar: arma un texto y lo emite como additionalContext (llega al modelo).
+//   - Ejecutar: ejecuta la Herramienta cuya ruta es el Contenido de la regla y REENVIA su stdout
 //               tal cual (ej. la Pantalla de bienvenida emite {systemMessage} en SessionStart:
 //               ese campo es el unico que escribe en la terminal del usuario). No se combina: es para
 //               momentos donde la salida del hijo ES la respuesta del hook.
-//   - bloquear: ejecuta la Herramienta cuya ruta es el Contenido y LEE su respuesta. Si trae
+//   - Bloquear: ejecuta la Herramienta cuya ruta es el Contenido y LEE su respuesta. Si trae
 //               permissionDecision 'deny', se emite ese deny solo (frena la accion; el
 //               additionalContext se descartaria igual). Si trae additionalContext, se COMBINA
-//               con el texto de las reglas `inyectar` del mismo momento.
+//               con el texto de las reglas `Inyectar` del mismo momento.
 //
-// Combinacion: en un mismo momento conviven reglas `inyectar` (texto fijo, vive en el registro y lo
-// nivela el harness) y `bloquear` (datos medidos, los produce un programa). Se emiten juntas, una
-// abajo de la otra. `correr` sigue sin combinarse (su salida no es additionalContext).
+// Combinacion: en un mismo momento conviven reglas `Inyectar` (texto fijo, vive en el registro y lo
+// nivela el harness) y `Bloquear` (datos medidos, los produce un programa). Se emiten juntas, una
+// abajo de la otra. `Ejecutar` sigue sin combinarse (su salida no es additionalContext).
 //
 // Contrato de hook (conocimiento hooks-claude-code): stdin = JSON del harness; stdout = JSON.
 //   UserPromptSubmit/PreToolUse: { hookSpecificOutput: { hookEventName, additionalContext } }
 //     (PreToolUse sin permissionDecision => 'defer': inyecta y deja el flujo de permisos intacto,
 //     verificado 2026-07-23; NO auto-aprueba. additionalContext llega junto al resultado de la tool.)
-//   SessionStart: lo que emita la Herramienta `correr` (ej. { systemMessage: <caja> }, visible al usuario).
+//   SessionStart: lo que emita la Herramienta de la clase `Ejecutar` (ej. { systemMessage: <caja> }, visible al usuario).
 // Nunca rompe el turno: ante cualquier error o registro vacio, sale 0 sin emitir nada.
 //
 // Uso a mano (probar): echo {"hook_event_name":"SessionStart"} | node establecer-conducta.js
@@ -2644,7 +2644,11 @@ function leerReglas(txt) {
     const celdas = l.split('|').slice(1, -1).map(c => c.trim());
     const norm = celdas.map(c => c.toLowerCase().replace(/\*/g, ''));
     if (!cols) {
-      if (norm.includes('regla') && norm.includes('momento')) {
+      // La columna del nombre es `Nombre` desde que el registro tomo el nucleo; `Regla` es la
+      // forma vieja y se acepta mientras haya Agentes Desplegados sin nivelar. Sin ninguna de las
+      // dos el encabezado no matchea, no se lee una sola fila y el repartidor deja de entregar
+      // reglas SIN emitir error: es el fallo silencioso que motivo declarar las columnas.
+      if ((norm.includes('nombre') || norm.includes('regla')) && norm.includes('momento')) {
         cols = { momento: norm.indexOf('momento'), clase: norm.indexOf('clase'),
                  contenido: norm.indexOf('contenido'), estado: norm.indexOf('estado') };
       }
@@ -2685,9 +2689,9 @@ function ejecutar(regla, input) {
   } catch (e) { return ''; }   // no romper el turno: el hijo fallo, se ignora
 }
 
-// -- correr: reenviar el stdout del hijo tal cual (no se combina) -------
-function correr(momento, input) {
-  const reglas = reglasDe(momento, 'correr');
+// -- Ejecutar: reenviar el stdout del hijo tal cual (no se combina) -------
+function ejecutarClase(momento, input) {
+  const reglas = reglasDe(momento, 'ejecutar');
   if (!reglas.length) return false;
   for (const r of reglas) {
     const out = ejecutar(r, input);
@@ -2725,10 +2729,10 @@ process.stdin.on('end', () => {
 
   const ev = data.hook_event_name === 'PreToolUse' ? 'PreToolUse' : 'UserPromptSubmit';
 
-  // clase `correr` primero (SessionStart): ejecuta y reenvia; no se combina.
-  try { if (correr(momento, input)) return process.exit(0); } catch (e) { /* sigue */ }
+  // clase `Ejecutar` primero (SessionStart): ejecuta y reenvia; no se combina.
+  try { if (ejecutarClase(momento, input)) return process.exit(0); } catch (e) { /* sigue */ }
 
-  // clase `bloquear`: si alguna frena, se emite el deny solo y no se sigue.
+  // clase `Bloquear`: si alguna frena, se emite el deny solo y no se sigue.
   let medido = { contexto: '' };
   try { medido = bloquear(momento, input); } catch (e) { medido = { contexto: '' } }
   if (medido.deny) {
@@ -2737,7 +2741,7 @@ process.stdin.on('end', () => {
     return process.exit(0);
   }
 
-  // clase `inyectar` (cada turno / al escribir), combinada con lo que midio `bloquear`.
+  // clase `Inyectar` (cada turno / al escribir), combinada con lo que midio `bloquear`.
   let ctx = '';
   try { ctx = construir(momento); } catch (e) { ctx = ''; }   // ante error, no romper el turno
   if (medido.contexto) ctx = ctx ? ctx + '\n' + medido.contexto : medido.contexto;
@@ -3548,7 +3552,6 @@ function problemasDeIndices(idxs, manifiestoTxt) {
 const root = path.resolve(process.argv.slice(2).find(a => !a.startsWith('--')) || '.claude/conducta');
 const quiet = process.argv.includes('--quiet');
 
-const CLASES = ['inyectar', 'correr', 'bloquear'];      // las tres clases de accion, cerradas
 const ESTADOS = ['vigente', 'pendiente', 'obsoleto'];
 
 // -- parseo de tablas markdown ------------------------------------------
@@ -3584,6 +3587,22 @@ else {
   else for (const f of filas) momentos.set(f.momento.toLowerCase(), f.disponibilidad.toLowerCase());
 }
 
+// -- vocabulario de clases ----------------------------------------------
+// La lista vivia escrita a mano aca; ahora sale de CLASES.md, para que el dato y su significado
+// no queden en dos lugares que nada sincroniza. Si el archivo falta —Agente Desplegado sin
+// nivelar— se cae a las tres de siempre en vez de dar por invalida toda regla.
+const clasPath = path.join(root, 'CLASES.md');
+let CLASES = ['inyectar', 'ejecutar', 'bloquear'];
+if (fs.existsSync(clasPath)) {
+  const { cols, filas } = filasTabla(fs.readFileSync(clasPath, 'utf8'), ['clase', 'disponibilidad']);
+  if (!cols) problemas.estructura.push('CLASES.md: no se encontro la tabla (columnas Clase, Disponibilidad)');
+  else {
+    const leidas = filas.map(f => f.clase.toLowerCase()).filter(Boolean);
+    if (leidas.length) CLASES = leidas;
+    else problemas.estructura.push('CLASES.md: la tabla no tiene ninguna clase');
+  }
+}
+
 // -- registro de reglas -------------------------------------------------
 // Las reglas se reparten entre uno o dos Indices (uno por origen) y el repartidor los lee a todos:
 // mirar uno solo dejaria las reglas del otro sin validar, calladas.
@@ -3592,11 +3611,15 @@ const maniPath = path.join(root, 'MANIFIESTO.md');
 problemas.indices.push(...problemasDeIndices(indices, fs.existsSync(maniPath) ? fs.readFileSync(maniPath, 'utf8') : null));
 if (!indices.length) problemas.estructura.push('falta el Indice de reglas (INDICE.md)');
 for (const idx of indices) {
-  const requeridas = ['regla', 'momento', 'clase', 'contenido', 'estado'];
+  // La columna del nombre es `Nombre` desde que el registro tomo el nucleo; `Regla` es la forma
+  // vieja, que se acepta mientras haya Agentes Desplegados sin nivelar. Sin ninguna de las dos
+  // no se lee una sola fila y el registro entero se valida en verde sin validar nada.
+  const nombreCol = /^\|[^\n]*\bnombre\b/mi.test(idx.texto) ? 'nombre' : 'regla';
+  const requeridas = [nombreCol, 'momento', 'clase', 'contenido', 'estado'];
   const { cols, filas } = filasTabla(idx.texto, requeridas);
   if (!cols) { problemas.estructura.push(`${idx.nombre}: no se encontro la tabla (columnas ${requeridas.join(', ')})`); continue; }
   for (const f of filas) {
-    const regla = f.regla || '(sin nombre)';
+    const regla = f[nombreCol] || '(sin nombre)';
     const momento = f.momento.toLowerCase(), clase = f.clase.toLowerCase(), estado = f.estado.toLowerCase();
     if (!momentos.has(momento)) problemas.momentoInexistente.push(`"${regla}" -> momento "${f.momento}" no esta en MOMENTOS.md`);
     if (!CLASES.includes(clase)) problemas.claseInvalida.push(`"${regla}" -> clase "${f.clase}" (validas: ${CLASES.join('/')})`);
@@ -4339,12 +4362,11 @@ Relacionado: [[flujo-planes]], [[base-conocimiento]].
 
 El subsistema `conducta` asegura comportamientos del tipo **"cuando hagas X, asegurate de Y"**: ata **momentos** del flujo a **acciones**. Vive en `.claude/conducta/`:
 
-- `INDICE.md` e `INDICE-LOCAL.md` — el **registro de reglas**: cada fila ata un momento a una acción (`Regla | Momento | Clase | Contenido | Estado`). Separado por origen en **dos archivos**, cada uno con su frontmatter: `INDICE.md` (`origen: agente-multiproposito`, el nivelador lo reemplaza entero) e `INDICE-LOCAL.md` (`origen: agente-desplegado`, lo suma cada repo; el nivelador no lo abre). El repartidor lee los dos.
+- `INDICE.md` e `INDICE-LOCAL.md` — el **registro de reglas**: cada fila ata un momento a una acción (`Código | Nombre | Descripción | Momento | Clase | Contenido | Estado | Detalle`). Separado por origen en **dos archivos**, cada uno con su frontmatter: `INDICE.md` (`origen: agente-multiproposito`, el nivelador lo reemplaza entero) e `INDICE-LOCAL.md` (`origen: agente-desplegado`, lo suma cada repo; el nivelador no lo abre). El repartidor lee los dos.
 - `MOMENTOS.md` — el **vocabulario de momentos**: un momento es un **evento de hook + una condición que la máquina evalúa sin juicio** (`cada turno` = `UserPromptSubmit`; `al escribir` = `PreToolUse` sobre un `.md` de **cualquier parte del repo** salvo `tmp/`; `al cerrar tarea` = `Stop`, aún sin repartidor).
-- `establecer-conducta/` — el **hook repartidor**: un mismo script sirve a varios eventos; resuelve qué momento realiza el evento que lo disparó, lee el registro **vivo** y despacha las reglas `vigente` de ese momento según su clase, **combinando** el texto de las `inyectar` con lo que midan las `bloquear`. Agregar o cambiar una regla **no toca el hook**.
+- `CLASES.md` — el **vocabulario de clases**: qué hace el repartidor con la regla. `Inyectar` (el agente lee un texto y actúa con su juicio) · `Ejecutar` (una Herramienta lo resuelve sin juicio) · `Bloquear` (se frena la acción; solo donde Y es sin juicio y el falso positivo es imposible). El lint lo lee para validar la columna `Clase`. **No es configurable**: agregar una fila no hace que el repartidor la soporte.
+- `establecer-conducta/` — el **hook repartidor**: un mismo script sirve a varios eventos; resuelve qué momento realiza el evento que lo disparó, lee el registro **vivo** y despacha las reglas `vigente` de ese momento según su clase, **combinando** el texto de las `Inyectar` con lo que midan las `Bloquear`. Agregar o cambiar una regla **no toca el hook**.
 - `lint-conducta/` — valida que toda regla apunte a un momento existente, con clase/estado válidos, y que ninguna regla `vigente` cuelgue de un momento sin repartidor.
-
-**Clases de acción:** `inyectar` (el agente lee un texto y actúa con su juicio) · `correr` (una Herramienta lo resuelve sin juicio) · `bloquear` (se frena la acción; solo donde Y es sin juicio y el falso positivo es imposible).
 
 **Why:** una regla cargada al arranque **se recita, no se obedece** (conocimiento `modos-de-falla-ante-reglas-escritas`). El aporte de conducta es entregar la regla **en el momento** en que hace falta, no al inicio de la sesión — por eso el registro **NO se carga siempre** y el agente **no lo consulta a mano**: lo entrega el hook cerca del punto de acción.
 
@@ -4411,7 +4433,7 @@ Relacionado: [[flujo-planes]].
 ````markdown
 # Conducta — manifiesto de subsistema
 
-El subsistema `conducta` asegura comportamientos del tipo "cuando hagas X, asegurate de Y": ata **momentos** del flujo a **acciones** (inyectar un texto, correr una Herramienta, bloquear). Sus momentos viven en `MOMENTOS.md` y el hook `establecer-conducta/` entrega las reglas de sus dos registros. Modelo completo en `README.md`.
+El subsistema `conducta` asegura comportamientos del tipo "cuando hagas X, asegurate de Y": ata **momentos** del flujo a **acciones** de una **clase** — `Inyectar` un texto, `Ejecutar` una Herramienta, `Bloquear` la acción. Los momentos viven en `MOMENTOS.md`, las clases en `CLASES.md`, y el hook `establecer-conducta/` entrega las reglas de sus dos registros. Modelo completo en `README.md`.
 
 Al escribir un `.md` de cualquier parte del repo, el control `detectar-terminologia-vetada/` **rechaza** el texto con un término vetado sin uso legítimo posible e **informa** los que dependen del significado: citarlo no se frena, usarlo sí.
 
@@ -4432,36 +4454,40 @@ node .claude/conducta/lint-conducta/lint-conducta.js
 ---
 indice: Reglas de conducta
 origen: agente-multiproposito
-columnas: [Regla, Momento, Clase, Contenido, Estado]
+columnas: [Código, Nombre, Descripción, Momento, Clase, Contenido, Estado, Detalle]
+descripcion: qué asegura la regla, en una línea
 ---
 
 # Reglas de conducta
 
-Registro de las **reglas de conducta** del repo: cada fila ata un **momento** (del vocabulario en `MOMENTOS.md`) a una **acción**, para asegurar "cuando hagas X, asegurate de Y". El hook repartidor `establecer-conducta/` lee este registro **vivo** en cada momento y entrega la regla que corresponde — agregar o cambiar una regla **no toca la config del hook**. Una fila por regla.
+Registro de las **reglas de conducta** del repo: cada fila ata un **momento** (del vocabulario en `MOMENTOS.md`) a una **acción** de una **clase** (del vocabulario en `CLASES.md`), para asegurar "cuando hagas X, asegurate de Y". El hook repartidor `establecer-conducta/` lee este registro **vivo** en cada momento y entrega la regla que corresponde — agregar o cambiar una regla **no toca la config del hook**. Una fila por regla.
 
-- **Regla** — qué asegura, en una frase (verbo).
+- **Código** — `Base-NNNN` o `Local-NNNN` según el origen. Se asigna al crear la entrada y no se reusa.
+- **Nombre** — qué asegura, en una frase con verbo.
+- **Descripción** — para qué existe la regla, en una línea. No es el texto que se entrega: eso es el `Contenido`.
 - **Momento** — a qué momento se ata; tiene que existir en `MOMENTOS.md`.
-- **Clase** — `inyectar` (el agente lee un texto y actúa con su juicio) · `correr` (una Herramienta lo resuelve sin juicio) · `bloquear` (se frena la acción; solo donde Y es sin juicio y el falso positivo es imposible).
-- **Contenido** — el texto a inyectar (`inyectar`), la Herramienta a correr (`correr`) o la condición de bloqueo (`bloquear`).
+- **Clase** — `Inyectar` (el agente lee un texto y actúa con su juicio) · `Ejecutar` (una Herramienta lo resuelve sin juicio) · `Bloquear` (se frena la acción; solo donde Y es sin juicio y el falso positivo es imposible). Definidas en `CLASES.md`.
+- **Contenido** — el dato que el hook consume: el texto a inyectar (`Inyectar`) o la ruta del programa a correr (`Ejecutar`, `Bloquear`).
 - **Estado** — `vigente` (se entrega) · `pendiente` (declarada, su momento aún no tiene repartidor) · `obsoleto` (no se entrega; se puede depurar).
+- **Detalle** — `—`, o la página donde se conceptualiza la regla.
 
-> **Origen del contenido:** las reglas se separan por origen en **dos archivos**, y cada uno lo declara en su frontmatter — este (`origen: agente-multiproposito`, las manda el Agente Multipropósito; el nivelador `amp:actualizar` lo reemplaza entero al poner al día un Agente con Propósito) e [`INDICE-LOCAL.md`](INDICE-LOCAL.md) (`origen: agente-desplegado`, las suma cada repo; el nivelador no lo abre). El repartidor lee los dos. Hoy tienen repartidor los momentos `al arrancar la sesión` (`SessionStart`, clase `correr`), `cada turno` (`UserPromptSubmit`) y `al escribir` (`PreToolUse`); la regla de momento `al cerrar tarea` (`Stop`) queda en `pendiente` (honesta, sin entregar) hasta que se sume su repartidor.
+> **Origen del contenido:** las reglas se separan por origen en **dos archivos**, y cada uno lo declara en su frontmatter — este (`origen: agente-multiproposito`, las manda el Agente Multipropósito; el nivelador `amp:actualizar` lo reemplaza entero al poner al día un Agente con Propósito) e [`INDICE-LOCAL.md`](INDICE-LOCAL.md) (`origen: agente-desplegado`, las suma cada repo; el nivelador no lo abre). El repartidor lee los dos. Hoy tienen repartidor los momentos `al arrancar la sesión` (`SessionStart`, clase `Ejecutar`), `cada turno` (`UserPromptSubmit`) y `al escribir` (`PreToolUse`); la regla de momento `al cerrar tarea` (`Stop`) queda en `pendiente` (honesta, sin entregar) hasta que se sume su repartidor.
 
 ## Reglas del Agente Multipropósito
 
 Las que instala el Agente Multipropósito. El nivelador `amp:actualizar` reemplaza **este archivo entero** al poner al día un Agente con Propósito; nunca abre el del Agente Desplegado.
 
-| Regla | Momento | Clase | Contenido | Estado |
-|-------|---------|-------|-----------|--------|
-| Mostrar la Pantalla de bienvenida al arrancar | al arrancar la sesión | correr | conducta/mostrar-pantalla-bienvenida/mostrar-pantalla-bienvenida.js --hook | vigente |
-| Respetar las preferencias cargadas | cada turno | inyectar | Antes de responder, respetá las preferencias ya cargadas (PREFERENCIAS.md): en particular fechas en formato argentino al conversar, ejemplos del dominio del repo (nunca deportivos) y temporales en `.claude/tmp/`. | vigente |
-| No acuñar terminología del dominio | cada turno | inyectar | No acuñes términos del dominio (usá el glosario, proponé en Propuestos, nunca uses vetados). Antes de una palabra de origen inglés, aplicá el test: ¿la diría tal cual un desarrollador hispanohablante en una charla en español (`commit`, `deploy`, `parsear`, `hardcodear`, `bug`) o es una metáfora o modismo del inglés (`churn`, `wedge`, `dogfooding`, `staleness`, `feasibility`)? Lo segundo → traducilo, le resulta raro al usuario. Ante la duda, traducí. | vigente |
-| Preguntar antes de redefinir o remover algo canónico | cada turno | inyectar | Antes de **remover, renombrar o redefinir** algo canónico (una definición del glosario, una decisión) o con dependientes: proponé y esperá la ratificación del usuario. El agente propone; ratificar, vetar y redefinir son potestad del usuario. Aplica también a **definiciones y remociones**, no solo al alta de un término. | vigente |
-| Contrastar contra la sabiduría del repo al escribir | al escribir | inyectar | Acabás de escribir un `.md`. Si es de `.claude/`, contrastalo contra el test de demarcación (¿va en este subsistema?); si es de lo que el repo publica, acordate de que ese texto lo hereda quien lo instale. En los dos casos: ¿contradice algo asentado?, ¿usaste un término vetado o inventado? Corregí si hace falta. | vigente |
-| Frenar la terminología vetada antes de que se escriba | al escribir | bloquear | conducta/detectar-terminologia-vetada/detectar-terminologia-vetada.js | vigente |
-| Mantener el archivo de estado antes de informar | cada turno | inyectar | Si la tarea es exploratoria y tiene varias variables, actualizá su único archivo de estado antes de informar un resultado; al retomar, leelo primero. | vigente |
-| Aplicar el estilo de commits antes de confirmar | al crear un commit | inyectar | Antes de crear un commit o redactar una descripción de PR, leé `preferencias/estilo-commits.md` y verificá el texto contra esas reglas. | pendiente |
-| Registrar en el subsistema cuando algo cambia | al cerrar tarea | inyectar | Si en esta tarea cambió algo que otro subsistema debe saber (decisión, conocimiento, semántica, herramientas, conducta o catálogo de subsistemas), registralo antes de cerrar. | pendiente |
+| Código | Nombre | Descripción | Momento | Clase | Contenido | Estado | Detalle |
+|--------|--------|-------------|---------|-------|-----------|--------|---------|
+| Base-0001 | Mostrar la Pantalla de bienvenida al arrancar | Le da al usuario el estado del repo apenas abre la sesión: Título, Propósito, métricas de cada subsistema y estado de lint | al arrancar la sesión | Ejecutar | conducta/mostrar-pantalla-bienvenida/mostrar-pantalla-bienvenida.js --hook | vigente | — |
+| Base-0002 | Respetar las preferencias cargadas | Recuerda que las preferencias ya están en contexto, y nombra las tres que más se incumplen | cada turno | Inyectar | Antes de responder, respetá las preferencias ya cargadas (PREFERENCIAS.md): en particular fechas en formato argentino al conversar, ejemplos del dominio del repo (nunca deportivos) y temporales en `.claude/tmp/`. | vigente | — |
+| Base-0003 | No acuñar terminología del dominio | Frena la deriva terminológica antes de que se escriba, con el test que decide si una palabra de origen inglés pasa o se traduce | cada turno | Inyectar | No acuñes términos del dominio (usá el glosario, proponé en Propuestos, nunca uses vetados). Antes de una palabra de origen inglés, aplicá el test: ¿la diría tal cual un desarrollador hispanohablante en una charla en español (`commit`, `deploy`, `parsear`, `hardcodear`, `bug`) o es una metáfora o modismo del inglés (`churn`, `wedge`, `dogfooding`, `staleness`, `feasibility`)? Lo segundo → traducilo, le resulta raro al usuario. Ante la duda, traducí. | vigente | — |
+| Base-0004 | Preguntar antes de redefinir o remover algo canónico | Reserva al usuario la potestad de ratificar, vetar y redefinir; el agente solo propone | cada turno | Inyectar | Antes de **remover, renombrar o redefinir** algo canónico (una definición del glosario, una decisión) o con dependientes: proponé y esperá la ratificación del usuario. El agente propone; ratificar, vetar y redefinir son potestad del usuario. Aplica también a **definiciones y remociones**, no solo al alta de un término. | vigente | — |
+| Base-0005 | Contrastar contra la sabiduría del repo al escribir | Confronta el `.md` recién escrito con el test de demarcación, lo ya asentado y la terminología | al escribir | Inyectar | Acabás de escribir un `.md`. Si es de `.claude/`, contrastalo contra el test de demarcación (¿va en este subsistema?); si es de lo que el repo publica, acordate de que ese texto lo hereda quien lo instale. En los dos casos: ¿contradice algo asentado?, ¿usaste un término vetado o inventado? Corregí si hace falta. | vigente | — |
+| Base-0006 | Frenar la terminología vetada antes de que se escriba | Rechaza la escritura que usa un término sin uso legítimo posible, e informa los que dependen del significado | al escribir | Bloquear | conducta/detectar-terminologia-vetada/detectar-terminologia-vetada.js | vigente | — |
+| Base-0007 | Mantener el archivo de estado antes de informar | Evita que una tarea exploratoria pierda lo medido entre una corrida y la siguiente | cada turno | Inyectar | Si la tarea es exploratoria y tiene varias variables, actualizá su único archivo de estado antes de informar un resultado; al retomar, leelo primero. | vigente | — |
+| Base-0008 | Aplicar el estilo de commits antes de confirmar | Lleva la convención al momento en que se redacta el mensaje, no al de leerla | al crear un commit | Inyectar | Antes de crear un commit o redactar una descripción de PR, leé `preferencias/estilo-commits.md` y verificá el texto contra esas reglas. | pendiente | — |
+| Base-0009 | Registrar en el subsistema cuando algo cambia | Cierra la tarea derivando a su subsistema lo que otro debe saber | al cerrar tarea | Inyectar | Si en esta tarea cambió algo que otro subsistema debe saber (decisión, conocimiento, semántica, herramientas, conducta o catálogo de subsistemas), registralo antes de cerrar. | pendiente | — |
 ````
 
 ### `.claude/conducta/INDICE-LOCAL.md`
@@ -4472,15 +4498,16 @@ Nace **declarado y sin filas**, no vacío: el manifiesto que se instala lo nombr
 ---
 indice: Reglas de conducta del Agente Desplegado
 origen: agente-desplegado
-columnas: [Regla, Momento, Clase, Contenido, Estado]
+columnas: [Código, Nombre, Descripción, Momento, Clase, Contenido, Estado, Detalle]
+descripcion: qué asegura la regla, en una línea
 ---
 
 # Reglas de conducta del Agente Desplegado
 
 Las que este repo suma para su Propósito. El nivelador no toca este archivo; el repartidor `establecer-conducta/` sí lo lee. Las columnas y la convención completa están en [`INDICE.md`](INDICE.md).
 
-| Regla | Momento | Clase | Contenido | Estado |
-|-------|---------|-------|-----------|--------|
+| Código | Nombre | Descripción | Momento | Clase | Contenido | Estado | Detalle |
+|--------|--------|-------------|---------|-------|-----------|--------|---------|
 ````
 
 ### `.claude/conocimiento/INDICE.md`
@@ -4512,6 +4539,28 @@ Convención completa en el [README del subsistema](README.md).
 
 | Código | Nombre | Descripción | Detalle |
 |---|---|---|---|
+````
+
+### `.claude/conducta/CLASES.md`
+
+````markdown
+# Clases de acción de conducta
+
+Vocabulario de las **clases** válidas para una regla de conducta. La clase dice **qué hace el hook repartidor con la regla** cuando llega su momento: las tres pasan por un hook — el hook es el mecanismo de entrega, no una clase. El `lint-conducta` lee este archivo para validar que toda regla use una clase existente, en vez de tener la lista escrita a mano en su código.
+
+- **Clase** — nombre canónico, en español corriente.
+- **Qué es el Contenido** — qué se escribe en la celda `Contenido` de la regla.
+- **Qué hace el hook** — cómo la despacha el repartidor.
+- **A dónde va el resultado** — dónde termina.
+- **Disponibilidad** — `activo` (hay repartidor que la entrega) o las salvedades por agente.
+
+| Clase | Qué es el Contenido | Qué hace el hook | A dónde va el resultado | Disponibilidad |
+|-------|---------------------|------------------|-------------------------|----------------|
+| Inyectar | texto fijo, escrito en el Índice | lo emite como `additionalContext` | al contexto del modelo; el usuario no lo ve | activo |
+| Ejecutar | la ruta de un programa, con sus flags | lo ejecuta y reenvía su salida tal cual | a la terminal del usuario (hoy el `systemMessage` de la Pantalla de bienvenida); no entra al contexto | activo |
+| Bloquear | la ruta de un programa, con sus flags | lo ejecuta y **lee** su respuesta | si trae `deny`, frena la acción; si trae `additionalContext`, se combina con las reglas `Inyectar` del mismo momento | activo en Claude Code; en Codex el `deny` todavía no frena (bug abierto del CLI), así que ahí degrada a aviso |
+
+> **Las clases no son configurables por repo.** A diferencia de los estados de `planes`, agregar una fila acá no hace que el repartidor la soporte: las tres están implementadas en `establecer-conducta/`. El archivo existe para que la lista y su significado vivan en un solo lugar, y para que el lint valide contra él.
 ````
 
 ### `.claude/conducta/MOMENTOS.md`

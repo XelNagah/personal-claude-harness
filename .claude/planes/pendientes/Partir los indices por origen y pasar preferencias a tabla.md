@@ -263,11 +263,22 @@ Por qué así:
 
       Los cuatro ubican ahora por nombre de columna o por lo que el archivo declara de sí mismo, y aceptan la forma vieja mientras haya Agentes Desplegados sin nivelar. Versiones: `amp-semantica` 0.7.0, `amp-conducta` 0.4.0.
 
-      **Quedan tres Índices, y los tres piden contenido nuevo, no solo cambio de forma:**
+      **Los que faltaban pedían contenido nuevo, no solo cambio de forma:**
 
       - `decisiones` — 43 filas que necesitan un **Nombre** cada una, que hoy no existe. Es texto nuevo en un registro canónico: se muestra antes de escribirlo.
       - `planes` — 80 filas y la migración de `Notas` a los archivos de plan, verificando en cada una qué parte ya está en el archivo.
-      - `conducta` ×2 — 9 filas que necesitan una **Descripción** nueva, más el renombre de las clases y `CLASES.md`.
+      **`conducta` hecho el 30/07/2026.** Los dos Índices a ocho columnas (`Código | Nombre | Descripción | Momento | Clase | Contenido | Estado | Detalle`), nueve reglas `Base-0001`–`Base-0009` con su `Descripción` nueva, y las clases renombradas y capitalizadas: `Inyectar` · `Ejecutar` · `Bloquear`. Estrena `CLASES.md`, simétrico con `MOMENTOS.md`, que el lint lee en vez de tener la lista escrita a mano — con la salvedad escrita de que **no es configurable**: agregar una fila no hace que el repartidor la soporte.
+
+      **Dos roturas más del mismo tipo, y una es del repartidor:**
+
+      - **`establecer-conducta` ubicaba su tabla buscando el encabezado `regla`.** Al pasar a `Nombre` no matcheaba, no leía una sola fila y **dejaba de entregar todas las reglas**, sin error. Es la segunda vez en la sesión que el mecanismo que reparte conducta se cae en silencio.
+      - **`lint-conducta` buscaba la misma columna** y habría reportado «no se encontró la tabla», que al menos grita.
+
+      Los dos aceptan `Nombre` y `Regla` mientras haya Agentes Desplegados sin nivelar. **Nueve controles probados contra un caso bueno y uno malo**, incluidos tres sobre el repartidor: que entregue el momento `cada turno`, que entregue la clase `Ejecutar` en `SessionStart`, y que lea también el Índice del Agente Desplegado.
+
+      Versión: `amp-conducta` 0.4.0 (ya subida con `semantica`).
+
+      **Quedan dos Índices:**
    4. `conducta`: renombrar la clase `correr` a `Ejecutar`, capitalizar las tres y mudarlas a `CLASES.md`, que el lint pasa a leer en vez de la lista escrita a mano en `lint-conducta.js:103`.
    5. `planes`: migrar las 80 filas, verificando en cada una qué parte de `Notas` ya está en el archivo del plan.
    6. `semantica`: `Significado vetado` a `Significado Farlopa`, y `mostrar-pantalla-bienvenida.js:160` pasa a distinguir los registros por el `indice:` del frontmatter.

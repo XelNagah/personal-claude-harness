@@ -100,7 +100,6 @@ function problemasDeIndices(idxs, manifiestoTxt) {
 const root = path.resolve(process.argv.slice(2).find(a => !a.startsWith('--')) || '.claude/conducta');
 const quiet = process.argv.includes('--quiet');
 
-const CLASES = ['inyectar', 'correr', 'bloquear'];      // las tres clases de accion, cerradas
 const ESTADOS = ['vigente', 'pendiente', 'obsoleto'];
 
 // -- parseo de tablas markdown ------------------------------------------
@@ -136,6 +135,22 @@ else {
   else for (const f of filas) momentos.set(f.momento.toLowerCase(), f.disponibilidad.toLowerCase());
 }
 
+// -- vocabulario de clases ----------------------------------------------
+// La lista vivia escrita a mano aca; ahora sale de CLASES.md, para que el dato y su significado
+// no queden en dos lugares que nada sincroniza. Si el archivo falta —Agente Desplegado sin
+// nivelar— se cae a las tres de siempre en vez de dar por invalida toda regla.
+const clasPath = path.join(root, 'CLASES.md');
+let CLASES = ['inyectar', 'ejecutar', 'bloquear'];
+if (fs.existsSync(clasPath)) {
+  const { cols, filas } = filasTabla(fs.readFileSync(clasPath, 'utf8'), ['clase', 'disponibilidad']);
+  if (!cols) problemas.estructura.push('CLASES.md: no se encontro la tabla (columnas Clase, Disponibilidad)');
+  else {
+    const leidas = filas.map(f => f.clase.toLowerCase()).filter(Boolean);
+    if (leidas.length) CLASES = leidas;
+    else problemas.estructura.push('CLASES.md: la tabla no tiene ninguna clase');
+  }
+}
+
 // -- registro de reglas -------------------------------------------------
 // Las reglas se reparten entre uno o dos Indices (uno por origen) y el repartidor los lee a todos:
 // mirar uno solo dejaria las reglas del otro sin validar, calladas.
@@ -144,11 +159,15 @@ const maniPath = path.join(root, 'MANIFIESTO.md');
 problemas.indices.push(...problemasDeIndices(indices, fs.existsSync(maniPath) ? fs.readFileSync(maniPath, 'utf8') : null));
 if (!indices.length) problemas.estructura.push('falta el Indice de reglas (INDICE.md)');
 for (const idx of indices) {
-  const requeridas = ['regla', 'momento', 'clase', 'contenido', 'estado'];
+  // La columna del nombre es `Nombre` desde que el registro tomo el nucleo; `Regla` es la forma
+  // vieja, que se acepta mientras haya Agentes Desplegados sin nivelar. Sin ninguna de las dos
+  // no se lee una sola fila y el registro entero se valida en verde sin validar nada.
+  const nombreCol = /^\|[^\n]*\bnombre\b/mi.test(idx.texto) ? 'nombre' : 'regla';
+  const requeridas = [nombreCol, 'momento', 'clase', 'contenido', 'estado'];
   const { cols, filas } = filasTabla(idx.texto, requeridas);
   if (!cols) { problemas.estructura.push(`${idx.nombre}: no se encontro la tabla (columnas ${requeridas.join(', ')})`); continue; }
   for (const f of filas) {
-    const regla = f.regla || '(sin nombre)';
+    const regla = f[nombreCol] || '(sin nombre)';
     const momento = f.momento.toLowerCase(), clase = f.clase.toLowerCase(), estado = f.estado.toLowerCase();
     if (!momentos.has(momento)) problemas.momentoInexistente.push(`"${regla}" -> momento "${f.momento}" no esta en MOMENTOS.md`);
     if (!CLASES.includes(clase)) problemas.claseInvalida.push(`"${regla}" -> clase "${f.clase}" (validas: ${CLASES.join('/')})`);

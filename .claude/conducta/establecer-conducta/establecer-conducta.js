@@ -5,32 +5,32 @@
 // Agregar/cambiar una regla NO toca este script: lee el registro en cada disparo.
 //
 // Eventos que realiza hoy (la realizacion del momento es agente-especifica):
-//   - UserPromptSubmit         -> momento `cada turno`            (sin condicion)      [clase inyectar]
+//   - UserPromptSubmit         -> momento `cada turno`            (sin condicion)      [clase Inyectar]
 //   - PreToolUse Write|Edit|apply_patch de un .md -> momento `al escribir` (condicion sin juicio)
-//                                                   [clases inyectar + bloquear, combinadas]
-//   - SessionStart             -> momento `al arrancar la sesion` (sin condicion)     [clase correr]
+//                                                   [clases Inyectar + Bloquear, combinadas]
+//   - SessionStart             -> momento `al arrancar la sesion` (sin condicion)     [clase Ejecutar]
 // El vocabulario de momentos vive en ../MOMENTOS.md; aca vive COMO se realiza cada uno.
 //
 // Tres clases de despacho:
-//   - inyectar: arma un texto y lo emite como additionalContext (llega al modelo).
-//   - correr:   ejecuta la Herramienta cuya ruta es el Contenido de la regla y REENVIA su stdout
+//   - Inyectar: arma un texto y lo emite como additionalContext (llega al modelo).
+//   - Ejecutar: ejecuta la Herramienta cuya ruta es el Contenido de la regla y REENVIA su stdout
 //               tal cual (ej. la Pantalla de bienvenida emite {systemMessage} en SessionStart:
 //               ese campo es el unico que escribe en la terminal del usuario). No se combina: es para
 //               momentos donde la salida del hijo ES la respuesta del hook.
-//   - bloquear: ejecuta la Herramienta cuya ruta es el Contenido y LEE su respuesta. Si trae
+//   - Bloquear: ejecuta la Herramienta cuya ruta es el Contenido y LEE su respuesta. Si trae
 //               permissionDecision 'deny', se emite ese deny solo (frena la accion; el
 //               additionalContext se descartaria igual). Si trae additionalContext, se COMBINA
-//               con el texto de las reglas `inyectar` del mismo momento.
+//               con el texto de las reglas `Inyectar` del mismo momento.
 //
-// Combinacion: en un mismo momento conviven reglas `inyectar` (texto fijo, vive en el registro y lo
-// nivela el harness) y `bloquear` (datos medidos, los produce un programa). Se emiten juntas, una
-// abajo de la otra. `correr` sigue sin combinarse (su salida no es additionalContext).
+// Combinacion: en un mismo momento conviven reglas `Inyectar` (texto fijo, vive en el registro y lo
+// nivela el harness) y `Bloquear` (datos medidos, los produce un programa). Se emiten juntas, una
+// abajo de la otra. `Ejecutar` sigue sin combinarse (su salida no es additionalContext).
 //
 // Contrato de hook (conocimiento hooks-claude-code): stdin = JSON del harness; stdout = JSON.
 //   UserPromptSubmit/PreToolUse: { hookSpecificOutput: { hookEventName, additionalContext } }
 //     (PreToolUse sin permissionDecision => 'defer': inyecta y deja el flujo de permisos intacto,
 //     verificado 2026-07-23; NO auto-aprueba. additionalContext llega junto al resultado de la tool.)
-//   SessionStart: lo que emita la Herramienta `correr` (ej. { systemMessage: <caja> }, visible al usuario).
+//   SessionStart: lo que emita la Herramienta de la clase `Ejecutar` (ej. { systemMessage: <caja> }, visible al usuario).
 // Nunca rompe el turno: ante cualquier error o registro vacio, sale 0 sin emitir nada.
 //
 // Uso a mano (probar): echo {"hook_event_name":"SessionStart"} | node establecer-conducta.js
@@ -99,7 +99,11 @@ function leerReglas(txt) {
     const celdas = l.split('|').slice(1, -1).map(c => c.trim());
     const norm = celdas.map(c => c.toLowerCase().replace(/\*/g, ''));
     if (!cols) {
-      if (norm.includes('regla') && norm.includes('momento')) {
+      // La columna del nombre es `Nombre` desde que el registro tomo el nucleo; `Regla` es la
+      // forma vieja y se acepta mientras haya Agentes Desplegados sin nivelar. Sin ninguna de las
+      // dos el encabezado no matchea, no se lee una sola fila y el repartidor deja de entregar
+      // reglas SIN emitir error: es el fallo silencioso que motivo declarar las columnas.
+      if ((norm.includes('nombre') || norm.includes('regla')) && norm.includes('momento')) {
         cols = { momento: norm.indexOf('momento'), clase: norm.indexOf('clase'),
                  contenido: norm.indexOf('contenido'), estado: norm.indexOf('estado') };
       }
@@ -140,9 +144,9 @@ function ejecutar(regla, input) {
   } catch (e) { return ''; }   // no romper el turno: el hijo fallo, se ignora
 }
 
-// -- correr: reenviar el stdout del hijo tal cual (no se combina) -------
-function correr(momento, input) {
-  const reglas = reglasDe(momento, 'correr');
+// -- Ejecutar: reenviar el stdout del hijo tal cual (no se combina) -------
+function ejecutarClase(momento, input) {
+  const reglas = reglasDe(momento, 'ejecutar');
   if (!reglas.length) return false;
   for (const r of reglas) {
     const out = ejecutar(r, input);
@@ -180,10 +184,10 @@ process.stdin.on('end', () => {
 
   const ev = data.hook_event_name === 'PreToolUse' ? 'PreToolUse' : 'UserPromptSubmit';
 
-  // clase `correr` primero (SessionStart): ejecuta y reenvia; no se combina.
-  try { if (correr(momento, input)) return process.exit(0); } catch (e) { /* sigue */ }
+  // clase `Ejecutar` primero (SessionStart): ejecuta y reenvia; no se combina.
+  try { if (ejecutarClase(momento, input)) return process.exit(0); } catch (e) { /* sigue */ }
 
-  // clase `bloquear`: si alguna frena, se emite el deny solo y no se sigue.
+  // clase `Bloquear`: si alguna frena, se emite el deny solo y no se sigue.
   let medido = { contexto: '' };
   try { medido = bloquear(momento, input); } catch (e) { medido = { contexto: '' } }
   if (medido.deny) {
@@ -192,7 +196,7 @@ process.stdin.on('end', () => {
     return process.exit(0);
   }
 
-  // clase `inyectar` (cada turno / al escribir), combinada con lo que midio `bloquear`.
+  // clase `Inyectar` (cada turno / al escribir), combinada con lo que midio `bloquear`.
   let ctx = '';
   try { ctx = construir(momento); } catch (e) { ctx = ''; }   // ante error, no romper el turno
   if (medido.contexto) ctx = ctx ? ctx + '\n' + medido.contexto : medido.contexto;
