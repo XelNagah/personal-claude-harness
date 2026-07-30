@@ -23,8 +23,8 @@ Segura de re-correr: este es el modo de **"nivelar"** repos que ya tienen partes
   | `herramientas/INDICE.md` | una fila por Herramienta instalada del Agente Multipropósito (hoy `actualizar-plugins`) |
   | los cuatro Índices del Agente Desplegado | `subsistemas/SUBSISTEMAS-LOCAL.md`, `preferencias/PREFERENCIAS-LOCAL.md`, `herramientas/INDICE-LOCAL.md` y `conducta/INDICE-LOCAL.md` **existen**, declarados y sin filas; si ya están, se preservan enteros |
   | `.claude/settings.json` y `.codex/hooks.json` → `hooks` | el repartidor `establecer-conducta` en los **tres** eventos, en **los dos** archivos: `SessionStart`, `UserPromptSubmit`, `PreToolUse` con matcher `Write\|Edit` — **por merge**, sin sacar los hooks que ya estén |
-  | `AGENTS.md` → `## Subsistemas` | una línea `@.claude/<sub>/MANIFIESTO.md` por subsistema instalado |
-  | `AGENTS.md` → `## Preferencias` | una línea de importación por cada Índice de preferencias (hoy dos) |
+  | `AGENTS.md` → `## Subsistemas` | una línea `@.claude/<sub>/MANIFIESTO.md` por subsistema instalado, **`preferencias` incluido**: no tiene sección propia |
+  | `preferencias/MANIFIESTO.md` | importa sus dos Índices, que se cargan siempre. La cadena es `AGENTS.md` → `MANIFIESTO.md` → los dos Índices |
 
   Agregar una fila Base que falta **no es pisar**: lo que no se toca es lo aprendido —las filas del Propósito, las reglas propias, los hooks ajenos—, que convive en el mismo archivo y se preserva entero.
 - **Detectar equivalentes.** Una sección o un Componente de Subsistema puede estar ya con otro título o redacción (de pedidos previos). Buscar por tema, no solo por nombre exacto. Igual → no tocar. Distinto → **no pisar**: reportar divergencia y preguntar antes de reconciliar.
@@ -41,14 +41,16 @@ Segura de re-correr: este es el modo de **"nivelar"** repos que ya tienen partes
 ## Estructura objetivo
 
 ```
-├── AGENTS.md          # punto de entrada: Descripción + Preferencias (@import) + Subsistemas (una sección con 7 @MANIFIESTO)
+├── AGENTS.md          # punto de entrada: Descripción + Subsistemas (una sección con 8 @MANIFIESTO)
 ├── CLAUDE.md          # adaptador para Claude Code: @AGENTS.md
 ├── .codex/
 │   └── hooks.json     # hooks: SessionStart → lint-planes --quiet + establecer-conducta; UserPromptSubmit/PreToolUse → establecer-conducta (Codex CLI; requiere repo de confianza + features.hooks)
 └── .claude/
     ├── settings.json      # hooks: SessionStart → lint-planes --quiet + establecer-conducta; UserPromptSubmit/PreToolUse → establecer-conducta (Claude Code)
     ├── preferencias/
-    │   ├── PREFERENCIAS.md       # Índice del Agente Multipropósito (frontmatter: origen)
+    │   ├── MANIFIESTO.md         # importa los dos Índices (se cargan siempre)
+    │   ├── README.md
+    │   ├── PREFERENCIAS.md       # Índice del Agente Multipropósito (frontmatter: origen, columnas)
     │   ├── PREFERENCIAS-LOCAL.md  # Índice del Agente Desplegado (declarado, sin entradas)
     │   ├── estilo-commits.md
     │   ├── archivo-de-estado.md
@@ -103,7 +105,7 @@ Segura de re-correr: este es el modo de **"nivelar"** repos que ya tienen partes
 ## Flujo de trabajo vigente
 
 0. **Ubicar la raíz.** Si el cwd contiene subproyectos independientes, preguntar en cuál inicializar antes de crear nada.
-1. **preferencias** — asegurar `AGENTS.md` como fuente única y `CLAUDE.md` como adaptador `@AGENTS.md`; instalar `preferencias/PREFERENCIAS.md` y `preferencias/PREFERENCIAS-LOCAL.md` (preservando entero el del Agente Desplegado, o creándolo declarado si no está), `preferencias/estilo-commits.md`, `preferencias/archivo-de-estado.md` y `preferencias/lint-preferencias/` desde PLANTILLA. Asegurar la sección de preferencias y **una línea de importación por cada Índice** en `AGENTS.md`. Reconocer convenciones equivalentes por tema y reportar divergencias sin duplicarlas.
+1. **preferencias** — asegurar `AGENTS.md` como fuente única y `CLAUDE.md` como adaptador `@AGENTS.md`; instalar `preferencias/MANIFIESTO.md`, `preferencias/README.md`, `preferencias/PREFERENCIAS.md` y `preferencias/PREFERENCIAS-LOCAL.md` (preservando entero el del Agente Desplegado, o creándolo declarado si no está), `preferencias/estilo-commits.md`, `preferencias/archivo-de-estado.md` y `preferencias/lint-preferencias/` desde PLANTILLA. Asegurar `@.claude/preferencias/MANIFIESTO.md` en la sección `## Subsistemas` de `AGENTS.md`: **`preferencias` no lleva sección propia**, y sus dos Índices se importan desde su manifiesto. Reconocer convenciones equivalentes por tema y reportar divergencias sin duplicarlas.
 2. **subsistemas** — instalar `subsistemas/MANIFIESTO.md`, `SUBSISTEMAS.md`, `SUBSISTEMAS-LOCAL.md`, `README.md` y `lint-subsistemas/` desde PLANTILLA. Reconciliar `SUBSISTEMAS.md` por fila y preservar entero `SUBSISTEMAS-LOCAL.md`. Asegurar `@.claude/subsistemas/MANIFIESTO.md` en `AGENTS.md`.
 3. **planes** — instalar `README.md`, `MANIFIESTO.md`, `ESTADOS.md`, `PLANES.md`, las tres carpetas de estados y `lint-planes/`; migrar esquemas previos según §Planes. Cablear el lint de arranque en Claude Code y Codex por merge.
 4. **conocimiento** — instalar `README.md`, `MANIFIESTO.md`, `INDICE.md` (declarado, sin páginas) y `lint-conocimiento/`. Migrar documentos que son saber reutilizable, reparar referencias y preservar fuentes crudas. No crear ni usar `memoria/`.

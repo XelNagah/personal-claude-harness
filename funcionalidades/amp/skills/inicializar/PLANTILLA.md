@@ -64,30 +64,16 @@ Las que este repo suma para su Propósito. Siempre en contexto (importado desde 
 |--------|--------|-------------|---------|
 ```
 
-Sección de `AGENTS.md`:
+`preferencias` **no aporta sección propia a `AGENTS.md`**: suma su línea `@.claude/preferencias/MANIFIESTO.md` a la lista de §Subsistemas, como los otros siete, y su manifiesto importa los dos Índices. La cadena queda en tres saltos: `AGENTS.md` → `MANIFIESTO.md` → los dos Índices.
 
-```markdown
-## Preferencias (siempre cargadas)
-
-@.claude/preferencias/PREFERENCIAS.md
-@.claude/preferencias/PREFERENCIAS-LOCAL.md
-
-Al tocar las preferencias, correr el lint estructural **desde la raíz del repo** (chequea los dos archivos por origen + una línea de importación por cada uno):
-
-​```bash
-node .claude/preferencias/lint-preferencias/lint-preferencias.js
-​```
-```
-
-(El prefijo `.claude/` es porque `AGENTS.md` vive en la raíz — la ruta del `@import` es relativa al archivo que importa. Layout legacy con `CLAUDE.md` dentro de `.claude/`: `@preferencias/PREFERENCIAS.md`.)
-
-(El lint `lint-preferencias.js` está más abajo, en §Script — lint-preferencias.)
+(El lint `lint-preferencias.js` está más abajo, en §Script — lint-preferencias. El `MANIFIESTO.md` y el `README.md` del subsistema están en §Componentes de Subsistema que se copian tal cual.)
 
 **Formas anteriores** (para la reconciliación):
 
 - La más vieja eran dos secciones inline en CLAUDE.md — "Preferencias de comunicación" (el primer bullet de Comunicación, como cita) y "Principios de trabajo" (los cuatro bullets). Textualmente iguales → migrar sin preguntar (borrar de CLAUDE.md, dejar el import); con diferencias → las diferencias van a la sección del Agente Desplegado y se reporta.
 - Después vino el par de encabezados `## Base (harness vN)` / `## Adaptaciones de este repo`, con la versión adentro del encabezado. **Los dos se renombran sin preguntar** a `## Preferencias del Agente Multipropósito` y `## Preferencias del Agente Desplegado`, conservando el contenido de cada uno: es renombre de encabezado, no reemplazo de contenido. La versión sale del encabezado y no se traslada a ningún lado — vive en el plugin.
 - Después los dos orígenes vivieron como **dos secciones de un mismo archivo**. Se migran **partiendo el archivo**: la sección del Agente Desplegado pasa a `PREFERENCIAS-LOCAL.md` **con su contenido intacto**, los dos archivos estrenan frontmatter y `AGENTS.md` gana la segunda línea de importación. Si esa sección estaba vacía, el archivo nace igual, declarado y sin entradas.
+- Y hasta hace poco las preferencias eran **bullets de texto corrido** bajo encabezados en negrita (`**Comunicación:**`, `**Principios de trabajo:**`), con `preferencias` fuera del Patrón: sin manifiesto, sin README y con sección propia en `AGENTS.md`. Tres cambios, en este orden: **(a)** cada bullet pasa a fila con el núcleo `Código | Nombre | Descripción | Detalle` —el Código se asigna de arriba hacia abajo, y el texto entero del bullet va a `Descripción` salvo la frase que apunta a una convención aparte, que pasa a `Detalle`—; **(b)** se instalan `MANIFIESTO.md` y `README.md`; **(c)** la sección `## Preferencias` de `AGENTS.md` **se borra** y su línea `@.claude/preferencias/MANIFIESTO.md` entra en `## Subsistemas`. Los encabezados de ámbito (`Comunicación`, `Principios de trabajo`) **no sobreviven**: no eran una columna, eran agrupamiento visual. Si el repo sumó preferencias propias en el archivo del Agente Desplegado, **su texto se conserva entero** y solo cambia de forma.
 - Con los dos archivos ya al día, el del Agente Multipropósito se reemplaza **entero y sin preguntar**: las diferencias entre versiones son de redacción, y lo propio del repo vive en el otro archivo, que no se abre.
 
 ## §Subsistemas — bloque `## Subsistemas` en `AGENTS.md`
@@ -104,6 +90,7 @@ Un subsistema tiene **uno o más Índices**: hay dos cuando su contenido viene d
 Si tu agente no expande imports, **leé estos manifiestos al inicio de la sesión** (y, si el manifiesto importa sus índices, esos índices también).
 
 @.claude/subsistemas/MANIFIESTO.md
+@.claude/preferencias/MANIFIESTO.md
 @.claude/planes/MANIFIESTO.md
 @.claude/conocimiento/MANIFIESTO.md
 @.claude/semantica/MANIFIESTO.md
@@ -112,7 +99,7 @@ Si tu agente no expande imports, **leé estos manifiestos al inicio de la sesió
 @.claude/conducta/MANIFIESTO.md
 ```
 
-(La ruta del `@import` es relativa al archivo que importa — `AGENTS.md` está en la raíz, por eso el prefijo `.claude/`. Las **preferencias siempre cargadas** van inline vía §Preferencias, no como manifiesto acá; las reglas del subsistema `conducta` las reparte su hook en cada momento —no se recitan desde el índice—, por eso su manifiesto sí va en esta lista pero su registro no se carga.)
+(La ruta del `@import` es relativa al archivo que importa — `AGENTS.md` está en la raíz, por eso el prefijo `.claude/`. `preferencias` **no tiene sección propia**: entra por esta lista como los otros siete, y su manifiesto importa sus dos Índices, que sí se cargan siempre. Las reglas del subsistema `conducta` las reparte su hook en cada momento —no se recitan desde el índice—, por eso su manifiesto va en esta lista pero su registro no se carga.)
 
 ## §Script — `.claude/conocimiento/lint-conocimiento/lint-conocimiento.js`
 
@@ -3567,8 +3554,10 @@ Contenido exacto (Node, sin dependencias, sin red):
 
 ```js
 #!/usr/bin/env node
-// Lint estructural de preferencias: PREFERENCIAS.md con sus dos secciones por origen (Agente
-// Multiproposito / Agente Desplegado) + @import en el punto de entrada (AGENTS.md/CLAUDE.md). Sin LLM, sin red.
+// Lint estructural de preferencias: un Indice por origen, el nucleo de columnas de cada fila
+// (codigo con el prefijo que pide su origen, sin repetir; Nombre unico; Descripcion no vacia),
+// las paginas de detalle (refs rotas y huerfanas) y la cadena de importacion que las deja
+// siempre en contexto. Sin LLM, sin red.
 // NO detecta contradicciones semanticas (eso es la capa semantica, a pedido).
 // Uso: node lint-preferencias.js [<carpeta .claude>]   (default: .claude)
 const fs = require('fs'), path = require('path');
@@ -3692,22 +3681,94 @@ if (!indices.length) {
   if (txt.trim().length < 50) problems.push('PREFERENCIAS.md casi vacio (sin contenido util)');
 }
 
-// Una linea de importacion POR CADA Indice declarado: las preferencias tienen que estar siempre en
-// contexto, y con dos archivos un solo import deja al otro afuera sin que nada lo marque.
+// --- el nucleo de cada fila, sus paginas de detalle y los huerfanos --------
+// Separa las celdas de una fila markdown RESPETANDO las tuberias escapadas (`\|`): partir por "|"
+// a secas corre las columnas de cualquier fila que nombre otra tabla adentro de una celda, y las
+// que quedan corridas se leen como si estuvieran vacias, sin emitir ningun error.
+function celdasDe(linea) {
+  return linea.trim().replace(/^\|/, '').replace(/\|$/, '')
+    .split(/(?<!\\)\|/).map(c => c.replace(/\\\|/g, '|').trim());
+}
+function filasDe(idx) {
+  const lineas = idx.texto.split(/\r?\n/).map(l => l.trim()).filter(l => l.startsWith('|'));
+  if (lineas.length < 2) return [];
+  const cab = celdasDe(lineas[0]).map(c => c.replace(/\*/g, '').trim());
+  const out = [];
+  for (const l of lineas.slice(1)) {
+    const c = celdasDe(l);
+    if (/^:?-{2,}:?$/.test((c[0] || '').replace(/\s/g, ''))) continue;
+    const fila = {};
+    cab.forEach((n, k) => { fila[n] = c[k] !== undefined ? c[k] : ''; });
+    out.push(fila);
+  }
+  return out;
+}
+
+// El prefijo del codigo es el origen, asi que el Indice dice cual corresponde: un `Local-` en el
+// Indice del Agente Multiproposito significa que la fila se escribio en el archivo equivocado.
+const PREFIJO = { 'agente-multiproposito': 'Base', 'agente-desplegado': 'Local' };
+const referenciadas = new Set();
+const codigosVistos = new Set();
+for (const i of declarados) {
+  const esperado = PREFIJO[i.origen];
+  if (!esperado) continue;                      // origen invalido: ya se reporto arriba
+  const nombresVistos = new Set();              // el Nombre es unico DENTRO de su Indice
+  for (const f of filasDe(i)) {
+    const cod = f['Código'] || '', nom = f['Nombre'] || '';
+    if (!new RegExp(`^${esperado}-\\d{4}$`).test(cod))
+      problems.push(`${i.nombre}: codigo "${cod}" no tiene la forma ${esperado}-NNNN que pide su origen`);
+    else if (codigosVistos.has(cod)) problems.push(`${i.nombre}: codigo duplicado ${cod}`);
+    else codigosVistos.add(cod);
+    if (!nom) problems.push(`${i.nombre}: la fila ${cod || '(sin codigo)'} no tiene Nombre`);
+    else if (nombresVistos.has(nom.toLowerCase())) problems.push(`${i.nombre}: nombre duplicado "${nom}"`);
+    else nombresVistos.add(nom.toLowerCase());
+    if (!(f['Descripción'] || '').trim()) problems.push(`${i.nombre}: ${cod} no tiene Descripción`);
+    for (const m of (f['Detalle'] || '').matchAll(/\]\(([^)]+?\.md)\)/g)) {
+      if (fs.existsSync(path.join(dirPref, m[1]))) referenciadas.add(path.basename(m[1]));
+      else problems.push(`${i.nombre}: ${cod} apunta a ${m[1]}, que no existe`);
+    }
+  }
+}
+// Huerfanas: paginas de detalle que ninguna celda Detalle declara. Es el defecto que motivo la
+// columna: antes el link vivia en el texto de la regla y ningun Indice las nombraba.
+if (declarados.length) {
+  const reservados = new Set(['MANIFIESTO.md', 'README.md', ...indices.map(i => i.nombre)]);
+  let entradasDir = []; try { entradasDir = fs.readdirSync(dirPref); } catch (e) { entradasDir = []; }
+  for (const n of entradasDir) {
+    if (!n.endsWith('.md') || reservados.has(n) || referenciadas.has(n)) continue;
+    problems.push(`pagina huerfana: ${n} no la declara ninguna celda Detalle`);
+  }
+}
+
+// --- la cadena que deja las preferencias en contexto -----------------------
+// Son tres saltos: el punto de entrada importa el MANIFIESTO y el manifiesto importa cada Indice.
+// Con dos Indices, un solo import deja al otro afuera sin que nada lo marque. Mientras haya
+// Agentes Desplegados sin nivelar —sin MANIFIESTO.md— se acepta la forma vieja, donde el punto de
+// entrada importa los Indices directo.
 // Fuente: AGENTS.md en la raiz; layouts legacy: CLAUDE.md en la raiz o dentro de <config>/.
 const root = path.dirname(claudeDir);
 const entradas = [path.join(root, 'AGENTS.md'), path.join(root, 'CLAUDE.md'), path.join(claudeDir, 'CLAUDE.md')]
   .filter(f => fs.existsSync(f));
-if (entradas.length) {
-  const textos = entradas.map(f => fs.readFileSync(f, 'utf8'));
-  // el import lleva el prefijo segun donde viva el punto de entrada: @preferencias/... o @.claude/preferencias/...
-  for (const i of (indices.length ? indices : [])) {
-    const re = new RegExp('@[\\w./-]*preferencias/' + i.nombre.replace(/\./g, '\\.'));
-    if (!textos.some(t => re.test(t)))
-      problems.push(`ningun punto de entrada (AGENTS.md/CLAUDE.md) importa @preferencias/${i.nombre} (no queda en contexto)`);
-  }
-} else {
+if (!entradas.length) {
   problems.push('no existe punto de entrada (AGENTS.md o CLAUDE.md; no se pudo verificar el @import)');
+} else {
+  const textos = entradas.map(f => fs.readFileSync(f, 'utf8'));
+  if (fs.existsSync(maniPath)) {
+    const mani = fs.readFileSync(maniPath, 'utf8');
+    if (!textos.some(t => /@[\w./-]*preferencias\/MANIFIESTO\.md/.test(t)))
+      problems.push('ningun punto de entrada (AGENTS.md/CLAUDE.md) importa @preferencias/MANIFIESTO.md (no queda en contexto)');
+    for (const i of indices) {
+      if (!new RegExp('^@' + i.nombre.replace(/\./g, '\\.') + '\\s*$', 'm').test(mani))
+        problems.push(`MANIFIESTO.md no importa @${i.nombre} (declara que se cargan siempre, pero ese Indice queda fuera del contexto)`);
+    }
+  } else {
+    // el import lleva el prefijo segun donde viva el punto de entrada: @preferencias/... o @.claude/preferencias/...
+    for (const i of indices) {
+      const re = new RegExp('@[\\w./-]*preferencias/' + i.nombre.replace(/\./g, '\\.'));
+      if (!textos.some(t => re.test(t)))
+        problems.push(`ningun punto de entrada (AGENTS.md/CLAUDE.md) importa @preferencias/${i.nombre} (no queda en contexto)`);
+    }
+  }
 }
 
 console.log(`== LINT PREFERENCIAS: ${dirPref} ==`);
@@ -3720,6 +3781,61 @@ else problems.forEach(p => console.log(`    [x] ${p}`));
 ## §Componentes de Subsistema que se copian tal cual
 
 Estos Componentes de Subsistema se instalan en sus rutas indicadas. Cada bloque es copia literal del archivo vivo del Agente Multipropósito.
+
+### `.claude/preferencias/MANIFIESTO.md`
+
+````markdown
+# Preferencias — manifiesto de subsistema
+
+Las **preferencias** son las reglas de conducta del agente en este repo: qué espera el usuario de cómo trabaja y se comunica. Viven acá (`preferencias/`), en una tabla `Código | Nombre | Descripción | Detalle`. A diferencia de las reglas de `conducta`, no las entrega un hook en un momento del flujo: están **siempre en contexto**. Por eso la `Descripción` lleva todo lo que hace falta para obedecer, y solo la elaboración —ejemplos, motivos, casos discutidos— baja a una página de detalle: lo que sale de la celda deja de estar cargado.
+
+El registro se separa **por origen** en dos archivos que lo declaran en su frontmatter. Lo que suma este repo va al del Agente Desplegado.
+
+**Disparador:** el agente **no** consulta este registro a mano — ya lo tiene cargado. Se escribe cuando el usuario corrige lo mismo por segunda vez, o pide que algo quede como regla.
+
+**Skills:** `registrar-preferencia` (aísla la regla, elige el origen, asigna el Código y confirma el texto exacto antes de asentarlo); instalación con `amp:inicializar`.
+
+**Índices:** `PREFERENCIAS.md` (Agente Multipropósito) · `PREFERENCIAS-LOCAL.md` (Agente Desplegado). **Se cargan siempre.** Al cerrar una tarea que tocó preferencias, correr el lint desde la raíz del repo:
+
+```bash
+node .claude/preferencias/lint-preferencias/lint-preferencias.js
+```
+
+Convención completa en `README.md`.
+
+@PREFERENCIAS.md
+@PREFERENCIAS-LOCAL.md
+````
+
+### `.claude/preferencias/README.md`
+
+````markdown
+# Preferencias
+
+Las **preferencias** son las reglas de conducta del agente en este repo: qué espera el usuario de cómo trabaja y de cómo se comunica. Se asientan en una tabla `Código | Nombre | Descripción | Detalle`, separada **por origen** en dos archivos que lo declaran en su frontmatter: `PREFERENCIAS.md` (`origen: agente-multiproposito`, el nivelador lo reemplaza entero) y `PREFERENCIAS-LOCAL.md` (`origen: agente-desplegado`, lo suma cada repo; el nivelador no lo abre).
+
+**Para qué:** que el usuario no tenga que repetir la misma corrección. Una preferencia asentada es una corrección que no vuelve a hacer falta — y una que no está asentada vuelve en la sesión siguiente.
+
+**Qué las distingue de las reglas de `conducta`:** las de conducta las entrega un hook en un momento del flujo, y por eso su registro no se carga. Las preferencias están **siempre en contexto**: los dos archivos se importan desde `AGENTS.md`. Eso cambia cómo se escriben.
+
+## Cómo se aplica
+
+1. **Qué registrar** — la regla que revela la corrección, no la anécdota. Accionable y verificable en el punto de acción, con el porqué si no es obvio. Antes de agregar una, revisar si ya hay una que la cubre: si la hay y no se cumple, el problema no se arregla reescribiéndola.
+2. **Dónde va** — al Índice del Agente Desplegado si es específica de este repo, que es el caso normal y el único archivo editable acá. Si vale para todos los repos del usuario, va al del Agente Multipropósito, que se edita en el repo que lo publica y obliga a subir la versión del plugin.
+3. **Norma contra elaboración** — la `Descripción` lleva **todo lo que hace falta para obedecer**, aunque sea larga. Lo que no hace falta para obedecer —ejemplos, motivos, casos ya discutidos— baja a una página de detalle, que declara la columna `Detalle`. El corte es por función, no por largo: lo que sale de la celda deja de estar cargado, y una regla que el agente tiene que ir a buscar es una regla que no se aplica.
+4. **El Código** — `Base-NNNN` o `Local-NNNN` según el origen. Se asigna como **el mayor del Índice más uno**, nunca la cantidad de filas más uno: si alguna vez se retiró una entrada, contar filas repite un código ya usado. Un código retirado deja un hueco y no se reusa. En lo que queda escrito el código nunca va solo — se dice `Preferencia Base-0007`.
+5. **El texto exacto se muestra antes de escribirlo.** Las preferencias son un registro canónico: el usuario ratifica el contenido, no solo la acción de registrar.
+6. **Al cerrar** una tarea que tocó preferencias, correr el lint desde la raíz del repo:
+
+   ```bash
+   node .claude/preferencias/lint-preferencias/lint-preferencias.js
+   ```
+
+## Páginas de detalle
+
+- [`estilo-commits.md`](estilo-commits.md) — la convención de commits y descripciones de PR con sus casos.
+- [`archivo-de-estado.md`](archivo-de-estado.md) — la convención del archivo de estado en tareas exploratorias.
+````
 
 ### `.claude/subsistemas/MANIFIESTO.md`
 
@@ -3937,7 +4053,7 @@ for (const nombre of new Set(nombres)) {
 for (const fila of filas) {
   const destino = path.resolve(dirCatalogo, fila.enlace);
   if (!fs.existsSync(destino) || !fs.statSync(destino).isDirectory()) errores.push(`casa inexistente: ${fila.nombre} -> ${fila.enlace}`);
-  else if (!fs.existsSync(path.join(destino, 'MANIFIESTO.md')) && fila.nombre !== 'preferencias')
+  else if (!fs.existsSync(path.join(destino, 'MANIFIESTO.md')))
     errores.push(`sin MANIFIESTO.md: ${fila.nombre}`);
 }
 

@@ -120,7 +120,7 @@ for (const nombre of new Set(nombres)) {
 for (const fila of filas) {
   const destino = path.resolve(dirCatalogo, fila.enlace);
   if (!fs.existsSync(destino) || !fs.statSync(destino).isDirectory()) errores.push(`casa inexistente: ${fila.nombre} -> ${fila.enlace}`);
-  else if (!fs.existsSync(path.join(destino, 'MANIFIESTO.md')) && fila.nombre !== 'preferencias')
+  else if (!fs.existsSync(path.join(destino, 'MANIFIESTO.md')))
     errores.push(`sin MANIFIESTO.md: ${fila.nombre}`);
 }
 

@@ -58,26 +58,16 @@ Cada **funcionalidad/plugin** = `funcionalidades/<nombre>/` con `.claude-plugin/
 - **Idempotencia / nivelar:** todo skill lleva una sección "Reconciliación (idempotencia)" — son seguros de re-correr y sirven para llevar al día repos a medio configurar. Reglas: inspeccionar antes de escribir, crear solo lo ausente, detectar equivalentes por tema (no pisar lo divergente, preguntar), reportar al final en tres grupos (`agregado` / `ya estaba` / `divergente`). Al tocar un flujo de trabajo, conservar esa propiedad: nada de "Crear X" a secas sobre archivos compartidos (`AGENTS.md`, `MEMORIA.md`).
 - **Versionado de plugins:** cada `plugin.json` tiene `version`. Con `version` fijo, los usuarios solo reciben la actualización al subirle la versión; si se omite, cada commit cuenta como versión nueva. Subir la versión al publicar cambios, o quitar `version` para auto-versionar por commit.
 
-## Preferencias (siempre cargadas)
-
-@.claude/preferencias/PREFERENCIAS.md
-@.claude/preferencias/PREFERENCIAS-LOCAL.md
-
-Al tocar las preferencias, correr el lint estructural **desde la raíz del repo** (chequea los dos archivos por origen + una línea de importación por cada uno):
-
-```bash
-node .claude/preferencias/lint-preferencias/lint-preferencias.js
-```
-
 ## Subsistemas (manifiestos siempre cargados)
 
 Cada subsistema tiene un **Manifiesto** (`.claude/<sub>/MANIFIESTO.md`, decisión 0017): una descripción breve —qué es, cómo se usa, cuándo consultarlo— que va **siempre en contexto** y que **lista sus Índices de Subsistema con el origen de cada uno** y declara si se cargan, incluyendo o no su línea de importación (decisión 0042). Lo que se carga siempre es el manifiesto, no necesariamente el índice (reemplaza la carga incondicional del índice de la decisión 0002).
 
 Un subsistema tiene **uno o más Índices**: hay dos cuando su contenido viene de dos orígenes, y cada archivo lo declara en su frontmatter (`indice`, `origen`, `columnas`). El `origen` —`agente-multiproposito` o `agente-desplegado`— es lo que decide el trato del nivelador, no el nombre del archivo: el sufijo `-LOCAL` solo distingue dos archivos que conviven.
 
-Si tu agente no expande imports, **leé estos manifiestos al inicio de la sesión** (y, si el manifiesto importa sus índices, esos índices también). Hoy cargan su índice: subsistemas, conocimiento y herramientas. NO lo cargan (se consultan a demanda): planes, semántica, decisiones y conducta.
+Si tu agente no expande imports, **leé estos manifiestos al inicio de la sesión** (y, si el manifiesto importa sus índices, esos índices también). Hoy cargan su índice: subsistemas, preferencias, conocimiento y herramientas. NO lo cargan (se consultan a demanda): planes, semántica, decisiones y conducta.
 
 @.claude/subsistemas/MANIFIESTO.md
+@.claude/preferencias/MANIFIESTO.md
 @.claude/planes/MANIFIESTO.md
 @.claude/conocimiento/MANIFIESTO.md
 @.claude/semantica/MANIFIESTO.md

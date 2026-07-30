@@ -103,7 +103,7 @@ const MEMORIAS_BASE_RETIRADAS = new Set([
 ]);
 
 // Subsistemas del Agente Multiproposito esperados por el harness al dia (carpetas bajo .claude/).
-const SUBSISTEMAS = ['subsistemas', 'planes', 'conocimiento', 'semantica', 'decisiones', 'herramientas', 'conducta'];
+const SUBSISTEMAS = ['subsistemas', 'preferencias', 'planes', 'conocimiento', 'semantica', 'decisiones', 'herramientas', 'conducta'];
 
 // Herramientas que el harness manda (origen Base) y que todo repo al dia deberia tener bajo
 // .claude/herramientas/<nombre>/<nombre>.js. No confundir con las del Proposito, que las suma
