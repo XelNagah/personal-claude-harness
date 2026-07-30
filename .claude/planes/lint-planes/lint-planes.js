@@ -133,20 +133,65 @@ const problemasIndices = problemasDeIndices(indices, fs.existsSync(maniPath) ? f
 const nombresIndice = new Set(indices.map(i => i.nombre));
 const reg = indices.map(i => i.texto).join('\n');
 
-// filas: | Plan | Estado | Creado | Cerrado | Origen | Notas |
-const rows = [];
-for (const line of reg.split('\n')) {
-  const t = line.trim();
-  if (!t.startsWith('|')) continue;
-  const cells = t.split('|').slice(1, -1).map(c => c.trim());
-  if (cells.length < 6) continue;
-  const c0 = cells[0].replace(/[*\s]/g, '');
-  if (/^:?-{2,}:?$/.test(c0) || /^plan$/i.test(c0)) continue;
-  const m = /\]\(([^)]+?)\)/.exec(cells[0]);
-  const ref = (m ? m[1] : cells[0].replace(/[`\[\]]/g, '')).trim();
-  rows.push({ ref, estado: cells[1].toLowerCase(), creado: cells[2],
-              cerrado: cells[3], origen: cells[4], notas: cells[5] });
+// -- filas de la tabla, leidas por NOMBRE de columna ------------------------
+// Con el nucleo del Indice la tabla es | Codigo | Nombre | Descripcion | Estado | Fecha de
+// creacion | Fecha de cierre | Origen | Detalle |, y la ruta del plan vive en Detalle, no en la
+// primera celda. Leer por posicion dejaba el registro leyendo el Codigo como si fuera el link:
+// 81 archivos "sin fila" y la tabla entera invalidada. Se acepta la forma vieja —| Plan | Estado
+// | Creado | Cerrado | Origen | Notas |— mientras haya Agentes Desplegados sin nivelar.
+// Y las celdas se separan RESPETANDO las tuberias escapadas (`\|`), que de otro modo corren
+// todas las columnas siguientes.
+function celdasDe(linea) {
+  return linea.trim().replace(/^\|/, '').replace(/\|$/, '')
+    .split(/(?<!\\)\|/).map(c => c.replace(/\\\|/g, '|').trim());
 }
+// El link puede venir con la ruta escapada (`%20`) o con espacios crudos; el disco siempre tiene
+// el nombre real. Un `%` suelto en el nombre de un plan hace que decodificar TIRE, asi que el
+// fallo se contiene: sin esto, un solo plan con `%` en el nombre voltea el lint entero.
+function rutaDeLink(celda) {
+  const m = /\]\(([^)]+?)\)/.exec(celda);
+  const cruda = (m ? m[1] : celda.replace(/[`\[\]]/g, '')).trim();
+  try { return decodeURIComponent(cruda); } catch (e) { return cruda; }
+}
+// Se parsea CADA Indice por separado, no el texto de todos concatenado: cada uno declara sus
+// propias columnas, asi que compartir el encabezado leeria el segundo con el mapa del primero
+// —columnas corridas, en silencio— y ademas contaria su fila de encabezado como un plan mas.
+const rows = [];
+const sinNucleo = [];
+let algunaCabecera = false;
+for (const indice of (indices.length ? indices : [{ nombre: 'PLANES.md', texto: reg }])) {
+  let cab = null;
+  for (const line of indice.texto.split('\n')) {
+    const t = line.trim();
+    if (!t.startsWith('|')) continue;
+    const c = celdasDe(t);
+    if (!cab) {
+      const n = c.map(x => x.replace(/\*/g, '').trim().toLowerCase());
+      const idx = (...nombres) => { for (const x of nombres) { const i = n.indexOf(x); if (i >= 0) return i; } return -1; };
+      if (n.includes('código') || n.includes('plan')) {
+        algunaCabecera = true;
+        cab = { codigo: idx('código'), nombre: idx('nombre'), descripcion: idx('descripción'),
+                estado: idx('estado'), creado: idx('fecha de creación', 'creado'),
+                cerrado: idx('fecha de cierre', 'cerrado'), origen: idx('origen'),
+                detalle: idx('detalle', 'plan'), notas: idx('notas') };
+      }
+      continue;
+    }
+    if (/^:?-{2,}:?$/.test((c[0] || '').replace(/[*\s]/g, ''))) continue;   // separador |---|
+    const val = i => (i >= 0 && i < c.length ? c[i] : '');
+    const ref = rutaDeLink(val(cab.detalle));
+    const codigo = val(cab.codigo).replace(/[*\s]/g, '');
+    // Una fila sin ruta no se puede cruzar contra el disco. Se reporta en vez de descartarla:
+    // descartarla la saca tambien de los controles del nucleo y la fila desaparece sin señal.
+    if (!ref) { sinNucleo.push(`${codigo || '(sin código)'}  sin Detalle: la fila no apunta a ningun archivo`); continue; }
+    rows.push({ indice: indice.nombre, conNucleo: cab.codigo >= 0,
+                ref, codigo, nombre: val(cab.nombre), descripcion: val(cab.descripcion),
+                estado: val(cab.estado).toLowerCase(), creado: val(cab.creado),
+                cerrado: val(cab.cerrado), origen: val(cab.origen),
+                notas: cab.notas >= 0 ? val(cab.notas) : null });
+  }
+}
+if (!algunaCabecera) console.error('[!] no se encontro el encabezado de la tabla (columna Código o Plan)');
 
 const enDisco = new Map(); // rel -> carpeta
 for (const c of CARPETAS) {
@@ -173,13 +218,54 @@ for (const r of rows) {
   const esperada = carpetaDeEstado(r.estado);
   if (esperada && carpeta !== esperada) estadoCarpeta.push([rel, r.estado, carpeta, esperada]);
   if (esTerminal(r.estado) && (!r.cerrado || r.cerrado === '—' || r.cerrado === '-')) cierreAMedias.push([rel, 'sin fecha Cerrado']);
-  // Motivo obligatorio en la carpeta de descarte (convencion de carpetas del harness).
-  if (carpeta === 'descartados' && (!r.notas || r.notas === '—' || r.notas === '-')) sinMotivo.push(rel);
+  // Motivo obligatorio en la carpeta de descarte (convencion de carpetas del harness). Con el
+  // nucleo la columna Notas desaparece y el motivo vive en el archivo del plan, que es su
+  // Detalle: se exige la seccion de notas de cierre. En la forma vieja se sigue exigiendo la celda.
+  if (carpeta === 'descartados') {
+    if (r.notas !== null) {
+      if (!r.notas || r.notas === '—' || r.notas === '-') sinMotivo.push(rel);
+    } else {
+      let cuerpo = ''; try { cuerpo = fs.readFileSync(path.join(root, rel), 'utf8'); } catch (e) {}
+      if (!/^#{1,6}\s+Notas\s+de\s+cierre\b/im.test(cuerpo)) sinMotivo.push(`${rel}  [sin sección "## Notas de cierre"]`);
+    }
+  }
 }
 // filas colgadas (archivo no existe) para estados validos que no aparecieron en disco
 for (const r of rows) {
   const rel = norm(r.ref);
   if (estados.size && estados.has(r.estado) && !enDisco.has(rel) && !colgadas.includes(rel)) colgadas.push(rel);
+}
+
+// -- controles del nucleo del Indice ---------------------------------------
+// Solo corren si la tabla declara el nucleo. El codigo lleva el prefijo del origen declarado en
+// el frontmatter, se asigna como maximo + 1 y no se reusa: por eso se controlan formato, prefijo
+// y repeticion, pero NO los huecos —retirar un plan deja uno y nadie vuelve a ocuparlo—.
+const PREFIJO_DE_ORIGEN = { 'agente-multiproposito': 'Base', 'agente-desplegado': 'Local' };
+const nucleoMal = sinNucleo;
+// El codigo y el orden son de CADA Indice: dos Indices del mismo subsistema numeran por separado,
+// asi que unicidad y orden se validan por archivo y no sobre la mezcla.
+for (const indice of new Set(rows.filter(r => r.conNucleo).map(r => r.indice))) {
+  const filas = rows.filter(r => r.indice === indice);
+  const vistosCod = new Set(), vistosNom = new Set();
+  const declarado = indices.find(i => i.nombre === indice) || {};
+  const esperado = PREFIJO_DE_ORIGEN[declarado.origen];
+  let previo = null;
+  for (const r of filas) {
+    const m = /^(Base|Local)-(\d{4})$/.exec(r.codigo);
+    if (!m) { nucleoMal.push(`${indice}: ${r.ref}  codigo "${r.codigo}" mal formado (esperado Base-NNNN o Local-NNNN)`); continue; }
+    if (esperado && m[1] !== esperado) nucleoMal.push(`${indice}: ${r.codigo}  prefijo "${m[1]}" no corresponde al origen "${declarado.origen}" (esperado ${esperado})`);
+    if (vistosCod.has(r.codigo)) nucleoMal.push(`${indice}: ${r.codigo}  codigo repetido`);
+    vistosCod.add(r.codigo);
+    if (!r.nombre) nucleoMal.push(`${indice}: ${r.codigo}  sin Nombre`);
+    else if (vistosNom.has(r.nombre.toLowerCase())) nucleoMal.push(`${indice}: ${r.codigo}  Nombre duplicado "${r.nombre}"`);
+    else vistosNom.add(r.nombre.toLowerCase());
+    if (!r.descripcion || r.descripcion === '—') nucleoMal.push(`${indice}: ${r.codigo}  sin Descripción`);
+    // Las filas van en orden ascendente por Codigo. Se comparan solo las bien formadas: un codigo
+    // roto ya tiene su hallazgo y contarlo como 0 arrastraria un segundo hallazgo prestado.
+    const n = parseInt(m[2], 10);
+    if (previo !== null && n <= previo.n) nucleoMal.push(`${indice}: filas fuera de orden ascendente por Código — ${previo.codigo} antes de ${r.codigo}`);
+    previo = { n, codigo: r.codigo };
+  }
 }
 
 // Una sección de implementación puede venir de un plan legacy con título abreviado.
@@ -207,6 +293,7 @@ for (const r of rows) {
 
 const secciones = [
   ['INDICES DECLARADOS (frontmatter vs tabla vs manifiesto)', problemasIndices],
+  ['NUCLEO DEL INDICE (código, Nombre, Descripción, orden)', nucleoMal],
   ['ESTADOS.md AUSENTE O VACIO (no se valida el estado)', estados.size ? [] : [estPath]],
   ['SUELTOS EN LA RAIZ (mover a una carpeta del ciclo)', sueltos],
   ['ARCHIVOS SIN FILA EN PLANES.md', sinFila],

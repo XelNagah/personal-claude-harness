@@ -10,6 +10,10 @@ Una habilidad que **recorre un repo ya poblado** (código, docs, historia) y **l
 
 La idempotencia/reconciliación actual (secciones "Reconciliación" de cada skill) **migra y no pisa** lo que ya está en `.claude/`. Esto es distinto: un **barrido activo de descubrimiento** sobre el repo entero para *generar* contenido inicial de los subsistemas — inferir términos del dominio, decisiones ya tomadas (del código/commits), scripts sueltos, conocimiento disperso.
 
+## Lo que ya se cubrió (26-07-19)
+
+La parte **conocimiento** la materializó `buscar-conocimiento`. Queda sembrar glosario, decisiones y memoria.
+
 ## Preguntas de diseño abiertas (para cuando se retome)
 
 - **Alcance de la inferencia:** ¿qué puebla y desde dónde? (glosario ← nombres recurrentes del dominio; decisiones ← commits/ADRs/comentarios; scripts ← ejecutables sueltos; conocimiento ← READMEs/docs; memoria ← convenciones detectadas).

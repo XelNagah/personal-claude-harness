@@ -1,6 +1,6 @@
 # Publicar el harness en inglés
 
-**Estado: Diferido · Creado 26-07-21.** Pedido de Javier: publicar el proyecto en GitHub **en inglés** para llegar a un público mayor. **Diferido a propósito:** se hace cuando el harness esté bien pulido, no antes — migrar el idioma sobre un diseño que todavía se mueve es trabajo que se rehace.
+**Estado: Diferido · Creado 26-07-21.** Pedido de Javier: publicar el proyecto en GitHub **en inglés** para llegar a un público mayor. Surgió en la sesión del Manifiesto (decisión 0017). **Diferido a propósito:** se hace cuando el harness esté bien pulido, no antes — migrar el idioma sobre un diseño que todavía se mueve es trabajo que se rehace.
 
 ## Qué es
 

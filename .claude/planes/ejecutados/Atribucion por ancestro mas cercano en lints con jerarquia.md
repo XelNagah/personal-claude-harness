@@ -42,4 +42,6 @@ Se implementó tal como se planificó, en un worktree aislado (`piloto/atribucio
 
 **Propagación.** Antes de tocarlas se verificó que las 4 copias embebidas fueran byte-idénticas al código vivo previo; después del reemplazo se volvió a comparar cada una carácter a carácter contra el archivo vivo: las 4 idénticas. Versiones subidas: `conocimiento` 0.5.3 → 0.5.4, `memoria-local` 0.4.5 → 0.4.6, `setup-completo` 0.5.7 → 0.5.8.
 
+**No absorbe al plan del lint unificado.** Si [Lint unificado parametrizable por capacidad de subsistema](../pendientes/Lint%20unificado%20parametrizable%20por%20capacidad%20de%20subsistema.md) avanza, esta atribución queda como una de sus reglas.
+
 **Control de cierre:** los 9 lints y `claude plugin validate` en verde, y `lint-harness` con **0** en "BLOQUES VERBATIM DIVERGENTES". El único hallazgo de `lint-harness` son 34 "junctions que apuntan a otro lado", artefacto de correrlo desde un worktree (los junctions de la máquina apuntan al repo principal); no lo introdujo este cambio.

@@ -87,6 +87,24 @@ function declaraIndice(archivo) {
   return !!(fm && /^indice:\s*\S/m.test(fm[1]));
 }
 
+// Nucleo de columnas que comparten todos los Indices de Subsistema. Cada uno suma ademas las
+// columnas operativas que su codigo consume (`Momento`, `Tipo`, `Estado`…), que no se chequean acá.
+const NUCLEO_INDICE = ['Código', 'Nombre', 'Descripción', 'Detalle'];
+
+// Encabezado real de la primera tabla markdown de un texto (null si no tiene tabla). Las celdas se
+// separan respetando las tuberias escapadas (`\|`), que de otro modo corren las columnas.
+function cabeceraTabla(txt) {
+  for (const linea of (txt || '').split(/\r?\n/)) {
+    const t = linea.trim();
+    if (!t.startsWith('|')) continue;
+    const celdas = t.replace(/^\|/, '').replace(/\|$/, '')
+      .split(/(?<!\\)\|/).map(c => c.replace(/\*/g, '').replace(/\\\|/g, '|').trim());
+    if (/^:?-{2,}:?$/.test((celdas[0] || '').replace(/\s/g, ''))) continue;
+    return celdas;
+  }
+  return null;
+}
+
 // Estas ocho entradas eran Base distribuida por la generación memoria/. Sus destinos ya forman
 // parte de la Base actual, así que actualizar las reconcilia sin preguntarle al usuario. Cualquier
 // otro .md es Aprendizaje; si uno de estos Componentes de Subsistema fue ampliado por el repo, la skill preserva solo
@@ -239,6 +257,34 @@ function clasificar() {
       add('base', '+', `${p.sub}/${p.local}`, 'Indice del Agente Desplegado ausente: nace declarado y sin filas (el manifiesto instalado lo nombra)');
   }
 
+  // [1d] Indices que todavia no tienen el nucleo de columnas. Un Indice puede estar declarado y
+  // partido por origen y aun asi conservar la forma vieja de su tabla (`| Plan | Estado | …`,
+  // `| Concepto | Definicion | …`). Sin esta deteccion el nivelador informa "al dia" un Agente
+  // Desplegado cuyo registro no tiene Codigo ni Descripcion: el frontmatter esta, la tabla no.
+  for (const [sub, archivos] of Object.entries(INDICES_BASE)) {
+    const dir = path.join(claude, sub);
+    if (!esDir(dir)) continue;
+    const locales = INDICES_PARTIDOS.filter(p => p.sub === sub).map(p => p.local);
+    for (const nombre of [...archivos, ...locales]) {
+      const f = path.join(dir, nombre);
+      if (!existe(f)) continue;
+      const cab = cabeceraTabla(leer(f));
+      if (!cab) { add('renombre', '→', `${sub}/${nombre}`, 'sin tabla: pasar a tabla con el nucleo `Codigo | Nombre | Descripcion | Detalle` conservando cada entrada'); continue; }
+      const faltan = NUCLEO_INDICE.filter(c => !cab.includes(c));
+      if (faltan.length)
+        add('renombre', '→', `${sub}/${nombre}`, `tabla sin el nucleo del Indice: falta ${faltan.join(', ')} — migrar conservando cada entrada (el Codigo se asigna al pasar y no se reusa)`);
+    }
+  }
+
+  // [1e] La seccion propia de preferencias en el punto de entrada. Dejo de existir cuando
+  // preferencias entro al Patron: hoy sus Indices llegan por su MANIFIESTO, como los otros siete.
+  // Si la seccion sobrevive, el Agente Desplegado importa los mismos archivos dos veces.
+  for (const nombre of ['AGENTS.md', 'CLAUDE.md']) {
+    const f = path.join(repo, nombre);
+    if (existe(f) && /^##\s+Preferencias\s*$/m.test(leer(f)))
+      add('renombre', '→', nombre, 'seccion `## Preferencias` propia: borrarla — preferencias entra por su MANIFIESTO como los demas subsistemas');
+  }
+
   // [2] subsistemas Base: presentes / ausentes / con Componentes de Subsistema faltantes
   for (const sub of SUBSISTEMAS) {
     const dir = path.join(claude, sub);
@@ -256,6 +302,9 @@ function clasificar() {
     else if (!manifiestoCompleto(leer(mani), sub)) add('base', '~', `${sub}/MANIFIESTO.md`, 'estructura vieja: poner al dia');
     // lint del subsistema presente
     if (!existe(path.join(dir, `lint-${sub}`, `lint-${sub}.js`))) add('base', '~', `${sub}/lint-${sub}/`, 'lint ausente: instalar');
+    // README del subsistema: la convencion completa, que el MANIFIESTO no lleva porque va siempre
+    // cargado. `preferencias` fue el ultimo en tenerlo y un Agente Desplegado viejo no lo tiene.
+    if (!existe(path.join(dir, 'README.md'))) add('base', '+', `${sub}/README.md`, 'ausente: instalar la convencion completa del subsistema');
   }
 
   // [2b] Herramientas de rio arriba: viven DENTRO de herramientas/, asi que un subsistema presente puede
@@ -279,7 +328,8 @@ function clasificar() {
   // [3] conducta: Componentes de Subsistema propios + corte Base/Proposito + la Pantalla de bienvenida
   const cond = path.join(claude, 'conducta');
   if (esDir(cond)) {
-    for (const componente of [['MOMENTOS.md', 'archivo'], ['establecer-conducta', 'hook'], ['lint-conducta', 'lint'],
+    for (const componente of [['MOMENTOS.md', 'archivo'], ['CLASES.md', 'registro de clases de accion (lo lee el lint)'],
+                         ['establecer-conducta', 'hook'], ['lint-conducta', 'lint'],
                          ['mostrar-pantalla-bienvenida', 'Herramienta de la Pantalla de bienvenida'],
                          ['detectar-terminologia-vetada', 'control de terminologia del momento «al escribir»']]) {
       if (!existe(path.join(cond, componente[0]))) add('base', '~', `conducta/${componente[0]}`, `${componente[1]} ausente: instalar`);

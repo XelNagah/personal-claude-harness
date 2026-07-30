@@ -113,18 +113,32 @@ function detallePlanes(txt, estadosTxt) {
     estadoCarpeta[est.toLowerCase()] = carpeta;
     if (!orden.includes(carpeta)) orden.push(carpeta);
   }
-  // Contar filas de PLANES.md, tallando por carpeta del estado.
+  // Contar filas de PLANES.md, tallando por carpeta del estado. El Estado se ubica por el NOMBRE
+  // de su columna: con el núcleo del Índice la tabla pasó a ocho columnas y el Estado dejó de ser
+  // la segunda, así que leerlo por posición contaba el Nombre del plan como si fuera un estado —
+  // ningún estado matchea, la métrica sale en cero y nada lo dice.
   const cont = {};
+  let iEstado = -1;
   for (const l of txt.split(/\r?\n/)) {
     if (!l.trim().startsWith('|')) continue;
-    const c = l.split('|').slice(1, -1).map(x => x.trim());
+    const c = l.trim().replace(/^\|/, '').replace(/\|$/, '')
+      .split(/(?<!\\)\|/).map(x => x.replace(/\\\|/g, '|').trim());
     if (c.length < 2) continue;
-    const est = c[1];
-    if (/^-{2,}$/.test(est) || /^estado$/i.test(est)) continue;
+    if (iEstado < 0) {                                   // encabezado: ubicar la columna Estado
+      const n = c.map(x => x.replace(/\*/g, '').trim().toLowerCase());
+      const i = n.indexOf('estado');
+      if (i >= 0) iEstado = i;
+      continue;
+    }
+    const est = c[iEstado] || '';
+    if (/^:?-{2,}:?$/.test(est.replace(/\s/g, ''))) continue;   // separador |---|
     const carp = estadoCarpeta[est.toLowerCase()];
     if (carp) cont[carp] = (cont[carp] || 0) + 1;
   }
-  if (!orden.length) return ''; // sin ESTADOS.md legible: degradar sin romper
+  if (!orden.length) return '';   // sin ESTADOS.md legible: degradar sin romper
+  // Sin columna Estado no hay nada que tallar, y un `0 · 0 · 0` con planes a la vista miente en
+  // silencio — que es justo el defecto que este bloque vino a arreglar. Se muestra solo el total.
+  if (iEstado < 0) return '';
   const partes = orden.map(carp => `${cont[carp] || 0} ${carp}`);
   return `(${partes.join(' · ')})`;
 }

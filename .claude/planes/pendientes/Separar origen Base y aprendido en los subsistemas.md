@@ -34,6 +34,8 @@ La separación se realiza **según la granularidad del subsistema**, no con una 
 
 **Heredado del plan de distribución** (cerrado el 25/07/2026): su abierto *«marcadores de región gestionada — formato exacto de los delimitadores que el nivelador respeta en archivos mixtos»* queda **acá, y ya resuelto por la vía negativa**: la separación por origen elimina los archivos mixtos, así que no hay delimitadores que definir. Si en el futuro algún archivo vuelve a mezclar los dos orígenes, el formato se decide en este plan, no en el de distribución.
 
+**Abierto heredado del registro:** *dos archivos contra dos secciones, qué subsistemas aplican, y cómo se unifica el índice.* Lo responde el plan [Partir los índices por origen y pasar preferencias a tabla](Partir%20los%20indices%20por%20origen%20y%20pasar%20preferencias%20a%20tabla.md), que parte cuatro Índices en dos archivos declarando el origen en el frontmatter.
+
 ## Cruces
 
 - **Distinto, no igual:** `Separar mecánica del harness de criterio del autor` — ese es otro eje (gusto personal vs mecánica universal, los dos upstream); este es upstream vs aprendido.

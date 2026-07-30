@@ -15,7 +15,7 @@ Máquina de **un solo eje**: un plan está en exactamente **un** estado a la vez
 | En curso | Se tomó el plan y se está **ejecutando**. | `pendientes/` | no |
 | Diferido | Pospuesto a propósito; retomable más adelante. | `pendientes/` | no |
 | Ejecutado | Terminado con éxito. | `ejecutados/` | sí |
-| Descartado | Abandonado; no se hará (motivo obligatorio en Notas). | `descartados/` | sí |
+| Descartado | Abandonado; no se hará (motivo obligatorio en el archivo del plan, en una sección `## Notas de cierre`). | `descartados/` | sí |
 
 No hay estado de "diseño": todo plan `Nuevo` se revisa en alto nivel antes de ejecutarse, así que la revisión es parte de estar `Nuevo`, no un estado aparte. El lint vigila la antigüedad del estado **activo** (`En curso`) — un plan que se está ejecutando hace demasiado y quedó frenado (ver la constante `VIGILAR_ANTIGUEDAD` en `lint-planes.js`).
 

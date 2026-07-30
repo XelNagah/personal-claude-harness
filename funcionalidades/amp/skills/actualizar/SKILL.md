@@ -117,6 +117,14 @@ El repo quedó con nombres de plugin que el marketplace ya no ofrece. **No se ar
      4. En `preferencias`, sumar en `AGENTS.md` la segunda línea de importación — sin ella las preferencias del repo salen del contexto y **ningún lint lo marcaba** antes de este cambio.
      5. Recién con los dos archivos al día, aplicar el reemplazo del archivo del Agente Multipropósito del punto 5. Al revés, el reemplazo se lleva puesto contenido del repo.
      6. Cerrar corriendo el lint de cada subsistema tocado: compara las columnas declaradas contra la tabla real y el manifiesto contra el frontmatter.
+   - **Índice sin el núcleo de columnas** (`tabla sin el nucleo del Indice`, `sin tabla`): el archivo puede estar declarado y partido por origen y aun así conservar la forma vieja de su tabla. Es **migración de contenido, no reemplazo**: el nivelador nunca la aplica solo.
+     1. Llevar la tabla a `Código | Nombre | Descripción | Detalle` más las columnas operativas que ese subsistema ya tenía (`Estado`, `Momento`, `Tipo`…), **conservando cada entrada**. Si el archivo no era tabla (bullets), pasarlo a tabla sin perder ninguna.
+     2. Asignar el `Código` en el orden en que las entradas fueron creadas, con el prefijo del `origen` declarado en el frontmatter (`Base-` o `Local-`). Es un código, no una posición: de ahí en más se asigna como `máximo + 1` y los huecos no se reusan.
+     3. Donde el núcleo no exista todavía —una `Descripción` que el registro nunca tuvo—, es **texto nuevo en un registro canónico**: se le muestra al usuario antes de escribirlo.
+     4. Declarar las columnas nuevas en el frontmatter y sumar el campo `descripcion`, que dice qué representa la Descripción de ese Índice.
+     5. Las filas quedan en orden ascendente por Código.
+     6. Cerrar con el lint del subsistema, que valida el núcleo fila por fila.
+   - **Sección `## Preferencias` en el punto de entrada:** borrarla. `preferencias` entra por su `MANIFIESTO.md` como los otros siete subsistemas, así que dejarla importa los mismos archivos dos veces.
 7. **Migrar `memoria/` retirada — responsabilidad de esta skill.**
    1. Inventariar `memoria/` en tres grupos, **antes de hacer cualquier pregunta**:
       - infraestructura Base retirada: `MANIFIESTO.md`, `MEMORIA.md`, `README.md` y `lint-memoria/`;

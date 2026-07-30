@@ -285,9 +285,26 @@ Por qué así:
       - **Los archivos de detalle conservan su nombre** `NNNN-nombre.md`, como fijó la decisión. Las 213 referencias en texto quedan en la forma vieja, sin apuntar mal.
       - Versión: `amp-decisiones` 0.6.0.
 
-      **Queda un solo Índice: `planes`** — 80 filas y el reparto de los 48.649 caracteres de `Notas` a los archivos de plan, verificando en cada fila qué parte ya está en el archivo y qué parte solo vive en la celda. Es el único que no es cambio de forma sino mudanza de contenido.
+      **`planes` hecho el 30/07/2026 — el décimo y último.** Ocho columnas (`Código | Nombre | Descripción | Estado | Fecha de creación | Fecha de cierre | Origen | Detalle`), **81 filas** `Local-0001`–`Local-0081` —no 80, como decía la medición— y el registro pasó de **66.280 a 34.737 caracteres, un 48% menos**. Ratificado por el autor: los códigos van del plan más viejo al más nuevo, el `Nombre` sale del título del archivo del plan (los nombres de archivo van sin acentos) y `Creado`/`Cerrado` se renombraron a `Fecha de creación`/`Fecha de cierre`.
 
-   4. **Los lints y el resto del código que lee las tablas.** Se fue haciendo junto con cada subsistema, no como paso aparte: cada migración destapó su propia rotura. Lo que queda es el **nivelador**, que detecta el manifiesto ausente pero **no** la conversión de las tablas viejas al núcleo, ni los archivos nuevos (`preferencias/README.md`, `conducta/CLASES.md`), ni la sección `## Preferencias` que hay que borrar de `AGENTS.md`. Sin esas detecciones, los Agentes Desplegados con la forma vieja no se migran solos.
+      - **El cotejo de `Notas` necesitó dos pasadas.** Comparar los datos duros de cada celda —hashes de commit, cifras, identificadores— contra el archivo del plan marcó 16 filas; una segunda pasada que mide, oración por oración, cuántas palabras distintivas aparecen en el archivo marcó 5 más, y **3 de esas no las veía la primera**: contenido escrito sin un solo dato duro. Con una sola pasada se perdían. Mudanzas reales: **6** (una reducción de alcance en dos planes diferidos, un «no absorbe a», un bug de `--quiet`, una procedencia y un abierto heredado). El resto de las marcas eran el nombre de otro plan escrito sin acentos en la celda.
+      - **La Pantalla de bienvenida volvió a caerse en silencio.** Ubicaba el `Estado` por posición; en la tabla nueva esa celda es el Nombre del plan, así que ningún estado matcheaba y habría informado `0 pendientes · 0 ejecutados · 0 descartados` con 81 planes a la vista. Verificado corriendo el criterio viejo contra la tabla nueva: devuelve el conjunto vacío. `lint-planes` también leía por posición, pero **ese gritó** (81 archivos sin fila).
+      - **El motivo del descarte se mudó al archivo del plan.** La regla estaba atada a la columna `Notas`, que desaparece: `ESTADOS.md`, el README y el lint pasan a exigir la sección `## Notas de cierre` en el archivo del descartado, que el único descartado ya tenía escrita.
+      - **19 pruebas contra caso bueno y caso malo:** los 16 controles del lint —incluidos los del núcleo, que son nuevos—, el banco intacto en cero, la forma vieja completa en cero y una celda con tubería escapada que no corre las columnas.
+      - `ciclo-de-plan` aprende a asignar el Código (`máximo + 1`) y a escribir la Descripción de una línea. Versiones: `amp-planes` 0.6.0, `amp` 0.11.0.
+
+      **Con esto los diez Índices están en el núcleo.**
+
+   4. **Los lints y el resto del código que lee las tablas.** Se fue haciendo junto con cada subsistema, no como paso aparte: cada migración destapó su propia rotura.
+
+      **El nivelador cerrado el 30/07/2026.** Le faltaban cinco detecciones, y sin ellas informaba "al día" un Agente Desplegado con la forma vieja. Ahora detecta:
+
+      - la tabla que conserva la forma vieja aunque el frontmatter ya esté (`tabla sin el nucleo del Indice`, listando qué columna falta) y el Índice que ni siquiera es tabla (`sin tabla`);
+      - `preferencias/README.md` — el chequeo de README pasó a correr para los ocho subsistemas, no solo para el que se acordaba;
+      - `conducta/CLASES.md`;
+      - la sección `## Preferencias` propia en `AGENTS.md` o `CLAUDE.md`, que si sobrevive importa los mismos archivos dos veces.
+
+      La `SKILL.md` gana el procedimiento de migración al núcleo, con lo que no es mecánico escrito: el Código se asigna en el orden de creación y con el prefijo del origen declarado, y una `Descripción` que el registro nunca tuvo es **texto nuevo en un registro canónico**, así que se le muestra al usuario antes de escribirla. Probado contra un Agente Desplegado degradado a la forma vieja (las cinco detecciones se encienden) y contra este repo (cero).
 3. `MANIFIESTO.md` y `README.md` de preferencias; sacar la excepción de `lint-subsistemas.js:28` y la sección propia de `AGENTS.md`.
 4. Llevar los tres lints al Patrón: referencias, huérfanos, completitud, y que existan los dos archivos.
 5. Reemplazar los encabezados viejos por los ratificados. Son unas 100 apariciones en texto vivo, que el lint de semántica ya marca.

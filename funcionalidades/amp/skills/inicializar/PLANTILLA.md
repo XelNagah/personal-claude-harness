@@ -389,19 +389,19 @@ Máquina de **un solo eje**: un plan está en exactamente **un** estado a la vez
 | En curso | Se tomó el plan y se está **ejecutando**. | `pendientes/` | no |
 | Diferido | Pospuesto a propósito; retomable más adelante. | `pendientes/` | no |
 | Ejecutado | Terminado con éxito. | `ejecutados/` | sí |
-| Descartado | Abandonado; no se hará (motivo obligatorio en Notas). | `descartados/` | sí |
+| Descartado | Abandonado; no se hará (motivo obligatorio en el archivo del plan, en una sección `## Notas de cierre`). | `descartados/` | sí |
 
 No hay estado de "diseño": todo plan `Nuevo` se revisa en alto nivel antes de ejecutarse, así que la revisión es parte de estar `Nuevo`, no un estado aparte. El lint vigila la antigüedad del estado **activo** (`En curso`) — un plan que se está ejecutando hace demasiado y quedó frenado (ver la constante `VIGILAR_ANTIGUEDAD` en `lint-planes.js`).
 
 ## Transiciones
 
-​```
+```
   Nuevo ──────► En curso ──────► Ejecutado
     │              │             (terminal)
     ├──► Diferido ◄┘   (retomable → En curso)
     │
     └──► Descartado   (terminal, con motivo)
-​```
+```
 
 - `Nuevo` → En curso · Diferido · Descartado
 - `En curso` → Diferido · Ejecutado · Descartado
@@ -424,23 +424,26 @@ Contenido inicial de `.claude/planes/PLANES.md`:
 ---
 indice: Registro de planes
 origen: agente-desplegado
-columnas: [Plan, Estado, Creado, Cerrado, Origen, Notas]
+columnas: [Código, Nombre, Descripción, Estado, Fecha de creación, Fecha de cierre, Origen, Detalle]
+descripcion: de qué se trata el plan
 ---
 
 # Registro de planes
 
-Lo fino de cada plan vive acá, no en el nombre del archivo. Las carpetas dan el ciclo grueso: `pendientes/` (planes vivos: `Nuevo`, `En curso`, `Diferido`), `ejecutados/`, `descartados/` (con motivo).
+Lo fino de cada plan vive en su archivo, no acá. Las carpetas dan el ciclo grueso: `pendientes/` (planes vivos: `Nuevo`, `En curso`, `Diferido`), `ejecutados/`, `descartados/`.
 
 Los **estados** y su semántica (a qué carpeta mapea cada uno, cuáles son terminales) están definidos en [`ESTADOS.md`](ESTADOS.md) — fuente de verdad configurable, que el lint lee.
 
-- **Plan** — link al archivo en su carpeta actual.
+- **Código** — `Local-NNNN`. Se asigna al crear la entrada y no se reusa.
+- **Nombre** — el título del plan. Único en el Índice.
+- **Descripción** — de qué se trata el plan, en una línea.
 - **Estado** — uno de los definidos en `ESTADOS.md`: `Nuevo`, `En curso`, `Diferido` (vivos, en `pendientes/`), `Ejecutado`, `Descartado` (terminales).
-- **Creado / Cerrado** — `AA-MM-DD`; Cerrado en `—` mientras esté vivo.
+- **Fecha de creación / Fecha de cierre** — `AA-MM-DD`; la de cierre en `—` mientras el plan esté vivo.
 - **Origen** — plan del que se desprendió, si aplica.
-- **Notas** — corto; en descartados, el motivo es obligatorio.
+- **Detalle** — el archivo del plan, en la carpeta que le da su estado. Ahí vive todo lo largo: el diagnóstico, el trabajo, las notas de implementación y, en los descartados, el motivo.
 
-| Plan | Estado | Creado | Cerrado | Origen | Notas |
-|------|--------|--------|---------|--------|-------|
+| Código | Nombre | Descripción | Estado | Fecha de creación | Fecha de cierre | Origen | Detalle |
+|--------|--------|-------------|--------|-------------------|-----------------|--------|---------|
 ```
 
 Hook — **registro doble**: el mismo script se registra en los dos formatos — Claude Code y Codex CLI ejecutan idéntico chequeo al abrir sesión. Con `--quiet` el lint solo imprime cuando hay hallazgos: sesión limpia = hook silencioso. Es el trigger mecánico del ciclo — sin él, mover planes vuelve a depender de acordarse.
@@ -639,20 +642,65 @@ const problemasIndices = problemasDeIndices(indices, fs.existsSync(maniPath) ? f
 const nombresIndice = new Set(indices.map(i => i.nombre));
 const reg = indices.map(i => i.texto).join('\n');
 
-// filas: | Plan | Estado | Creado | Cerrado | Origen | Notas |
-const rows = [];
-for (const line of reg.split('\n')) {
-  const t = line.trim();
-  if (!t.startsWith('|')) continue;
-  const cells = t.split('|').slice(1, -1).map(c => c.trim());
-  if (cells.length < 6) continue;
-  const c0 = cells[0].replace(/[*\s]/g, '');
-  if (/^:?-{2,}:?$/.test(c0) || /^plan$/i.test(c0)) continue;
-  const m = /\]\(([^)]+?)\)/.exec(cells[0]);
-  const ref = (m ? m[1] : cells[0].replace(/[`\[\]]/g, '')).trim();
-  rows.push({ ref, estado: cells[1].toLowerCase(), creado: cells[2],
-              cerrado: cells[3], origen: cells[4], notas: cells[5] });
+// -- filas de la tabla, leidas por NOMBRE de columna ------------------------
+// Con el nucleo del Indice la tabla es | Codigo | Nombre | Descripcion | Estado | Fecha de
+// creacion | Fecha de cierre | Origen | Detalle |, y la ruta del plan vive en Detalle, no en la
+// primera celda. Leer por posicion dejaba el registro leyendo el Codigo como si fuera el link:
+// 81 archivos "sin fila" y la tabla entera invalidada. Se acepta la forma vieja —| Plan | Estado
+// | Creado | Cerrado | Origen | Notas |— mientras haya Agentes Desplegados sin nivelar.
+// Y las celdas se separan RESPETANDO las tuberias escapadas (`\|`), que de otro modo corren
+// todas las columnas siguientes.
+function celdasDe(linea) {
+  return linea.trim().replace(/^\|/, '').replace(/\|$/, '')
+    .split(/(?<!\\)\|/).map(c => c.replace(/\\\|/g, '|').trim());
 }
+// El link puede venir con la ruta escapada (`%20`) o con espacios crudos; el disco siempre tiene
+// el nombre real. Un `%` suelto en el nombre de un plan hace que decodificar TIRE, asi que el
+// fallo se contiene: sin esto, un solo plan con `%` en el nombre voltea el lint entero.
+function rutaDeLink(celda) {
+  const m = /\]\(([^)]+?)\)/.exec(celda);
+  const cruda = (m ? m[1] : celda.replace(/[`\[\]]/g, '')).trim();
+  try { return decodeURIComponent(cruda); } catch (e) { return cruda; }
+}
+// Se parsea CADA Indice por separado, no el texto de todos concatenado: cada uno declara sus
+// propias columnas, asi que compartir el encabezado leeria el segundo con el mapa del primero
+// —columnas corridas, en silencio— y ademas contaria su fila de encabezado como un plan mas.
+const rows = [];
+const sinNucleo = [];
+let algunaCabecera = false;
+for (const indice of (indices.length ? indices : [{ nombre: 'PLANES.md', texto: reg }])) {
+  let cab = null;
+  for (const line of indice.texto.split('\n')) {
+    const t = line.trim();
+    if (!t.startsWith('|')) continue;
+    const c = celdasDe(t);
+    if (!cab) {
+      const n = c.map(x => x.replace(/\*/g, '').trim().toLowerCase());
+      const idx = (...nombres) => { for (const x of nombres) { const i = n.indexOf(x); if (i >= 0) return i; } return -1; };
+      if (n.includes('código') || n.includes('plan')) {
+        algunaCabecera = true;
+        cab = { codigo: idx('código'), nombre: idx('nombre'), descripcion: idx('descripción'),
+                estado: idx('estado'), creado: idx('fecha de creación', 'creado'),
+                cerrado: idx('fecha de cierre', 'cerrado'), origen: idx('origen'),
+                detalle: idx('detalle', 'plan'), notas: idx('notas') };
+      }
+      continue;
+    }
+    if (/^:?-{2,}:?$/.test((c[0] || '').replace(/[*\s]/g, ''))) continue;   // separador |---|
+    const val = i => (i >= 0 && i < c.length ? c[i] : '');
+    const ref = rutaDeLink(val(cab.detalle));
+    const codigo = val(cab.codigo).replace(/[*\s]/g, '');
+    // Una fila sin ruta no se puede cruzar contra el disco. Se reporta en vez de descartarla:
+    // descartarla la saca tambien de los controles del nucleo y la fila desaparece sin señal.
+    if (!ref) { sinNucleo.push(`${codigo || '(sin código)'}  sin Detalle: la fila no apunta a ningun archivo`); continue; }
+    rows.push({ indice: indice.nombre, conNucleo: cab.codigo >= 0,
+                ref, codigo, nombre: val(cab.nombre), descripcion: val(cab.descripcion),
+                estado: val(cab.estado).toLowerCase(), creado: val(cab.creado),
+                cerrado: val(cab.cerrado), origen: val(cab.origen),
+                notas: cab.notas >= 0 ? val(cab.notas) : null });
+  }
+}
+if (!algunaCabecera) console.error('[!] no se encontro el encabezado de la tabla (columna Código o Plan)');
 
 const enDisco = new Map(); // rel -> carpeta
 for (const c of CARPETAS) {
@@ -679,13 +727,54 @@ for (const r of rows) {
   const esperada = carpetaDeEstado(r.estado);
   if (esperada && carpeta !== esperada) estadoCarpeta.push([rel, r.estado, carpeta, esperada]);
   if (esTerminal(r.estado) && (!r.cerrado || r.cerrado === '—' || r.cerrado === '-')) cierreAMedias.push([rel, 'sin fecha Cerrado']);
-  // Motivo obligatorio en la carpeta de descarte (convencion de carpetas del harness).
-  if (carpeta === 'descartados' && (!r.notas || r.notas === '—' || r.notas === '-')) sinMotivo.push(rel);
+  // Motivo obligatorio en la carpeta de descarte (convencion de carpetas del harness). Con el
+  // nucleo la columna Notas desaparece y el motivo vive en el archivo del plan, que es su
+  // Detalle: se exige la seccion de notas de cierre. En la forma vieja se sigue exigiendo la celda.
+  if (carpeta === 'descartados') {
+    if (r.notas !== null) {
+      if (!r.notas || r.notas === '—' || r.notas === '-') sinMotivo.push(rel);
+    } else {
+      let cuerpo = ''; try { cuerpo = fs.readFileSync(path.join(root, rel), 'utf8'); } catch (e) {}
+      if (!/^#{1,6}\s+Notas\s+de\s+cierre\b/im.test(cuerpo)) sinMotivo.push(`${rel}  [sin sección "## Notas de cierre"]`);
+    }
+  }
 }
 // filas colgadas (archivo no existe) para estados validos que no aparecieron en disco
 for (const r of rows) {
   const rel = norm(r.ref);
   if (estados.size && estados.has(r.estado) && !enDisco.has(rel) && !colgadas.includes(rel)) colgadas.push(rel);
+}
+
+// -- controles del nucleo del Indice ---------------------------------------
+// Solo corren si la tabla declara el nucleo. El codigo lleva el prefijo del origen declarado en
+// el frontmatter, se asigna como maximo + 1 y no se reusa: por eso se controlan formato, prefijo
+// y repeticion, pero NO los huecos —retirar un plan deja uno y nadie vuelve a ocuparlo—.
+const PREFIJO_DE_ORIGEN = { 'agente-multiproposito': 'Base', 'agente-desplegado': 'Local' };
+const nucleoMal = sinNucleo;
+// El codigo y el orden son de CADA Indice: dos Indices del mismo subsistema numeran por separado,
+// asi que unicidad y orden se validan por archivo y no sobre la mezcla.
+for (const indice of new Set(rows.filter(r => r.conNucleo).map(r => r.indice))) {
+  const filas = rows.filter(r => r.indice === indice);
+  const vistosCod = new Set(), vistosNom = new Set();
+  const declarado = indices.find(i => i.nombre === indice) || {};
+  const esperado = PREFIJO_DE_ORIGEN[declarado.origen];
+  let previo = null;
+  for (const r of filas) {
+    const m = /^(Base|Local)-(\d{4})$/.exec(r.codigo);
+    if (!m) { nucleoMal.push(`${indice}: ${r.ref}  codigo "${r.codigo}" mal formado (esperado Base-NNNN o Local-NNNN)`); continue; }
+    if (esperado && m[1] !== esperado) nucleoMal.push(`${indice}: ${r.codigo}  prefijo "${m[1]}" no corresponde al origen "${declarado.origen}" (esperado ${esperado})`);
+    if (vistosCod.has(r.codigo)) nucleoMal.push(`${indice}: ${r.codigo}  codigo repetido`);
+    vistosCod.add(r.codigo);
+    if (!r.nombre) nucleoMal.push(`${indice}: ${r.codigo}  sin Nombre`);
+    else if (vistosNom.has(r.nombre.toLowerCase())) nucleoMal.push(`${indice}: ${r.codigo}  Nombre duplicado "${r.nombre}"`);
+    else vistosNom.add(r.nombre.toLowerCase());
+    if (!r.descripcion || r.descripcion === '—') nucleoMal.push(`${indice}: ${r.codigo}  sin Descripción`);
+    // Las filas van en orden ascendente por Codigo. Se comparan solo las bien formadas: un codigo
+    // roto ya tiene su hallazgo y contarlo como 0 arrastraria un segundo hallazgo prestado.
+    const n = parseInt(m[2], 10);
+    if (previo !== null && n <= previo.n) nucleoMal.push(`${indice}: filas fuera de orden ascendente por Código — ${previo.codigo} antes de ${r.codigo}`);
+    previo = { n, codigo: r.codigo };
+  }
 }
 
 // Una sección de implementación puede venir de un plan legacy con título abreviado.
@@ -713,6 +802,7 @@ for (const r of rows) {
 
 const secciones = [
   ['INDICES DECLARADOS (frontmatter vs tabla vs manifiesto)', problemasIndices],
+  ['NUCLEO DEL INDICE (código, Nombre, Descripción, orden)', nucleoMal],
   ['ESTADOS.md AUSENTE O VACIO (no se valida el estado)', estados.size ? [] : [estPath]],
   ['SUELTOS EN LA RAIZ (mover a una carpeta del ciclo)', sueltos],
   ['ARCHIVOS SIN FILA EN PLANES.md', sinFila],
@@ -3150,18 +3240,32 @@ function detallePlanes(txt, estadosTxt) {
     estadoCarpeta[est.toLowerCase()] = carpeta;
     if (!orden.includes(carpeta)) orden.push(carpeta);
   }
-  // Contar filas de PLANES.md, tallando por carpeta del estado.
+  // Contar filas de PLANES.md, tallando por carpeta del estado. El Estado se ubica por el NOMBRE
+  // de su columna: con el núcleo del Índice la tabla pasó a ocho columnas y el Estado dejó de ser
+  // la segunda, así que leerlo por posición contaba el Nombre del plan como si fuera un estado —
+  // ningún estado matchea, la métrica sale en cero y nada lo dice.
   const cont = {};
+  let iEstado = -1;
   for (const l of txt.split(/\r?\n/)) {
     if (!l.trim().startsWith('|')) continue;
-    const c = l.split('|').slice(1, -1).map(x => x.trim());
+    const c = l.trim().replace(/^\|/, '').replace(/\|$/, '')
+      .split(/(?<!\\)\|/).map(x => x.replace(/\\\|/g, '|').trim());
     if (c.length < 2) continue;
-    const est = c[1];
-    if (/^-{2,}$/.test(est) || /^estado$/i.test(est)) continue;
+    if (iEstado < 0) {                                   // encabezado: ubicar la columna Estado
+      const n = c.map(x => x.replace(/\*/g, '').trim().toLowerCase());
+      const i = n.indexOf('estado');
+      if (i >= 0) iEstado = i;
+      continue;
+    }
+    const est = c[iEstado] || '';
+    if (/^:?-{2,}:?$/.test(est.replace(/\s/g, ''))) continue;   // separador |---|
     const carp = estadoCarpeta[est.toLowerCase()];
     if (carp) cont[carp] = (cont[carp] || 0) + 1;
   }
-  if (!orden.length) return ''; // sin ESTADOS.md legible: degradar sin romper
+  if (!orden.length) return '';   // sin ESTADOS.md legible: degradar sin romper
+  // Sin columna Estado no hay nada que tallar, y un `0 · 0 · 0` con planes a la vista miente en
+  // silencio — que es justo el defecto que este bloque vino a arreglar. Se muestra solo el total.
+  if (iEstado < 0) return '';
   const partes = orden.map(carp => `${cont[carp] || 0} ${carp}`);
   return `(${partes.join(' · ')})`;
 }
@@ -4297,10 +4401,10 @@ Persistir y gestionar planes bajo `.claude/planes/` con tres subcarpetas: `pendi
 
 **How to apply:**
 
-1. **Al crear un plan:** copiar a `.claude/planes/pendientes/<nombre-estable>.md` (sin fecha en el nombre) y agregar su fila en `PLANES.md`: Estado (de `ESTADOS.md`), Creado, Origen si se desprende de otro plan.
+1. **Al crear un plan:** copiar a `.claude/planes/pendientes/<nombre-estable>.md` (sin fecha en el nombre) y agregar su fila en `PLANES.md`: Código (`máximo + 1`, nunca `cantidad + 1`, sin reusar huecos), Nombre (el título del plan), Descripción en una línea, Estado (de `ESTADOS.md`), Fecha de creación, Origen si se desprende de otro plan, y Detalle apuntando al archivo. Las filas van en orden ascendente por Código, así que la nueva va al final.
 2. **Cada actualización al plan** se replica en la versión persistida — es la fuente de verdad, no el archivo del plans-folder del harness. Los cambios de estado se reflejan en `PLANES.md`, y el archivo se mueve a la carpeta que el estado indica.
-3. **Al detectar evidencia de implementación** (commit, mensaje del user, código verificado, otro agente): pasar a `Ejecutado` y mover a `ejecutados/` **sin renombrar**, completar `Cerrado` en el registro y revisar primero los encabezados. Si ya hay una sección de implementación (`## Implementación` o `## Notas de implementación`, con cualquier nivel), conservar su contenido y normalizar solo el título a **`## Notas de implementación`** si corresponde; solo si no existe, agregarla (cómo se implementó vs planificado, hash de commit, cosas notables). Nunca crear una sección vacía que duplique notas legacy.
-4. **Descartar es un cierre válido:** `Descartado`, mover a `descartados/`, completar `Cerrado` y una línea de motivo en Notas (p. ej. "superseded por <plan>").
+3. **Al detectar evidencia de implementación** (commit, mensaje del user, código verificado, otro agente): pasar a `Ejecutado` y mover a `ejecutados/` **sin renombrar**, completar la `Fecha de cierre` en el registro y revisar primero los encabezados. Si ya hay una sección de implementación (`## Implementación` o `## Notas de implementación`, con cualquier nivel), conservar su contenido y normalizar solo el título a **`## Notas de implementación`** si corresponde; solo si no existe, agregarla (cómo se implementó vs planificado, hash de commit, cosas notables). Nunca crear una sección vacía que duplique notas legacy.
+4. **Descartar es un cierre válido:** `Descartado`, mover a `descartados/`, completar la `Fecha de cierre` y escribir el motivo en el archivo del plan, en una sección `## Notas de cierre` (p. ej. "reemplazado por <plan>"). El lint la exige: un plan abandonado sin decir por qué es un hallazgo.
 5. **Reparar referencias entrantes** si las hubiera (el nombre estable minimiza esto; preferir enlazar planes vía `PLANES.md`).
 6. **Al cerrar** una tarea que tocó planes, correr el lint: `node .claude/planes/lint-planes/lint-planes.js`.
 

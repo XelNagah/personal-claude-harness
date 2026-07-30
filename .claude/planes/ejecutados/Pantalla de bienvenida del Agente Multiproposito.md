@@ -41,6 +41,7 @@ La pasada A emitía el bloque por `additionalContext` → solo lo veía el model
 - **Herramienta:** `pantalla-bienvenida.js` ganó el flag **`--hook`** (emite `{"systemMessage": "\n" + caja}`, sin cerca ``` porque los backticks saldrían literales; con salto inicial para separarse del prefijo `SessionStart:… says:` que antepone el CLI). Sin flag sigue emitiendo la caja con cerca ``` para `/amp-info` y corridas a mano. `settings.json` pasa `--hook`.
 - **Caja de ancho automático:** se dimensiona al renglón más largo (piso 74, techo de envoltura 82) → no se desarma cuando una métrica gana dígitos.
 - **Métrica de planes por carpeta:** `N (P pendientes · E ejecutados · D descartados)`, derivada de `ESTADOS.md` (no hardcodea estados → respeta 0005); la suma = total. Glosario: concepto *Pendiente*.
+- **Bug encontrado y sorteado en el estado de lint:** `--quiet` devuelve un código de salida distinto de cero en algunos lints artesanales, así que la Pantalla los corre **sin** `--quiet` y lee la cantidad de hallazgos de los `(N)` de la salida.
 
 **Falta de la pasada B (sin cambios):** distribución como plugin, hook doble Claude/Codex(/Gemini), `sessionTitle` al header, decidir `source`.
 

@@ -10,6 +10,10 @@ Diseñar la **capa semántica** de la [decisión 0003](../../decisiones/INDICE.m
 
 Dos preferencias mutuamente excluyentes ("respondé siempre en una tanda" vs "preguntá de a una") no las cacha un `.js`: hay que *entender* que chocan. Misma falla en otros subsistemas: dos decisiones `vigente` que se contradicen, dos términos del glosario incompatibles, conocimiento que quedó viejo (desactualización).
 
+## Lo que ya se cubrió (26-07-19)
+
+La parte **glosario ↔ repo** la materializó `converger-terminologia`. Queda lo transversal entre subsistemas.
+
 ## Preguntas de diseño abiertas (para cuando se retome)
 
 - **Forma:** ¿skill de revisión a pedido (`/coherencia`), paso del nivelado, extensión de `planificar`, o un "lint semántico" que invoca LLM? Hoy es informal (el agente lo hace en sesión).
