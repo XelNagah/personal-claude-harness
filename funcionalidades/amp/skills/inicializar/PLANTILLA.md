@@ -1168,7 +1168,8 @@ Contenido inicial de `.claude/decisiones/INDICE.md` (tabla vacía — sin filas 
 ---
 indice: Decisiones del proyecto
 origen: agente-desplegado
-columnas: [N°, Decisión, Fecha, Estado, Detalle]
+columnas: [Código, Nombre, Descripción, Fecha, Estado, Detalle]
+descripcion: qué se decidió y por qué
 ---
 
 # Decisiones del proyecto
@@ -1177,14 +1178,17 @@ Registro de las decisiones **estructurales al propósito del repo**: las que def
 
 Una fila por decisión:
 
-- **N°** — secuencial (`0001`, `0002`, …), referencia estable.
-- **Decisión** — qué se decidió y por qué, en una frase (para las simples).
+- **Código** — `Local-NNNN`, referencia estable. Se asigna al crear la entrada y no se reusa. En lo que queda escrito no va solo: se dice `Decisión Local-0042`.
+- **Nombre** — de qué trata la decisión, en una frase corta. Único en el registro.
+- **Descripción** — qué se decidió y por qué. Si requiere conceptualización mayor, la frase queda acá y el desarrollo va al `Detalle`.
 - **Fecha** — `AAAA-MM-DD`.
 - **Estado** — `vigente` o `reemplazada por NNNN`. Para revertir no se borra: se agrega una nueva y se marca la vieja.
-- **Detalle** — link a `NNNN-nombre.md` **solo si la decisión requiere conceptualización mayor** (contexto, alternativas, consecuencias); `—` si es simple.
+- **Detalle** — link a `NNNN-nombre.md` **solo si la decisión requiere conceptualización mayor** (contexto, alternativas, consecuencias); `—` si es simple. El nombre del archivo conserva el número sin prefijo: no es el código, es un nombre corto legible.
 
-| N° | Decisión | Fecha | Estado | Detalle |
-|----|----------|-------|--------|---------|
+Las filas van en **orden ascendente por Código**.
+
+| Código | Nombre | Descripción | Fecha | Estado | Detalle |
+|---|---|---|---|---|---|
 ```
 
 Formato de una página de detalle `.claude/decisiones/NNNN-nombre.md` (solo decisiones complejas):
@@ -1326,18 +1330,52 @@ function resolverRef(t, fdir) {
   ].map(p => path.normalize(p)).find(p => dentroDelRepo(p) && fs.existsSync(p)) || null;
 }
 
-// parsear filas de la tabla: | N° | Decisión | Fecha | Estado | Detalle |
-const rows = [];
-for (const line of txt.split('\n')) {
-  const t = line.trim();
-  if (!t.startsWith('|')) continue;
-  const cells = t.split('|').slice(1, -1).map(c => c.trim());
-  if (cells.length < 5) continue;
-  const nRaw = cells[0].replace(/[*\s]/g, '');
-  if (/^:?-{2,}:?$/.test(nRaw)) continue;               // separador |---|
-  if (!/^\d{1,4}$/.test(nRaw)) continue;                 // header u otra fila sin N°
-  rows.push({ n: parseInt(nRaw, 10), estado: cells[3], detalle: cells[4] });
+// -- filas de la tabla, leidas por NOMBRE de columna ------------------------
+// Cada dato se ubica por el nombre de su columna, no por su posicion, y el numero se acepta con
+// prefijo de origen (`Local-0042`) o pelado (`0042`, la forma vieja) mientras haya Agentes
+// Desplegados sin nivelar. Leer por posicion dejaba el registro en CERO filas apenas la primera
+// celda paso a ser el Codigo: la numeracion se validaba sobre un conjunto vacio y salia limpia.
+// Y las celdas se separan RESPETANDO las tuberias escapadas (`\|`): sin eso, dos filas de este
+// mismo registro —que nombran columnas adentro de una celda— corrian su Estado y su Detalle.
+function celdasDe(linea) {
+  return linea.trim().replace(/^\|/, '').replace(/\|$/, '')
+    .split(/(?<!\\)\|/).map(c => c.replace(/\\\|/g, '|').trim());
 }
+const rows = [];
+{
+  let cab = null;
+  for (const line of txt.split('\n')) {
+    const t = line.trim();
+    if (!t.startsWith('|')) continue;
+    const c = celdasDe(t);
+    if (!cab) {
+      const norm = c.map(x => x.replace(/\*/g, '').trim().toLowerCase());
+      // `Código` es la forma con nucleo; `N°` la vieja. Sin ninguna de las dos no se lee nada.
+      const i = norm.indexOf('código') >= 0 ? norm.indexOf('código') : norm.findIndex(x => /^n[°º]?$/.test(x));
+      if (i >= 0) cab = { cod: i, nombre: norm.indexOf('nombre'), estado: norm.indexOf('estado'), detalle: norm.indexOf('detalle') };
+      continue;
+    }
+    if (/^:?-{2,}:?$/.test((c[0] || '').replace(/[*\s]/g, ''))) continue;   // separador |---|
+    const crudo = (c[cab.cod] || '').replace(/[*\s]/g, '');
+    const m = /^(?:Base-|Local-)?(\d{1,4})$/.exec(crudo);
+    if (!m) continue;
+    const val = i => (i >= 0 && i < c.length ? c[i] : '');
+    rows.push({ n: parseInt(m[1], 10), codigo: crudo, nombre: val(cab.nombre), estado: val(cab.estado), detalle: val(cab.detalle) });
+  }
+  if (!cab) console.error('[!] no se encontro el encabezado de la tabla (columna Código o N°)');
+}
+
+// nombres unicos y no vacios: el Nombre es la clave practica del registro
+const vistos = new Set();
+const nombresMal = [];
+for (const r of rows) {
+  if (cabeceraTieneNombre(txt)) {
+    if (!r.nombre) nombresMal.push(`${r.codigo} sin Nombre`);
+    else if (vistos.has(r.nombre.toLowerCase())) nombresMal.push(`nombre duplicado "${r.nombre}"`);
+    else vistos.add(r.nombre.toLowerCase());
+  }
+}
+function cabeceraTieneNombre(t) { return /^\|[^\n]*\bNombre\b/mi.test(t); }
 
 // [1] numeracion: huecos y duplicados
 const gaps = [];
@@ -1390,7 +1428,10 @@ if (!huerfanos.length) console.log('    (ninguna)');
 console.log(`\n[4] SUPERSEDED ROTAS (${supRotas.length}):`);
 supRotas.forEach(([n, r]) => console.log(`    ${n}  ->  ${r}   [decision inexistente]`));
 if (!supRotas.length) console.log('    (ninguna)');
-console.log(`\n[5] INDICES DECLARADOS (${problemasIndices.length}):`);
+console.log(`\n[5] NOMBRES VACIOS O DUPLICADOS (${nombresMal.length}):`);
+nombresMal.forEach(n => console.log(`    ${n}`));
+if (!nombresMal.length) console.log('    (ninguno)');
+console.log(`\n[6] INDICES DECLARADOS (${problemasIndices.length}):`);
 problemasIndices.forEach(p => console.log(`    ${p}`));
 if (!problemasIndices.length) console.log(`    (${nombresIndice.size} indice(s), coherentes con el manifiesto)`);
 ```
@@ -4318,7 +4359,7 @@ Relacionado: [[flujo-planes]] (consultar la semántica al planificar/analizar), 
 ````markdown
 # Decisiones
 
-Las decisiones **estructurales al propósito del repo** se asientan en `.claude/decisiones/INDICE.md`: una tabla donde cada fila es una decisión (N° secuencial, qué se decidió y por qué, fecha, estado, y link a página de detalle si requiere conceptualización mayor). Misma estructura que el glosario: lo simple vive en la fila, lo complejo en su `NNNN-nombre.md`.
+Las decisiones **estructurales al propósito del repo** se asientan en `.claude/decisiones/INDICE.md`: una tabla donde cada fila es una decisión (código con prefijo de origen, nombre corto, qué se decidió y por qué, fecha, estado, y link a página de detalle si requiere conceptualización mayor). Misma estructura que el glosario: lo simple vive en la fila, lo complejo en su `NNNN-nombre.md`.
 
 **Why:** coherencia decisional a lo largo de la vida del repo — no re-decidir ni contradecir lo estructural. Acotado a lo estructural (no lo operativo trivial) para que el registro siga siendo señal y no ruido — es lo que hacía la "A" de ADR, generalizada a repos de cualquier propósito.
 
@@ -4326,7 +4367,7 @@ Las decisiones **estructurales al propósito del repo** se asientan en `.claude/
 
 1. **Qué registrar:** decisiones que definen cómo es / qué hace el repo en lo esencial, o que eligen un camino que condiciona el trabajo futuro. **No** las triviales o efímeras ("busqué en internet", "usé tal comando").
 2. **Al planificar o analizar**, consultar las decisiones previas: no re-abrir lo cerrado ni contradecirlo. Reemplazar, no borrar: agregar la nueva y marcar la vieja `reemplazada por NNNN`.
-3. **Simple** → una fila, Detalle en `—`. **Compleja** (contexto, alternativas, consecuencias) → fila + página `NNNN-nombre.md`.
+3. **Simple** → una fila, Detalle en `—`. **Compleja** (contexto, alternativas, consecuencias) → fila + página `NNNN-nombre.md`. El código es `Local-NNNN`, **el mayor del registro más uno** —nunca la cantidad de filas más uno—, y un código retirado deja un hueco que no se reusa. El nombre del archivo de detalle conserva el número sin prefijo: es un nombre corto legible, no el código.
 4. **Al cerrar** una tarea que registró decisiones, correr el lint: `node .claude/decisiones/lint-decisiones/lint-decisiones.js` (numeración, links de detalle, huérfanos, superseded).
 
 Relacionado: [[flujo-planes]] (consultar/registrar decisiones al cerrar planes).

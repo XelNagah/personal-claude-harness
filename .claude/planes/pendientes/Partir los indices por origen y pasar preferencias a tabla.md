@@ -278,11 +278,16 @@ Por qué así:
 
       Versión: `amp-conducta` 0.4.0 (ya subida con `semantica`).
 
-      **Quedan dos Índices:**
-   4. `conducta`: renombrar la clase `correr` a `Ejecutar`, capitalizar las tres y mudarlas a `CLASES.md`, que el lint pasa a leer en vez de la lista escrita a mano en `lint-conducta.js:103`.
-   5. `planes`: migrar las 80 filas, verificando en cada una qué parte de `Notas` ya está en el archivo del plan.
-   6. `semantica`: `Significado vetado` a `Significado Farlopa`, y `mostrar-pantalla-bienvenida.js:160` pasa a distinguir los registros por el `indice:` del frontmatter.
-   7. Los ocho lints y el resto del código que lee las tablas: el repartidor de conducta, la Pantalla, el nivelador.
+      **`decisiones` hecho el 30/07/2026.** 43 filas a `Código | Nombre | Descripción | Fecha | Estado | Detalle`, con `Local-0001`–`Local-0043` y un **Nombre nuevo por decisión**, que el registro no tenía: hasta ahora, para referirse a una había que citar el número o el párrafo entero. Las filas además **se reordenaron**: `0012` y `0013` estaban antes de `0011`, `0014` después de `0023` y `0030` antes de `0029`.
+
+      - **`lint-decisiones` leía por posición y quedó en cero filas.** «Sin huecos ni duplicados» sobre un conjunto vacío. Las páginas huérfanas fueron lo único que gritó.
+      - Ahora lee por nombre de columna, acepta el número con prefijo o pelado, **respeta las tuberías escapadas** —el defecto que se encontró al asentar la 0043, y que afectaba a dos filas vivas de este mismo registro— y suma un control de nombres vacíos o duplicados. **Diez controles probados contra un caso bueno y uno malo.**
+      - **Los archivos de detalle conservan su nombre** `NNNN-nombre.md`, como fijó la decisión. Las 213 referencias en texto quedan en la forma vieja, sin apuntar mal.
+      - Versión: `amp-decisiones` 0.6.0.
+
+      **Queda un solo Índice: `planes`** — 80 filas y el reparto de los 48.649 caracteres de `Notas` a los archivos de plan, verificando en cada fila qué parte ya está en el archivo y qué parte solo vive en la celda. Es el único que no es cambio de forma sino mudanza de contenido.
+
+   4. **Los lints y el resto del código que lee las tablas.** Se fue haciendo junto con cada subsistema, no como paso aparte: cada migración destapó su propia rotura. Lo que queda es el **nivelador**, que detecta el manifiesto ausente pero **no** la conversión de las tablas viejas al núcleo, ni los archivos nuevos (`preferencias/README.md`, `conducta/CLASES.md`), ni la sección `## Preferencias` que hay que borrar de `AGENTS.md`. Sin esas detecciones, los Agentes Desplegados con la forma vieja no se migran solos.
 3. `MANIFIESTO.md` y `README.md` de preferencias; sacar la excepción de `lint-subsistemas.js:28` y la sección propia de `AGENTS.md`.
 4. Llevar los tres lints al Patrón: referencias, huérfanos, completitud, y que existan los dos archivos.
 5. Reemplazar los encabezados viejos por los ratificados. Son unas 100 apariciones en texto vivo, que el lint de semántica ya marca.
