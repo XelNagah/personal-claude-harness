@@ -34,7 +34,7 @@ Reglas de conducta del agente en este repo. Siempre en contexto (importado desde
 | Base-0001 | Dar ejemplos concretos de cada postura | Al preguntar por una decisión o analizar alternativas, dar SIEMPRE ejemplos concretos de cada postura (numéricos si aplica): cómo es ahora vs. cómo quedaría y por qué, encadenando consecuencias ("A ⇒ B; si no fuera B ⇒ no A porque X"). Objetivo: ubicar inmediatamente al lector en la mecánica relevante sin que tenga que reconstruir contexto. | — |
 | Base-0002 | Pedir una decisión por vez, con el contexto en la respuesta | Al pedir una decisión al usuario, **el contexto va en el texto de la respuesta**, nunca comprimido dentro de las opciones de una pregunta. Y **de a una decisión por vez**, aunque sean independientes entre sí. Única excepción: una cola de confirmaciones donde la respuesta esperada es "sí" a todas puede ir junta, con la recomendada visible. | — |
 | Base-0003 | Mostrar el texto exacto antes de escribir en un registro canónico | Antes de escribir en un **registro canónico** (glosario, decisiones, preferencias, Terminología Farlopa), mostrar el **texto exacto** que se va a asentar y esperar el visto bueno. Un "sí" a *"¿lo registro?"* aprueba la **acción** de registrar, nunca el **contenido**: lo que el usuario no leyó, no lo ratificó. | — |
-| Base-0004 | Acordar el formato con un esqueleto antes de calcular | Ante un informe o visualización de **formato nuevo**: mostrar primero el esqueleto con datos de juguete marcados como DUMMY, acordar la representación, recién después calcular en serio. **Nunca re-producir completo un formato rechazado**: volver al esqueleto y realinear. | — |
+| Base-0004 | Acordar el formato con un esqueleto antes de calcular | Ante un informe o visualización de **formato nuevo**: mostrar primero el esqueleto con datos de prueba marcados como PROVISORIO, acordar la representación, recién después calcular en serio. **Nunca re-producir completo un formato rechazado**: volver al esqueleto y realinear. | — |
 | Base-0005 | Esperar la notificación de las tareas en background | Esperar la notificación de finalización; no reportar ni consultar estado a cada rato — solo ante sospecha de cuelgue. | — |
 | Base-0006 | Resolver lo conceptual antes que la implementación | Conceptual antes que implementación. Ante ambigüedad de diseño, preguntar antes de asumir. Minimizar cambios sustractivos. | — |
 | Base-0007 | Iterar de alto a bajo nivel | Interfaces y contratos antes que implementación. | — |
@@ -223,9 +223,21 @@ const domain = walk(root, []);
 const read = f => fs.readFileSync(f, 'utf8');
 const inRoot = p => path.resolve(p).startsWith(path.resolve(root) + path.sep);
 
-// La raiz del repo se deduce de la ubicacion del propio lint: .claude/<sub>/lint-<sub>/ -> 3 arriba.
-// La profundidad la fija el instalador; no depende de desde donde se invoque.
-const repoRoot = path.resolve(__dirname, '..', '..', '..');
+// El repo se deriva de `root` —la carpeta del subsistema que se esta mirando—, NUNCA de la ubicacion
+// de este script. En cuanto hay una segunda copia (un plugin instalado, un marketplace bajado, otro
+// repo con el harness) deducirlo desde __dirname describe el repo equivocado, y no falla: contesta.
+// Derivandolo de `root`, la carpeta que se lee y el repo que se barre salen de la misma fuente y no
+// pueden divergir. Conocimiento `el-repo-que-un-script-describe`.
+function repoDe(carpetaSubsistema) {
+  let d = path.resolve(carpetaSubsistema);
+  for (;;) {
+    if (fs.existsSync(path.join(d, '.claude'))) return d;
+    const padre = path.dirname(d);
+    if (padre === d) return path.resolve(carpetaSubsistema, '..', '..');   // sin `.claude` arriba
+    d = padre;
+  }
+}
+const repoRoot = repoDe(root);
 const dentroDelRepo = p => {
   const r = path.resolve(p);
   return r === repoRoot || r.startsWith(repoRoot + path.sep);
@@ -1033,9 +1045,21 @@ const farlPath = farlopa ? farlopa.archivo : path.join(root, 'TERMINOLOGIA-FARLO
 const txt = glosario ? glosario.texto : '';
 const farlTxt = farlopa ? farlopa.texto : '';
 
-// La raiz del repo se deduce de la ubicacion del propio lint: .claude/<sub>/lint-<sub>/ -> 3 arriba.
-// La profundidad la fija el instalador; no depende de desde donde se invoque.
-const repoRoot = path.resolve(__dirname, '..', '..', '..');
+// El repo se deriva de `root` —la carpeta del subsistema que se esta mirando—, NUNCA de la ubicacion
+// de este script. En cuanto hay una segunda copia (un plugin instalado, un marketplace bajado, otro
+// repo con el harness) deducirlo desde __dirname describe el repo equivocado, y no falla: contesta.
+// Derivandolo de `root`, la carpeta que se lee y el repo que se barre salen de la misma fuente y no
+// pueden divergir. Conocimiento `el-repo-que-un-script-describe`.
+function repoDe(carpetaSubsistema) {
+  let d = path.resolve(carpetaSubsistema);
+  for (;;) {
+    if (fs.existsSync(path.join(d, '.claude'))) return d;
+    const padre = path.dirname(d);
+    if (padre === d) return path.resolve(carpetaSubsistema, '..', '..');   // sin `.claude` arriba
+    d = padre;
+  }
+}
+const repoRoot = repoDe(root);
 const dentroDelRepo = p => {
   const r = path.resolve(p);
   return r === repoRoot || r.startsWith(repoRoot + path.sep);
@@ -1101,9 +1125,15 @@ const rows = filasDe(txt, 'alias').map(f => ({
 
 // Solo interesa el termino (los vetados); el significado lo juzga el agente.
 const vetados = [];   // termino pelado, en minuscula
+// Se cuentan aparte las FILAS, porque no son lo mismo que los terminos: una fila puede vetar varias
+// formas hermanas (`levelear / leveleo / leveling` son tres terminos en una relacion). Sin esta
+// distincion el lint decia `vetados: 54` y la Pantalla de bienvenida `39 vetados`, los dos con la
+// misma palabra para cosas distintas, y no habia manera de saber cual miraba que.
+let relacionesVetadas = 0;
 for (const f of filasDe(farlTxt, 'c[oó]mo decirlo')) {
   const termino = primeraDe(f, ['Nombre', 'Término']);
   if (!termino) continue;
+  relacionesVetadas++;
   for (const v of splitFarlop(termino)) vetados.push(v.toLowerCase());
 }
 
@@ -1181,7 +1211,12 @@ function walkRepo(dir, acc) {
   }
   return acc;
 }
-// mapear code-spans inline y fences para separar prosa de codigo (igual que lint-conocimiento)
+// mapear code-spans inline y fences para separar texto plano de codigo (igual que lint-conocimiento)
+// Ademas de las comillas simples invertidas se mapean las COMILLAS, que en espanol son la marca de
+// cita: nombrar un termino para explicar su veto es legitimo y frecuente —la pagina de conocimiento
+// `terminologia-canonica` y los planes que documentan un barrido no pueden hacer otra cosa—, y sin
+// esta exencion esas menciones se informaban como texto a reescribir. La CURSIVA queda afuera a
+// proposito: marca cita pero tambien enfasis, asi que eximirla dejaria pasar el uso real.
 function codeSpans(t) {
   const runs = []; let m; const re = /`+/g;
   while ((m = re.exec(t))) runs.push([m.index, m[0].length]);
@@ -1192,10 +1227,25 @@ function codeSpans(t) {
     if (j < runs.length) { spans.push([open, runs[j][0] + runs[j][1]]); i = j + 1; }
     else i++;
   }
+  for (const reCita of [/"[^"\n]*"/g, /[“”][^“”\n]*[“”]/g, /«[^»\n]*»/g]) {
+    let c; while ((c = reCita.exec(t))) spans.push([c.index, c.index + c[0].length]);
+  }
   return spans;
 }
 const enCodeSpan = (spans, idx) => spans.some(([s, e]) => idx >= s && idx < e);
-const esc = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+// Dos cosas que `\b` no puede hacer, y que el control `detectar-terminologia-vetada` ya resolvia:
+//  - `\b` es del alfabeto ingles, asi que trata los acentos como separador: `\bcapa\b` encontraba
+//    `capa` adentro de una palabra acentuada, y un termino que empieza o termina con acento quedaba
+//    con limites en el lugar equivocado. Se usan limites propios, con las letras del espanol.
+//  - un termino de varias palabras (`capa de plugins`) solo matcheaba con exactamente un espacio
+//    entre cada una: con dos espacios, o partido en dos lineas, no se encontraba.
+// Y `\b` no funciona en absoluto si el termino arranca con un caracter que no es letra, lo que hacia
+// inservible cualquier veto sobre un encabezado como `## Adaptaciones`.
+const LETRA = 'A-Za-zÁÉÍÓÚÜÑáéíóúüñ0-9_';
+const esc = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/\s+/g, '\\s+');
+// Devuelve la expresion que ubica un termino con limites de palabra propios. El grupo 1 es lo que
+// viene antes del termino, asi que el desplazamiento del hallazgo es `m.index + m[1].length`.
+const reTermino = (term, flags) => new RegExp(`(^|[^${LETRA}])(${esc(term)})(?=[^${LETRA}]|$)`, flags);
 const vetadosTerms = [...vetadoSet];
 const apariciones = { prosa: [], codigo: [] };
 if (vetadosTerms.length) {
@@ -1205,26 +1255,33 @@ if (vetadosTerms.length) {
     const nombre = path.basename(f);
     // nombre de archivo/carpeta que contiene un vetado -> codigo (tocarlo es refactor)
     for (const term of vetadosTerms) {
-      const re = new RegExp('\\b' + esc(term) + '\\b', 'i');
-      if (re.test(nombre)) apariciones.codigo.push([rel(f), term, 'nombre de archivo']);
+      if (reTermino(term, 'i').test(nombre)) apariciones.codigo.push([rel(f), term, 'nombre de archivo']);
     }
     if (ext !== '.md' && !CODE_EXT.has(ext)) continue;  // binarios y otros: solo el nombre
     let contenido; try { contenido = fs.readFileSync(f, 'utf8'); } catch { continue; }
     const spans = ext === '.md' ? codeSpans(contenido) : null;
     for (const term of vetadosTerms) {
-      const re = new RegExp('\\b' + esc(term) + '\\b', 'gi');
+      const re = reTermino(term, 'gi');
       let m;
       while ((m = re.exec(contenido))) {
-        const balde = (ext === '.md' && !enCodeSpan(spans, m.index)) ? 'prosa' : 'codigo';
-        const linea = contenido.slice(0, m.index).split('\n').length;
-        apariciones[balde].push([rel(f) + ':' + linea, term]);
+        // El grupo 1 es el caracter de antes del termino: el hallazgo empieza despues de el.
+        const donde = m.index + m[1].length;
+        const grupo = (ext === '.md' && !enCodeSpan(spans, donde)) ? 'prosa' : 'codigo';
+        const linea = contenido.slice(0, donde).split('\n').length;
+        apariciones[grupo].push([rel(f) + ':' + linea, term]);
+        // El limite de la derecha es un lookahead, asi que no consume: sin esto, dos apariciones
+        // pegadas por un solo separador se saltearian.
+        re.lastIndex = donde + m[2].length;
       }
     }
   }
 }
 
 console.log(`== LINT SEMANTICA: ${root} ==`);
-console.log(`conceptos: ${rows.length} | vetados: ${vetadosTerms.length}\n`);
+// Se dice QUE mide cada numero: la Pantalla de bienvenida cuenta entradas del registro (una por
+// relacion vetada) y este lint cuenta terminos, porque es lo que busca en el texto. Los dos estan
+// bien; lo que faltaba era decirlo.
+console.log(`conceptos: ${rows.length} | vetado: ${relacionesVetadas} relaciones (${vetadosTerms.length} términos)\n`);
 console.log(`[1] LINKS DE DETALLE ROTOS (${refsRotas.length}):`);
 refsRotas.forEach(([c, t]) => console.log(`    ${c}  ->  ${t}   [no existe]`));
 if (!refsRotas.length) console.log('    (ninguno)');
@@ -1298,7 +1355,7 @@ Lint `.claude/decisiones/lint-decisiones/lint-decisiones.js` (Node, sin dependen
 
 ```js
 #!/usr/bin/env node
-// Lint del registro de decisiones: numeracion, links de detalle, huerfanos, superseded. Sin LLM, sin red.
+// Lint del registro de decisiones: numeracion, links de detalle, huerfanos, reemplazos. Sin LLM, sin red.
 // Uso: node lint-decisiones.js [<carpeta>]   (default: .claude/decisiones)
 const fs = require('fs'), path = require('path');
 
@@ -1400,9 +1457,21 @@ const nombresIndice = new Set(indices.map(i => i.nombre));
 const txt = indices.map(i => i.texto).join('\n');
 const pad = n => String(n).padStart(4, '0');
 
-// La raiz del repo se deduce de la ubicacion del propio lint: .claude/<sub>/lint-<sub>/ -> 3 arriba.
-// La profundidad la fija el instalador; no depende de desde donde se invoque.
-const repoRoot = path.resolve(__dirname, '..', '..', '..');
+// El repo se deriva de `root` —la carpeta del subsistema que se esta mirando—, NUNCA de la ubicacion
+// de este script. En cuanto hay una segunda copia (un plugin instalado, un marketplace bajado, otro
+// repo con el harness) deducirlo desde __dirname describe el repo equivocado, y no falla: contesta.
+// Derivandolo de `root`, la carpeta que se lee y el repo que se barre salen de la misma fuente y no
+// pueden divergir. Conocimiento `el-repo-que-un-script-describe`.
+function repoDe(carpetaSubsistema) {
+  let d = path.resolve(carpetaSubsistema);
+  for (;;) {
+    if (fs.existsSync(path.join(d, '.claude'))) return d;
+    const padre = path.dirname(d);
+    if (padre === d) return path.resolve(carpetaSubsistema, '..', '..');   // sin `.claude` arriba
+    d = padre;
+  }
+}
+const repoRoot = repoDe(root);
 const dentroDelRepo = p => {
   const r = path.resolve(p);
   return r === repoRoot || r.startsWith(repoRoot + path.sep);
@@ -1495,7 +1564,7 @@ if (fs.existsSync(root)) {
   }
 }
 
-// [4] superseded (en la columna Estado) que no resuelven
+// [4] reemplazos (en la columna Estado) que no resuelven
 const nums = new Set(rows.map(r => r.n));
 const supRe = /(?:reemplazada por|supersede-a|superseded by)[^0-9\n]{0,12}(\d{1,4})/i;
 const supRotas = [];
@@ -1515,7 +1584,7 @@ if (!refsRotas.length) console.log('    (ninguno)');
 console.log(`\n[3] PAGINAS HUERFANAS (${huerfanos.length}):`);
 huerfanos.forEach(h => console.log(`    ${h}`));
 if (!huerfanos.length) console.log('    (ninguna)');
-console.log(`\n[4] SUPERSEDED ROTAS (${supRotas.length}):`);
+console.log(`\n[4] REEMPLAZOS ROTOS (${supRotas.length}):`);
 supRotas.forEach(([n, r]) => console.log(`    ${n}  ->  ${r}   [decision inexistente]`));
 if (!supRotas.length) console.log('    (ninguna)');
 console.log(`\n[5] NOMBRES VACIOS O DUPLICADOS (${nombresMal.length}):`);
@@ -1560,7 +1629,7 @@ Las que instala el Agente Multipropósito. El nivelador reemplaza **este archivo
 
 | Código | Nombre | Descripción | Tipo | Cómo se invoca | Estado | Detalle |
 |--------|--------|-------------|------|----------------|--------|---------|
-| Base-0001 | actualizar-plugins | Pone al día los plugins que este Agente con Propósito tiene habilitados en esta máquina —los que le traen su Agente Multipropósito— y detecta los cuatro desfases: el marketplace bajado que no trajo lo publicado, el plugin que falta traer, el silencioso —traído pero no cargado, porque la sesión arrancó antes— y la dependencia que el repo nunca declaró (`SIN DECLARAR`, que deja al plugin que la pide sin cargar y sin señal); marca aparte los plugins `RETIRADO` (nombres que el marketplace dejó de ofrecer ⇒ migración, no actualización). Sin `--aplicar` solo diagnostica; acepta ruta para apuntarlo a otro repo | script | `node .claude/herramientas/actualizar-plugins/actualizar-plugins.js [--aplicar] [rutaRepo]` | vigente | [actualizar-plugins/](actualizar-plugins/) |
+| Base-0001 | actualizar-plugins | Pone al día los plugins que este Agente con Propósito tiene habilitados en esta máquina —los que le traen su Agente Multipropósito— y detecta los cuatro desfases: el marketplace bajado que no trajo lo publicado, el plugin que falta traer, el silencioso —traído pero no cargado, porque la sesión arrancó antes— y la dependencia que el repo nunca declaró (`SIN DECLARAR`, que deja al plugin que la pide sin cargar y sin señal); marca aparte los plugins `RETIRADO` (nombres que el marketplace dejó de ofrecer ⇒ migración, no actualización). Compara además **las dos partes del Agente Multipropósito entre sí**: los archivos que hay en el repo contra los que instalaría el plugin que efectivamente corre, porque cada parte viaja por su camino y puede estar al día por su cuenta sin coincidir con la otra. Informa además el **cache huérfano** —las carpetas de versión que ningún repo de la máquina usa, separando los nombres retirados de las versiones viejas de plugins vigentes—, que nada limpia y crece con cada publicación; no las borra ni con `--aplicar`, porque están afuera del repo. Sin `--aplicar` solo diagnostica; acepta ruta para apuntarlo a otro repo | script | `node .claude/herramientas/actualizar-plugins/actualizar-plugins.js [--aplicar] [rutaRepo]` | vigente | [actualizar-plugins/](actualizar-plugins/) |
 | Base-0002 | instalar-plugins-codex | Instala en Codex CLI el bundle `amp` y sus dependencias en orden, porque Codex no las resuelve al agregar un plugin | script | `node <checkout-harness>/.claude/herramientas/instalar-plugins-codex/instalar-plugins-codex.js --aplicar` | vigente | [instalar-plugins-codex/](instalar-plugins-codex/) |
 ```
 
@@ -1773,9 +1842,21 @@ for (const i of indices) {
 problemasIndices.push(...problemasNucleo);
 
 // [4] refs por ruta a lints en settings que no resuelven (cualquier .claude/**/*.js|sh|...)
-// La raiz del repo se deduce de la ubicacion del propio lint: .claude/<sub>/lint-<sub>/ -> 3 arriba.
-// La profundidad la fija el instalador; no depende de desde donde se invoque.
-const repoRoot = path.resolve(__dirname, '..', '..', '..');
+// El repo se deriva de `root` —la carpeta del subsistema que se esta mirando—, NUNCA de la ubicacion
+// de este script. En cuanto hay una segunda copia (un plugin instalado, un marketplace bajado, otro
+// repo con el harness) deducirlo desde __dirname describe el repo equivocado, y no falla: contesta.
+// Derivandolo de `root`, la carpeta que se lee y el repo que se barre salen de la misma fuente y no
+// pueden divergir. Conocimiento `el-repo-que-un-script-describe`.
+function repoDe(carpetaSubsistema) {
+  let d = path.resolve(carpetaSubsistema);
+  for (;;) {
+    if (fs.existsSync(path.join(d, '.claude'))) return d;
+    const padre = path.dirname(d);
+    if (padre === d) return path.resolve(carpetaSubsistema, '..', '..');   // sin `.claude` arriba
+    d = padre;
+  }
+}
+const repoRoot = repoDe(root);
 const refsRotas = [];
 for (const sf of ['.claude/settings.local.json', '.claude/settings.json']) {
   const abs = path.join(repoRoot, sf);
@@ -2146,6 +2227,98 @@ function instalado(id) {
   return propia || usuario || sinRepo || null;
 }
 
+// -- cache huerfano: lo que quedo bajado y ya no lo usa NADIE ------------------
+// El cache de plugins es de la MAQUINA, no de este repo: dos repos pueden correr versiones distintas
+// del mismo plugin. Por eso lo unico que se informa es lo que NINGUNA entrada de instalacion declara,
+// mirando todas las entradas de todos los repos. Marcar como sobrante una version que otro repo esta
+// usando seria el mismo error que esta Herramienta evita al no tomar la version instalada allá.
+//
+// Nada limpia esto hoy y crece con cada publicacion. No se borra automaticamente ni con `--aplicar`:
+// esta afuera del repo, en la carpeta del usuario, y borrar es destructivo. Se informa y se da el
+// comando.
+function cacheHuerfano() {
+  const cacheDir = path.join(PLUGINS_DIR, 'cache');
+  const registro = leerJson(path.join(PLUGINS_DIR, 'installed_plugins.json'));
+  const plugins = (registro && registro.plugins) || {};
+  // Todas las versiones en uso por cualquier repo, por nombre completo del plugin.
+  const enUso = new Map();
+  for (const [id, entradas] of Object.entries(plugins)) {
+    for (const e of entradas || []) {
+      if (!enUso.has(id)) enUso.set(id, new Set());
+      if (e.version) enUso.get(id).add(e.version);
+    }
+  }
+  const sobran = [];
+  let marketplaces = [];
+  try { marketplaces = fs.readdirSync(cacheDir, { withFileTypes: true }).filter(e => e.isDirectory()); }
+  catch { return sobran; }
+  for (const mk of marketplaces) {
+    const raizMk = path.join(cacheDir, mk.name);
+    let nombres = [];
+    try { nombres = fs.readdirSync(raizMk, { withFileTypes: true }).filter(e => e.isDirectory()); } catch { continue; }
+    // Lo que el marketplace bajado todavia ofrece: un nombre que no esta ahi es una generacion vieja.
+    // `catalogoDe` devuelve el `marketplace.json` entero, no la lista: la lista es su campo `plugins`.
+    const cat = catalogoDe(path.join(PLUGINS_DIR, 'marketplaces', mk.name));
+    const filasCat = (cat && Array.isArray(cat.plugins)) ? cat.plugins : [];
+    const ofrecidos = new Set(filasCat.map(p => p.name));
+    for (const n of nombres) {
+      const id = `${n.name}@${mk.name}`;
+      const usadas = enUso.get(id) || new Set();
+      let versiones = [];
+      try { versiones = fs.readdirSync(path.join(raizMk, n.name)); } catch { continue; }
+      const libres = versiones.filter(v => !usadas.has(v));
+      if (!libres.length) continue;
+      const retirado = ofrecidos.size > 0 && !ofrecidos.has(n.name);
+      sobran.push({ id, ruta: path.join(raizMk, n.name), libres, total: versiones.length, retirado });
+    }
+  }
+  return sobran;
+}
+
+// -- desfase entre las DOS PARTES del Agente Multiproposito -------------------
+// Un Agente Multiproposito son dos cosas que viajan por caminos distintos: sus SKILLS, que llegan
+// como plugins, y sus ARCHIVOS, que escribe `amp:inicializar` dentro de `.claude/`. Cada camino tiene
+// su propio control —esta Herramienta mira los plugins, `amp:actualizar` mira los archivos— y hasta
+// el 30/07/2026 nadie miraba las dos partes ENTRE SI. El caso medido: un repo con los archivos de la
+// generacion nueva y los plugins de la vieja, con los dos controles en verde por separado.
+//
+// Se compara contra la PLANTILLA del plugin que EFECTIVAMENTE CORRE, cuya ruta sale del propio
+// registro de instalacion (`installPath`), no de adivinar una version. Cada bloque de codigo de esa
+// plantilla declara su destino: si el archivo que hay en el repo no coincide, las dos partes estan
+// en generaciones distintas.
+function archivosDeOtraGeneracion(filas) {
+  const amp = filas.find(f => /^amp@/.test(f.id));
+  if (!amp) return null;
+  const ent = instalado(amp.id);
+  if (!ent || !ent.installPath) return null;
+  const plantilla = path.join(ent.installPath, 'skills', 'inicializar', 'PLANTILLA.md');
+  let txt; try { txt = fs.readFileSync(plantilla, 'utf8'); } catch { return null; }
+
+  const lineas = txt.split(/\r?\n/);
+  const distintos = [], faltantes = [];
+  let destino = null, dentro = false, buf = [];
+  for (const l of lineas) {
+    if (!dentro) {
+      const m = l.match(/`(\.claude\/[^`]+\.js)`/);
+      if (m) destino = m[1];
+      if (/^```js\s*$/.test(l)) { dentro = true; buf = []; }
+      continue;
+    }
+    if (/^```\s*$/.test(l)) {
+      dentro = false;
+      if (destino) {
+        const enRepo = path.join(REPO, destino);
+        const norm = s => s.replace(/\r\n/g, '\n').replace(/\s+$/, '');
+        if (!fs.existsSync(enRepo)) faltantes.push(destino);
+        else if (norm(fs.readFileSync(enRepo, 'utf8')) !== norm(buf.join('\n'))) distintos.push(destino);
+      }
+      continue;
+    }
+    buf.push(l);
+  }
+  return { version: ent.version || '(sin version)', distintos, faltantes };
+}
+
 function marketplaceRegistrado(marketplace) {
   const mkts = leerJson(path.join(PLUGINS_DIR, 'known_marketplaces.json')) || {};
   return mkts[marketplace] || null;
@@ -2508,6 +2681,44 @@ if (!filas.length) {
     for (const f of retirados) console.log(`  claude plugin uninstall ${f.id} --scope ${f.scope}`);
     console.log('\nCada uninstall saca solo su linea de `enabledPlugins`; no hace falta editar el settings');
     console.log('a mano. `claude plugin prune` NO sirve para limpiar acá: solo mira el alcance de usuario.');
+  }
+
+  // Las dos partes entre si: los archivos del repo contra los que instalaria el plugin que corre.
+  const gen = archivosDeOtraGeneracion(filas);
+  if (gen && (gen.distintos.length || gen.faltantes.length)) {
+    const total = gen.distintos.length + gen.faltantes.length;
+    console.log(`\n${total} archivo(s) DE OTRA GENERACION que los plugins: el plugin que corre (${gen.version})`);
+    console.log('instalaria una version distinta de estos archivos que la que hay en el repo. Los plugins y');
+    console.log('los archivos son las dos partes del mismo Agente Multiproposito y viajan por caminos');
+    console.log('distintos, asi que cada uno puede estar al dia por su cuenta y no coincidir entre si.');
+    for (const d of gen.distintos) console.log(`  distinto:  ${d}`);
+    for (const d of gen.faltantes) console.log(`  no esta:   ${d}`);
+    console.log('\nSi los plugins ya estan al dia, esto se resuelve nivelando los archivos: pedir `amp:actualizar`.');
+    console.log('En el repo que PUBLICA el Agente Multiproposito es lo esperable cuando hay cambios sin publicar.');
+  } else if (gen) {
+    console.log('\nLas dos partes coinciden: los archivos del repo son los que instalaria el plugin que corre.');
+  }
+
+  // Cache huerfano: informativo. Es de la maquina, no del repo, y no lo limpia nadie.
+  const sobra = cacheHuerfano();
+  if (sobra.length) {
+    const carpetas = sobra.reduce((n, s) => n + s.libres.length, 0);
+    const retirados = sobra.filter(s => s.retirado);
+    console.log(`\n${carpetas} carpeta(s) de version en el CACHE que ningun repo de esta maquina usa`);
+    console.log('(se mira el registro completo, no solo este repo: otro repo puede estar corriendo una');
+    console.log('version vieja a proposito). Nada las limpia y crecen con cada publicacion.');
+    if (retirados.length) {
+      console.log(`\n  ${retirados.length} de nombres que el marketplace ya no ofrece:`);
+      for (const s of retirados) console.log(`    ${s.id}  (${s.libres.length} de ${s.total})`);
+    }
+    const viejas = sobra.filter(s => !s.retirado);
+    if (viejas.length) {
+      console.log(`\n  ${viejas.length} de plugins vigentes, en versiones que ya no corren:`);
+      for (const s of viejas) console.log(`    ${s.id}  (${s.libres.length} de ${s.total})`);
+    }
+    console.log('\nBorrarlas es seguro pero es DESTRUCTIVO y esta afuera del repo, en la carpeta del');
+    console.log('usuario, asi que no se hace automaticamente ni con --aplicar. Las rutas son:');
+    for (const s of sobra) for (const v of s.libres) console.log(`  ${path.join(s.ruta, v)}`);
   }
 }
 ```
@@ -3001,10 +3212,23 @@ function leerRegistro() {
 
 // -- texto en el que se busca: sin bloques de codigo ni tramos citados ---
 // Se reemplaza por espacios (no se borra) para no pegar palabras que estaban separadas.
+//
+// Las COMILLAS cuentan como cita igual que las comillas simples invertidas: en espanol son la
+// marca de cita, y sin ellas no se puede escribir sobre la propia terminologia. La pagina de
+// conocimiento `terminologia-canonica` y los planes que cuentan como se barrio un termino tienen
+// que nombrarlo para explicarlo.
+//
+// La CURSIVA no se exime a proposito: en espanol marca cita PERO tambien enfasis, asi que eximirla
+// dejaria pasar el uso real — un termino vetado en cursiva suele estar puesto para recalcarlo, no
+// para nombrarlo. Entre perder una cita en cursiva y perder una deteccion, se elige lo primero: la
+// cita se puede reescribir con comillas, la deteccion perdida no se recupera.
 function textoDesnudo(txt) {
   return txt
     .replace(/```[\s\S]*?```/g, m => ' '.repeat(m.length))     // bloques de codigo
     .replace(/`[^`\n]*`/g, m => ' '.repeat(m.length))          // tramos entre comillas simples invertidas
+    .replace(/"[^"\n]*"/g, m => ' '.repeat(m.length))          // cita entre comillas rectas
+    .replace(/[“”][^“”\n]*[“”]/g, m => ' '.repeat(m.length))  // comillas tipograficas
+    .replace(/«[^»\n]*»/g, m => ' '.repeat(m.length))          // comillas angulares
     .replace(/^\s{4,}\S.*$/gm, m => ' '.repeat(m.length));     // bloques indentados
 }
 
@@ -3423,6 +3647,39 @@ for (const f of filas) {
   cuerpo.push(`${marca} · ${f.nombre.padEnd(anchoNom)}   ${val}`);
 }
 
+// -- lo que se carga en CADA sesion, medido -----------------------------------
+// El contexto siempre cargado no lo vigila nadie, y crece de a poco: cada indice liviano que se suma
+// pesa nada por si solo. El modelo de carga por manifiesto se decidio justamente para bajarlo —el
+// registro de planes pesaba casi la mitad del total— y sin un numero a la vista ese ahorro se vuelve
+// a consumir sin que se note. Se muestra siempre; el aviso salta pasado el presupuesto.
+const PRESUPUESTO = 48 * 1024;
+function pesoDelContexto() {
+  const vistos = new Set();
+  let total = 0, archivos = 0;
+  const sumar = f => {
+    const abs = path.resolve(f);
+    if (vistos.has(abs) || !fs.existsSync(abs)) return;
+    vistos.add(abs);
+    let txt; try { txt = fs.readFileSync(abs, 'utf8'); } catch { return; }
+    total += Buffer.byteLength(txt); archivos++;
+    // Las lineas `@ruta` son imports: se resuelven contra el repo y contra la carpeta del archivo.
+    for (const m of txt.matchAll(/^@(\S+)\s*$/gm)) {
+      const cand = [path.join(REPO, m[1]), path.join(path.dirname(abs), m[1])];
+      const hit = cand.find(c => fs.existsSync(c));
+      if (hit) sumar(hit);
+    }
+  };
+  for (const entrada of ['CLAUDE.md', 'AGENTS.md']) sumar(path.join(REPO, entrada));
+  return { total, archivos };
+}
+const ctx = pesoDelContexto();
+if (ctx.archivos) {
+  const kb = (ctx.total / 1024).toFixed(1);
+  const tope = (PRESUPUESTO / 1024).toFixed(0);
+  const excede = ctx.total > PRESUPUESTO;
+  cuerpo.push(`${excede ? '⚠' : ' '} · ${'contexto'.padEnd(anchoNom)}   ${kb} KB en ${ctx.archivos} archivos${excede ? ` (pasa el presupuesto de ${tope} KB)` : ''}`);
+}
+
 // Ancho interno = el renglón más largo (piso MIN). Cada línea se rellena a ese ancho.
 const W = Math.max(MIN, ...cuerpo.filter(l => l !== '__SEP__').map(l => nfc(l).length));
 const regla = (l, mid, r) => l + mid.repeat(W + 2) + r;
@@ -3723,13 +3980,34 @@ function filasTabla(txt, requeridas) {
 const problemas = { estructura: [], indices: [], momentoInexistente: [], claseInvalida: [], estadoInvalido: [], inyectarSinTexto: [], vigenteSinRepartidor: [] };
 
 // -- vocabulario de momentos --------------------------------------------
+// El vocabulario se lee de DOS archivos: `MOMENTOS.md` (lo manda el Agente Multiproposito y el
+// nivelador lo reemplaza entero) y `MOMENTOS-LOCAL.md` (los momentos que suma el Propósito de cada
+// repo; el nivelador no lo abre). Sin el segundo, un repo que necesitaba un momento propio no tenia
+// donde declararlo: el unico archivo disponible era uno que el nivelador pisa en la corrida siguiente.
+// El del Agente Desplegado es OPCIONAL — la mayoria de los repos no suma momentos— y su ausencia no
+// es un hallazgo.
+//
+// No llevan frontmatter de Índice a proposito: no listan entradas del subsistema sino vocabulario, y
+// declararlos como Índice haria que el lint les exigiera las columnas de una regla.
 const momPath = path.join(root, 'MOMENTOS.md');
+const momLocalPath = path.join(root, 'MOMENTOS-LOCAL.md');
 let momentos = new Map();   // nombre -> disponibilidad (activo|declarado)
 if (!fs.existsSync(momPath)) problemas.estructura.push('falta MOMENTOS.md (vocabulario de momentos)');
 else {
   const { cols, filas } = filasTabla(fs.readFileSync(momPath, 'utf8'), ['momento', 'disponibilidad']);
   if (!cols) problemas.estructura.push('MOMENTOS.md: no se encontro la tabla (columnas Momento, Disponibilidad)');
   else for (const f of filas) momentos.set(f.momento.toLowerCase(), f.disponibilidad.toLowerCase());
+}
+if (fs.existsSync(momLocalPath)) {
+  const { cols, filas } = filasTabla(fs.readFileSync(momLocalPath, 'utf8'), ['momento', 'disponibilidad']);
+  if (!cols) problemas.estructura.push('MOMENTOS-LOCAL.md: no se encontro la tabla (columnas Momento, Disponibilidad)');
+  else for (const f of filas) {
+    const nombre = f.momento.toLowerCase();
+    // Un momento del repo que repite uno de la Base es ambiguo: el nivelador reemplaza el de arriba y
+    // el de abajo queda pisandolo en silencio, con otra disponibilidad.
+    if (momentos.has(nombre)) problemas.estructura.push(`MOMENTOS-LOCAL.md: "${f.momento}" ya esta en MOMENTOS.md (el del Agente Multiproposito manda)`);
+    else momentos.set(nombre, f.disponibilidad.toLowerCase());
+  }
 }
 
 // -- vocabulario de clases ----------------------------------------------
@@ -3769,7 +4047,11 @@ for (const idx of indices) {
     if (!momentos.has(momento)) problemas.momentoInexistente.push(`"${regla}" -> momento "${f.momento}" no esta en MOMENTOS.md`);
     if (!CLASES.includes(clase)) problemas.claseInvalida.push(`"${regla}" -> clase "${f.clase}" (validas: ${CLASES.join('/')})`);
     if (!ESTADOS.includes(estado)) problemas.estadoInvalido.push(`"${regla}" -> estado "${f.estado}" (validos: ${ESTADOS.join('/')})`);
-    if (clase === 'inyectar' && !f.contenido) problemas.inyectarSinTexto.push(`"${regla}" -> clase inyectar sin Contenido`);
+    // `—` es el marcador de "nada" en todos los registros del repo, asi que cuenta como vacio: sin
+    // esto una regla `Inyectar` con la celda en `—` pasaba el control y quedaba sin texto que
+    // inyectar, entregando una cadena vacia en su momento sin que nadie avisara.
+    const sinContenido = !f.contenido || ['—', '-', '–'].includes(f.contenido.trim());
+    if (clase === 'inyectar' && sinContenido) problemas.inyectarSinTexto.push(`"${regla}" -> clase inyectar sin Contenido`);
     // honestidad: una regla vigente no puede colgar de un momento sin repartidor (disponibilidad declarado)
     if (estado === 'vigente' && momentos.get(momento) === 'declarado')
       problemas.vigenteSinRepartidor.push(`"${regla}" -> vigente pero su momento "${f.momento}" es 'declarado' (sin repartidor): deberia ser 'pendiente'`);
@@ -4380,12 +4662,16 @@ for (const casa of casas) {
   if (!nombres.includes(casa)) errores.push(`casa no catalogada: ${casa}`);
 }
 
+// Reporta y NO falla, como los otros nueve lints: la capa mecanica describe el estado del repo, y
+// que haya hallazgos es informacion, no un error del programa. Hasta el 30/07/2026 este era el unico
+// lint que salia con codigo 1 y escribia en la salida de errores, y eso tenia dos consecuencias: el
+// control de cierre lo mostraba como ERROR en vez de listar sus hallazgos, y el formato `[!] linea`
+// no era contable, asi que sus hallazgos no entraban en ningun total.
+// El formato `[TITULO] (N)` es el mismo que usan los demas, y es lo que el control de cierre cuenta.
 console.log(`subsistemas: ${filas.length} | casas: ${casas.length}`);
-if (errores.length) {
-  errores.forEach(e => console.error(`[!] ${e}`));
-  process.exit(1);
-}
-console.log('OK');
+console.log(`\n[CATALOGO vs DISCO] (${errores.length}):`);
+if (errores.length) errores.forEach(e => console.log(`    ${e}`));
+else console.log('    (ninguno)');
 ```
 
 ### `.claude/planes/README.md`
@@ -4578,7 +4864,7 @@ Relacionado: [[flujo-planes]].
 ````markdown
 # Conducta — manifiesto de subsistema
 
-El subsistema `conducta` asegura comportamientos del tipo "cuando hagas X, asegurate de Y": ata **momentos** del flujo a **acciones** de una **clase** — `Inyectar` un texto, `Ejecutar` una Herramienta, `Bloquear` la acción. Los momentos viven en `MOMENTOS.md`, las clases en `CLASES.md`, y el hook `establecer-conducta/` entrega las reglas de sus dos registros. Modelo completo en `README.md`.
+El subsistema `conducta` asegura comportamientos del tipo "cuando hagas X, asegurate de Y": ata **momentos** del flujo a **acciones** de una **clase** — `Inyectar` un texto, `Ejecutar` una Herramienta, `Bloquear` la acción. Los momentos viven en `MOMENTOS.md` (y los propios del repo en `MOMENTOS-LOCAL.md`), las clases en `CLASES.md` —que no se extiende por repo: están en el código del repartidor—, y el hook `establecer-conducta/` entrega las reglas. Modelo completo en `README.md`.
 
 Al escribir un `.md` de cualquier parte del repo, el control `detectar-terminologia-vetada/` **rechaza** el texto con un término vetado sin uso legítimo posible e **informa** los que dependen del significado: citarlo no se frena, usarlo sí.
 
@@ -4699,6 +4985,8 @@ Vocabulario de las **clases** válidas para una regla de conducta. La clase dice
 - **A dónde va el resultado** — dónde termina.
 - **Disponibilidad** — `activo` (hay repartidor que la entrega) o las salvedades por agente.
 
+> **Este vocabulario no tiene versión del Agente Desplegado, y es a propósito.** Los momentos sí: `MOMENTOS-LOCAL.md` existe para que un repo declare puntos del flujo propios de su Propósito. Las clases no, porque **están implementadas en el código del repartidor**: agregar una cuarta clase sin tocar `establecer-conducta/` deja reglas que nadie sabe despachar, y el síntoma sería una regla que existe y no se entrega nunca. Una clase nueva es un cambio del Agente Multipropósito, no una extensión del repo.
+
 | Clase | Qué es el Contenido | Qué hace el hook | A dónde va el resultado | Disponibilidad |
 |-------|---------------------|------------------|-------------------------|----------------|
 | Inyectar | texto fijo, escrito en el Índice | lo emite como `additionalContext` | al contexto del modelo; el usuario no lo ve | activo |
@@ -4715,6 +5003,8 @@ Vocabulario de las **clases** válidas para una regla de conducta. La clase dice
 
 Vocabulario de los **momentos** válidos a los que una regla de conducta puede atarse. Un momento es un **evento de hook + una condición que la máquina evalúa sin juicio**; es agente-agnóstico, y su realización depende de que el agente tenga un repartidor para ese evento. Este archivo es el punto de partida del registro de momentos: hoy alcanza el vocabulario (nombre · qué representa · evento · disponibilidad). Crece a las columnas completas (condición fina, disponibilidad por agente) cuando se sumen repartidores nuevos. El `lint-conducta` lo lee para validar que toda regla apunte a un momento existente y que ninguna regla `vigente` cuelgue de un momento sin repartidor.
 
+> **Este archivo es del Agente Multipropósito y el nivelador lo reemplaza entero.** Los momentos que suma el Propósito de un repo van en [`MOMENTOS-LOCAL.md`](MOMENTOS-LOCAL.md), que el nivelador no abre; escribirlos acá los pierde en la corrida siguiente. El `lint-conducta` lee los dos y valida que ninguno se repita.
+
 - **Momento** — nombre canónico, en español corriente.
 - **Qué representa** — el punto del flujo, en una línea.
 - **Evento de hook** — el evento que lo dispara (+ condición, si la hay).
@@ -4729,6 +5019,30 @@ Vocabulario de los **momentos** válidos a los que una regla de conducta puede a
 | al crear un commit | Antes de confirmar un commit o redactar una descripción de PR. | `PreToolUse` sobre la creación del commit; repartidor específico pendiente | declarado |
 
 > Paridad: `cada turno` (`UserPromptSubmit` + `additionalContext`) tiene paridad plena Claude Code ↔ Codex (conocimiento `hooks-claude-code`). `al arrancar la sesión` (`SessionStart` → `systemMessage`) anda en Claude Code, Codex y Gemini; Cursor no tiene banner nativo y degrada sin caja. `al escribir` **también corre en Codex** desde abril de 2026: toda edición pasa por `apply_patch`, que dispara `PreToolUse` y matchea como `apply_patch`, `Edit` o `Write` (conocimiento `hooks-codex-cli`; hasta entonces solo disparaba para Bash y el momento figuraba acá como Claude-first). Con una salvedad: **el `deny` todavía no frena en Codex** —el archivo se escribe igual, bug abierto del CLI—, así que ahí una regla `bloquear` degrada a aviso hasta que lo arreglen; se emite igual para que empiece a frenar sola el día que ocurra. Los momentos `declarado` esperan su repartidor.
+````
+
+### `.claude/conducta/MOMENTOS-LOCAL.md`
+
+````markdown
+# Momentos de conducta del Agente Desplegado
+
+Los **momentos** que este repo suma para su Propósito. El nivelador **no toca este archivo**; `MOMENTOS.md` —el del Agente Multipropósito— sí lo reemplaza entero, así que un momento propio escrito allá se pierde en la corrida siguiente. Las columnas y la convención completa están en [`MOMENTOS.md`](MOMENTOS.md).
+
+Un momento de acá no puede repetir uno de `MOMENTOS.md`: el del Agente Multipropósito manda, y tener el mismo nombre en los dos archivos deja al de abajo pisando al de arriba en silencio, con otra disponibilidad. El `lint-conducta` lo marca.
+
+## Cómo se agrega un momento propio
+
+La **`Disponibilidad`** es lo que hay que mirar, y casi siempre arranca en `declarado`:
+
+- **`declarado`** — el momento existe como vocabulario, pero **ningún repartidor lo realiza todavía**. Sus reglas van en estado `pendiente`: quedan escritas y no se entregan. El lint marca cualquier regla `vigente` colgada de un momento así, porque prometería un comportamiento que nadie ejecuta.
+- **`activo`** — hay un repartidor que lo entrega. Realizar un momento nuevo es **código**, no registro: el repartidor `establecer-conducta/` traduce cada evento de hook a un momento, y esa traducción vive en su archivo. Un momento propio pasa a `activo` cuando ese código lo contempla.
+
+Por eso declarar el momento acá es el primer paso y no el único: sirve para dejar asentado el punto del flujo y escribir sus reglas antes de que exista el mecanismo que las entregue.
+
+Las **clases** no se extienden desde acá — no hay `CLASES-LOCAL.md` y es deliberado: están implementadas en el código del repartidor. El motivo está en [`CLASES.md`](CLASES.md).
+
+| Momento | Qué representa | Evento de hook | Disponibilidad |
+|---------|----------------|----------------|----------------|
 ````
 
 ### `.claude/planes/MANIFIESTO.md`
@@ -4778,11 +5092,11 @@ Chequea refs rotas, índice incompleto y huérfanos. Convención completa en `RE
 ````markdown
 # Semántica — manifiesto de subsistema
 
-El subsistema `semántica` mantiene la coherencia semántica del dominio en el tiempo. Vive en este directorio (`semantica/`) con **dos registros pares**: `GLOSARIO.md` (terminología legítima —concepto → definición, con alias y propuestos—) y `TERMINOLOGIA-FARLOPA.md` (relaciones vetadas, columnas `Término | Significado vetado | Cómo decirlo`). **Lo vetado es la relación término→significado, no el término**: el mismo término con otro significado puede ser legítimo; por eso la columna del medio, y por eso nada vetado se queda en el glosario.
+El subsistema `semántica` mantiene la coherencia semántica del dominio en el tiempo. Vive en este directorio (`semantica/`) con **dos registros pares**: `GLOSARIO.md` (terminología legítima —concepto → definición, con alias y propuestos—) y `TERMINOLOGIA-FARLOPA.md` (las relaciones vetadas). **Lo vetado es la relación término→significado, no el término**: el mismo término con otro significado puede ser legítimo; por eso la columna del medio, y por eso nada vetado se queda en el glosario.
 
 **Disparador:** consultar ambos registros al planificar y analizar; no acuñar términos propios, preferir los del usuario. Proponer una entrada (columna `Propuestos` del glosario) al detectar un término del dominio sin registrar. El agente solo **propone**: ratificar (a alias) y vetar (a Terminología Farlopa) son potestad del usuario.
 
-**Skills:** `converger-terminologia` (recorre el texto del repo contra los dos registros: detecta sinónimos, anglicismos y desvíos, y propone ratificar, vetar o reescribir); instalación con `inicializar-semantica`.
+**Skills:** `converger-terminologia` (barre un texto contra los dos registros y propone ratificar, vetar o reescribir; también revisa si cada fila del registro acierta. El alcance se le indica al invocarla: el repo, los planes, lo que se publica, o un texto).
 
 **Índices:** `GLOSARIO.md` (Agente Desplegado) · `TERMINOLOGIA-FARLOPA.md` (Agente Desplegado). **No se cargan siempre** — se consultan a demanda. El **lint marca por término** (lo mecánico); el **agente juzga el significado** al leer la marca. Al cerrar una tarea que tocó semántica, correr el lint desde la raíz del repo:
 

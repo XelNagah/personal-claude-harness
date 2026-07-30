@@ -95,6 +95,33 @@ Cuando lo bajado está en `ACTUALIZAR` **y** el repo desde donde se corre es el 
 
 Es genérico: no hardcodea nombres de plugin ni de marketplace, así que también reporta los plugins ajenos al harness que el repo tenga habilitados.
 
+## Las dos partes entre sí
+
+Un Agente Multipropósito son **dos cosas que viajan por caminos distintos**: sus **skills**, que llegan como plugins, y sus **archivos**, que escribe `amp:inicializar` dentro de `.claude/`. Cada camino tiene su control —esta Herramienta mira los plugins, `amp:actualizar` mira los archivos—, y de ahí se sigue un desfase que ninguno de los dos podía ver: el de las dos partes **entre sí**. Cada una puede estar al día por su cuenta y no coincidir con la otra, con los dos controles en verde por separado.
+
+La comparación se hace contra la **PLANTILLA del plugin que efectivamente corre**, cuya ruta sale del propio registro de instalación (`installPath`), no de adivinar una versión. Cada bloque de código de esa plantilla declara su destino; si el archivo que hay en el repo no coincide, las dos partes están en generaciones distintas.
+
+Tres resultados posibles, y los tres significan cosas distintas:
+
+- **Coinciden** — los archivos del repo son los que instalaría el plugin que corre. Es lo normal.
+- **Difieren** — hay que nivelar los archivos con `amp:actualizar`. En el repo que **publica** el Agente Multipropósito es lo esperable mientras haya cambios sin publicar.
+- **No se compara** — el plugin no está instalado para ese repo, así que no hay contra qué comparar. Se calla a propósito: tomar la versión instalada para *otro* repo sería el modo de falla que esta Herramienta existe para no cometer.
+
+Ojo con no confundirlo con el desfase de versiones: un repo puede tener los plugins atrasados **y** las dos partes coincidiendo, porque las dos son de la misma generación vieja. Medido el 30/07/2026 en un consumidor: nueve plugins atrasados y los archivos en perfecta correspondencia con ellos.
+
+## El cache huérfano
+
+El cache de plugins **es de la máquina, no del repo**: dos repos pueden correr versiones distintas del mismo plugin a propósito. Así que lo único que se informa como sobrante es lo que **ninguna entrada de instalación declara**, mirando el registro completo y no solo este repo. Marcar como sobrante una versión que otro repo está usando sería el mismo error que la Herramienta evita al no tomar la versión instalada allá.
+
+Se distinguen dos clases, porque significan cosas distintas:
+
+- **Nombres que el marketplace ya no ofrece** — generaciones de nombres que quedaron bajadas después de una migración.
+- **Plugins vigentes en versiones que ya no corren** — el residuo normal de publicar seguido, y en volumen suele ser la mayoría.
+
+Nada limpia esto y crece con cada publicación. **No se borra automáticamente ni con `--aplicar`**: está afuera del repo, en la carpeta del usuario, y borrar es destructivo. Se informan las rutas y la decisión es del usuario.
+
+Un ejemplo de por qué el criterio prudente importa, medido el 30/07/2026 en esta máquina: `amp-memoria` es un nombre que el marketplace ya no ofrece, pero **no** figura como sobrante porque un repo todavía lo declara. Eso además delata un consumidor sin migrar, que es información útil por sí sola.
+
 ## Apuntarla a otro repo
 
 Pasándole una ruta diagnostica —y con `--aplicar`, arregla— **otro** Agente con Propósito de la máquina, sin abrir una sesión ahí. Tres cosas cambian respecto de correrla sobre el propio, y las tres son casos donde antes contestaba de más:

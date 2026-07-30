@@ -2,6 +2,8 @@
 
 Vocabulario de los **momentos** válidos a los que una regla de conducta puede atarse. Un momento es un **evento de hook + una condición que la máquina evalúa sin juicio**; es agente-agnóstico, y su realización depende de que el agente tenga un repartidor para ese evento. Este archivo es el punto de partida del registro de momentos: hoy alcanza el vocabulario (nombre · qué representa · evento · disponibilidad). Crece a las columnas completas (condición fina, disponibilidad por agente) cuando se sumen repartidores nuevos. El `lint-conducta` lo lee para validar que toda regla apunte a un momento existente y que ninguna regla `vigente` cuelgue de un momento sin repartidor.
 
+> **Este archivo es del Agente Multipropósito y el nivelador lo reemplaza entero.** Los momentos que suma el Propósito de un repo van en [`MOMENTOS-LOCAL.md`](MOMENTOS-LOCAL.md), que el nivelador no abre; escribirlos acá los pierde en la corrida siguiente. El `lint-conducta` lee los dos y valida que ninguno se repita.
+
 - **Momento** — nombre canónico, en español corriente.
 - **Qué representa** — el punto del flujo, en una línea.
 - **Evento de hook** — el evento que lo dispara (+ condición, si la hay).

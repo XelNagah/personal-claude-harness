@@ -327,6 +327,98 @@ function instalado(id) {
   return propia || usuario || sinRepo || null;
 }
 
+// -- cache huerfano: lo que quedo bajado y ya no lo usa NADIE ------------------
+// El cache de plugins es de la MAQUINA, no de este repo: dos repos pueden correr versiones distintas
+// del mismo plugin. Por eso lo unico que se informa es lo que NINGUNA entrada de instalacion declara,
+// mirando todas las entradas de todos los repos. Marcar como sobrante una version que otro repo esta
+// usando seria el mismo error que esta Herramienta evita al no tomar la version instalada allá.
+//
+// Nada limpia esto hoy y crece con cada publicacion. No se borra automaticamente ni con `--aplicar`:
+// esta afuera del repo, en la carpeta del usuario, y borrar es destructivo. Se informa y se da el
+// comando.
+function cacheHuerfano() {
+  const cacheDir = path.join(PLUGINS_DIR, 'cache');
+  const registro = leerJson(path.join(PLUGINS_DIR, 'installed_plugins.json'));
+  const plugins = (registro && registro.plugins) || {};
+  // Todas las versiones en uso por cualquier repo, por nombre completo del plugin.
+  const enUso = new Map();
+  for (const [id, entradas] of Object.entries(plugins)) {
+    for (const e of entradas || []) {
+      if (!enUso.has(id)) enUso.set(id, new Set());
+      if (e.version) enUso.get(id).add(e.version);
+    }
+  }
+  const sobran = [];
+  let marketplaces = [];
+  try { marketplaces = fs.readdirSync(cacheDir, { withFileTypes: true }).filter(e => e.isDirectory()); }
+  catch { return sobran; }
+  for (const mk of marketplaces) {
+    const raizMk = path.join(cacheDir, mk.name);
+    let nombres = [];
+    try { nombres = fs.readdirSync(raizMk, { withFileTypes: true }).filter(e => e.isDirectory()); } catch { continue; }
+    // Lo que el marketplace bajado todavia ofrece: un nombre que no esta ahi es una generacion vieja.
+    // `catalogoDe` devuelve el `marketplace.json` entero, no la lista: la lista es su campo `plugins`.
+    const cat = catalogoDe(path.join(PLUGINS_DIR, 'marketplaces', mk.name));
+    const filasCat = (cat && Array.isArray(cat.plugins)) ? cat.plugins : [];
+    const ofrecidos = new Set(filasCat.map(p => p.name));
+    for (const n of nombres) {
+      const id = `${n.name}@${mk.name}`;
+      const usadas = enUso.get(id) || new Set();
+      let versiones = [];
+      try { versiones = fs.readdirSync(path.join(raizMk, n.name)); } catch { continue; }
+      const libres = versiones.filter(v => !usadas.has(v));
+      if (!libres.length) continue;
+      const retirado = ofrecidos.size > 0 && !ofrecidos.has(n.name);
+      sobran.push({ id, ruta: path.join(raizMk, n.name), libres, total: versiones.length, retirado });
+    }
+  }
+  return sobran;
+}
+
+// -- desfase entre las DOS PARTES del Agente Multiproposito -------------------
+// Un Agente Multiproposito son dos cosas que viajan por caminos distintos: sus SKILLS, que llegan
+// como plugins, y sus ARCHIVOS, que escribe `amp:inicializar` dentro de `.claude/`. Cada camino tiene
+// su propio control —esta Herramienta mira los plugins, `amp:actualizar` mira los archivos— y hasta
+// el 30/07/2026 nadie miraba las dos partes ENTRE SI. El caso medido: un repo con los archivos de la
+// generacion nueva y los plugins de la vieja, con los dos controles en verde por separado.
+//
+// Se compara contra la PLANTILLA del plugin que EFECTIVAMENTE CORRE, cuya ruta sale del propio
+// registro de instalacion (`installPath`), no de adivinar una version. Cada bloque de codigo de esa
+// plantilla declara su destino: si el archivo que hay en el repo no coincide, las dos partes estan
+// en generaciones distintas.
+function archivosDeOtraGeneracion(filas) {
+  const amp = filas.find(f => /^amp@/.test(f.id));
+  if (!amp) return null;
+  const ent = instalado(amp.id);
+  if (!ent || !ent.installPath) return null;
+  const plantilla = path.join(ent.installPath, 'skills', 'inicializar', 'PLANTILLA.md');
+  let txt; try { txt = fs.readFileSync(plantilla, 'utf8'); } catch { return null; }
+
+  const lineas = txt.split(/\r?\n/);
+  const distintos = [], faltantes = [];
+  let destino = null, dentro = false, buf = [];
+  for (const l of lineas) {
+    if (!dentro) {
+      const m = l.match(/`(\.claude\/[^`]+\.js)`/);
+      if (m) destino = m[1];
+      if (/^```js\s*$/.test(l)) { dentro = true; buf = []; }
+      continue;
+    }
+    if (/^```\s*$/.test(l)) {
+      dentro = false;
+      if (destino) {
+        const enRepo = path.join(REPO, destino);
+        const norm = s => s.replace(/\r\n/g, '\n').replace(/\s+$/, '');
+        if (!fs.existsSync(enRepo)) faltantes.push(destino);
+        else if (norm(fs.readFileSync(enRepo, 'utf8')) !== norm(buf.join('\n'))) distintos.push(destino);
+      }
+      continue;
+    }
+    buf.push(l);
+  }
+  return { version: ent.version || '(sin version)', distintos, faltantes };
+}
+
 function marketplaceRegistrado(marketplace) {
   const mkts = leerJson(path.join(PLUGINS_DIR, 'known_marketplaces.json')) || {};
   return mkts[marketplace] || null;
@@ -689,5 +781,43 @@ if (!filas.length) {
     for (const f of retirados) console.log(`  claude plugin uninstall ${f.id} --scope ${f.scope}`);
     console.log('\nCada uninstall saca solo su linea de `enabledPlugins`; no hace falta editar el settings');
     console.log('a mano. `claude plugin prune` NO sirve para limpiar acá: solo mira el alcance de usuario.');
+  }
+
+  // Las dos partes entre si: los archivos del repo contra los que instalaria el plugin que corre.
+  const gen = archivosDeOtraGeneracion(filas);
+  if (gen && (gen.distintos.length || gen.faltantes.length)) {
+    const total = gen.distintos.length + gen.faltantes.length;
+    console.log(`\n${total} archivo(s) DE OTRA GENERACION que los plugins: el plugin que corre (${gen.version})`);
+    console.log('instalaria una version distinta de estos archivos que la que hay en el repo. Los plugins y');
+    console.log('los archivos son las dos partes del mismo Agente Multiproposito y viajan por caminos');
+    console.log('distintos, asi que cada uno puede estar al dia por su cuenta y no coincidir entre si.');
+    for (const d of gen.distintos) console.log(`  distinto:  ${d}`);
+    for (const d of gen.faltantes) console.log(`  no esta:   ${d}`);
+    console.log('\nSi los plugins ya estan al dia, esto se resuelve nivelando los archivos: pedir `amp:actualizar`.');
+    console.log('En el repo que PUBLICA el Agente Multiproposito es lo esperable cuando hay cambios sin publicar.');
+  } else if (gen) {
+    console.log('\nLas dos partes coinciden: los archivos del repo son los que instalaria el plugin que corre.');
+  }
+
+  // Cache huerfano: informativo. Es de la maquina, no del repo, y no lo limpia nadie.
+  const sobra = cacheHuerfano();
+  if (sobra.length) {
+    const carpetas = sobra.reduce((n, s) => n + s.libres.length, 0);
+    const retirados = sobra.filter(s => s.retirado);
+    console.log(`\n${carpetas} carpeta(s) de version en el CACHE que ningun repo de esta maquina usa`);
+    console.log('(se mira el registro completo, no solo este repo: otro repo puede estar corriendo una');
+    console.log('version vieja a proposito). Nada las limpia y crecen con cada publicacion.');
+    if (retirados.length) {
+      console.log(`\n  ${retirados.length} de nombres que el marketplace ya no ofrece:`);
+      for (const s of retirados) console.log(`    ${s.id}  (${s.libres.length} de ${s.total})`);
+    }
+    const viejas = sobra.filter(s => !s.retirado);
+    if (viejas.length) {
+      console.log(`\n  ${viejas.length} de plugins vigentes, en versiones que ya no corren:`);
+      for (const s of viejas) console.log(`    ${s.id}  (${s.libres.length} de ${s.total})`);
+    }
+    console.log('\nBorrarlas es seguro pero es DESTRUCTIVO y esta afuera del repo, en la carpeta del');
+    console.log('usuario, asi que no se hace automaticamente ni con --aplicar. Las rutas son:');
+    for (const s of sobra) for (const v of s.libres) console.log(`  ${path.join(s.ruta, v)}`);
   }
 }

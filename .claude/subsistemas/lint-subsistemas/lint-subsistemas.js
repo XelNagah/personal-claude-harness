@@ -176,9 +176,13 @@ for (const casa of casas) {
   if (!nombres.includes(casa)) errores.push(`casa no catalogada: ${casa}`);
 }
 
+// Reporta y NO falla, como los otros nueve lints: la capa mecanica describe el estado del repo, y
+// que haya hallazgos es informacion, no un error del programa. Hasta el 30/07/2026 este era el unico
+// lint que salia con codigo 1 y escribia en la salida de errores, y eso tenia dos consecuencias: el
+// control de cierre lo mostraba como ERROR en vez de listar sus hallazgos, y el formato `[!] linea`
+// no era contable, asi que sus hallazgos no entraban en ningun total.
+// El formato `[TITULO] (N)` es el mismo que usan los demas, y es lo que el control de cierre cuenta.
 console.log(`subsistemas: ${filas.length} | casas: ${casas.length}`);
-if (errores.length) {
-  errores.forEach(e => console.error(`[!] ${e}`));
-  process.exit(1);
-}
-console.log('OK');
+console.log(`\n[CATALOGO vs DISCO] (${errores.length}):`);
+if (errores.length) errores.forEach(e => console.log(`    ${e}`));
+else console.log('    (ninguno)');

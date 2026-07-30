@@ -8,7 +8,18 @@ const fs = require('fs');
 const path = require('path');
 const { spawnSync } = require('child_process');
 
-const REPO = path.resolve(__dirname, '..', '..', '..');
+// El repo sale del directorio de trabajo (o del argumento), NUNCA de la ubicacion de este script:
+// en cuanto hay una segunda copia deducirlo desde __dirname corre los chequeos del repo equivocado,
+// y no falla — contesta. Conocimiento `el-repo-que-un-script-describe`.
+const REPO = (desde => {
+  let d = path.resolve(desde);
+  for (;;) {
+    if (fs.existsSync(path.join(d, '.claude'))) return d;
+    const padre = path.dirname(d);
+    if (padre === d) return path.resolve(desde);
+    d = padre;
+  }
+})(process.argv[2] || process.cwd());
 const CLAUDE_DIR = path.join(REPO, '.claude');
 const EXCLUDE = new Set(['.git', 'node_modules', 'tmp']);
 

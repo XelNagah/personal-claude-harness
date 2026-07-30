@@ -1,6 +1,6 @@
 # Conducta — manifiesto de subsistema
 
-El subsistema `conducta` asegura comportamientos del tipo "cuando hagas X, asegurate de Y": ata **momentos** del flujo a **acciones** de una **clase** — `Inyectar` un texto, `Ejecutar` una Herramienta, `Bloquear` la acción. Los momentos viven en `MOMENTOS.md`, las clases en `CLASES.md`, y el hook `establecer-conducta/` entrega las reglas de sus dos registros. Modelo completo en `README.md`.
+El subsistema `conducta` asegura comportamientos del tipo "cuando hagas X, asegurate de Y": ata **momentos** del flujo a **acciones** de una **clase** — `Inyectar` un texto, `Ejecutar` una Herramienta, `Bloquear` la acción. Los momentos viven en `MOMENTOS.md` (y los propios del repo en `MOMENTOS-LOCAL.md`), las clases en `CLASES.md` —que no se extiende por repo: están en el código del repartidor—, y el hook `establecer-conducta/` entrega las reglas. Modelo completo en `README.md`.
 
 Al escribir un `.md` de cualquier parte del repo, el control `detectar-terminologia-vetada/` **rechaza** el texto con un término vetado sin uso legítimo posible e **informa** los que dependen del significado: citarlo no se frena, usarlo sí.
 

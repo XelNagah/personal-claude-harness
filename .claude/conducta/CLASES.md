@@ -8,6 +8,8 @@ Vocabulario de las **clases** válidas para una regla de conducta. La clase dice
 - **A dónde va el resultado** — dónde termina.
 - **Disponibilidad** — `activo` (hay repartidor que la entrega) o las salvedades por agente.
 
+> **Este vocabulario no tiene versión del Agente Desplegado, y es a propósito.** Los momentos sí: `MOMENTOS-LOCAL.md` existe para que un repo declare puntos del flujo propios de su Propósito. Las clases no, porque **están implementadas en el código del repartidor**: agregar una cuarta clase sin tocar `establecer-conducta/` deja reglas que nadie sabe despachar, y el síntoma sería una regla que existe y no se entrega nunca. Una clase nueva es un cambio del Agente Multipropósito, no una extensión del repo.
+
 | Clase | Qué es el Contenido | Qué hace el hook | A dónde va el resultado | Disponibilidad |
 |-------|---------------------|------------------|-------------------------|----------------|
 | Inyectar | texto fijo, escrito en el Índice | lo emite como `additionalContext` | al contexto del modelo; el usuario no lo ve | activo |

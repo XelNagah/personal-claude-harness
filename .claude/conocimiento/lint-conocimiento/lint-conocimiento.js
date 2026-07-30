@@ -115,9 +115,21 @@ const domain = walk(root, []);
 const read = f => fs.readFileSync(f, 'utf8');
 const inRoot = p => path.resolve(p).startsWith(path.resolve(root) + path.sep);
 
-// La raiz del repo se deduce de la ubicacion del propio lint: .claude/<sub>/lint-<sub>/ -> 3 arriba.
-// La profundidad la fija el instalador; no depende de desde donde se invoque.
-const repoRoot = path.resolve(__dirname, '..', '..', '..');
+// El repo se deriva de `root` —la carpeta del subsistema que se esta mirando—, NUNCA de la ubicacion
+// de este script. En cuanto hay una segunda copia (un plugin instalado, un marketplace bajado, otro
+// repo con el harness) deducirlo desde __dirname describe el repo equivocado, y no falla: contesta.
+// Derivandolo de `root`, la carpeta que se lee y el repo que se barre salen de la misma fuente y no
+// pueden divergir. Conocimiento `el-repo-que-un-script-describe`.
+function repoDe(carpetaSubsistema) {
+  let d = path.resolve(carpetaSubsistema);
+  for (;;) {
+    if (fs.existsSync(path.join(d, '.claude'))) return d;
+    const padre = path.dirname(d);
+    if (padre === d) return path.resolve(carpetaSubsistema, '..', '..');   // sin `.claude` arriba
+    d = padre;
+  }
+}
+const repoRoot = repoDe(root);
 const dentroDelRepo = p => {
   const r = path.resolve(p);
   return r === repoRoot || r.startsWith(repoRoot + path.sep);

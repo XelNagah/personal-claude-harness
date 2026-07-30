@@ -172,9 +172,21 @@ for (const i of indices) {
 problemasIndices.push(...problemasNucleo);
 
 // [4] refs por ruta a lints en settings que no resuelven (cualquier .claude/**/*.js|sh|...)
-// La raiz del repo se deduce de la ubicacion del propio lint: .claude/<sub>/lint-<sub>/ -> 3 arriba.
-// La profundidad la fija el instalador; no depende de desde donde se invoque.
-const repoRoot = path.resolve(__dirname, '..', '..', '..');
+// El repo se deriva de `root` —la carpeta del subsistema que se esta mirando—, NUNCA de la ubicacion
+// de este script. En cuanto hay una segunda copia (un plugin instalado, un marketplace bajado, otro
+// repo con el harness) deducirlo desde __dirname describe el repo equivocado, y no falla: contesta.
+// Derivandolo de `root`, la carpeta que se lee y el repo que se barre salen de la misma fuente y no
+// pueden divergir. Conocimiento `el-repo-que-un-script-describe`.
+function repoDe(carpetaSubsistema) {
+  let d = path.resolve(carpetaSubsistema);
+  for (;;) {
+    if (fs.existsSync(path.join(d, '.claude'))) return d;
+    const padre = path.dirname(d);
+    if (padre === d) return path.resolve(carpetaSubsistema, '..', '..');   // sin `.claude` arriba
+    d = padre;
+  }
+}
+const repoRoot = repoDe(root);
 const refsRotas = [];
 for (const sf of ['.claude/settings.local.json', '.claude/settings.json']) {
   const abs = path.join(repoRoot, sf);

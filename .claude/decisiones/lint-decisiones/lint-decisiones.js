@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Lint del registro de decisiones: numeracion, links de detalle, huerfanos, superseded. Sin LLM, sin red.
+// Lint del registro de decisiones: numeracion, links de detalle, huerfanos, reemplazos. Sin LLM, sin red.
 // Uso: node lint-decisiones.js [<carpeta>]   (default: .claude/decisiones)
 const fs = require('fs'), path = require('path');
 
@@ -101,9 +101,21 @@ const nombresIndice = new Set(indices.map(i => i.nombre));
 const txt = indices.map(i => i.texto).join('\n');
 const pad = n => String(n).padStart(4, '0');
 
-// La raiz del repo se deduce de la ubicacion del propio lint: .claude/<sub>/lint-<sub>/ -> 3 arriba.
-// La profundidad la fija el instalador; no depende de desde donde se invoque.
-const repoRoot = path.resolve(__dirname, '..', '..', '..');
+// El repo se deriva de `root` —la carpeta del subsistema que se esta mirando—, NUNCA de la ubicacion
+// de este script. En cuanto hay una segunda copia (un plugin instalado, un marketplace bajado, otro
+// repo con el harness) deducirlo desde __dirname describe el repo equivocado, y no falla: contesta.
+// Derivandolo de `root`, la carpeta que se lee y el repo que se barre salen de la misma fuente y no
+// pueden divergir. Conocimiento `el-repo-que-un-script-describe`.
+function repoDe(carpetaSubsistema) {
+  let d = path.resolve(carpetaSubsistema);
+  for (;;) {
+    if (fs.existsSync(path.join(d, '.claude'))) return d;
+    const padre = path.dirname(d);
+    if (padre === d) return path.resolve(carpetaSubsistema, '..', '..');   // sin `.claude` arriba
+    d = padre;
+  }
+}
+const repoRoot = repoDe(root);
 const dentroDelRepo = p => {
   const r = path.resolve(p);
   return r === repoRoot || r.startsWith(repoRoot + path.sep);
@@ -196,7 +208,7 @@ if (fs.existsSync(root)) {
   }
 }
 
-// [4] superseded (en la columna Estado) que no resuelven
+// [4] reemplazos (en la columna Estado) que no resuelven
 const nums = new Set(rows.map(r => r.n));
 const supRe = /(?:reemplazada por|supersede-a|superseded by)[^0-9\n]{0,12}(\d{1,4})/i;
 const supRotas = [];
@@ -216,7 +228,7 @@ if (!refsRotas.length) console.log('    (ninguno)');
 console.log(`\n[3] PAGINAS HUERFANAS (${huerfanos.length}):`);
 huerfanos.forEach(h => console.log(`    ${h}`));
 if (!huerfanos.length) console.log('    (ninguna)');
-console.log(`\n[4] SUPERSEDED ROTAS (${supRotas.length}):`);
+console.log(`\n[4] REEMPLAZOS ROTOS (${supRotas.length}):`);
 supRotas.forEach(([n, r]) => console.log(`    ${n}  ->  ${r}   [decision inexistente]`));
 if (!supRotas.length) console.log('    (ninguna)');
 console.log(`\n[5] NOMBRES VACIOS O DUPLICADOS (${nombresMal.length}):`);

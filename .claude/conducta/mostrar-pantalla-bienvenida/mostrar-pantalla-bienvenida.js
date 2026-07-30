@@ -296,6 +296,39 @@ for (const f of filas) {
   cuerpo.push(`${marca} · ${f.nombre.padEnd(anchoNom)}   ${val}`);
 }
 
+// -- lo que se carga en CADA sesion, medido -----------------------------------
+// El contexto siempre cargado no lo vigila nadie, y crece de a poco: cada indice liviano que se suma
+// pesa nada por si solo. El modelo de carga por manifiesto se decidio justamente para bajarlo —el
+// registro de planes pesaba casi la mitad del total— y sin un numero a la vista ese ahorro se vuelve
+// a consumir sin que se note. Se muestra siempre; el aviso salta pasado el presupuesto.
+const PRESUPUESTO = 48 * 1024;
+function pesoDelContexto() {
+  const vistos = new Set();
+  let total = 0, archivos = 0;
+  const sumar = f => {
+    const abs = path.resolve(f);
+    if (vistos.has(abs) || !fs.existsSync(abs)) return;
+    vistos.add(abs);
+    let txt; try { txt = fs.readFileSync(abs, 'utf8'); } catch { return; }
+    total += Buffer.byteLength(txt); archivos++;
+    // Las lineas `@ruta` son imports: se resuelven contra el repo y contra la carpeta del archivo.
+    for (const m of txt.matchAll(/^@(\S+)\s*$/gm)) {
+      const cand = [path.join(REPO, m[1]), path.join(path.dirname(abs), m[1])];
+      const hit = cand.find(c => fs.existsSync(c));
+      if (hit) sumar(hit);
+    }
+  };
+  for (const entrada of ['CLAUDE.md', 'AGENTS.md']) sumar(path.join(REPO, entrada));
+  return { total, archivos };
+}
+const ctx = pesoDelContexto();
+if (ctx.archivos) {
+  const kb = (ctx.total / 1024).toFixed(1);
+  const tope = (PRESUPUESTO / 1024).toFixed(0);
+  const excede = ctx.total > PRESUPUESTO;
+  cuerpo.push(`${excede ? '⚠' : ' '} · ${'contexto'.padEnd(anchoNom)}   ${kb} KB en ${ctx.archivos} archivos${excede ? ` (pasa el presupuesto de ${tope} KB)` : ''}`);
+}
+
 // Ancho interno = el renglón más largo (piso MIN). Cada línea se rellena a ese ancho.
 const W = Math.max(MIN, ...cuerpo.filter(l => l !== '__SEP__').map(l => nfc(l).length));
 const regla = (l, mid, r) => l + mid.repeat(W + 2) + r;

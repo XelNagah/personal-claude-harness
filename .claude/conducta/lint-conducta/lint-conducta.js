@@ -126,13 +126,34 @@ function filasTabla(txt, requeridas) {
 const problemas = { estructura: [], indices: [], momentoInexistente: [], claseInvalida: [], estadoInvalido: [], inyectarSinTexto: [], vigenteSinRepartidor: [] };
 
 // -- vocabulario de momentos --------------------------------------------
+// El vocabulario se lee de DOS archivos: `MOMENTOS.md` (lo manda el Agente Multiproposito y el
+// nivelador lo reemplaza entero) y `MOMENTOS-LOCAL.md` (los momentos que suma el Propósito de cada
+// repo; el nivelador no lo abre). Sin el segundo, un repo que necesitaba un momento propio no tenia
+// donde declararlo: el unico archivo disponible era uno que el nivelador pisa en la corrida siguiente.
+// El del Agente Desplegado es OPCIONAL — la mayoria de los repos no suma momentos— y su ausencia no
+// es un hallazgo.
+//
+// No llevan frontmatter de Índice a proposito: no listan entradas del subsistema sino vocabulario, y
+// declararlos como Índice haria que el lint les exigiera las columnas de una regla.
 const momPath = path.join(root, 'MOMENTOS.md');
+const momLocalPath = path.join(root, 'MOMENTOS-LOCAL.md');
 let momentos = new Map();   // nombre -> disponibilidad (activo|declarado)
 if (!fs.existsSync(momPath)) problemas.estructura.push('falta MOMENTOS.md (vocabulario de momentos)');
 else {
   const { cols, filas } = filasTabla(fs.readFileSync(momPath, 'utf8'), ['momento', 'disponibilidad']);
   if (!cols) problemas.estructura.push('MOMENTOS.md: no se encontro la tabla (columnas Momento, Disponibilidad)');
   else for (const f of filas) momentos.set(f.momento.toLowerCase(), f.disponibilidad.toLowerCase());
+}
+if (fs.existsSync(momLocalPath)) {
+  const { cols, filas } = filasTabla(fs.readFileSync(momLocalPath, 'utf8'), ['momento', 'disponibilidad']);
+  if (!cols) problemas.estructura.push('MOMENTOS-LOCAL.md: no se encontro la tabla (columnas Momento, Disponibilidad)');
+  else for (const f of filas) {
+    const nombre = f.momento.toLowerCase();
+    // Un momento del repo que repite uno de la Base es ambiguo: el nivelador reemplaza el de arriba y
+    // el de abajo queda pisandolo en silencio, con otra disponibilidad.
+    if (momentos.has(nombre)) problemas.estructura.push(`MOMENTOS-LOCAL.md: "${f.momento}" ya esta en MOMENTOS.md (el del Agente Multiproposito manda)`);
+    else momentos.set(nombre, f.disponibilidad.toLowerCase());
+  }
 }
 
 // -- vocabulario de clases ----------------------------------------------
@@ -172,7 +193,11 @@ for (const idx of indices) {
     if (!momentos.has(momento)) problemas.momentoInexistente.push(`"${regla}" -> momento "${f.momento}" no esta en MOMENTOS.md`);
     if (!CLASES.includes(clase)) problemas.claseInvalida.push(`"${regla}" -> clase "${f.clase}" (validas: ${CLASES.join('/')})`);
     if (!ESTADOS.includes(estado)) problemas.estadoInvalido.push(`"${regla}" -> estado "${f.estado}" (validos: ${ESTADOS.join('/')})`);
-    if (clase === 'inyectar' && !f.contenido) problemas.inyectarSinTexto.push(`"${regla}" -> clase inyectar sin Contenido`);
+    // `—` es el marcador de "nada" en todos los registros del repo, asi que cuenta como vacio: sin
+    // esto una regla `Inyectar` con la celda en `—` pasaba el control y quedaba sin texto que
+    // inyectar, entregando una cadena vacia en su momento sin que nadie avisara.
+    const sinContenido = !f.contenido || ['—', '-', '–'].includes(f.contenido.trim());
+    if (clase === 'inyectar' && sinContenido) problemas.inyectarSinTexto.push(`"${regla}" -> clase inyectar sin Contenido`);
     // honestidad: una regla vigente no puede colgar de un momento sin repartidor (disponibilidad declarado)
     if (estado === 'vigente' && momentos.get(momento) === 'declarado')
       problemas.vigenteSinRepartidor.push(`"${regla}" -> vigente pero su momento "${f.momento}" es 'declarado' (sin repartidor): deberia ser 'pendiente'`);
