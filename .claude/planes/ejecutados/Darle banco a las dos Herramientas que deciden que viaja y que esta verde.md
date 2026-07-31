@@ -1,6 +1,6 @@
 # Darle banco a las dos Herramientas que deciden qué viaja y qué está verde
 
-**Estado: En curso · Creado 26-07-31.**
+**Estado: Ejecutado · Creado 26-07-31 · Cerrado 26-07-31.**
 
 ## El problema
 
@@ -42,7 +42,11 @@ El corte es lo que hay que probar, en los dos sentidos:
 | Herramienta | Resultado |
 |---|---|
 | `sincronizar-base` | **hecho — 13 casos, y encontró un defecto** |
-| `ejecutar-control-cierre` | pendiente |
+| `ejecutar-control-cierre` | **hecho — 12 casos** |
+
+## Notas de implementación
+
+Los dos bancos quedaron co-ubicados con su Herramienta, con la convención del repo, y los dos se verificaron **rompiendo la Herramienta a propósito** — que es lo único que dice si un banco sirve. El repo pasó de 14 bancos a 16.
 
 ### `sincronizar-base` — 13 casos
 
@@ -51,6 +55,20 @@ Cubre el corte en los dos sentidos (mecanismo y registro del Agente Multipropós
 **Verificado rompiendo la Herramienta:** sacarle el saneo de la marca de orden de bytes hace fallar exactamente ese caso.
 
 **Defecto encontrado y corregido: la marca de orden de bytes tapaba el `origen`.** Un `.md` guardado con ella deja de matchear `^---`, así que el archivo perdía su `origen`, se trataba como mecanismo y se copiaba **entero** — con las filas de este repo adentro, a todo consumidor que se instalara. Es la falla más cara de esta Herramienta y la más difícil de ver, porque el archivo se lee igual en cualquier editor. Ahora la marca se saca antes de parsear y también del texto que se escribe, así que lo que viaja nunca la lleva.
+
+### `ejecutar-control-cierre` — 12 casos
+
+Cubre el descubrimiento (los lints no están escritos en el código: uno nuevo entra solo y el conteo lo refleja), la clasificación de las tres respuestas posibles —verde, con hallazgos sumados de todas sus categorías, y **reventado**, que es un caso distinto de tener hallazgos porque uno describe el repo y el otro dice que el control no pudo mirarlo—, que muestre la salida completa de lo que no está verde, y que **reporte sin fallar**: sale con código 0 aunque haya rojos, como manda la decisión `Local-0003`. Si saliera con 1, el hook que la invoca al arrancar la sesión trataría un hallazgo del repo como un error de sesión.
+
+Y los tres casos de no contar de más ni de menos: un lint adentro de otro lint no es un chequeo aparte, una carpeta `lint-x/` sin su script tampoco, y los lints bajo `tmp/` no se corren.
+
+**Verificado rompiendo la Herramienta de tres formas**, cada una detectada por el caso que le toca:
+
+- No distinguir un lint reventado de uno con hallazgos → 2 fallas.
+- Descender adentro de las carpetas de lint → 1 falla.
+- Dejar de descubrir en profundidad → **6 fallas**, con el conteo clavado en `1 → 1`. Es la falla de omisión que este banco existe para atrapar, y es la única que en producción no dejaría ninguna señal.
+
+**Límite declarado adentro del banco:** el resultado de `claude plugin validate` depende del CLI instalado en la máquina y no del repo que se mira, así que el banco solo controla que aparezca como un chequeo más.
 
 ### El mismo defecto, en otros doce lectores
 
