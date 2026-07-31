@@ -129,7 +129,7 @@ console.log('\n== LA TRAMPA DEL BOM ==');
   // filas del repo adentro. Es la falla más cara de esta Herramienta y la más difícil de ver: el
   // archivo se lee igual en cualquier editor.
   armar();
-  poner('CON-BOM.md', '﻿' + conFrontmatter('agente-desplegado', tabla('Convención nueva.', ['Local-0001 | fila del repo'])),
+  poner('CON-BOM.md', '\uFEFF' + conFrontmatter('agente-desplegado', tabla('Convención nueva.', ['Local-0001 | fila del repo'])),
                       conFrontmatter('agente-desplegado', tabla('Convención vieja.', [])));
   correr(true);
   const r = enBase('CON-BOM.md');

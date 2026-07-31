@@ -175,8 +175,11 @@ for (const [name, arr] of bloques) {
 // del archivo que viaja no puede ver el que nunca viajo — es como se escondio por meses que la
 // Herramienta `instalar-plugins-codex` estuviera declarada en el registro Base y no se instalara.
 const normArch = s => s.replace(/\r\n/g, '\n').replace(/\s+$/, '');
+// La marca de orden de bytes se saca siempre: un `.md` guardado con ella deja de matchear `^---`,
+// pierde su `origen` y se compara entero — el archivo se ve igual en cualquier editor.
+const sinMarcaDeOrden = s => s.replace(/^\uFEFF/, '');
 function origenDe(txt) {
-  const m = /^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/.exec(txt);
+  const m = /^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/.exec(sinMarcaDeOrden(txt));
   if (!m) return null;
   const o = /^origen:\s*(\S+)\s*$/m.exec(m[1]);
   return o ? o[1] : null;

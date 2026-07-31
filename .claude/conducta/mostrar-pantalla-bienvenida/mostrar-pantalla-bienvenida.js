@@ -67,8 +67,11 @@ function descubrirSubsistemas() {
 // Un subsistema puede tener más de un Índice (uno por origen), y cada archivo lo declara en su
 // frontmatter. Se cuentan TODOS: quedarse con el primero informaba 2 herramientas donde hay 8.
 // Sin frontmatter se cae a los nombres de la forma vieja, y ahí sí es el primero que exista.
+// La marca de orden de bytes se saca siempre: un `.md` guardado con ella deja de matchear `^---`
+// y un Índice declarado se lee como no declarado, sin emitir ninguna señal.
+const sinMarcaDeOrden = s => s.replace(/^\uFEFF/, '');
 function frontmatterDe(txt) {
-  const m = /^---\r?\n([\s\S]*?)\r?\n---/.exec(txt || '');
+  const m = /^---\r?\n([\s\S]*?)\r?\n---/.exec(sinMarcaDeOrden(txt || ''));
   return m ? m[1] : null;
 }
 function indicesDe(dir) {
@@ -178,9 +181,9 @@ function detalleSemantica(archivos) {
     // columna testigo `Control`. Antes se miraba la cadena `Significado vetado`, que era un
     // encabezado de columna: al pasar el registro al nucleo de columnas esa cadena desaparecio
     // y los vetados se habrian contado como legitimos, sin emitir ninguna senal.
-    const fm = /^---\r?\n([\s\S]*?)\r?\n---/.exec(t);
-    const esFarlopa = (fm && /^indice:.*Farlopa/mi.test(fm[1]))
-      || (fm && /^columnas:.*\bControl\b/mi.test(fm[1]))
+    const fm = frontmatterDe(t);
+    const esFarlopa = (fm && /^indice:.*Farlopa/mi.test(fm))
+      || (fm && /^columnas:.*\bControl\b/mi.test(fm))
       || /Significado vetado/.test(t);
     if (esFarlopa) vetados += n; else legitimos += n;
   }

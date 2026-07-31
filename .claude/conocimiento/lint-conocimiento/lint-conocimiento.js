@@ -11,8 +11,12 @@ const fs = require('fs'), path = require('path');
 // Desplegados sin nivelar: ahi el origen queda en null y los chequeos que dependen de el no corren.
 const ORIGENES = ['agente-multiproposito', 'agente-desplegado'];
 const ETIQUETA_ORIGEN = { 'agente-multiproposito': 'Agente Multipropósito', 'agente-desplegado': 'Agente Desplegado' };
+// Un `.md` guardado con marca de orden de bytes deja de matchear `^---`: el archivo pierde su
+// frontmatter y un Indice declarado se lee como no declarado, sin emitir ninguna senal. Se saca
+// siempre al leer — el archivo se ve igual en cualquier editor, asi que la falla no se nota.
+const sinMarcaDeOrden = s => s.replace(/^\uFEFF/, '');
 function leerFrontmatter(txt) {
-  const m = /^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/.exec(txt);
+  const m = /^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/.exec(sinMarcaDeOrden(txt));
   if (!m) return null;
   const campos = {};
   for (const linea of m[1].split(/\r?\n/)) {

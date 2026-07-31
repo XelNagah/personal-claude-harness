@@ -123,7 +123,26 @@ armar();
   if (!ok) malos++;
 }
 
+// -- CASO BUENO fino: un Índice guardado con marca de orden de bytes se sigue leyendo --
+console.log('\n== CASO BUENO: la marca de orden de bytes no tapa el frontmatter ==');
+armar();
+{
+  // Un `.md` guardado con marca de orden de bytes deja de matchear `^---`, así que el Índice pierde
+  // su frontmatter y se lee como NO declarado: el manifiesto pasa a listar un Índice que "no existe
+  // o no declara frontmatter", y los chequeos que dependen del `origen` dejan de correr en silencio.
+  // Este fragmento viaja idéntico a los ocho lints de subsistema, así que probarlo acá los cubre.
+  escribir(IDX, '\uFEFF' + leer(IDX));
+  const { texto, codigo } = correr();
+  const n = cuantos(texto);
+  // Se exige el mensaje puntual además del total: el mismo archivo puede encender otros controles,
+  // y un total distinto de cero no diría CUÁL se encendió.
+  const tapado = texto.includes('no declara frontmatter');
+  const ok = n === 0 && codigo === 0 && !tapado;
+  console.log(`${ok ? 'OK  ' : 'FALLA'} SUBSISTEMAS.md con la marca → ${n} hallazgos${tapado ? ' (el frontmatter quedó tapado)' : ''}`);
+  if (!ok) malos++;
+}
+
 fs.rmSync(REPO_PRUEBA, { recursive: true, force: true });
-console.log(`\ncasos: ${casos.length + 2}`);
+console.log(`\ncasos: ${casos.length + 3}`);
 console.log(malos ? `${malos} FALLARON.` : 'TODO VERDE.');
 process.exit(malos ? 1 : 0);

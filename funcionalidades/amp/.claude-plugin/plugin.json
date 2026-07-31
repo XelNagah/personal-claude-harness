@@ -1,7 +1,7 @@
 {
   "name": "amp",
   "description": "Plugin transversal del Agente Multipropósito: inicializa y actualiza la Base, planifica contra la sabiduría del repo y muestra su estado. Instala el paquete completo de ocho subsistemas por dependencias.",
-  "version": "0.14.1",
+  "version": "0.14.2",
   "author": { "name": "jllarens", "email": "jllarens@gmail.com" },
   "dependencies": [
     "amp-subsistemas",

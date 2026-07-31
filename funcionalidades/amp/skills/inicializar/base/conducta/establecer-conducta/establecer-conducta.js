@@ -43,12 +43,15 @@ const repoRoot = path.resolve(__dirname, '..', '..', '..');   // .../conducta/es
 // Son los .md del subsistema que se declaran Indice en su frontmatter (uno por origen), con
 // INDICE.md de respaldo para la forma vieja. El repartidor los lee a TODOS: quedarse con el del
 // Agente Multiproposito dejaria sin entregar las reglas que el repo sumo, y sin ninguna senal.
+// La marca de orden de bytes se saca siempre: un `.md` guardado con ella deja de matchear `^---`
+// y un Indice declarado se lee como no declarado, sin emitir ninguna senal.
+const sinMarcaDeOrden = s => s.replace(/^\uFEFF/, '');
 function indicesDeReglas() {
   let nombres = [];
   try { nombres = fs.readdirSync(dirSub).filter(n => n.endsWith('.md')).sort(); } catch (e) { return []; }
   const declarados = nombres.filter(n => {
     let txt; try { txt = fs.readFileSync(path.join(dirSub, n), 'utf8'); } catch (e) { return false; }
-    const fm = /^---\r?\n([\s\S]*?)\r?\n---/.exec(txt);
+    const fm = /^---\r?\n([\s\S]*?)\r?\n---/.exec(sinMarcaDeOrden(txt));
     return !!(fm && /^indice:\s*\S/m.test(fm[1]));
   });
   const elegidos = declarados.length ? declarados : ['INDICE.md'];

@@ -81,9 +81,12 @@ const INDICES_PARTIDOS = [
   { sub: 'herramientas', amp: 'INDICE.md',      local: 'INDICE-LOCAL.md',      seccionLocal: /^##\s+Herramientas del (?:Agente Desplegado|Prop[oó]sito)\b/mi },
 ];
 
+// La marca de orden de bytes se saca siempre: un `.md` guardado con ella deja de matchear `^---`,
+// pierde su `origen` y se nivela como mecanismo — o sea, entero, filas del repo incluidas.
+const sinMarcaDeOrden = s => s.replace(/^\uFEFF/, '');
 // frontmatter de un Indice: se lo considera declarado cuando trae el campo `indice`.
 function declaraIndice(archivo) {
-  const fm = /^---\r?\n([\s\S]*?)\r?\n---/.exec(leer(archivo));
+  const fm = /^---\r?\n([\s\S]*?)\r?\n---/.exec(sinMarcaDeOrden(leer(archivo)));
   return !!(fm && /^indice:\s*\S/m.test(fm[1]));
 }
 
@@ -140,7 +143,7 @@ const normalizar = s => s.replace(/\r\n/g, '\n').trimEnd();
 // escrita aca: la habia —once scripts con un ancla cada uno— y su defecto era estructural, porque
 // un Componente que nadie agregaba a la lista no se buscaba y no aparecia. El arbol es la lista.
 function origenDe(txt) {
-  const m = /^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/.exec(txt);
+  const m = /^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/.exec(sinMarcaDeOrden(txt));
   if (!m) return null;
   const o = /^origen:\s*(\S+)\s*$/m.exec(m[1]);
   return o ? o[1] : null;
