@@ -62,5 +62,5 @@ Cargan su índice **subsistemas, preferencias, conocimiento y herramientas**; NO
 2. **Copiar el árbol `base/`** a `.claude/`, archivo por archivo, aplicando la regla que declara cada uno. Crear las tres carpetas del ciclo de planes con su `.gitkeep`.
 3. **Fusionar** `AGENTS.md`, `CLAUDE.md`, `.claude/settings.json` y `.codex/hooks.json` desde `PLANTILLA.md`.
 4. **Reconciliar las formas anteriores** que el repo tenga, según `PLANTILLA.md` §Formas anteriores.
-5. **Verificar.** Correr todos los lints instalados y `../actualizar/amp-actualizar.js --vista-previa`; debe dar `BASE — INSTALAR / PISAR (0)`.
+5. **Verificar.** Correr todos los lints instalados y `../actualizar/amp-actualizar.js --vista-previa`. El único faltante esperado es `identidad.md`, porque el Título y el Propósito **se preguntan, no se inventan**: una instalación limpia y correcta cierra con `BASE — INSTALAR / PISAR (1)` y esa sola línea adentro. Cualquier otra entrada en ese grupo es un paso que quedó sin hacer. No inventar el archivo para llegar a cero — la Pantalla de bienvenida pide el Título y el Propósito al arrancar la sesión siguiente, y ahí se asientan.
 6. **Reportar.** Por subsistema: `agregado` / `ya estaba` / `divergente`. Avisar que en Codex los hooks solo corren si la carpeta `.codex/` es de confianza. No hacer commit salvo pedido explícito.
