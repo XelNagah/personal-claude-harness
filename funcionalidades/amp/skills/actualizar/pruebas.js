@@ -127,6 +127,65 @@ console.log('\n== CONTENIDO: LO VIEJO SE MARCA, LO PROPIO DEL REPO NO ==');
   chequear('y el reporte aclara que sus entradas no se tocan',
     marca(texto, 'GLOSARIO.md', 'no se tocan'));
 }
+// Un registro del Agente Desplegado con una columna que el repo le sumó, que la decisión Local-0042
+// le permite. Se usa en los dos casos de abajo, que solo difieren en si además cambió la convención.
+function conColumnaPropia() {
+  const t = leer('semantica/GLOSARIO.md').split(/\r?\n/);
+  const cab = t.findIndex(l => l.trim().startsWith('|'));
+  const sep = t.findIndex(l => /^\|[\s\-:|]+\|\s*$/.test(l));
+  t[cab] = t[cab].trimEnd() + ' Origen |';
+  t[sep] = t[sep].trimEnd() + '---|';
+  t.splice(sep + 1, 0, '| Local-0001 | Bulto | Cada unidad que se cotiza por separado | — | — | usuario |');
+  return t;
+}
+{
+  // Caso bueno, y el que más fácil se rompe: el repo extendió su registro y NADA más cambió. El
+  // bloque de arriba de la tabla difiere igual —la columna cambia la línea de columnas y el
+  // separador—, así que compararlo entero marcaría este repo en cada corrida, para siempre y sin
+  // nada que pueda hacer al respecto. Un hallazgo permanente que no se puede resolver es la forma
+  // más segura de que se deje de leer el reporte entero.
+  armarAlDia();
+  escribir('semantica/GLOSARIO.md', conColumnaPropia().join('\n'));
+  const { texto } = correr(REPO_PRUEBA);
+  chequear('una columna propia del repo, sola, NO se marca',
+    !marca(texto, 'GLOSARIO.md'),
+    (texto.split(/\r?\n/).find(l => l.includes('GLOSARIO.md')) || 'ninguna línea lo nombra').trim());
+  chequear('y el repo sigue informándose al día',
+    /Repo al d[ií]a: nada para nivelar/.test(texto));
+}
+{
+  // Caso malo: la convención de arriba cambió Y el repo tiene una columna propia. Pisar el bloque le
+  // dejaría las filas bajo una cabecera con menos columnas de las que tienen. Tiene que salir por
+  // DIVERGENTE, que es bloqueante, y no por «encabezado viejo», que el flujo pisa sin preguntar.
+  armarAlDia();
+  const t = conColumnaPropia();
+  const cab = t.findIndex(l => l.trim().startsWith('|'));
+  t.splice(cab - 1, 0, '> Convención vieja: las entradas se numeran por posición.', '');
+  escribir('semantica/GLOSARIO.md', t.join('\n'));
+  const { texto } = correr(REPO_PRUEBA);
+  chequear('convención nueva y columna propia a la vez se marca DIVERGENTE, no para pisar',
+    marca(texto, 'GLOSARIO.md', 'fuera de la convencion') && !marca(texto, 'GLOSARIO.md', 'encabezado viejo'),
+    (texto.split(/\r?\n/).find(l => l.includes('GLOSARIO.md')) || 'ninguna línea lo nombra').trim());
+  // El detalle tiene que nombrar la columna: sin eso el usuario no sabe qué está decidiendo, y las
+  // dos formas de este hallazgo (columna fuera de la convención y encabezado viejo) se leen igual.
+  chequear('y el reporte nombra la columna en juego',
+    marca(texto, 'GLOSARIO.md', 'Origen'));
+}
+{
+  // La otra forma de tener una columna que la Base no declara, y la que el texto de la convención no
+  // alcanza a distinguir: la Base RENOMBRÓ una columna suya y el repo conserva el nombre viejo. La
+  // evidencia es idéntica a la de una columna propia —hay un nombre que la Base no trae— pero acá
+  // la convención de arriba puede no haber cambiado, así que el único rastro es que las columnas de
+  // la Base dejaron de estar donde estaban. Sin mirar el orden, esto se calla y el repo se queda con
+  // la columna vieja para siempre, con su lint marcándole que no coincide con lo declarado.
+  armarAlDia();
+  escribir('semantica/GLOSARIO.md',
+    leer('semantica/GLOSARIO.md').replace(/^(\|\s*Código\s*\|[^\n]*)Alias/m, '$1Sinónimos'));
+  const { texto } = correr(REPO_PRUEBA);
+  chequear('una columna de la Base renombrada en el repo también se marca DIVERGENTE',
+    marca(texto, 'GLOSARIO.md', 'fuera de la convencion') && marca(texto, 'GLOSARIO.md', 'Sinónimos'),
+    (texto.split(/\r?\n/).find(l => l.includes('GLOSARIO.md')) || 'ninguna línea lo nombra').trim());
+}
 {
   // Los bancos de pruebas viajan pero no se nivelan: se instalan y listo. Si se compararan, todo
   // repo que corriera sus pruebas quedaría marcado para siempre.
@@ -144,6 +203,44 @@ console.log('\n== ESTRUCTURA ==');
   const { texto } = correr(REPO_PRUEBA);
   chequear('un subsistema ausente se marca para instalar',
     marca(texto, 'decisiones/', 'ausente'));
+  // Y se marca UNA vez, no una por archivo que le falta adentro. Marcar de más es la forma de
+  // apagarse que no se nota: el control sigue encendido y lo que se apaga es el lector.
+  const lineas = texto.split(/\r?\n/).filter(l => l.includes('decisiones/')).length;
+  chequear('y se marca una sola vez, no una por archivo del subsistema',
+    lineas === 1, `${lineas} línea(s) lo nombran`);
+}
+{
+  // El otro camino a la línea repetida, y el que la guarda anterior no cubre: un archivo cuya
+  // carpeta SÍ existe y que además tiene un chequeo propio. `conducta/MOMENTOS.md` lo tiene, así
+  // que sin deduplicar sale dos veces —una por su chequeo, otra por el barrido del árbol— con dos
+  // motivos distintos para el mismo faltante.
+  armarAlDia();
+  fs.rmSync(claude('conducta/MOMENTOS.md'), { force: true });
+  const { texto } = correr(REPO_PRUEBA);
+  const lineas = texto.split(/\r?\n/).filter(l => l.includes('conducta/MOMENTOS.md')).length;
+  chequear('un archivo con chequeo propio no se reporta dos veces',
+    lineas === 1, `${lineas} línea(s) lo nombran`);
+}
+{
+  // Un Componente que viaja y que ninguna lista escrita a mano nombra. `ESTADOS-LOCAL.md` es el que
+  // lo destapó —un Agente Desplegado lo reportó ausente y el nivelador lo informaba al día— y es el
+  // par del Agente Desplegado de `ESTADOS.md`: sin él, un estado propio se escribe en el archivo del
+  // Agente Multipropósito y la corrida siguiente se lo lleva puesto.
+  armarAlDia();
+  fs.rmSync(claude('planes/ESTADOS-LOCAL.md'), { force: true });
+  const { texto } = correr(REPO_PRUEBA);
+  chequear('el Índice del Agente Desplegado de planes ausente se marca',
+    marca(texto, 'planes/ESTADOS-LOCAL.md', 'ausente'));
+}
+{
+  // El mismo agujero en un Componente de otra clase: una página de detalle de preferencias, que no
+  // es Índice ni lint ni README. Si este pasara y el anterior no, el arreglo habría sido agregar un
+  // nombre más a una lista en vez de recorrer el árbol — y el que viaje mañana volvería a faltar.
+  armarAlDia();
+  fs.rmSync(claude('preferencias/estilo-commits.md'), { force: true });
+  const { texto } = correr(REPO_PRUEBA);
+  chequear('una página de detalle ausente también se marca (el árbol es la lista)',
+    marca(texto, 'preferencias/estilo-commits.md', 'ausente'));
 }
 {
   // Un archivo cambiado dispara DOS chequeos distintos: el de contenido, que lo compara con el que

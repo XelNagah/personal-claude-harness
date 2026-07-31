@@ -70,10 +70,17 @@ const INDICES_BASE = {
   conducta: ['INDICE.md'],
 };
 
-// Los cuatro subsistemas cuyo contenido viene de los dos origenes. Un Agente Desplegado que todavia
-// tenga un solo archivo con las dos secciones adentro se migra PARTIENDOLO: el frontmatter en los
-// dos y el contenido de cada seccion conservado. Donde la seccion del repo estaba vacia, el archivo
-// del Agente Desplegado igual nace —declarado y sin filas— porque el manifiesto instalado lo nombra.
+// Los subsistemas que ALGUNA VEZ tuvieron los dos origenes adentro de un mismo archivo. Un Agente
+// Desplegado que todavia lo tenga asi se migra PARTIENDOLO: el frontmatter en los dos y el contenido
+// de cada seccion conservado.
+//
+// Esta lista es solo para esa migracion, y por eso no estan todos los pares partidos por origen que
+// existen hoy: `planes` (ESTADOS.md/ESTADOS-LOCAL.md) y el par MOMENTOS.md/MOMENTOS-LOCAL.md de
+// `conducta` nacieron ya separados, asi que no hay nada que partir. Lo que si les hace falta —que la
+// ausencia del archivo del Agente Desplegado se reporte— NO sale de aca: sale de `chequearContenido`,
+// que recorre el arbol de `base/`. Meterlos aca para conseguirlo tendria ademas un efecto no
+// buscado: [1d] les exigiria el nucleo `Codigo | Nombre | Descripcion | Detalle`, que ninguno de los
+// dos tiene ni debe tener.
 const INDICES_PARTIDOS = [
   { sub: 'subsistemas',  amp: 'SUBSISTEMAS.md', local: 'SUBSISTEMAS-LOCAL.md', seccionLocal: /^##\s+Subsistemas del (?:Agente Desplegado|Prop[oó]sito)\b/mi },
   { sub: 'preferencias', amp: 'PREFERENCIAS.md', local: 'PREFERENCIAS-LOCAL.md', seccionLocal: /^##\s+(?:Preferencias del Agente Desplegado|Adaptaciones)\b/mi },
@@ -154,10 +161,26 @@ function origenDe(txt) {
 }
 // Encabezado = todo lo anterior a la primera fila de datos. De ahi para abajo estan las entradas
 // que puebla cada repo, que no se comparan ni se tocan.
+//
+// El separador queda ADENTRO (`i + 1`) a proposito: es el que declara cuantas columnas tiene la
+// tabla, asi que pertenece a la convencion y no a las filas. Dejarlo afuera haria que al pisar el
+// encabezado sobreviviera el separador viejo, y la tabla quedaria con una cabecera nueva y un
+// separador de otra forma. Que este adentro es tambien lo que obliga al chequeo de columnas de
+// `chequearContenido`: si el repo le sumo una columna propia, este bloque difiere y pisarlo dejaria
+// sus filas bajo una cabecera que no las describe.
 function hastaLaTabla(txt) {
   const ls = normalizar(txt).split('\n');
   const i = ls.findIndex(l => /^\s*\|[\s:|-]+\|\s*$/.test(l));
   return i === -1 ? null : ls.slice(0, i + 1).join('\n');
+}
+// La mitad del encabezado que NO es la tabla: la convencion, la gobernanza, el texto. Comparar el
+// bloque entero como una sola cadena no alcanza, porque una columna que el repo sumo cambia la linea
+// de columnas Y el separador — y sumarla es un derecho del Agente Desplegado. Sin partirlo, un
+// registro extendido difiere para siempre y ese repo no vuelve a informarse al dia nunca mas.
+function textoDeLaConvencion(bloque) {
+  const ls = (bloque || '').split('\n');
+  const i = ls.findIndex(l => l.trim().startsWith('|'));
+  return (i === -1 ? ls : ls.slice(0, i)).join('\n').trimEnd();
 }
 function listarBase(rel, out) {
   const dir = path.join(BASE, rel || '.');
@@ -179,13 +202,52 @@ function chequearContenido(add) {
   for (const rel of listarBase('', [])) {
     if (/(^|\/)pruebas\.js$/.test(rel)) continue;   // banco de pruebas: se instala, no se nivela
     const destino = path.join(claude, rel);
-    if (!existe(destino)) continue;                 // la ausencia ya la reporta el chequeo de Componentes
+    if (!existe(destino)) {
+      // La ausencia NO siempre la reporta otro chequeo: los de arriba nombran a mano el MANIFIESTO,
+      // el lint, el README y las Herramientas de rio arriba, asi que un Componente que viaja y que
+      // nadie sumo a esas listas —`planes/ESTADOS-LOCAL.md`, `conducta/MOMENTOS-LOCAL.md`,
+      // `preferencias/estilo-commits.md`— se saltaba en silencio y el repo se informaba al dia sin
+      // haberlo recibido nunca. El arbol es la lista, tambien para lo ausente.
+      //
+      // La unica condicion es que nadie se haya hecho cargo antes. Se probo tambien exigir que la
+      // carpeta contenedora existiera —para que un subsistema entero ausente no saliera una vez por
+      // archivo—, y sobra: el hallazgo de la carpeta ya cubre a sus hijos. Peor que sobrar, ante una
+      // carpeta nueva que viaje sin chequeo propio devolveria silencio, que es exactamente el
+      // defecto que este chequeo cierra. Varias lineas se leen; ninguna, no.
+      if (!yaCubierto(rel))
+        add('base', '+', rel, 'Componente de Subsistema ausente: instalar el que viaja en la Base');
+      continue;
+    }
     const queViaja = leer(path.join(BASE, rel));
     const instalado = leer(destino);
     if (rel.endsWith('.md') && origenDe(queViaja) === 'agente-desplegado') {
       const a = hastaLaTabla(queViaja), b = hastaLaTabla(instalado);
       if (a === null || b === null) { add('divergente', '?', rel, 'declara origen agente-desplegado y no se le encontro la tabla (revisar a mano)'); continue; }
-      if (a !== b) add('base', '~', rel, 'encabezado viejo: la convencion instalada difiere de la del Agente Multiproposito (sus entradas no se tocan)');
+      if (a === b) continue;
+      // Antes de proponer pisar el encabezado hay que mirar QUE difiere. Un Agente Desplegado puede
+      // sumarle columnas propias a su registro, asi que difieren por dos motivos distintos y cada
+      // uno pide otra cosa.
+      const delRepo = cabeceraTabla(instalado) || [], deLaBase = cabeceraTabla(queViaja) || [];
+      const propias = delRepo.filter(c => !deLaBase.includes(c));
+      if (!propias.length) {
+        add('base', '~', rel, 'encabezado viejo: la convencion instalada difiere de la del Agente Multiproposito (sus entradas no se tocan)');
+        continue;
+      }
+      // El repo extendio la tabla. Si eso es lo UNICO que difiere —el texto de la convencion es el
+      // mismo y las columnas de la Base siguen estando, en su orden— no hay nada que nivelar y hay
+      // que callarse: marcarlo dejaria a ese repo con un hallazgo bloqueante en cada corrida, para
+      // siempre, sin nada que hacer al respecto.
+      if (textoDeLaConvencion(a) === textoDeLaConvencion(b) && deLaBase.every((c, i) => delRepo[i] === c))
+        continue;
+      // Queda algo mas que la columna: o la convencion tambien cambio, o las columnas de la Base ya
+      // no estan donde estaban. Pisar el bloque le dejaria las filas bajo una cabecera con menos
+      // columnas de las que tienen —registro corrupto, y clasificado como un cambio de convencion
+      // cualquiera—, y fusionar a ciegas duplicaria la columna si lo que paso fue un renombre.
+      //
+      // El mensaje no afirma cual de las dos cosas es, porque el detector no puede saberlo: que el
+      // repo sume `Sinonimos` y que la Base renombre `Alias` a otra cosa dejan exactamente la misma
+      // evidencia. Lo decide el usuario, que si conoce la historia de su repo.
+      add('divergente', '?', rel, `columna(s) fuera de la convencion de la Base (${propias.join(', ')}): las sumo el repo, o la Base renombro las suyas — pisar el encabezado dejaria sus ${contarFilasTabla(instalado)} fila(s) bajo una cabecera que no las describe`);
       continue;
     }
     if (normalizar(instalado) !== normalizar(queViaja))
@@ -209,6 +271,12 @@ function manifiestoCompleto(txt, sub) {
 // Cada hallazgo: { grupo: 'base'|'renombre'|'divergente'|'ok', marca, item, detalle }
 const hallazgos = [];
 const add = (grupo, marca, item, detalle) => hallazgos.push({ grupo, marca, item, detalle: detalle || '' });
+// ¿Algun hallazgo anterior ya se hace cargo de esta ruta? El chequeo de ausencia del arbol corre
+// ultimo, y sin esto un subsistema entero ausente se reportaria una vez por archivo — veinte lineas
+// diciendo lo mismo que la primera, que es como una senal real se pierde entre las que no lo son.
+// Cubre tanto la ruta exacta como la carpeta que la contiene (`planes/lint-planes/`).
+const yaCubierto = rel => hallazgos.some(h =>
+  rel === h.item || rel.startsWith(h.item.endsWith('/') ? h.item : h.item + '/'));
 
 function clasificar() {
   if (!esDir(claude)) {
