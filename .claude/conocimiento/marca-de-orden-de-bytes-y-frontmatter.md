@@ -32,8 +32,14 @@ Un defecto en código duplicado se arregla en todas las copias a la vez o no se 
 Segunda trampa, encontrada al arreglarlo: **escribir el carácter U+FEFF literal dentro del regex**
 funciona, pero deja en el código fuente exactamente el carácter invisible del que trata el defecto —y
 lo mismo vale para esta página, que se escribió dos veces con la marca adentro antes de notarlo. Va
-siempre por su escape (`\uFEFF`), que se ve. Sirve un control barato: barrer los archivos buscando
-U+FEFF fuera de la primera posición.
+siempre por su escape (`\uFEFF`) o construido por código (`String.fromCharCode(0xFEFF)`), que se ven.
+
+**El barrido que esta página proponía existe desde el 31/07/2026**, como sección de `lint-harness`:
+recorre todo el repo y marca cualquier aparición del carácter, distinguiendo la del inicio —la marca
+que tapa el frontmatter— de las del medio —el literal colado en el texto—. Su primer hallazgo real
+apareció mientras se lo escribía: el medidor con el que se levantó el estado inicial se marcó a sí
+mismo, porque se había escrito con el carácter literal adentro. De 337 archivos del repo, el único
+con la marca era el que la buscaba. Es la evidencia de que el defecto se reintroduce solo.
 
 **Cómo se verificó:** medido en este repo el 30 y 31 de julio de 2026. El defecto era **latente**:
 ninguno de los 238 `.md` del repo tenía la marca. Se reprodujo sembrándola en un banco de pruebas —un

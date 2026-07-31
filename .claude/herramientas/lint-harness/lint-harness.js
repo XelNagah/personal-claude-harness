@@ -3,8 +3,9 @@
 // funcionalidades vs marketplace vs REGISTRO, archivos clave por funcionalidad, divergencia de bloques textuales entre PLANTILLAs,
 // tamaño de los MANIFIESTO.md de subsistema (dec. 0017: breves, siempre en contexto) y su estructura
 // minima (dec. 0019 + 0023: campos obligatorios incl. Skills + coherencia carga<->@INDICE), citas a
-// decisiones del harness en archivos distribuibles (dec. 0024) y terminologia vetada en el texto que
-// viaja (funcionalidades/: lo que se escribe en cada Agente con Propósito). Sin LLM, sin red.
+// decisiones del harness en archivos distribuibles (dec. 0024), terminologia vetada en el texto que
+// viaja (funcionalidades/: lo que se escribe en cada Agente con Propósito) y la marca de orden de
+// bytes (U+FEFF) suelta en cualquier archivo del repo. Sin LLM, sin red.
 // Uso: node lint-harness.js [--quiet]   (correr desde la raiz del repo del harness)
 const fs = require('fs'), path = require('path'), os = require('os'), crypto = require('crypto');
 const quiet = process.argv.includes('--quiet');
@@ -503,6 +504,43 @@ if (vetadosProductoTerms.length && fs.existsSync(funcDir)) {
 // como archivos, la comparacion es archivo contra archivo y no hay nada que parsear: la hace
 // [4b], que ademas alcanza a los `.md`, que este nunca miro.
 
+// -- [12] la marca de orden de bytes (U+FEFF) suelta en el repo ----------
+// Un mismo caracter invisible, dos defectos distintos segun donde caiga. AL INICIO de un archivo es
+// la marca de orden de bytes: el `.md` deja de matchear `^---`, se lo lee "sin frontmatter" y pierde
+// todo lo que declaraba de si mismo —origen, indice, columnas— sin emitir ninguna señal. En
+// CUALQUIER OTRA posicion es el caracter literal metido adentro del texto, tipicamente en el regex
+// que se escribio para sacarlo: funciona, se lee igual, y deja en el fuente exactamente aquello de
+// lo que trata el defecto. Ninguno de los dos se ve abriendo el archivo, asi que el unico que los
+// encuentra es un barrido.
+// El caracter se construye por codigo a proposito: escribirlo literal aca dejaria en este archivo
+// justamente lo que el control persigue.
+const MARCA_DE_ORDEN = String.fromCharCode(0xFEFF);
+const EXT_TEXTO = new Set(['.md', '.js', '.json', '.mjs', '.cjs', '.sh', '.ps1']);
+const TMP = path.join(repo, '.claude', 'tmp');
+const marcaDeOrden = [];
+(function barrerMarca(dir) {
+  for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
+    if (e.name === 'node_modules' || e.name === '.git') continue;
+    const full = path.join(dir, e.name);
+    // `.claude/tmp/` queda afuera: esta gitignoreada, nada de ahi viaja ni se ejecuta, y es donde
+    // los bancos siembran la marca a proposito para probar que sus controles la ven.
+    if (e.isDirectory()) { if (full !== TMP) barrerMarca(full); continue; }
+    if (!EXT_TEXTO.has(path.extname(e.name).toLowerCase())) continue;
+    let txt; try { txt = fs.readFileSync(full, 'utf8'); } catch (err) { continue; }
+    if (!txt.includes(MARCA_DE_ORDEN)) continue;
+    const rel = path.relative(repo, full).replace(/\\/g, '/');
+    txt.split(/\r?\n/).forEach((linea, i) => {
+      let idx = linea.indexOf(MARCA_DE_ORDEN);
+      while (idx !== -1) {
+        marcaDeOrden.push(i === 0 && idx === 0
+          ? `${rel}:1  marca de orden al inicio: tapa el frontmatter`
+          : `${rel}:${i + 1}  columna ${idx + 1}: carácter literal en el texto`);
+        idx = linea.indexOf(MARCA_DE_ORDEN, idx + 1);
+      }
+    });
+  }
+})(repo);
+
 // -- salida --------------------------------------------------------------
 const secciones = [
   ['PUNTO DE ENTRADA (AGENTS.md + adaptador CLAUDE.md)', entrada],
@@ -520,6 +558,7 @@ const secciones = [
   ['MANIFIESTOS SIN CAMPOS MINIMOS (dec. 0019)', manifiestosSinCampos],
   ['CITAS A DECISIONES DEL HARNESS EN DISTRIBUIBLES (dec. 0024)', refsDecision],
   ['TERMINOLOGIA VETADA EN EL TEXTO QUE VIAJA (funcionalidades/)', vetadoEnProducto],
+  ['MARCA DE ORDEN DE BYTES (U+FEFF) EN ARCHIVOS DEL REPO', marcaDeOrden],
 ];
 const total = secciones.reduce((n, [, items]) => n + items.length, 0);
 if (quiet && total === 0) process.exit(0);

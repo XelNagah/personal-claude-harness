@@ -70,7 +70,10 @@ armar();
 
 // -- CASOS MALOS -----------------------------------------------------------
 const casos = [];
-const caso = (nombre, seccion, romper) => casos.push({ nombre, seccion, romper });
+// `exigeTexto` es opcional y hace falta cuando dos casos comparten seccion: el conteo solo dice que
+// el control se encendio, no CUAL de los dos defectos vio, y un control que confundiera los dos
+// pasaria igual.
+const caso = (nombre, seccion, romper, exigeTexto) => casos.push({ nombre, seccion, romper, exigeTexto });
 
 // El motivo del control: arreglar un lint en `.claude/` y olvidar la copia que viaja dejaba el
 // defecto saliendo publicado con el control de cierre en verde.
@@ -122,15 +125,38 @@ caso('término vetado en el texto que viaja', 'TERMINOLOGIA VETADA EN EL TEXTO Q
 caso('adaptador CLAUDE.md que dejó de importar AGENTS.md', 'PUNTO DE ENTRADA (AGENTS.md + adaptador CLAUDE.md)',
   () => escribir('CLAUDE.md', '# Instrucciones propias\n\nSin importar nada.\n'));
 
+// Los dos defectos del caracter invisible. Se siembra por codigo, nunca literal: un banco escrito
+// con el caracter que el control persigue se lo lleva puesto a si mismo.
+// El primero es el defecto en su forma destructiva: el `.md` deja de matchear `^---` y todo lo que
+// declaraba de si mismo se lee como no declarado, sin señal. Va sobre REGISTRO.md, que no viaja,
+// para que el unico control que se encienda sea este.
+const MARCA = String.fromCharCode(0xFEFF);
+caso('marca de orden de bytes al inicio de un .md', 'MARCA DE ORDEN DE BYTES (U+FEFF) EN ARCHIVOS DEL REPO',
+  () => escribir('REGISTRO.md', MARCA + leer('REGISTRO.md')),
+  'marca de orden al inicio');
+
+// El segundo es el que reintroduce el defecto: el caracter literal escrito adentro del codigo —en el
+// mismo regex puesto para sacarlo—, donde funciona y no se ve. Va sobre lint-harness.js, que es
+// Local y no viaja; ademas es la COPIA del repo de prueba, no el script que corre.
+caso('carácter literal en medio de un .js', 'MARCA DE ORDEN DE BYTES (U+FEFF) EN ARCHIVOS DEL REPO',
+  () => escribir('.claude/herramientas/lint-harness/lint-harness.js',
+    leer('.claude/herramientas/lint-harness/lint-harness.js') + `\nconst colado = /^${MARCA}/;\n`),
+  'carácter literal en el texto');
+
 console.log('\n== CASOS MALOS: cada control se enciende ante su defecto ==');
 for (const c of casos) {
   armar();
   try { c.romper(); } catch (e) { console.log(`FALLA ${c.nombre}\n      no se pudo romper el repo de prueba: ${e.message}`); malos++; continue; }
-  const h = hallazgos(correr());
+  const salida = correr();
+  const h = hallazgos(salida);
   delete h[IGNORAR];
   const propio = h[c.seccion] || 0;
   if (propio === 0) {
     console.log(`FALLA ${c.nombre}  → [${c.seccion}] siguió en 0 (el control no lo vio)`);
+    malos++; continue;
+  }
+  if (c.exigeTexto && !salida.includes(c.exigeTexto)) {
+    console.log(`FALLA ${c.nombre}  → se encendió, pero sin decir "${c.exigeTexto}" (vio otro defecto)`);
     malos++; continue;
   }
   const otros = Object.entries(h).filter(([k, n]) => k !== c.seccion && n > 0).map(([k, n]) => `${k}=${n}`);
