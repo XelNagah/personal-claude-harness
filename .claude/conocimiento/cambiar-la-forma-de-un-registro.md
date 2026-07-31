@@ -58,6 +58,10 @@ se habría enterado.
   archivo declara sus propias columnas: compartir el mapa del primero lee el segundo corrido y en
   silencio, y de paso cuenta su fila de encabezado como una entrada más.
 
+Hay una cuarta que entra por otro lado y por eso vive aparte: la marca de orden de bytes al principio
+del archivo rompe el frontmatter sin que nadie cambie el registro, solo por guardarlo. Está en
+[`marca-de-orden-de-bytes-y-frontmatter`](marca-de-orden-de-bytes-y-frontmatter.md).
+
 **Cómo se verificó:** las once roturas son las encontradas y arregladas al migrar los diez registros
 (29 y 30 de julio de 2026); las tres trampas se reprodujeron a mano —`decodeURIComponent` con un
 `%` suelto tira en el momento, y el encabezado compartido se probó partiendo un registro en dos
