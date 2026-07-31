@@ -1,0 +1,266 @@
+#!/usr/bin/env node
+// Pruebas de `amp-actualizar.js`, el motor mecánico del nivelador.
+//
+// Este script decide si un Agente con Propósito está al día, y su falla cara no es un error: es
+// contestar «ya estaba» sobre algo que quedó viejo. Un repo informado al día no se vuelve a mirar,
+// así que un chequeo apagado acá se lleva puesta la versión de todos los repos instalados.
+//
+// Por eso cada caso viene de a dos: el detector tiene que MARCAR lo que está mal y CALLARSE sobre lo
+// que está bien. Un banco que solo prueba el caso malo no distingue un detector que funciona de uno
+// que marca siempre; uno que solo prueba el bueno no distingue el que funciona del que quedó mudo.
+//
+// LÍMITE DECLARADO: se prueba el detector, o sea el modo vista previa, que es todo lo que este
+// script hace salvo `--respaldo`. La APLICACIÓN —pisar el archivo, cortar por el separador de la
+// tabla— no vive acá: la ejecuta el agente leyendo el `SKILL.md`, y ninguna prueba automática la
+// alcanza. Se verificó a mano en el plan `Local-0084`.
+//
+// Uso: node funcionalidades/amp/skills/actualizar/pruebas.js   (desde la raíz del repo)
+const fs = require('fs'), path = require('path'), cp = require('child_process');
+
+const NIVELADOR = path.resolve('funcionalidades/amp/skills/actualizar/amp-actualizar.js');
+const BASE = path.resolve('funcionalidades/amp/skills/inicializar/base');
+const REPO_PRUEBA = path.resolve('.claude/tmp/repo-prueba-nivelador');
+
+let malos = 0, casos = 0;
+function chequear(nombre, condicion, detalle) {
+  casos++;
+  console.log(`${condicion ? 'OK  ' : 'FALLA'} ${nombre}${detalle ? `  → ${detalle}` : ''}`);
+  if (!condicion) malos++;
+}
+
+function correr(rutaRepo) {
+  const args = ['--vista-previa'];
+  if (rutaRepo) args.push(rutaRepo);
+  const r = cp.spawnSync(process.execPath, [NIVELADOR, ...args], { encoding: 'utf8', timeout: 180000 });
+  return { texto: (r.stdout || '') + (r.stderr || ''), codigo: r.status };
+}
+
+// Un Agente con Propósito recién instalado y al día: el árbol de `base/` colgado de `.claude/`, que
+// es contra lo que el propio nivelador compara. Es el punto de partida de casi todos los casos: se
+// arma al día y se lo rompe de a una cosa por vez, para que lo que marque sea atribuible.
+function armarAlDia() {
+  fs.rmSync(REPO_PRUEBA, { recursive: true, force: true });
+  fs.mkdirSync(REPO_PRUEBA, { recursive: true });
+  fs.cpSync(BASE, path.join(REPO_PRUEBA, '.claude'), { recursive: true });
+  for (const c of ['pendientes', 'ejecutados', 'descartados']) {
+    fs.mkdirSync(path.join(REPO_PRUEBA, '.claude', 'planes', c), { recursive: true });
+  }
+  // El Título y el Propósito se preguntan al instalar; sin este archivo todo repo marca uno.
+  fs.writeFileSync(path.join(REPO_PRUEBA, '.claude', 'identidad.md'),
+    '# Repo de prueba\n\nPropósito: ejercitar el nivelador.\n');
+  cablearHooks();
+}
+
+// Los hooks no se copian de `base/`: se fusionan con los que el repo ya tenga, así que un repo al
+// día los tiene cableados aunque su árbol de archivos esté completo. Registro doble —Claude Code y
+// Codex— y los tres eventos, que es lo que el detector mira.
+function cablearHooks() {
+  const entrada = { type: 'command', command: 'node .claude/conducta/establecer-conducta/establecer-conducta.js' };
+  const cfg = {
+    hooks: {
+      SessionStart: [{ hooks: [entrada] }],
+      UserPromptSubmit: [{ hooks: [entrada] }],
+      PreToolUse: [{ matcher: 'Write|Edit', hooks: [entrada] }],
+    },
+  };
+  fs.writeFileSync(path.join(REPO_PRUEBA, '.claude', 'settings.json'), JSON.stringify(cfg, null, 2));
+  fs.mkdirSync(path.join(REPO_PRUEBA, '.codex'), { recursive: true });
+  fs.writeFileSync(path.join(REPO_PRUEBA, '.codex', 'hooks.json'), JSON.stringify(cfg, null, 2));
+}
+
+const claude = f => path.join(REPO_PRUEBA, '.claude', f);
+const leer = f => fs.readFileSync(claude(f), 'utf8');
+const escribir = (f, t) => fs.writeFileSync(claude(f), t);
+
+// Marca de un ítem en el reporte: alcanza con que su ruta y su motivo aparezcan en la misma línea.
+function marca(texto, item, motivo) {
+  return texto.split(/\r?\n/).some(l => l.includes(item) && (!motivo || l.includes(motivo)));
+}
+
+console.log('== EL REPO AL DÍA NO SE MARCA ==');
+// Si esto fallara, todo lo de abajo daría un falso verde: el detector estaría marcando de más y
+// cualquier caso malo «pasaría» sin que su rotura tenga nada que ver.
+armarAlDia();
+{
+  const { texto, codigo } = correr(REPO_PRUEBA);
+  chequear('corre y emite el reporte', /amp-actualizar/.test(texto) && codigo === 0, `código ${codigo}`);
+  // El cierre en verde tiene frase propia, distinta del total que imprime cuando hay algo que hacer.
+  chequear('un repo al día cierra sin nada para nivelar',
+    /Repo al d[ií]a: nada para nivelar/.test(texto),
+    (texto.match(/Total de acciones propuestas: \d+/) || ['sin acciones propuestas'])[0]);
+  chequear('informa los ocho subsistemas como ya estaban', /YA ESTABA[\s\S]*conducta/.test(texto));
+}
+
+console.log('\n== CONTENIDO: LO VIEJO SE MARCA, LO PROPIO DEL REPO NO ==');
+{
+  // Caso malo: un archivo de mecanismo en la versión de cuando se instaló. Es el caso más frecuente
+  // al poner al día un repo, y el que justifica comparar contenido en vez de sola presencia: un
+  // consumidor que ya tiene el script viejo se lo queda para siempre.
+  armarAlDia();
+  escribir('conocimiento/lint-conocimiento/lint-conocimiento.js', '// version vieja\n');
+  const { texto } = correr(REPO_PRUEBA);
+  chequear('un archivo de mecanismo desactualizado se marca como contenido viejo',
+    marca(texto, 'lint-conocimiento.js', 'contenido viejo'));
+}
+{
+  // Caso bueno, y el que más importa: el repo agregó filas a un registro suyo. Si esto se marcara,
+  // el nivelador propondría pisar el Aprendizaje del repo.
+  armarAlDia();
+  escribir('semantica/GLOSARIO.md', leer('semantica/GLOSARIO.md').trimEnd() +
+    '\n| Local-0001 | Bulto | Cada unidad que se cotiza por separado | — | — |\n');
+  const { texto } = correr(REPO_PRUEBA);
+  chequear('las filas que agrega el repo a un registro suyo NO se marcan',
+    !marca(texto, 'GLOSARIO.md'),
+    (texto.split(/\r?\n/).find(l => l.includes('GLOSARIO.md')) || 'ninguna línea lo nombra').trim());
+}
+{
+  // Caso malo del mismo archivo: lo de ARRIBA de la tabla es del Agente Multipropósito y cambia con
+  // él. Sin esto, un repo instalado hace tres versiones lee una convención que ya no rige.
+  armarAlDia();
+  const t = leer('semantica/GLOSARIO.md').split(/\r?\n/);
+  const sep = t.findIndex(l => /^\|[\s\-:|]+\|\s*$/.test(l));
+  t.splice(sep - 1, 0, '> Convención vieja: las entradas se numeran por posición.', '');
+  escribir('semantica/GLOSARIO.md', t.join('\n'));
+  const { texto } = correr(REPO_PRUEBA);
+  chequear('el encabezado viejo de un registro del repo se marca',
+    marca(texto, 'GLOSARIO.md', 'encabezado viejo'));
+  chequear('y el reporte aclara que sus entradas no se tocan',
+    marca(texto, 'GLOSARIO.md', 'no se tocan'));
+}
+{
+  // Los bancos de pruebas viajan pero no se nivelan: se instalan y listo. Si se compararan, todo
+  // repo que corriera sus pruebas quedaría marcado para siempre.
+  armarAlDia();
+  escribir('planes/lint-planes/pruebas.js', '// otra cosa\n');
+  const { texto } = correr(REPO_PRUEBA);
+  chequear('un banco de pruebas distinto NO se marca (se instala, no se nivela)',
+    !marca(texto, 'pruebas.js'));
+}
+
+console.log('\n== ESTRUCTURA ==');
+{
+  armarAlDia();
+  fs.rmSync(claude('decisiones'), { recursive: true, force: true });
+  const { texto } = correr(REPO_PRUEBA);
+  chequear('un subsistema ausente se marca para instalar',
+    marca(texto, 'decisiones/', 'ausente'));
+}
+{
+  armarAlDia();
+  escribir('planes/MANIFIESTO.md', '# Planes\n\nUn manifiesto sin los campos que el Patrón pide.\n');
+  const { texto } = correr(REPO_PRUEBA);
+  chequear('un manifiesto sin los campos mínimos se marca',
+    marca(texto, 'planes/MANIFIESTO.md'));
+}
+{
+  armarAlDia();
+  fs.rmSync(claude('semantica/lint-semantica'), { recursive: true, force: true });
+  const { texto } = correr(REPO_PRUEBA);
+  chequear('el lint ausente de un subsistema se marca',
+    marca(texto, 'semantica/lint-semantica'));
+}
+{
+  // La identidad se pregunta, no se inventa: su ausencia es el único faltante esperado de una
+  // instalación limpia, y el detector tiene que nombrarla igual para que el flujo sepa pedirla.
+  armarAlDia();
+  fs.rmSync(claude('identidad.md'), { force: true });
+  const { texto } = correr(REPO_PRUEBA);
+  chequear('identidad.md ausente se marca', marca(texto, 'identidad.md', 'ausente'));
+}
+
+{
+  // El repartidor se cablea por merge, no se copia: un repo puede tener el árbol completo y el hook
+  // sin enganchar. Sin SessionStart no hay Pantalla de bienvenida, que es una regla del Agente
+  // Multipropósito — el archivo está instalado y aun así la conducta no se entrega.
+  armarAlDia();
+  fs.writeFileSync(claude('settings.json'), JSON.stringify({ hooks: {} }, null, 2));
+  const { texto } = correr(REPO_PRUEBA);
+  chequear('el repartidor sin cablear en Claude Code se marca',
+    marca(texto, 'settings.json', 'sin cablear'));
+}
+{
+  // Registro doble: el mismo repartidor va en Codex, y ahí se cablea aparte. Que esté en uno no
+  // dice nada del otro.
+  armarAlDia();
+  fs.writeFileSync(path.join(REPO_PRUEBA, '.codex', 'hooks.json'), JSON.stringify({ hooks: {} }, null, 2));
+  const { texto } = correr(REPO_PRUEBA);
+  chequear('el repartidor sin cablear en Codex se marca aparte',
+    marca(texto, '.codex/hooks.json', 'sin cablear') && !marca(texto, 'settings.json', 'sin cablear'));
+}
+
+console.log('\n== FORMAS ANTERIORES ==');
+{
+  // La generación previa de semántica. Renombrar preserva los términos; el detector tiene que
+  // decir cuántos hay en juego, porque es lo que el usuario mira antes de aprobar.
+  armarAlDia();
+  fs.renameSync(claude('semantica'), claude('glosario'));
+  const { texto } = correr(REPO_PRUEBA);
+  chequear('la carpeta glosario/ se marca como renombre a semantica/',
+    marca(texto, 'glosario/', 'semantica/'));
+}
+{
+  armarAlDia();
+  escribir('preferencias/PREFERENCIAS.md',
+    leer('preferencias/PREFERENCIAS.md').replace(/^##\s+Preferencias del Agente Multipropósito.*$/m, '## Base (harness v3)'));
+  const { texto } = correr(REPO_PRUEBA);
+  chequear('un encabezado con la forma anterior se marca para renombrar',
+    marca(texto, 'PREFERENCIAS.md', 'renombrar'));
+}
+{
+  // El `origen` del frontmatter es lo que decide el trato del nivelador. Un Índice que no lo declara
+  // obliga a deducirlo del nombre del archivo, que es justo lo que este modelo vino a dejar de hacer.
+  armarAlDia();
+  escribir('decisiones/INDICE.md', leer('decisiones/INDICE.md').replace(/^---\r?\n[\s\S]*?\r?\n---\r?\n/, ''));
+  const { texto } = correr(REPO_PRUEBA);
+  chequear('un Índice sin frontmatter se marca para declarar',
+    marca(texto, 'decisiones/INDICE.md', 'frontmatter'));
+}
+{
+  // Los dos orígenes conviviendo adentro de un archivo: se migra partiéndolo, no reemplazándolo.
+  armarAlDia();
+  fs.rmSync(claude('herramientas/INDICE-LOCAL.md'), { force: true });
+  escribir('herramientas/INDICE.md', leer('herramientas/INDICE.md') +
+    '\n## Herramientas del Agente Desplegado\n\n| Código | Nombre | Descripción | Tipo | Cómo se invoca | Estado | Detalle |\n|---|---|---|---|---|---|---|\n');
+  const { texto } = correr(REPO_PRUEBA);
+  chequear('un Índice con los dos orígenes adentro se marca para partir',
+    marca(texto, 'herramientas/INDICE.md', 'partir por origen'));
+}
+{
+  // La generación retirada. Su sola presencia significa migración incompleta y nunca puede terminar
+  // en «repo al día», aunque todos sus archivos sean válidos para la versión vieja.
+  armarAlDia();
+  fs.mkdirSync(claude('memoria'), { recursive: true });
+  fs.writeFileSync(path.join(claude('memoria'), 'feedback_decisiones.md'), '# retirado\n');
+  fs.writeFileSync(path.join(claude('memoria'), 'lo_que_aprendio_el_repo.md'), '# propio\n');
+  const { texto } = correr(REPO_PRUEBA);
+  chequear('memoria/ presente se marca como migración pendiente',
+    marca(texto, 'memoria/', 'migracion pendiente'));
+  chequear('y separa lo conocido del Agente Multipropósito de lo que es Aprendizaje',
+    /1 Componente\(s\) de Subsistema conocido/.test(texto) && /solo sobre 1 de Aprendizaje/.test(texto),
+    (texto.split(/\r?\n/).find(l => l.includes('memoria/')) || '').trim().slice(0, 120));
+}
+
+console.log('\n== NO SE ROMPE NI SE CALLA ANTE LO INESPERADO ==');
+{
+  // Un repo sin `.claude/` es caso de instalación, no de nivelado. Callarse acá mandaría al usuario
+  // a nivelar un repo que todavía no tiene nada.
+  fs.rmSync(REPO_PRUEBA, { recursive: true, force: true });
+  fs.mkdirSync(REPO_PRUEBA, { recursive: true });
+  const { texto, codigo } = correr(REPO_PRUEBA);
+  chequear('un repo sin .claude/ se reporta como caso de instalación',
+    marca(texto, '.claude/', 'no existe') && codigo === 0, `código ${codigo}`);
+}
+{
+  armarAlDia();
+  escribir('conducta/INDICE.md', 'esto no es una tabla ni tiene frontmatter');
+  const { texto, codigo } = correr(REPO_PRUEBA);
+  chequear('un Índice mal formado no lo hace reventar', codigo === 0, `código ${codigo}`);
+  chequear('y tampoco lo deja pasar en silencio', marca(texto, 'conducta/INDICE.md'));
+}
+
+fs.rmSync(REPO_PRUEBA, { recursive: true, force: true });
+console.log(`\ncasos: ${casos}`);
+console.log('no cubierto a propósito: la APLICACIÓN (pisar el archivo, cortar por el separador de la');
+console.log('                         tabla) la ejecuta el agente leyendo el SKILL.md, no este script.');
+console.log(malos ? `${malos} FALLARON.` : 'TODO VERDE.');
+process.exit(malos ? 1 : 0);

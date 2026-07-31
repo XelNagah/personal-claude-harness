@@ -8,8 +8,16 @@
 // verde sobre un conjunto vacío. Un control sin prueba no avisa cuando deja de controlar, y el
 // control de cierre no puede detectarlo porque le cree.
 //
-// Descubre las pruebas: cualquier `pruebas.js` bajo `.claude/`, co-ubicado con lo que prueba (misma
-// convención que los lints, decisión Local-0008). No hay lista que mantener.
+// Descubre las pruebas: cualquier `pruebas.js` co-ubicado con lo que prueba (misma convención que
+// los lints, decisión Local-0008), bajo `.claude/` y bajo `funcionalidades/`. No hay lista que
+// mantener.
+//
+// `funcionalidades/` entra porque ahí vive código propio que ningún otro barrido alcanza —hoy
+// `amp-actualizar.js`, el motor del nivelador—, y un banco que no se corre es lo mismo que no
+// tenerlo. Lo que se excluye de esa rama es `base/`: sus `pruebas.js` son COPIAS de las de
+// `.claude/`, que ya corren acá, y `lint-harness` compara los dos lados en ambos sentidos. Correrlas
+// de nuevo no controla nada nuevo — solo infla el número que este corredor informa, y un número
+// inflado de duplicados es la forma en que un tablero deja de leerse.
 //
 // Contrato de una prueba: sale con código 0 si todo pasó y 1 si algo falló. A diferencia de los
 // lints —que reportan y no fallan— acá el código de salida SÍ importa: una prueba que falla es un
@@ -36,23 +44,35 @@ function resolverRepo(desde) {
 }
 
 const REPO = resolverRepo(process.argv[2] || process.cwd());
-const CLAUDE_DIR = path.join(REPO, '.claude');
 const EXCLUDE = new Set(['.git', 'node_modules', 'tmp', '.respaldo-amp']);
 
-function buscarPruebas(dir, out) {
+// Las dos raíces que se barren, cada una con lo que excluye. `base/` no es ruido incidental: es la
+// copia de `.claude/` que viaja en el plugin, así que sus bancos ya corren por la primera raíz.
+const RAICES = [
+  { dir: '.claude', excluir: new Set() },
+  { dir: 'funcionalidades', excluir: new Set(['base']) },
+];
+
+function buscarPruebas(dir, excluir, out) {
   let entradas;
   try { entradas = fs.readdirSync(dir, { withFileTypes: true }); } catch { return out; }
   for (const e of entradas) {
-    if (EXCLUDE.has(e.name)) continue;
+    if (EXCLUDE.has(e.name) || excluir.has(e.name)) continue;
     const full = path.join(dir, e.name);
-    if (e.isDirectory()) buscarPruebas(full, out);
+    if (e.isDirectory()) buscarPruebas(full, excluir, out);
     else if (e.name === 'pruebas.js') out.push(full);
   }
   return out;
 }
 
-// Nombre legible: la carpeta que contiene la prueba dice qué se está probando.
-const etiqueta = js => path.basename(path.dirname(js));
+// Nombre legible: lo dice el script que la prueba acompaña, y si no se puede saber, la carpeta que
+// la contiene. Para un lint las dos formas coinciden (`lint-planes/lint-planes.js`); donde no
+// coinciden es en `funcionalidades/`, y ahí la carpeta sola diría «actualizar», que no nombra nada.
+function etiqueta(js) {
+  const dir = path.dirname(js);
+  const hermanos = fs.readdirSync(dir).filter(n => n.endsWith('.js') && n !== 'pruebas.js');
+  return hermanos.length === 1 ? path.basename(hermanos[0], '.js') : path.basename(dir);
+}
 
 // Cuántos casos corrieron y cuántos fallaron, si la prueba lo dice. Es informativo: la autoridad
 // sobre pasa/falla es el código de salida, no este parseo.
@@ -62,11 +82,13 @@ function resumirCasos(salida) {
   return { total: total ? Number(total[1]) : null, fallas: fallas ? Number(fallas[1]) : null };
 }
 
-const pruebas = buscarPruebas(CLAUDE_DIR, []).sort();
+const pruebas = RAICES
+  .flatMap(r => buscarPruebas(path.join(REPO, r.dir), r.excluir, []))
+  .sort();
 
 console.log('== PRUEBAS DE LOS CONTROLES: ' + REPO + ' ==');
 if (!pruebas.length) {
-  console.log('\nNo se encontró ninguna `pruebas.js` bajo .claude/.');
+  console.log('\nNo se encontró ninguna `pruebas.js` bajo ' + RAICES.map(r => r.dir + '/').join(' ni ') + '.');
   console.log('Un control sin prueba no avisa cuando deja de controlar.');
   process.exit(0);
 }
