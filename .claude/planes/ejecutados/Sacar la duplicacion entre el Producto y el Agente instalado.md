@@ -69,6 +69,60 @@ Y el marco con el que hay que decidirlo, en palabras del usuario: **el marketpla
 
 **Pero el control no reemplaza este plan:** mientras el texto viva dos veces, lo único que se puede hacer es ver la divergencia a tiempo. Medido ese día: al arreglar cinco scripts hubo que propagar cinco veces a mano, y en dos de ellas la copia habría salido publicada a medias si el control no hubiera existido.
 
+## Estado — lo medido el 30/07/2026 (segunda tanda)
+
+La premisa que sostenía todo el plan se cayó del todo: **no hay ninguna razón técnica para transcribir los scripts adentro del markdown.** El repo ya tiene el patrón correcto aplicado una vez.
+
+### La prueba
+
+`funcionalidades/amp/skills/actualizar/amp-actualizar.js` (28,8 KB) **es el único `.js` que viaja como archivo de verdad** adentro de un plugin, y funciona: se ejecutó en esta sesión desde el plugin bajado, en `<cache>/xelnagah-harness/amp/0.13.0/skills/actualizar/amp-actualizar.js`. Se lo puso como archivo porque un bloque de texto no se puede correr — o sea, se usó la forma correcta donde era obligatorio, no donde convenía.
+
+### Qué está duplicado, exacto
+
+De los 310,3 KB de `PLANTILLA.md`, **204,8 KB (66%) son copia byte a byte** de un archivo que ya existe en `.claude/`:
+
+| Qué | Bloques | Peso |
+|---|---|---|
+| Scripts `.js` — 8 lints Base + 3 hooks + `actualizar-plugins` | 12 | 193,5 KB |
+| Markdown idéntico — `PREFERENCIAS.md`, `herramientas/INDICE.md`, `lint-conducta/README.md` | 3 | 11,3 KB |
+
+Los 12 `.js` están **hoy sin divergencia**, gracias al control `SCRIPT EMBEBIDO DISTINTO DEL INSTALADO EN .claude/`.
+
+Los otros 9 bloques grandes (~12,8 KB) **no son duplicación**: son el contenido inicial —`ESTADOS.md`, el `PLANES.md` vacío, el glosario inicial, el índice de decisiones— que en el repo autor está poblado. Esos no pueden compartir archivo y se quedan en la plantilla.
+
+Sacando lo duplicado, `PLANTILLA.md` queda en ~105 KB: el texto de instalación, el contenido inicial y los bloques `bash`/`json`.
+
+### Dónde tienen que vivir los archivos
+
+**Todos bajo el plugin `amp`, en la carpeta de la propia skill** (`funcionalidades/amp/skills/inicializar/`). No repartidos en cada `amp-<sub>`: los plugins se bajan a carpetas separadas **con la versión en la ruta**, así que para que `inicializar` alcance un archivo de `amp-planes` tendría que resolver la versión del plugin vecino — exactamente el problema de rutas versionadas que hace inviable mover los lints al plugin. Una skill sí conoce su propio directorio.
+
+### Qué hay que tocar (medido)
+
+- `lint-harness.js` — 4 de sus 14 controles miran la plantilla. `SCRIPT EMBEBIDO DISTINTO DEL INSTALADO EN .claude/` desaparece (pasa a comparación exacta de archivo); `BLOQUES VERBATIM DIVERGENTES ENTRE PLANTILLAS`, `DESTINOS DECLARADOS MAS DE UNA VEZ` y `BASE DE PREFERENCIAS DIVERGENTE` cambian de objeto.
+- `funcionalidades/amp/skills/inicializar/SKILL.md` (12,3 KB) — sus pasos dicen "desde PLANTILLA" uno por uno.
+- `funcionalidades/amp/skills/actualizar/` — `SKILL.md` y `amp-actualizar.js` tratan la plantilla como fuente canónica.
+- `.claude/skills/propagar-harness/SKILL.md` (3,8 KB) — **se retira**: existe solo por esta duplicación.
+- `.claude/skills/agregar-funcionalidad/SKILL.md`, `docs/INSTALAR.md`, `AGENTS.md`, `REGISTRO.md` — texto que la nombra.
+- Dos planes pendientes quedan absorbidos o sin objeto: `Que la lista de Componentes de Subsistema salga de la plantilla` y `Que cada fila del indice Base de Herramientas tenga su bloque en la Plantilla`.
+
+### Qué NO cambia
+
+El repo consumidor queda **idéntico**: mismos archivos, mismas rutas bajo `.claude/`, mismo `settings.json`, hooks intactos. No hace falta medir ninguna variable de entorno ni tocar rutas con versión adentro.
+
+## Implementación (30/07/2026)
+
+Ejecutado. La decisión que salió del análisis es `Local-0045`.
+
+**Lo que se hizo.** Los Componentes de Subsistema pasaron a viajar como **archivos** en `funcionalidades/amp/skills/inicializar/base/`, con el árbol de destino. `PLANTILLA.md` bajó de 310 KB a 12,8 KB y quedó solo con lo que no se puede copiar: el bloque que se fusiona en el punto de entrada, los dos archivos de hooks, los moldes con marcadores y las notas de reconciliación. Son 74 archivos, 389,7 KB.
+
+**La regla, sin listas.** Qué se hace con cada archivo lo declara él mismo en su frontmatter — sin frontmatter u `origen: agente-multiproposito` se pisa entero; `origen: agente-desplegado` se pisa hasta el separador de su tabla y sus filas se preservan. Para que la norma no tuviera excepciones, `MOMENTOS.md`, `MOMENTOS-LOCAL.md`, `CLASES.md` y `ESTADOS.md` declaran su origen, y `ESTADOS.md` estrena su par `ESTADOS-LOCAL.md` con el control de estado repetido en `lint-planes` y sus tres casos de prueba.
+
+**Lo que cerró de paso.** Cuatro huecos que ningún control veía: `instalar-plugins-codex` estaba declarado como Herramienta Base y su archivo nunca viajaba (plan `Local-0083`); el `README` de `actualizar-plugins` divergía 3 KB; el nivelador comparaba 11 archivos de una lista escrita a mano y ahora recorre los 74; y cinco de los ocho lints viajaban sin su `README`. Los 12 `pruebas.js` de los controles Base pasan a viajar también.
+
+**Lo que reemplazó a `propagar-harness`.** La Herramienta `sincronizar-base` copia de `.claude/` a `base/` respetando la regla de origen. `lint-harness` cambió tres controles que parseaban bloques por cuatro que comparan archivo contra archivo en los dos sentidos, incluido el que caza un Índice del Agente Desplegado que viaja con filas — que se estrenó pescando un error real cometido a mano en esta misma sesión, con seis Herramientas de este repo coladas en lo que se instala.
+
+**Cierre:** 13 bancos de prueba verdes (`lint-harness` pasó de 9 a 14 casos), control de cierre verde, `amp` a 0.14.0.
+
 ## Cruces
 
 - `Canal de instalacion por copia` (Diferido) — otro canal de instalación; no cubre esto, pero si se hace, cambia dónde vive la fuente.
