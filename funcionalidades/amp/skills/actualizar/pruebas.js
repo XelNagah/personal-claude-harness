@@ -9,10 +9,10 @@
 // que está bien. Un banco que solo prueba el caso malo no distingue un detector que funciona de uno
 // que marca siempre; uno que solo prueba el bueno no distingue el que funciona del que quedó mudo.
 //
-// LÍMITE DECLARADO: se prueba el detector, o sea el modo vista previa, que es todo lo que este
-// script hace salvo `--respaldo`. La APLICACIÓN —pisar el archivo, cortar por el separador de la
-// tabla— no vive acá: la ejecuta el agente leyendo el `SKILL.md`, y ninguna prueba automática la
-// alcanza. Se verificó a mano en el plan `Local-0084`.
+// LÍMITE DECLARADO: se prueban los dos modos que este script tiene —el detector y `--respaldo`—,
+// que es todo lo que hace. Lo que NO se prueba acá es la APLICACIÓN: pisar el archivo y cortar por
+// el separador de la tabla lo ejecuta el agente leyendo el `SKILL.md`, no este script, y ninguna
+// prueba automática lo alcanza. Se verificó a mano en el plan `Local-0084`.
 //
 // Uso: node funcionalidades/amp/skills/actualizar/pruebas.js   (desde la raíz del repo)
 const fs = require('fs'), path = require('path'), cp = require('child_process');
@@ -28,8 +28,8 @@ function chequear(nombre, condicion, detalle) {
   if (!condicion) malos++;
 }
 
-function correr(rutaRepo) {
-  const args = ['--vista-previa'];
+function correr(rutaRepo, modo) {
+  const args = [modo || '--vista-previa'];
   if (rutaRepo) args.push(rutaRepo);
   const r = cp.spawnSync(process.execPath, [NIVELADOR, ...args], { encoding: 'utf8', timeout: 180000 });
   return { texto: (r.stdout || '') + (r.stderr || ''), codigo: r.status };
@@ -146,11 +146,14 @@ console.log('\n== ESTRUCTURA ==');
     marca(texto, 'decisiones/', 'ausente'));
 }
 {
+  // Un archivo cambiado dispara DOS chequeos distintos: el de contenido, que lo compara con el que
+  // viaja, y el de estructura, que le mira los campos mínimos. Por eso la aserción exige el motivo:
+  // sin él, este caso daba verde con el chequeo de estructura apagado — lo cubría el de contenido.
   armarAlDia();
   escribir('planes/MANIFIESTO.md', '# Planes\n\nUn manifiesto sin los campos que el Patrón pide.\n');
   const { texto } = correr(REPO_PRUEBA);
-  chequear('un manifiesto sin los campos mínimos se marca',
-    marca(texto, 'planes/MANIFIESTO.md'));
+  chequear('un manifiesto sin los campos mínimos se marca por estructura, no solo por contenido',
+    marca(texto, 'planes/MANIFIESTO.md', 'estructura vieja'));
 }
 {
   armarAlDia();
@@ -238,6 +241,33 @@ console.log('\n== FORMAS ANTERIORES ==');
   chequear('y separa lo conocido del Agente Multipropósito de lo que es Aprendizaje',
     /1 Componente\(s\) de Subsistema conocido/.test(texto) && /solo sobre 1 de Aprendizaje/.test(texto),
     (texto.split(/\r?\n/).find(l => l.includes('memoria/')) || '').trim().slice(0, 120));
+}
+
+console.log('\n== RESPALDO: EL ÚNICO MODO QUE ESCRIBE ==');
+{
+  // Es la red antes de pisar, y decide solo. Si se equivocara omitiendo, se pisaría sin respaldo y
+  // sin aviso; si se equivocara respaldando adentro de `.claude/`, cada copia congelada duplicaría
+  // los hallazgos de todos los lints del repo — las dos las sufrió un repo real.
+  armarAlDia();
+  const { texto, codigo } = correr(REPO_PRUEBA, '--respaldo');
+  const ruta = (texto.match(/[A-Za-z]:[\\/][^\s]+|\/[^\s]+/) || [''])[0];
+  chequear('sobre un repo sin git respalda y dice dónde', /respaldo/i.test(texto) && !!ruta && codigo === 0, ruta || texto.trim().slice(0, 80));
+  chequear('y el respaldo NO queda adentro de .claude/',
+    !ruta || !path.resolve(ruta).startsWith(path.join(REPO_PRUEBA, '.claude')), ruta);
+  // Este modo escribe fuera del repo, así que la prueba levanta lo suyo: dejarlo sería ir dejando
+  // una copia completa de `.claude/` en el directorio temporal por cada corrida del banco.
+  if (ruta) fs.rmSync(path.dirname(path.resolve(ruta)), { recursive: true, force: true });
+}
+{
+  // Con `.claude/` versionado, git ya es la red: omitir es lo correcto, y tiene que decirlo en vez
+  // de callarse, porque el flujo informa al final qué pasó con el respaldo.
+  armarAlDia();
+  cp.spawnSync('git', ['init', '-q'], { cwd: REPO_PRUEBA });
+  cp.spawnSync('git', ['add', '-A'], { cwd: REPO_PRUEBA });
+  cp.spawnSync('git', ['-c', 'user.email=t@t', '-c', 'user.name=t', 'commit', '-qm', 'x'], { cwd: REPO_PRUEBA });
+  const { texto, codigo } = correr(REPO_PRUEBA, '--respaldo');
+  chequear('con .claude/ versionado en git omite el respaldo y lo dice',
+    /OMITIDO/i.test(texto) && codigo === 0, texto.split(/\r?\n/)[0]);
 }
 
 console.log('\n== NO SE ROMPE NI SE CALLA ANTE LO INESPERADO ==');

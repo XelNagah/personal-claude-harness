@@ -46,18 +46,24 @@ function resolverRepo(desde) {
 const REPO = resolverRepo(process.argv[2] || process.cwd());
 const EXCLUDE = new Set(['.git', 'node_modules', 'tmp', '.respaldo-amp']);
 
-// Las dos raíces que se barren, cada una con lo que excluye. `base/` no es ruido incidental: es la
-// copia de `.claude/` que viaja en el plugin, así que sus bancos ya corren por la primera raíz.
+// Las dos raíces que se barren, cada una con lo que excluye. Lo excluido va por RUTA y no por
+// nombre a propósito: excluir la palabra `base` apagaría en silencio cualquier otra carpeta que
+// llegara a llamarse así, y un banco que deja de correrse sin avisar es justo lo que este corredor
+// existe para que no pase. Con la ruta, mover el árbol que viaja hace reaparecer los duplicados
+// —visible en el conteo— en vez de dejar algo sin mirar.
 const RAICES = [
-  { dir: '.claude', excluir: new Set() },
-  { dir: 'funcionalidades', excluir: new Set(['base']) },
+  { dir: '.claude', excluir: [] },
+  { dir: 'funcionalidades', excluir: ['funcionalidades/amp/skills/inicializar/base'] },
 ];
 
+const relativa = dir => path.relative(REPO, dir).split(path.sep).join('/');
+
 function buscarPruebas(dir, excluir, out) {
+  if (excluir.includes(relativa(dir))) return out;
   let entradas;
   try { entradas = fs.readdirSync(dir, { withFileTypes: true }); } catch { return out; }
   for (const e of entradas) {
-    if (EXCLUDE.has(e.name) || excluir.has(e.name)) continue;
+    if (EXCLUDE.has(e.name)) continue;
     const full = path.join(dir, e.name);
     if (e.isDirectory()) buscarPruebas(full, excluir, out);
     else if (e.name === 'pruebas.js') out.push(full);
@@ -87,6 +93,17 @@ const pruebas = RAICES
   .sort();
 
 console.log('== PRUEBAS DE LOS CONTROLES: ' + REPO + ' ==');
+
+// Una exclusión que apunta a una carpeta que ya no está dejó de excluir algo, y eso se nota en el
+// conteo pero no dice por qué. Se avisa solo cuando la raíz existe: un Agente Desplegado no tiene
+// `funcionalidades/` y ahí no hay nada que reportar.
+for (const r of RAICES) {
+  if (!fs.existsSync(path.join(REPO, r.dir))) continue;
+  for (const e of r.excluir) {
+    if (!fs.existsSync(path.join(REPO, e)))
+      console.log('aviso: la exclusión `' + e + '` ya no existe — revisar si se movió.');
+  }
+}
 if (!pruebas.length) {
   console.log('\nNo se encontró ninguna `pruebas.js` bajo ' + RAICES.map(r => r.dir + '/').join(' ni ') + '.');
   console.log('Un control sin prueba no avisa cuando deja de controlar.');

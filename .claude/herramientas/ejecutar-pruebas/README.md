@@ -25,6 +25,8 @@ Cualquier archivo `pruebas.js` co-ubicado con lo que prueba —misma convención
 
 De esa segunda raíz se excluye **`base/`**, y no por ruido incidental: sus `pruebas.js` son *copias* de las de `.claude/`, que ya corren por la primera raíz, y `lint-harness` compara los dos lados en ambos sentidos. Correrlas de nuevo no controla nada nuevo — solo llevaría el conteo de trece a veintiséis con doce duplicados adentro, y un tablero inflado de duplicados es un tablero que se deja de leer.
 
+La exclusión va **por ruta completa, no por nombre**. Excluir la palabra `base` apagaría en silencio cualquier otra carpeta que llegara a llamarse así, y un banco que deja de correrse sin avisar es exactamente lo que esta Herramienta existe para que no pase. Con la ruta, mover el árbol que viaja hace reaparecer los duplicados —visible en el conteo— en vez de dejar algo sin mirar; y si la ruta excluida ya no existe, se avisa antes de la lista.
+
 Se excluyen además `tmp/`, `node_modules/`, `.git/` y los respaldos del nivelador.
 
 El nombre que se muestra sale del script que la prueba acompaña, y si no se puede saber, de la carpeta que la contiene. Para un lint las dos formas coinciden (`lint-planes/lint-planes.js`); donde no coinciden es en `funcionalidades/`, y ahí la carpeta sola diría «actualizar», que no nombra nada.
