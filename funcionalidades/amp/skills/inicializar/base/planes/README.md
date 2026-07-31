@@ -1,0 +1,22 @@
+# Planes
+
+Persistir y gestionar planes bajo `.claude/planes/` con tres subcarpetas: `pendientes/` (planes vivos: `Nuevo`, `En curso`, `Diferido`), `ejecutados/` y `descartados/` (registro, siempre con motivo). Lo fino (estado, fechas, origen) vive en el registro `planes/PLANES.md`, no en el nombre del archivo. Los **estados disponibles y su semántica** (a qué carpeta mapea cada uno, cuáles son terminales) están en `planes/ESTADOS.md` — fuente de verdad configurable que el lint lee.
+
+**Máquina de un solo eje:** un plan está en exactamente un estado. `Nuevo` (creado, sin ejecutar; la revisión con `planificar` ocurre acá) → `En curso` (se tomó el plan y se está ejecutando) → `Ejecutado` (terminal). `Diferido` = pospuesto, retomable. `Descartado` = abandonado con motivo (terminal). No hay estado de "diseño": la revisión es parte de estar `Nuevo`.
+
+**Why:** trazabilidad de qué se planificó, cuándo se creó y cuándo y cómo se cerró — sin depender de archivos efímeros de plan-mode del harness, y sin mirar carpetas a ojo: el registro es la vista, y está siempre en contexto vía el Mapa del repo. Un solo eje (en vez de prioridad × progreso) porque en la práctica un plan pausado siempre está sin empezar, y la distinción diseño/ejecución no aporta al flujo.
+
+**How to apply:**
+
+1. **Al crear un plan:** copiar a `.claude/planes/pendientes/<nombre-estable>.md` (sin fecha en el nombre) y agregar su fila en `PLANES.md`: Código (`máximo + 1`, nunca `cantidad + 1`, sin reusar huecos), Nombre (el título del plan), Descripción en una línea, Estado (de `ESTADOS.md`), Fecha de creación, Origen si se desprende de otro plan, y Detalle apuntando al archivo. Las filas van en orden ascendente por Código, así que la nueva va al final.
+2. **Cada actualización al plan** se replica en la versión persistida — es la fuente de verdad, no el archivo del plans-folder del harness. Los cambios de estado se reflejan en `PLANES.md`, y el archivo se mueve a la carpeta que el estado indica.
+3. **Al detectar evidencia de implementación** (commit, mensaje del user, código verificado, otro agente): pasar a `Ejecutado` y mover a `ejecutados/` **sin renombrar**, completar la `Fecha de cierre` en el registro y revisar primero los encabezados. Si ya hay una sección de implementación (`## Implementación` o `## Notas de implementación`, con cualquier nivel), conservar su contenido y normalizar solo el título a **`## Notas de implementación`** si corresponde; solo si no existe, agregarla (cómo se implementó vs planificado, hash de commit, cosas notables). Nunca crear una sección vacía que duplique notas legacy.
+4. **Descartar es un cierre válido:** `Descartado`, mover a `descartados/`, completar la `Fecha de cierre` y escribir el motivo en el archivo del plan, en una sección `## Notas de cierre` (p. ej. "reemplazado por <plan>"). El lint la exige: un plan abandonado sin decir por qué es un hallazgo.
+5. **Reparar referencias entrantes** si las hubiera (el nombre estable minimiza esto; preferir enlazar planes vía `PLANES.md`).
+6. **Al cerrar** una tarea que tocó planes, correr el lint: `node .claude/planes/lint-planes/lint-planes.js`.
+
+Importante: borrar el archivo de `pendientes/` al moverlo — no duplicar. Un plan puede persistirse antes de arrancar la ejecución (p. ej. para cortar una sesión larga de diseño): Estado `Nuevo` o `Diferido` en el registro y bloque al tope con los pendientes para retomar.
+
+**Partir un plan a medias:** cuando un plan queda `En curso` con el núcleo hecho pero un cacho pendiente, **partirlo** en vez de arrastrarlo. Cerrar como `Ejecutado` el alcance ya logrado (con sus `## Notas de implementación`) y **desprender el resto como plan nuevo** — `Nuevo` si se retoma pronto, `Diferido` si la espera es a propósito (p. ej. dejar correr una medición unas sesiones) — con `Origen` apuntando al cerrado y la condición de reanudación anotada si es Diferido. Mantiene el registro honesto (`Ejecutado` = ejecutado de verdad, `En curso` = de verdad ejecutándose) y evita planes zombis que dicen "en curso" mientras en realidad esperan. Aplica igual cuando un plan cubre dos mitades separables aunque ninguna esté a medias: cerrar la resuelta, desprender la otra.
+
+Relacionado: [[archivo-de-estado]] (estado vivo de una exploración dentro del plan).

@@ -128,52 +128,60 @@ const SUBSISTEMAS = ['subsistemas', 'preferencias', 'planes', 'conocimiento', 's
 // cada repo y el nivelador nunca toca.
 const HERRAMIENTAS_BASE = ['actualizar-plugins'];
 
-// -- contenido Base: comparar el archivo instalado contra la PLANTILLA -----
+// -- contenido Base: comparar el archivo instalado contra el que viaja ------
 // Chequear que el Componente de Subsistema EXISTA no alcanza: un consumidor que ya tiene el script en su version vieja
-// se lo queda para siempre y nunca recibe una mejora. La fuente del contenido es la PLANTILLA de
+// se lo queda para siempre y nunca recibe una mejora. La fuente es la carpeta `base/` de
 // `amp:inicializar`, que viaja en el mismo plugin que este script — por eso se resuelve desde
-// __dirname y no desde el repo: la plantilla es del Producto, el repo es el destino.
-const PLANTILLA = path.resolve(__dirname, '..', 'inicializar', 'PLANTILLA.md');
-
-// Bloques ```js de la plantilla, con el contenido de cada script Base embebido.
-let _bloques = null;
-function bloquesJs() {
-  if (_bloques) return _bloques;
-  const t = leer(PLANTILLA);
-  _bloques = [...t.matchAll(/```js\r?\n([\s\S]*?)\r?\n```/g)].map(m => m[1]);
-  return _bloques;
-}
-// El bloque se ubica por un ancla: una linea del propio script que no aparece en ningun otro.
-function bloqueCon(ancla) {
-  return bloquesJs().find(b => b.includes(ancla)) || null;
-}
+// __dirname y no desde el repo: lo que viaja es del Producto, el repo es el destino.
+const BASE = path.resolve(__dirname, '..', 'inicializar', 'base');
 const normalizar = s => s.replace(/\r\n/g, '\n').trimEnd();
 
-// Scripts Base cuyo contenido tiene que coincidir con la plantilla. El ancla es un tramo de la
-// primera linea de comentario del script, que lo identifica sin ambiguedad dentro de la plantilla.
-const CONTENIDO_BASE = [
-  ['conducta/establecer-conducta/establecer-conducta.js', '// Hook repartidor del subsistema conducta.'],
-  ['conducta/detectar-terminologia-vetada/detectar-terminologia-vetada.js', '// Control del momento `al escribir` del subsistema conducta'],
-  ['conducta/mostrar-pantalla-bienvenida/mostrar-pantalla-bienvenida.js', '// mostrar-pantalla-bienvenida.js —'],
-  ['herramientas/actualizar-plugins/actualizar-plugins.js', '// actualizar-plugins.js —'],
-  ['subsistemas/lint-subsistemas/lint-subsistemas.js', '// Lint del catalogo de subsistemas:'],
-  ['planes/lint-planes/lint-planes.js', '// Lint del ciclo de planes:'],
-  ['conocimiento/lint-conocimiento/lint-conocimiento.js', '// Lint de la base de conocimiento:'],
-  ['semantica/lint-semantica/lint-semantica.js', '// Lint de semantica:'],
-  ['decisiones/lint-decisiones/lint-decisiones.js', '// Lint del registro de decisiones:'],
-  ['herramientas/lint-herramientas/lint-herramientas.js', '// Lint del registro de Herramientas:'],
-  ['conducta/lint-conducta/lint-conducta.js', '// Lint del subsistema conducta:'],
-];
+// El origen que cada archivo declara en su frontmatter decide cuanto se compara. No hay lista
+// escrita aca: la habia —once scripts con un ancla cada uno— y su defecto era estructural, porque
+// un Componente que nadie agregaba a la lista no se buscaba y no aparecia. El arbol es la lista.
+function origenDe(txt) {
+  const m = /^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/.exec(txt);
+  if (!m) return null;
+  const o = /^origen:\s*(\S+)\s*$/m.exec(m[1]);
+  return o ? o[1] : null;
+}
+// Encabezado = todo lo anterior a la primera fila de datos. De ahi para abajo estan las entradas
+// que puebla cada repo, que no se comparan ni se tocan.
+function hastaLaTabla(txt) {
+  const ls = normalizar(txt).split('\n');
+  const i = ls.findIndex(l => /^\s*\|[\s:|-]+\|\s*$/.test(l));
+  return i === -1 ? null : ls.slice(0, i + 1).join('\n');
+}
+function listarBase(rel, out) {
+  const dir = path.join(BASE, rel || '.');
+  if (!existe(dir)) return out;
+  for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
+    const r = rel ? rel + '/' + e.name : e.name;
+    if (e.isDirectory()) listarBase(r, out); else out.push(r);
+  }
+  return out;
+}
 
 function chequearContenido(add) {
-  for (const [rel, ancla] of CONTENIDO_BASE) {
+  if (!existe(BASE)) {
+    // Callarse deja el repo informado "al dia" sin haberlo mirado, que es justo el modo de falla
+    // que este chequeo viene a cerrar.
+    add('divergente', '?', 'base/', 'no se pudo comparar: no llego la carpeta de Componentes del plugin (revisar a mano)');
+    return;
+  }
+  for (const rel of listarBase('', [])) {
+    if (/(^|\/)pruebas\.js$/.test(rel)) continue;   // banco de pruebas: se instala, no se nivela
     const destino = path.join(claude, rel);
     if (!existe(destino)) continue;                 // la ausencia ya la reporta el chequeo de Componentes
-    const bloque = bloqueCon(ancla);
-    // Sin fuente no se puede comparar — pero callarse deja el repo informado "al dia" sin haberlo
-    // mirado, que es justo el modo de falla que este chequeo viene a cerrar. Se reporta.
-    if (!bloque) { add('divergente', '?', rel, 'no se pudo comparar: el ancla no ubica el bloque en la PLANTILLA (revisar a mano)'); continue; }
-    if (normalizar(leer(destino)) !== normalizar(bloque))
+    const queViaja = leer(path.join(BASE, rel));
+    const instalado = leer(destino);
+    if (rel.endsWith('.md') && origenDe(queViaja) === 'agente-desplegado') {
+      const a = hastaLaTabla(queViaja), b = hastaLaTabla(instalado);
+      if (a === null || b === null) { add('divergente', '?', rel, 'declara origen agente-desplegado y no se le encontro la tabla (revisar a mano)'); continue; }
+      if (a !== b) add('base', '~', rel, 'encabezado viejo: la convencion instalada difiere de la del Agente Multiproposito (sus entradas no se tocan)');
+      continue;
+    }
+    if (normalizar(instalado) !== normalizar(queViaja))
       add('base', '~', rel, 'contenido viejo: la version instalada difiere de la del Agente Multiproposito');
   }
 }

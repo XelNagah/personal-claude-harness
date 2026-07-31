@@ -43,7 +43,7 @@ El prefijo de skill **es** el nombre del plugin (`amp-planes:ciclo-de-plan` ≠ 
 1. Crear `funcionalidades/<nombre>/` con:
    - `.claude-plugin/plugin.json` — manifiesto (`name`, `description`, `version`, `author`; `dependencies` si aplica).
    - `README.md` — qué hace, qué agrega al repo destino, dependencias.
-   - `skills/<nombre-skill>/SKILL.md` (+ `PLANTILLA.md` si lleva textos literales) — **fuente única** del flujo, en el estándar Agent Skills.
+   - `skills/<nombre-skill>/SKILL.md` (+ `PLANTILLA.md` si lleva pedazos que se fusionan o moldes con marcadores, y `base/` si instala Componentes de Subsistema, que viajan como **archivos** con el árbol de destino) — **fuente única** del flujo, en el estándar Agent Skills.
 2. Agregar el plugin a `.claude-plugin/marketplace.json` (`name` + `source: "./funcionalidades/<nombre>"`).
 3. Validar con `claude plugin validate .`.
 4. Registrarla en la tabla de arriba.

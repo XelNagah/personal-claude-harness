@@ -5,7 +5,7 @@ description: Nivela el .claude/ de un Agente con Propósito ya instalado contra 
 
 # amp:actualizar — nivelador del harness
 
-Pone al día el `.claude/` de un **Agente con Propósito**: actualiza el Agente Multipropósito que tiene adentro contra la plantilla nueva, sin tocar su Aprendizaje. **No** es para arrancar un repo de cero (para eso está `amp:inicializar`, que es donde un Agente con Propósito nace): es para uno vivo, sin romperle lo que aprendió. Diseño en la decisión 0028; se apoya en la separación Base/aprendido (decisión 0027) y en la composición de la decisión 0034.
+Pone al día el `.claude/` de un **Agente con Propósito**: actualiza el Agente Multipropósito que tiene adentro contra la Base nueva, sin tocar su Aprendizaje. **No** es para arrancar un repo de cero (para eso está `amp:inicializar`, que es donde un Agente con Propósito nace): es para uno vivo, sin romperle lo que aprendió. Diseño en la decisión 0028; se apoya en la separación Base/aprendido (decisión 0027) y en la composición de la decisión 0034.
 
 ## Principio (qué se pisa y qué no)
 
@@ -31,7 +31,7 @@ No mandar al usuario a invocar otra skill: `amp:actualizar` llama y coordina `am
 Lo mecánico y determinista lo hace el script `amp-actualizar.js` (decisión 0009); el juicio, este skill.
 
 - **Script** (`node <ruta-skill>/amp-actualizar.js`): barrido y clasificación de la estructura, respaldo, y el reporte / vista previa. Modos: `--vista-previa` (o sin flag) detecta y muestra el plan **sin escribir**; `--respaldo` copia `.claude/` a `.claude/.respaldo-amp/<fecha>/`. Acepta la raíz del repo como argumento (default: el repo actual).
-- **Skill** (este flujo): confirma el plan, **delega la instalación** al instalador consolidado `amp:inicializar` (que trae la plantilla 0024-limpia de todos los subsistemas y es idempotente), migra términos y textos con criterio, y pregunta ante lo divergente.
+- **Skill** (este flujo): confirma el plan, **delega la instalación** al instalador consolidado `amp:inicializar` (que trae los Componentes de todos los subsistemas como archivos, ya limpios de citas a decisiones del harness, y es idempotente), migra términos y textos con criterio, y pregunta ante lo divergente.
 
 ## Paso previo obligado: la fase de plugins
 
@@ -79,7 +79,9 @@ El repo quedó con nombres de plugin que el marketplace ya no ofrece. **No se ar
    ```
    Muestra el plan en cuatro grupos: **Base** (instalar/pisar), **Renombres legacy**, **Divergente** (requiere ok) y **Ya estaba**. Presentárselo al usuario.
 
-   ⚠️ **«Nada para nivelar» no se reporta sin mirar.** El detector compara el **contenido** de los scripts Base contra la PLANTILLA, no solo su presencia — pero la lista de Componentes de Subsistema que conoce está escrita a mano en su código, así que un Componente de Subsistema nuevo que nadie haya agregado ahí **no se busca y no aparece**. Si el repo tiene el Agente Multipropósito de una versión anterior y el detector devuelve cero, desconfiar: contrastar a mano los Componentes de Subsistema de `conducta/` y los tres eventos de hook en los dos archivos de cableado antes de declararlo al día.
+   El detector compara el **contenido** de cada Componente de Subsistema contra el que viaja en `base/`, no solo su presencia, y **recorre el árbol entero**: no hay lista escrita a mano que pueda quedarse corta. (La había, con once scripts y un ancla cada uno, y su defecto era estructural — un Componente que nadie agregaba a la lista no se buscaba y no aparecía, así que el repo se informaba al día sin haberlo mirado.)
+
+   ⚠️ Lo único que el detector no puede ver es lo que no viaja: si `base/` no llegó con el plugin, lo reporta como divergente en vez de callarse. Los tres archivos que se **fusionan** —`AGENTS.md` y los dos de hooks— tampoco se comparan por contenido: ahí se contrastan a mano los tres eventos en los dos archivos de cableado.
 2. **Si el usuario pidió solo la vista previa → terminar acá.** Nada se escribió.
 3. **Confirmar el plan.** Los **Divergentes** se preguntan uno por uno (son bloqueantes): no se toca nada de ese grupo sin ok explícito. Ejemplo típico: `conducta/INDICE.md` con reglas pero sin el corte Base/Propósito — repartirlas exige decidir cuáles son Base y cuáles del Propósito; eso lo decide el usuario.
 4. **Respaldo.** Antes de escribir un solo Componente de Subsistema del Agente Multipropósito:
@@ -92,13 +94,14 @@ El repo quedó con nombres de plugin que el marketplace ya no ofrece. **No se ar
    - **Si no lo está** → respalda **fuera del repo**, en el directorio temporal del sistema, e imprime la ruta absoluta. Pasársela al usuario en el reporte final.
 
    ⚠️ **El respaldo no va adentro de `.claude/`,** y las dos razones se sufrieron en repos reales: ahí el agente **no puede borrarlo** —el borrado recursivo bajo `.claude/` está vedado, así que la limpieza que este mismo flujo manda hacer le queda al usuario a mano—, y además **contamina los lints**, que barren `.claude/` entero: cada copia congelada duplica los hallazgos viejos, que ya no se pueden corregir, y tapa los reales.
-5. **Aplicar Base** (el grupo Base del plan). La fuente canónica es la PLANTILLA única de `amp:inicializar` (una sección por subsistema). Para cada ítem:
-   - **Subsistema ausente** (p. ej. `conducta/`) → correr `amp:inicializar` (idempotente: instala los subsistemas ausentes desde su PLANTILLA consolidada y preserva lo que ya está).
-   - **`MANIFIESTO`/lint/estructura vieja** → tomar el contenido canónico de la sección del subsistema en la PLANTILLA de `amp:inicializar` y **pisar** el archivo Base. (A diferencia de la reconciliación normal de `amp:inicializar`, que preserva lo existente, acá el archivo Base **se pisa** — es del harness. El contenido aprendido del mismo subsistema no se toca.)
-   - **`contenido viejo`** (un script Base instalado que difiere del de la PLANTILLA) → **pisarlo con el bloque de la PLANTILLA**, entero y tal cual. Es el caso más frecuente al poner al día un repo que ya tenía el Agente Multipropósito: el Componente de Subsistema está, pero en la versión de cuando se instaló. No hay nada que preservar — los scripts Base no se ajustan por repo; lo que el repo aprendió vive en sus registros, no en el código del harness.
+5. **Aplicar Base** (el grupo Base del plan). La fuente canónica es la carpeta `base/` de `amp:inicializar`: los Componentes de Subsistema son **archivos**, con el mismo árbol que ocupan en el destino. Para cada ítem:
+   - **Subsistema ausente** (p. ej. `conducta/`) → correr `amp:inicializar` (idempotente: instala los subsistemas ausentes copiando su parte del árbol y preserva lo que ya está).
+   - **`MANIFIESTO`/lint/estructura vieja** → **copiar encima** el archivo de `base/`. (A diferencia de la reconciliación normal de `amp:inicializar`, que preserva lo existente, acá el archivo Base **se pisa** — es del harness. El contenido aprendido del mismo subsistema no se toca.)
+   - **`contenido viejo`** (un archivo Base instalado que difiere del que viaja) → **copiar el de `base/` encima**, entero y tal cual. Es el caso más frecuente al poner al día un repo que ya tenía el Agente Multipropósito: el Componente de Subsistema está, pero en la versión de cuando se instaló. No hay nada que preservar — los archivos Base no se ajustan por repo; lo que el repo aprendió vive en sus registros.
+   - **`encabezado viejo`** (un registro `origen: agente-desplegado` cuya convención quedó atrás) → **pisar solo hasta el separador de la tabla** y dejar las filas intactas. Arriba de la tabla está la convención, las columnas y la gobernanza, que manda el Agente Multipropósito y cambia con él; abajo están las entradas del repo. Sin esto, un repo instalado hace tres versiones lee instrucciones que ya no rigen y las obedece.
    - **Hook sin cablear** → merge del bloque de cableado de `conducta` en `.claude/settings.json` (y `.codex/hooks.json`), sin pisar hooks existentes.
    - **`conducta/INDICE.md` sin el corte por origen** (y sin reglas propias que repartir) → instalar `INDICE.md` con las reglas actuales del Agente Multipropósito e `INDICE-LOCAL.md` declarado y sin filas.
-   - **Índice del Agente Desplegado ausente** (`SUBSISTEMAS-LOCAL.md`, `PREFERENCIAS-LOCAL.md`, `INDICE-LOCAL.md` de herramientas o de conducta) → crearlo **declarado y sin filas** desde la PLANTILLA. No es un archivo vacío: el manifiesto instalado lo nombra y las skills de alta escriben sobre él.
+   - **Índice del Agente Desplegado ausente** (`SUBSISTEMAS-LOCAL.md`, `PREFERENCIAS-LOCAL.md`, `INDICE-LOCAL.md` de herramientas o de conducta) → copiarlo de `base/`, que lo trae **declarado y sin filas**. No es un archivo vacío: el manifiesto instalado lo nombra y las skills de alta escriben sobre él.
    - **Generación con `memoria/`** → instalar primero el subsistema `subsistemas/`, sus tres Componentes de Subsistema del Agente Multipropósito (`MANIFIESTO.md`, `SUBSISTEMAS.md`, `README.md`) y su lint. No borrar todavía ningún Componente de Subsistema aprendido.
 6. **Aplicar Renombres** (el caso con más juicio — preservar lo aprendido):
    - **`glosario`→`semantica`:**
@@ -109,7 +112,7 @@ El repo quedó con nombres de plugin que el marketplace ya no ofrece. **No se ar
      1. Reemplazar **solo la línea del encabezado**, dejando intacto todo el contenido de esa sección. No es un reemplazo de contenido: la sección del Agente Desplegado sigue siendo del repo y no se toca aunque cambie de nombre.
      2. En `preferencias/PREFERENCIAS.md` el encabezado viejo llevaba adentro un número de versión (`## Base (harness vN)`). **Ese número se descarta y no se traslada a ningún lado**: la versión vive en el plugin, y un Agente Desplegado no guarda ninguna.
      3. Cerrar corriendo el lint de cada subsistema tocado.
-   - **Índice todavía sin frontmatter** (`sin frontmatter de Indice`): agregarle al tope el bloque `indice` / `origen` / `columnas` que la PLANTILLA trae para ese archivo, sin tocar el resto. En `conocimiento` y `preferencias`, que no son tabla, el campo `columnas` **no va**. El `origen` es lo que después decide el trato del nivelador, así que un valor equivocado acá pisa contenido del repo: si el archivo no es uno de los conocidos, preguntar antes de asignarlo.
+   - **Índice todavía sin frontmatter** (`sin frontmatter de Indice`): agregarle al tope el bloque `indice` / `origen` / `columnas` que trae su archivo en `base/`, sin tocar el resto. En `conocimiento` y `preferencias`, que no son tabla, el campo `columnas` **no va**. El `origen` es lo que después decide el trato del nivelador, así que un valor equivocado acá pisa contenido del repo: si el archivo no es uno de los conocidos, preguntar antes de asignarlo.
    - **Índice partido por origen** (`partir por origen`): el subsistema todavía tiene los dos orígenes adentro de un archivo.
      1. Crear el archivo del Agente Desplegado (`-LOCAL`) con su frontmatter y **mover ahí la sección del Agente Desplegado con su contenido intacto** — filas, bullets, texto suelto y todo. Es una mudanza, no un reemplazo.
      2. Sacar esa sección del archivo que queda, que pasa a ser el del Agente Multipropósito.
@@ -162,4 +165,4 @@ Segura de re-correr: una segunda corrida sobre un repo ya nivelado da todo "ya e
 
 ## 0024
 
-Todo lo que se instala o pisa en el consumidor sale de la PLANTILLA de `amp:inicializar`, que ya enuncia la razón inline sin citar números de decisión del harness. El nivelador no introduce números de decisión en el `.claude/` del consumidor.
+Todo lo que se instala o pisa en el consumidor sale de `base/` y de la PLANTILLA de `amp:inicializar`, que ya enuncian la razón inline sin citar números de decisión del harness. El nivelador no introduce números de decisión en el `.claude/` del consumidor.

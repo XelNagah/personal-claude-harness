@@ -52,6 +52,7 @@ const total = h => Object.values(h).reduce((a, b) => a + b, 0);
 
 let malos = 0;
 const PLANTILLA = 'funcionalidades/amp/skills/inicializar/PLANTILLA.md';
+const BASE_INST = 'funcionalidades/amp/skills/inicializar/base';
 
 // -- CASO BUENO: el repo de prueba intacto da cero --------------------------------
 // Salvo el control de versiones, que compara contra los plugins instalados EN LA MAQUINA: en un
@@ -71,12 +72,34 @@ armar();
 const casos = [];
 const caso = (nombre, seccion, romper) => casos.push({ nombre, seccion, romper });
 
-// El control que se agregó el 30/07/2026, y el motivo por el que se agregó: nadie comparaba el
-// script embebido en una PLANTILLA contra el instalado en `.claude/`, así que arreglar un lint y
-// olvidar su copia dejaba el defecto viajando con el control de cierre en verde.
-caso('script embebido que difiere del instalado', 'SCRIPT EMBEBIDO DISTINTO DEL INSTALADO EN .claude/',
+// El motivo del control: arreglar un lint en `.claude/` y olvidar la copia que viaja dejaba el
+// defecto saliendo publicado con el control de cierre en verde.
+caso('un script que viaja difiere del instalado', 'LO QUE VIAJA DIFIERE DE LO INSTALADO EN .claude/',
   () => fs.appendFileSync(path.join(REPO_PRUEBA, '.claude/subsistemas/lint-subsistemas/lint-subsistemas.js'),
-    '\n// divergencia que la copia embebida no tiene\n'));
+    '\n// divergencia que la copia que viaja no tiene\n'));
+
+// El encabezado de un registro del Agente Desplegado SI se compara: es la convencion que manda el
+// Agente Multiproposito y, si nadie la mira, queda vieja para siempre en cada repo instalado.
+caso('el encabezado de un registro del Agente Desplegado difiere', 'LO QUE VIAJA DIFIERE DE LO INSTALADO EN .claude/',
+  () => escribir('.claude/semantica/GLOSARIO.md',
+    leer('.claude/semantica/GLOSARIO.md').replace('# Glosario del proyecto', '# Glosario del proyecto (retocado)')));
+
+// El otro sentido: un Componente que se declara en lo que viaja y no existe instalado.
+caso('viaja un Componente que no existe en .claude/', 'VIAJA UN COMPONENTE QUE NO EXISTE EN .claude/',
+  () => fs.rmSync(path.join(REPO_PRUEBA, '.claude/subsistemas/lint-subsistemas/README.md'), { force: true }));
+
+// Y el hueco que ningun control veia: infra Base instalada que nunca viajo. Partir del bloque no
+// podia verlo —no hay bloque—, y asi estuvo meses la Herramienta `instalar-plugins-codex`, que el
+// registro Base declaraba y la instalacion no llevaba.
+caso('infra Base instalada que no viaja', 'INFRA BASE EN .claude/ QUE NO VIAJA',
+  () => fs.rmSync(path.join(REPO_PRUEBA, BASE_INST, 'subsistemas/lint-subsistemas/README.md'), { force: true }));
+
+// Un Indice del Agente Desplegado nace declarado y SIN filas. Si viaja con alguna, todo repo que
+// se instale arranca con las entradas de este como si fueran propias. El control del encabezado no
+// puede verlo —mira arriba de la tabla justamente para no comparar filas—, asi que va aparte.
+caso('un Índice del Agente Desplegado viaja con filas', 'UN INDICE DEL AGENTE DESPLEGADO VIAJA CON FILAS',
+  () => fs.appendFileSync(path.join(REPO_PRUEBA, BASE_INST, 'herramientas/INDICE-LOCAL.md'),
+    '| Local-0001 | una-tool | Que hace. | script | `node x.js` | vigente | [x/](x/) |\n'));
 
 caso('funcionalidad en REGISTRO sin carpeta en disco', 'FANTASMAS (catalogadas pero sin carpeta)',
   () => fs.rmSync(path.join(REPO_PRUEBA, 'funcionalidades/amp-conducta'), { recursive: true, force: true }));
@@ -125,8 +148,23 @@ escribir('funcionalidades/amp/README.md', leer('funcionalidades/amp/README.md') 
   if (n !== 0) malos++;
 }
 
+// -- CASO BUENO fino: las FILAS de un registro del Agente Desplegado son del repo ------
+// Es el contrario exacto del caso malo del encabezado, y hace falta que esten los dos: un control
+// que marcara todo el archivo dejaria en rojo a cualquier repo apenas escribe su primer termino,
+// y uno que no mirara nada dejaria el encabezado viejo para siempre. La linea esta en la tabla.
+console.log('\n== CASO BUENO: las filas de un registro del Agente Desplegado no se comparan ==');
+armar();
+escribir('.claude/semantica/GLOSARIO.md',
+  leer('.claude/semantica/GLOSARIO.md') + '| Local-0099 | Mudanza | Un termino que suma este repo. | — | — | — |\n');
+{
+  const h = hallazgos(correr());
+  const n = h['LO QUE VIAJA DIFIERE DE LO INSTALADO EN .claude/'] || 0;
+  console.log(`${n === 0 ? 'OK  ' : 'FALLA'} una fila propia en el glosario → ${n} hallazgos`);
+  if (n !== 0) malos++;
+}
+
 fs.rmSync(REPO_PRUEBA, { recursive: true, force: true });
-console.log(`\ncasos: ${casos.length + 2}`);
+console.log(`\ncasos: ${casos.length + 3}`);
 console.log(`no cubierto a propósito: [${IGNORAR}] — compara contra los plugins instalados en la máquina, que un repo de prueba no tiene.`);
 console.log(malos ? `${malos} FALLARON.` : 'TODO VERDE.');
 process.exit(malos ? 1 : 0);

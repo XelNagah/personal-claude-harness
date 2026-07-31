@@ -160,36 +160,109 @@ for (const [name, arr] of bloques) {
   if (hashes.size > 1) divergentes.push(`"${name}": ${arr.map(a => `${a.archivo} (${a.hash})`).join('  vs  ')}`);
 }
 
-// -- [4b] un destino, un solo bloque en la PLANTILLA ---------------------
-// Cada archivo que el instalador escribe se declara UNA vez. Dos bloques para el mismo destino no
-// son redundancia inofensiva: nada los sincroniza, se separan solos y despues nada decide cual se
-// instala. Paso con conducta/INDICE.md y conducta/MOMENTOS.md, que estuvieron duplicados entre dos
-// secciones hasta que una quedo vieja (un momento y dos reglas de menos) sin que ningun lint lo viera.
-const DECLARA_DESTINO = [
-  /^### `(\.claude\/[^`]+)`/gm,                       // catalogo de copias textuales
-  /Contenido inicial de `(\.claude\/[^`]+)`/g,        // bloque presentado en la seccion del subsistema
-  /^## §Script — (?:[^`]*)`(\.claude\/[^`]+)`/gm,     // seccion de script
-];
-const destinosDuplicados = [];
+// -- [4b] el Agente Multiproposito que viaja vs el instalado en este repo ------
+// Los Componentes de Subsistema viajan como ARCHIVOS, en la carpeta `base/` de la skill de
+// instalacion, con el mismo arbol que ocupan en el destino. Este control compara ese arbol
+// contra el `.claude/` vivo de este repo, que es donde se editan y donde se usan.
+//
+// La regla de comparacion la declara CADA ARCHIVO en su frontmatter, no una lista escrita
+// aparte —una lista aparte es justamente el dato en dos lugares que este cambio vino a sacar—:
+//   - sin frontmatter, u `origen: agente-multiproposito`  ->  identicos, entero
+//   - `origen: agente-desplegado`  ->  identico hasta la primera fila de tabla; de ahi para
+//     abajo estan las filas que puebla cada repo, que legitimamente difieren
+//
+// Y en el otro sentido: la infra Base que existe en `.claude/` y NO tiene contraparte. Partir
+// del archivo que viaja no puede ver el que nunca viajo — es como se escondio por meses que la
+// Herramienta `instalar-plugins-codex` estuviera declarada en el registro Base y no se instalara.
+const normArch = s => s.replace(/\r\n/g, '\n').replace(/\s+$/, '');
+function origenDe(txt) {
+  const m = /^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/.exec(txt);
+  if (!m) return null;
+  const o = /^origen:\s*(\S+)\s*$/m.exec(m[1]);
+  return o ? o[1] : null;
+}
+// Encabezado = todo lo anterior a la primera fila de datos de la primera tabla. El separador
+// `|---|` va incluido: es parte de la forma que manda el Agente Multiproposito.
+function encabezadoDe(txt) {
+  const ls = normArch(txt).split('\n');
+  const i = ls.findIndex(l => /^\s*\|[\s:|-]+\|\s*$/.test(l));
+  return i === -1 ? null : ls.slice(0, i + 1).join('\n');
+}
+function listarArchivos(raiz, rel, out) {
+  for (const e of fs.readdirSync(path.join(raiz, rel || '.'), { withFileTypes: true })) {
+    const r = rel ? rel + '/' + e.name : e.name;
+    if (e.isDirectory()) listarArchivos(raiz, r, out); else out.push(r);
+  }
+  return out;
+}
+const basesDeInstalacion = [];
 for (const f of enDisco) {
   const skillsDir = path.join(funcDir, f, 'skills');
   if (!fs.existsSync(skillsDir)) continue;
   for (const s of fs.readdirSync(skillsDir)) {
-    const pl = path.join(skillsDir, s, 'PLANTILLA.md');
-    if (!fs.existsSync(pl)) continue;
-    const txt = fs.readFileSync(pl, 'utf8').replace(/\r\n/g, '\n');
-    const porDestino = new Map();
-    for (const re of DECLARA_DESTINO) {
-      re.lastIndex = 0;
-      let m;
-      while ((m = re.exec(txt))) {
-        const linea = txt.slice(0, m.index).split('\n').length;
-        porDestino.set(m[1], (porDestino.get(m[1]) || []).concat(linea));
+    const b = path.join(skillsDir, s, 'base');
+    if (fs.existsSync(b)) basesDeInstalacion.push(b);
+  }
+}
+// Filas de datos de la primera tabla (las que van despues del separador `|---|`).
+function filasDe(txt) {
+  const ls = normArch(txt).split('\n');
+  const i = ls.findIndex(l => /^\s*\|[\s:|-]+\|\s*$/.test(l));
+  if (i === -1) return [];
+  return ls.slice(i + 1).filter(l => /^\s*\|/.test(l.trim()));
+}
+const viajaDistinto = [], viajaSinInstalar = [], sinViajar = [], viajaConFilas = [];
+const carpetasQueViajan = new Set();
+for (const baseDir of basesDeInstalacion) {
+  const relBase = path.relative(repo, baseDir).replace(/\\/g, '/');
+  for (const r of listarArchivos(baseDir, '', [])) {
+    carpetasQueViajan.add(path.posix.dirname(r));
+    const instalado = path.join(repo, '.claude', r);
+    if (!fs.existsSync(instalado)) { viajaSinInstalar.push(`${r}  — viaja en ${relBase} y no existe en .claude/`); continue; }
+    const aViajar = fs.readFileSync(path.join(baseDir, r), 'utf8');
+    const enUso = fs.readFileSync(instalado, 'utf8');
+    if (!r.endsWith('.md') || origenDe(aViajar) !== 'agente-desplegado') {
+      if (normArch(aViajar) !== normArch(enUso)) {
+        const a = normArch(enUso).split('\n'), c = normArch(aViajar).split('\n');
+        let k = 0; while (k < Math.max(a.length, c.length) && a[k] === c[k]) k++;
+        viajaDistinto.push(`${r}  — difiere desde la linea ${k + 1} (instalado ${a.length} lineas, viaja ${c.length})`);
       }
+      continue;
     }
-    const rel = path.relative(repo, pl).replace(/\\/g, '/');
-    for (const [destino, lineas] of porDestino) {
-      if (lineas.length > 1) destinosDuplicados.push(`${rel}: ${destino} declarado ${lineas.length} veces (lineas ${lineas.sort((a, b) => a - b).join(', ')})`);
+    // Registro del Agente Desplegado: manda el encabezado, las filas son de cada repo.
+    // Y por eso mismo el que VIAJA no puede llevar ninguna: nace declarado y sin filas. Si lleva,
+    // todo repo que se instale arranca con las entradas de este — sus Herramientas, sus terminos,
+    // sus reglas— como si fueran propias. El control del encabezado no puede verlo: mira arriba
+    // de la tabla justamente para no comparar las filas.
+    const filas = filasDe(aViajar);
+    if (filas.length) viajaConFilas.push(`${r}  — viaja con ${filas.length} fila(s); un Indice del Agente Desplegado nace sin ninguna`);
+    const ea = encabezadoDe(aViajar), eb = encabezadoDe(enUso);
+    if (ea === null || eb === null) { viajaDistinto.push(`${r}  — declara origen agente-desplegado y no se encontro su tabla`); continue; }
+    if (ea !== eb) {
+      const a = eb.split('\n'), c = ea.split('\n');
+      let k = 0; while (k < Math.max(a.length, c.length) && a[k] === c[k]) k++;
+      viajaDistinto.push(`${r}  — encabezado distinto desde la linea ${k + 1} (las filas no se comparan: son del repo)`);
+    }
+  }
+}
+// El otro sentido: un archivo instalado sin contraparte es infra Base que se quedo sin viajar.
+//
+// Se mira SOLO dentro de las carpetas de infra —las anidadas dentro del subsistema, del tipo
+// `planes/lint-planes/` o `herramientas/actualizar-plugins/`—, nunca en la raiz de un subsistema.
+// La raiz es donde cada repo acumula sus entradas: sus paginas de conocimiento, sus decisiones,
+// sus planes. Ahi un archivo sin contraparte es lo normal, no un hueco, y marcarlos convertia el
+// control en 30 hallazgos de los que ninguno era real — una fila que marca todo se deja de leer.
+if (basesDeInstalacion.length) {
+  const queViajan = new Set();
+  for (const baseDir of basesDeInstalacion) for (const r of listarArchivos(baseDir, '', [])) queViajan.add(r);
+  for (const carpeta of carpetasQueViajan) {
+    if (!carpeta.includes('/')) continue;               // raiz de subsistema: ahi viven las entradas
+    const dir = path.join(repo, '.claude', carpeta);
+    if (!fs.existsSync(dir)) continue;
+    for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
+      if (!e.isFile()) continue;
+      const r = carpeta + '/' + e.name;
+      if (!queViajan.has(r)) sinViajar.push(`.claude/${r}`);
     }
   }
 }
@@ -211,56 +284,11 @@ if (fs.existsSync(claudeDir)) {
   }
 }
 
-// -- [7] Base de preferencias identica entre PREFERENCIAS.md y las PLANTILLA -----
-// Hueco detectado 26-07-20: el texto de la Base viaja (PREFERENCIAS.md -> PLANTILLA de
-// preferencias-trabajo y del orquestador setup-completo) y NADA comparaba las copias
-// (el chequeo [4] solo mira bloques de memoria y fragmentos de lint). Se extrae la seccion
-// seccion del Agente Multiproposito de cada archivo que la contenga, hasta la del Agente
-// Desplegado, y se comparan normalizadas. Divergen -> se listan por hash.
-// Se aceptan los encabezados viejos (`## Base (harness vN)` / `## Adaptaciones`) mientras haya
-// Agentes Desplegados sin nivelar. OJO: si el encabezado cambia y este patron no, la funcion
-// devuelve null y el chequeo pasa en verde SIN comparar nada (falso verde), por eso el aviso.
-// El corte de abajo no puede ser solo la seccion del Agente Desplegado: desde que las preferencias
-// se partieron en un archivo por origen, esa seccion ya no esta y la del Agente Multiproposito
-// llega hasta el proximo encabezado, el cierre del bloque de la plantilla, o el fin del archivo.
-const RE_BASE_PREF = /(## (?:Preferencias del Agente Multiprop[oó]sito|Base \(harness[^\n]*\))[^\n]*)\n([\s\S]*?)(?=\n## |\n```|$)/;
-function extraerBase(txt) {
-  const m = txt.match(RE_BASE_PREF);
-  return m ? (m[1] + '\n' + m[2]).replace(/\s+/g, ' ').trim() : null;
-}
-const fuentesBase = [path.join(repo, '.claude', 'preferencias', 'PREFERENCIAS.md')];
-for (const f of enDisco) {
-  const skillsDir = path.join(funcDir, f, 'skills');
-  if (!fs.existsSync(skillsDir)) continue;
-  for (const s of fs.readdirSync(skillsDir)) {
-    const p = path.join(skillsDir, s, 'PLANTILLA.md');
-    if (fs.existsSync(p)) fuentesBase.push(p);
-  }
-}
-const basePorHash = new Map(); // hash -> [archivos]
-const baseSinSeccion = [];     // archivos donde el patron no encontro la seccion
-for (const f of fuentesBase) {
-  if (!fs.existsSync(f)) continue;
-  const rel = path.relative(repo, f).replace(/\\/g, '/');
-  const txt = fs.readFileSync(f, 'utf8');
-  const base = extraerBase(txt);
-  if (base == null) {
-    // Solo es hallazgo si el archivo dice tener preferencias: una PLANTILLA de otro
-    // subsistema no las lleva y no tiene por que matchear.
-    if (/PREFERENCIAS\.md|## Preferencias del Agente|## Base \(harness/i.test(txt)) baseSinSeccion.push(rel);
-    continue;
-  }
-  const h = crypto.createHash('sha1').update(base).digest('hex').slice(0, 10);
-  const arr = basePorHash.get(h) || [];
-  arr.push(rel);
-  basePorHash.set(h, arr);
-}
-// Sin este aviso el chequeo daba FALSO VERDE: si los encabezados cambiaban y el patron no,
-// extraerBase devolvia null en todos lados, no se comparaba nada y la salida quedaba limpia.
-const baseDivergente = [
-  ...baseSinSeccion.map(f => `sin seccion de preferencias reconocible (encabezado cambiado?): ${f}`),
-  ...(basePorHash.size > 1 ? [...basePorHash].map(([h, arr]) => `(${h}) ${arr.join('  |  ')}`) : []),
-];
+// -- [7] la Base de preferencias la cubre [4b] -----------------------------------
+// Este chequeo comparaba la seccion del Agente Multiproposito de `PREFERENCIAS.md` contra la copia
+// que llevaba cada PLANTILLA, buscandola con una expresion que dependia del texto del encabezado
+// —y que daba FALSO VERDE si el encabezado cambiaba y ella no—. Desde que el archivo viaja como
+// archivo, `PREFERENCIAS.md` es un caso mas de [4b]: se compara entero, sin buscar ninguna seccion.
 
 // -- [8] estructura minima de los manifiestos de subsistema (dec. 0019 + 0023) ---
 // Cada MANIFIESTO.md debe traer los campos obligatorios: titulo H1, "Disparador",
@@ -466,58 +494,11 @@ if (vetadosProductoTerms.length && fs.existsSync(funcDir)) {
   })(funcDir);
 }
 
-// -- [11] script embebido en una PLANTILLA distinto del instalado en .claude/ ---
-// El chequeo de mas arriba compara PLANTILLA contra PLANTILLA; nadie comparaba PLANTILLA contra
-// `.claude/`. Con eso, arreglar un lint en el repo y olvidar su copia embebida dejaba el defecto
-// viajando a cada Agente Desplegado con el control de cierre en verde. Medido el 30/07/2026: pasó
-// con cuatro lints y con el control de terminología en la misma sesión. Es el hueco que el plan
-// `Sacar la duplicación entre el Producto y el Agente instalado` viene a cerrar de raíz; hasta que
-// eso pase, al menos la divergencia se ve.
-//
-// El destino de cada bloque es la última ruta `.claude/**.js` nombrada antes de su cerca de código.
-function plantillasDelRepo() {
-  const out = [];
-  for (const f of enDisco) {
-    const skillsDir = path.join(funcDir, f, 'skills');
-    if (!fs.existsSync(skillsDir)) continue;
-    for (const s of fs.readdirSync(skillsDir)) {
-      const p = path.join(skillsDir, s, 'PLANTILLA.md');
-      if (fs.existsSync(p)) out.push(p);
-    }
-  }
-  return out;
-}
-const embebidoDivergente = [];
-for (const plantilla of plantillasDelRepo()) {
-  let txt; try { txt = fs.readFileSync(plantilla, 'utf8'); } catch { continue; }
-  const lineas = txt.split(/\r?\n/);
-  let destino = null, dentro = false, buf = [], desde = 0;
-  for (let i = 0; i < lineas.length; i++) {
-    const l = lineas[i];
-    if (!dentro) {
-      const m = l.match(/`(\.claude\/[^`]+\.js)`/);
-      if (m) destino = m[1];
-      if (/^```js\s*$/.test(l)) { dentro = true; buf = []; desde = i + 2; }
-      continue;
-    }
-    if (/^```\s*$/.test(l)) {
-      dentro = false;
-      if (!destino) continue;
-      const enDiscoPath = path.join(repo, destino);
-      const rel = path.relative(repo, plantilla).replace(/\\/g, '/');
-      if (!fs.existsSync(enDiscoPath)) { embebidoDivergente.push(`${destino}  — embebido en ${rel}:${desde} pero no existe en disco`); continue; }
-      const norm = s => s.replace(/\r\n/g, '\n').replace(/\s+$/, '');
-      const real = norm(fs.readFileSync(enDiscoPath, 'utf8'));
-      const tpl = norm(buf.join('\n'));
-      if (real === tpl) continue;
-      const a = real.split('\n'), c = tpl.split('\n');
-      let k = 0; while (k < Math.max(a.length, c.length) && a[k] === c[k]) k++;
-      embebidoDivergente.push(`${destino}  — difiere de ${rel}:${desde} desde la linea ${k + 1} (disco ${a.length} lineas, plantilla ${c.length})`);
-      continue;
-    }
-    buf.push(l);
-  }
-}
+// -- [11] la divergencia del texto que viaja la cubre [4b] -----------------------
+// Este chequeo comparaba cada script transcripto adentro de una PLANTILLA contra su archivo en
+// `.claude/`, parseando cercas de codigo para recuperar el texto. Desde que los scripts viajan
+// como archivos, la comparacion es archivo contra archivo y no hay nada que parsear: la hace
+// [4b], que ademas alcanza a los `.md`, que este nunca miro.
 
 // -- salida --------------------------------------------------------------
 const secciones = [
@@ -527,10 +508,11 @@ const secciones = [
   ['SOURCES DEL MARKETPLACE QUE NO RESUELVEN', srcRotos],
   ['FUNCIONALIDADES INCOMPLETAS (archivos clave)', incompletas],
   ['VERSION EN DISCO DISTINTA DE LA INSTALADA', versionDesfasada],
-  ['BLOQUES VERBATIM DIVERGENTES ENTRE PLANTILLAS', divergentes],
-  ['SCRIPT EMBEBIDO DISTINTO DEL INSTALADO EN .claude/', embebidoDivergente],
-  ['DESTINOS DECLARADOS MAS DE UNA VEZ EN UNA PLANTILLA', destinosDuplicados],
-  ['BASE DE PREFERENCIAS DIVERGENTE (PREFERENCIAS.md vs PLANTILLAS)', baseDivergente],
+  ['FRAGMENTOS DE CODIGO DIVERGENTES ENTRE LINTS', divergentes],
+  ['LO QUE VIAJA DIFIERE DE LO INSTALADO EN .claude/', viajaDistinto],
+  ['VIAJA UN COMPONENTE QUE NO EXISTE EN .claude/', viajaSinInstalar],
+  ['INFRA BASE EN .claude/ QUE NO VIAJA', sinViajar],
+  ['UN INDICE DEL AGENTE DESPLEGADO VIAJA CON FILAS', viajaConFilas],
   [`MANIFIESTOS QUE ENGORDARON (> ${LIMITE_MANIFIESTO} palabras)`, manifiestosLargos],
   ['MANIFIESTOS SIN CAMPOS MINIMOS (dec. 0019)', manifiestosSinCampos],
   ['CITAS A DECISIONES DEL HARNESS EN DISTRIBUIBLES (dec. 0024)', refsDecision],
