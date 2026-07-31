@@ -23,9 +23,15 @@ const APLICAR = args.includes('--aplicar');
 const REPO = path.resolve(args.find(a => !a.startsWith('--')) || process.cwd());
 const INSTALADO = path.join(REPO, '.claude');
 
-const norm = s => s.replace(/\r\n/g, '\n').replace(/\s+$/, '');
+// La marca de orden de bytes se saca SIEMPRE, y es lo primero que pasa con cualquier texto: un `.md`
+// guardado con ella deja de matchear `^---`, o sea pierde su `origen`, y un registro sin origen se
+// trata como mecanismo y se copia ENTERO — con las filas de este repo adentro, a todo consumidor.
+// Es la falla más cara de esta Herramienta y la más difícil de ver, porque el archivo se lee igual
+// en cualquier editor. Al sacarla también del texto que se escribe, lo que viaja nunca la lleva.
+const sinBom = s => s.replace(/^﻿/, '');
+const norm = s => sinBom(s).replace(/\r\n/g, '\n').replace(/\s+$/, '');
 function origenDe(txt) {
-  const m = /^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/.exec(txt);
+  const m = /^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/.exec(sinBom(txt));
   if (!m) return null;
   const o = /^origen:\s*(\S+)\s*$/m.exec(m[1]);
   return o ? o[1] : null;

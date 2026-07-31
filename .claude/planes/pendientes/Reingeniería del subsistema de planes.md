@@ -85,9 +85,7 @@ Marca evidencia faltante en lugar de inventar certeza. No persiste prioridades n
 
 3. Retirar la habilidad `ciclo-de-plan` y reemplazarla por las habilidades de esta familia, excepto `amp-planes:ejecutar`.
 
-4. Actualizar instalación, nivelado, catálogo de funcionalidades, registros, documentación y controles textuales para distribuir el contrato completo.
-
-5. Actualizar repositorios existentes de forma individual:
+4. Actualizar instalación, nivelado, catálogo de funcionalidades, registros, documentación y controles textuales para distribuir el contrato completo. El nivelado de un repositorio existente debe:
 
    - conservar sin reinterpretar `Nuevo`, `En curso`, `Diferido`, `Ejecutado` y `Descartado`;
    - no asignar retrospectivamente `Análisis` o `Listo` sin evidencia explícita;
@@ -95,7 +93,7 @@ Marca evidencia faltante en lugar de inventar certeza. No persiste prioridades n
    - reportar como divergencia cualquier variante local no equivalente, sin pisarla;
    - informar `agregado`, `ya estaba` y `divergente`.
 
-6. Verificar transiciones válidas e inválidas, pausa y reanudación, diferimiento, cierres, instalación nueva y actualización de un repositorio existente.
+5. Verificar transiciones válidas e inválidas, pausa y reanudación, diferimiento, cierres, instalación nueva y actualización de un repositorio existente, esta última contra un repositorio de prueba, nunca contra la flota de Agentes con Propósito instalados.
 
 ## Relación con planes existentes
 
@@ -111,4 +109,4 @@ No redefinirá estados, transiciones, plantilla ni lint. El cierre de aprendizaj
 - `En pausa` es el único estado con `estado_a_retomar`.
 - Todo plan diferido vuelve a `Análisis`.
 - `priorizar` y `sugerir-siguiente-plan` son consultas sin efectos sobre los planes.
-- Una instalación nueva y una actualización independiente terminan con el lint verde.
+- Una instalación nueva y una actualización sobre un repositorio de prueba terminan con el lint verde.
