@@ -122,6 +122,45 @@ console.log('\n== NO CUENTA DOS VECES NI SE PIERDE ==');
   chequear('los lints bajo tmp/ no se corren', !fila(texto, 'lint-siete'), fila(texto, 'lint-siete') || 'no aparece');
 }
 
+console.log('\n== CORRE EL BANCO QUE SU HERMANA NO PUEDE CORRER ==');
+// `ejecutar-pruebas` declara verdes a todos los controles del repo, así que su banco no puede
+// correrlo él: un descubrimiento roto tampoco encontraría ese archivo. Lo corre esta Herramienta.
+// Es una PRUEBA, no un lint, así que el contrato cambia — la prueba falla con código 1 y acá se
+// reporta como un chequeo más, sin que esta Herramienta falle (decisión Local-0003).
+const BANCO_HERMANO = ['herramientas', 'ejecutar-pruebas'];
+function ponerBancoHermano(cuerpo) {
+  const dir = path.join(REPO_PRUEBA, '.claude', ...BANCO_HERMANO);
+  fs.mkdirSync(dir, { recursive: true });
+  fs.writeFileSync(path.join(dir, 'pruebas.js'), cuerpo);
+}
+{
+  armar();
+  ponerBancoHermano('console.log("casos: 12");\nprocess.exit(0);\n');
+  const { texto } = correr();
+  chequear('el banco de ejecutar-pruebas se corre como un chequeo más',
+    /\bOK$/.test(fila(texto, 'banco de ejecutar-pruebas')),
+    fila(texto, 'banco de ejecutar-pruebas') || 'no aparece');
+}
+{
+  armar();
+  ponerBancoHermano('console.log("2 FALLARON.");\nprocess.exit(1);\n');
+  const { texto, codigo } = correr();
+  chequear('si ese banco falla se marca FALLA y se muestra su salida',
+    /\bFALLA$/.test(fila(texto, 'banco de ejecutar-pruebas')) && texto.includes('2 FALLARON.'),
+    fila(texto, 'banco de ejecutar-pruebas') || 'no aparece');
+  chequear('y esta Herramienta sigue sin fallar ella misma', codigo === 0, `código ${codigo}`);
+}
+{
+  // Que el archivo no esté es exactamente el estado que este chequeo viene a cerrar: sin banco, el
+  // corredor de bancos vuelve a no tener quién lo controle. Saltearlo en silencio dejaría el repo
+  // informándose verde con el agujero abierto.
+  armar();
+  const { texto } = correr();
+  chequear('y si el banco no está se reporta AUSENTE, no se saltea',
+    /\bAUSENTE$/.test(fila(texto, 'banco de ejecutar-pruebas')),
+    fila(texto, 'banco de ejecutar-pruebas') || 'no aparece');
+}
+
 fs.rmSync(REPO_PRUEBA, { recursive: true, force: true });
 console.log(`\ncasos: ${casos}`);
 console.log('no cubierto a propósito: el resultado de `claude plugin validate`, que depende del CLI');

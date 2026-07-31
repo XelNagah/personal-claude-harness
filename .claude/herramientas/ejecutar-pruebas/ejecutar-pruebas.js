@@ -51,8 +51,14 @@ const EXCLUDE = new Set(['.git', 'node_modules', 'tmp', '.respaldo-amp']);
 // llegara a llamarse así, y un banco que deja de correrse sin avisar es justo lo que este corredor
 // existe para que no pase. Con la ruta, mover el árbol que viaja hace reaparecer los duplicados
 // —visible en el conteo— en vez de dejar algo sin mirar.
+//
+// El banco propio queda afuera por otro motivo, y es el único que no es duplicación: correrlo acá
+// no probaría nada. Un descubrimiento roto tampoco lo encontraría, así que el hueco seguiría abierto
+// con el banco en verde. Lo corre `ejecutar-control-cierre`, que es otra Herramienta — así la
+// circularidad desaparece sin inventar un piso numérico («tienen que ser al menos 16») que envejece
+// solo con abrir un lint más.
 const RAICES = [
-  { dir: '.claude', excluir: [] },
+  { dir: '.claude', excluir: ['.claude/herramientas/ejecutar-pruebas'] },
   { dir: 'funcionalidades', excluir: ['funcionalidades/amp/skills/inicializar/base'] },
 ];
 
@@ -104,10 +110,16 @@ for (const r of RAICES) {
       console.log('aviso: la exclusión `' + e + '` ya no existe — revisar si se movió.');
   }
 }
+// Cero pruebas NO es verde. Todo repo con el Agente Multipropósito instalado recibe un `pruebas.js`
+// por cada lint que viaja, así que no encontrar ninguna significa que el descubrimiento se rompió o
+// que la instalación quedó a medias — nunca que esté todo bien. Salir en 0 acá convertía a este
+// corredor en el caso de manual de su propio motivo: el control que valida sobre un conjunto vacío y
+// contesta en verde, justo en el que declara verdes a todos los demás.
 if (!pruebas.length) {
   console.log('\nNo se encontró ninguna `pruebas.js` bajo ' + RAICES.map(r => r.dir + '/').join(' ni ') + '.');
-  console.log('Un control sin prueba no avisa cuando deja de controlar.');
-  process.exit(0);
+  console.log('Un control sin prueba no avisa cuando deja de controlar, y cero pruebas encontradas');
+  console.log('no es un repo sano: es el descubrimiento roto o la instalación incompleta.');
+  process.exit(1);
 }
 console.log('pruebas: ' + pruebas.length + '\n');
 

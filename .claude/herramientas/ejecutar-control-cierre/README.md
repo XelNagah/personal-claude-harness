@@ -9,7 +9,16 @@ node .claude/herramientas/ejecutar-control-cierre/ejecutar-control-cierre.js
 ## Qué corre
 
 1. **Todos los lints de subsistema**, descubiertos dinámicamente: cualquier `.claude/**/lint-*/lint-*.js`, excepto las copias de prueba bajo `.claude/tmp/`. Un subsistema nuevo con su lint co-ubicado entra solo.
-2. **`claude plugin validate .`** — validación del marketplace. Si el CLI no está disponible, lo reporta como `NO DISPONIBLE` (no como error).
+2. **El banco de `ejecutar-pruebas`** — ver abajo.
+3. **`claude plugin validate .`** — validación del marketplace. Si el CLI no está disponible, lo reporta como `NO DISPONIBLE` (no como error).
+
+## El banco que su hermana no puede correr
+
+`ejecutar-pruebas` es el corredor de todos los bancos del repo, y su modo de falla es informar `TODO VERDE` sobre cero bancos si el descubrimiento se rompe. Su propio banco **no puede correrlo él**: un descubrimiento roto tampoco encontraría ese archivo, así que el hueco quedaría abierto con el banco en verde.
+
+Lo corre esta Herramienta, que es otra. Así la circularidad desaparece sin inventar un piso numérico —«tienen que ser al menos dieciséis»— que envejece con solo abrir un lint más. Cada corredor prueba al otro: el banco de esta Herramienta lo corre `ejecutar-pruebas`, con el resto.
+
+Es una **prueba**, no un lint, y el contrato es distinto: la prueba falla con código 1 y acá se reporta como un chequeo más (`OK` / `FALLA` / `NO CORRIO`), sin que esta Herramienta falle. Que el archivo no esté se reporta `AUSENTE` en vez de saltearse: es exactamente el estado que este chequeo viene a cerrar.
 
 ## Salida
 

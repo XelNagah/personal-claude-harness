@@ -27,7 +27,15 @@ De esa segunda raíz se excluye **`base/`**, y no por ruido incidental: sus `pru
 
 La exclusión va **por ruta completa, no por nombre**. Excluir la palabra `base` apagaría en silencio cualquier otra carpeta que llegara a llamarse así, y un banco que deja de correrse sin avisar es exactamente lo que esta Herramienta existe para que no pase. Con la ruta, mover el árbol que viaja hace reaparecer los duplicados —visible en el conteo— en vez de dejar algo sin mirar; y si la ruta excluida ya no existe, se avisa antes de la lista.
 
+De la primera raíz se excluye **la carpeta de esta misma Herramienta**, y es la única exclusión que no es por duplicación: correr acá el banco propio no probaría nada, porque un descubrimiento roto tampoco encontraría ese archivo. Lo corre `ejecutar-control-cierre`, que es otra Herramienta, y así la circularidad desaparece sin inventar un piso numérico —«tienen que ser al menos dieciséis»— que envejece con solo abrir un lint más.
+
 Se excluyen además `tmp/`, `node_modules/`, `.git/` y los respaldos del nivelador.
+
+## Cero pruebas no es verde
+
+No encontrar ninguna `pruebas.js` **sale con código 1**. Todo repo con el Agente Multipropósito instalado recibe un banco por cada lint que viaja, así que cero encontradas nunca significa que esté todo bien: significa que el descubrimiento se rompió o que la instalación quedó a medias.
+
+Mientras esto salía en 0, esta Herramienta era el caso de manual de su propio motivo — el control que valida sobre un conjunto vacío y contesta en verde, justo en el que declara verdes a todos los demás.
 
 El nombre que se muestra sale del script que la prueba acompaña, y si no se puede saber, de la carpeta que la contiene. Para un lint las dos formas coinciden (`lint-planes/lint-planes.js`); donde no coinciden es en `funcionalidades/`, y ahí la carpeta sola diría «actualizar», que no nombra nada.
 

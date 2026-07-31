@@ -64,6 +64,30 @@ for (const js of findLints(CLAUDE_DIR, []).sort()) {
   }
 }
 
+// -- el banco de `ejecutar-pruebas`, que su propio corredor no puede correr --
+// `ejecutar-pruebas` declara verdes a todos los demas controles, asi que su modo de falla es
+// informar «TODO VERDE» sobre cero bancos si el descubrimiento se rompe. Su banco no puede correrlo
+// el: un descubrimiento roto tampoco encontraria ese archivo. Lo corre esta Herramienta, que es
+// otra, y asi la circularidad desaparece sin un piso numerico que envejece.
+//
+// Esto es una PRUEBA, no un lint, y el contrato es distinto: la prueba falla con codigo 1 y este
+// control lo REPORTA como un chequeo mas, sin fallar el (misma forma que `plugin validate`).
+{
+  const banco = path.join(CLAUDE_DIR, 'herramientas', 'ejecutar-pruebas', 'pruebas.js');
+  const name = 'banco de ejecutar-pruebas';
+  if (!fs.existsSync(banco)) {
+    // Que el archivo no este es exactamente el estado que este chequeo viene a cerrar, asi que se
+    // reporta en vez de saltearse en silencio.
+    results.push({ name, status: 'AUSENTE', findings: null, output: 'no existe ' + banco });
+  } else {
+    const r = spawnSync('node', [banco], { cwd: REPO, encoding: 'utf8', timeout: 180000 });
+    const output = (r.stdout || '') + (r.stderr || '');
+    if (r.error || r.status === null) results.push({ name, status: 'NO CORRIO', findings: null, output });
+    else if (r.status !== 0) results.push({ name, status: 'FALLA', findings: null, output });
+    else results.push({ name, status: 'OK', findings: 0, output });
+  }
+}
+
 // -- claude plugin validate . --
 {
   const r = spawnSync('claude plugin validate .', {
