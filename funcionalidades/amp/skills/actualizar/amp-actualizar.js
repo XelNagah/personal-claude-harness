@@ -129,7 +129,11 @@ const SUBSISTEMAS = ['subsistemas', 'preferencias', 'planes', 'conocimiento', 's
 // Herramientas que el harness manda (origen Base) y que todo repo al dia deberia tener bajo
 // .claude/herramientas/<nombre>/<nombre>.js. No confundir con las del Proposito, que las suma
 // cada repo y el nivelador nunca toca.
-const HERRAMIENTAS_BASE = ['actualizar-plugins'];
+// Toda Herramienta que viaje en `base/herramientas/` va aca. Faltar en esta lista no es "no se
+// avisa": el INDICE.md Base se reemplaza entero y trae la fila, asi que la Herramienta queda
+// declarada y sin carpeta, y `lint-herramientas` sale con FILAS COLGADAS. El nivelado termina
+// "aplicado" habiendo roto un control que estaba verde.
+const HERRAMIENTAS_BASE = ['actualizar-plugins', 'instalar-plugins-codex'];
 
 // -- contenido Base: comparar el archivo instalado contra el que viaja ------
 // Chequear que el Componente de Subsistema EXISTA no alcanza: un consumidor que ya tiene el script en su version vieja

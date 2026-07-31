@@ -229,6 +229,18 @@ console.log('\n== FORMAS ANTERIORES ==');
     marca(texto, 'herramientas/INDICE.md', 'partir por origen'));
 }
 {
+  // Una Herramienta Base ausente tiene que proponerse SOLA, no de rebote por el índice. El índice
+  // Base se reemplaza entero y trae su fila, así que si la carpeta no se propone el nivelado deja
+  // la Herramienta declarada y sin carpeta, y `lint-herramientas` sale con FILAS COLGADAS: el repo
+  // termina "al día" con un control que rompió el propio nivelado. Se prueba con
+  // `instalar-plugins-codex` porque es la que faltaba en la lista.
+  armarAlDia();
+  fs.rmSync(claude('herramientas/instalar-plugins-codex'), { recursive: true, force: true });
+  const { texto } = correr(REPO_PRUEBA);
+  chequear('una Herramienta Base ausente se marca para instalar con su carpeta',
+    marca(texto, 'herramientas/instalar-plugins-codex/', 'ausente'));
+}
+{
   // La generación retirada. Su sola presencia significa migración incompleta y nunca puede terminar
   // en «repo al día», aunque todos sus archivos sean válidos para la versión vieja.
   armarAlDia();
