@@ -26,11 +26,36 @@ Un texto que vive dos veces necesita un control que compare **las dos copias**, 
 
 Un control sin prueba no avisa cuando deja de controlar, y el control de cierre no puede detectarlo porque le cree. Antes del 30/07/2026 este repo tenía **trece controles y cero pruebas**, mientras el conocimiento que prescribía el remedio —*una prueba por control, con caso bueno y caso malo*— ya estaba asentado hacía un día.
 
+### 5. Tiene adentro una condición que no controla nada
+
+Un banco verde prueba el control **como un todo**: dice que se enciende ante su defecto y se calla ante lo sano. No dice nada de cada condición por separado. Una condición que sobra —o que quedó cubierta por otra— pasa desapercibida mientras el control acierta por los otros caminos.
+
+Medido el 31/07/2026 sobre el nivelador, con su banco en verde: de **cinco condiciones nuevas, dos no hacían nada**. Una guarda agregada para que un subsistema entero ausente no saliera repetido ya estaba cubierta por la deduplicación, y una comparación del orden de las columnas no tenía ningún caso que la ejercitara. Ninguna de las dos habría aparecido nunca: el banco daba verde con ellas y sin ellas.
+
+Las dos terminaron distinto, y esa es la parte que importa. La guarda redundante **se sacó**, porque además de no hacer nada era dañina (ver abajo). La comparación de orden **se quedó**, porque al buscarle un caso apareció un defecto real que nadie había considerado. Una condición que no se puede romper no es necesariamente sobrante: puede ser una condición cuyo motivo nadie escribió todavía.
+
+## El remedio de una forma produce la otra
+
+Las formas 1 y 2 tiran para lados opuestos, y ahí está la trampa: **lo que se agrega para que un control deje de marcar de más es lo que lo convierte en mudo.**
+
+Ese mismo día, la guarda que se agregó para que un subsistema ausente no saliera una vez por archivo habría devuelto **silencio** ante una carpeta nueva que viajara sin chequeo propio — el defecto de la forma 1, introducido por el remedio de la forma 2, adentro del control que venía a cerrar exactamente ese agujero.
+
+**Ante la duda, marcar de más.** Varias líneas se leen; ninguna, no. Bajar el ruido es un ajuste posterior, y se hace con un caso que lo justifique.
+
+## El hallazgo que nadie puede resolver
+
+Una variante de la forma 2 que no depende del volumen: **un solo hallazgo permanente alcanza para apagar el reporte entero**, si el usuario no tiene ninguna manera de resolverlo.
+
+El primer intento del chequeo de columnas del nivelador marcaba a todo Agente Desplegado que le hubiera sumado una columna propia a un registro suyo —cosa que tiene permitida— aunque no hubiera nada que nivelar. Ese repo quedaba con un hallazgo bloqueante **en cada corrida, para siempre**, y sin acción posible: la columna es legítima y no se va a ir. Un reporte que nunca puede llegar a cero deja de significar «hay algo que hacer».
+
+Los hallazgos de un control tienen que ser **resolubles**: cada uno nombra algo que alguien puede llevar a cero. Si un estado legítimo y permanente enciende un hallazgo, el defecto es del control.
+
 ## Cómo se prueba un control
 
 - **Caso malo y caso bueno, los dos.** Sin el malo, un control que no hace nada pasa por sano. Sin el bueno, no se detecta el falso positivo — que es la forma 2 de esta lista.
 - **Cada control se enciende ante su defecto, y solo ante el suyo.** Conviene informar qué *otros* controles se dispararon de más: si romper una cosa enciende cinco, alguno está mirando lo que no le toca.
 - **La prueba se verifica rompiendo el control a propósito.** Una prueba que nunca falló no prueba nada: es indistinguible de una que no chequea. Se rompe, se confirma que falla el caso que corresponde **y solo ese**, y se restaura comprobando que el archivo quedó idéntico.
+- **Se rompe cada condición, no el control entero.** Neutralizar el control de una y ver fallar el banco solo prueba que hay *alguna* condición viva. Cada guarda se desactiva por separado: la que deja el banco en verde no está probada, y hay que decidir entre sacarla o escribirle el caso.
 - **Nada de números absolutos adentro de la prueba.** Dos casos de la prueba de planes comparaban contra un `81` escrito a mano y empezaron a fallar solos el día que el repo abrió el plan 82 — avisando de un defecto que no existía. Un número absoluto envejece igual adentro de una prueba que adentro de un registro.
 - **Banco aparte, nunca el repo real.** Y si el control mira el repo entero, el banco tiene que ser un repo, no una carpeta: si no, el barrido cae sobre el repo real y los casos no quedan aislados.
 - **Lo que no se cubre, se dice.** Un control que la prueba no puede ejercitar (porque depende del estado de la máquina, por ejemplo) se declara en la salida. Callarlo hace que la prueba en verde se lea como cobertura completa.
