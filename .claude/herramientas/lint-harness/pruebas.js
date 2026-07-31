@@ -35,6 +35,29 @@ function armar() {
       filter: src => !salteados.has(path.basename(src)),
     });
   }
+  neutralizarEnlaceConocido();
+}
+
+// El repo real tiene HOY un enlace roto legítimo en lo que viaja: `TERMINOLOGIA-FARLOPA.md` apunta a
+// una página de conocimiento que todavía no viaja, y existe un plan abierto para subirla. Es un
+// hallazgo del repo, no del banco, así que acá se neutraliza para que el caso bueno pueda medir cero
+// — un banco que arranca con un hallazgo adentro no distingue el control sano del que marca de más.
+// El caso malo de más abajo repone un enlace roto por su cuenta, así que el control se prueba igual.
+// Cuando el plan se ejecute y el enlace resuelva, este reemplazo deja de encontrar qué cambiar y no
+// estorba.
+//
+// Se toca en LOS DOS LADOS —el que viaja y el instalado— porque otro control compara esas dos
+// copias: neutralizar uno solo las hace divergir y enciende un hallazgo que no tiene nada que ver
+// con lo que este banco quería preparar.
+function neutralizarEnlaceConocido() {
+  const rel = 'semantica/TERMINOLOGIA-FARLOPA.md';
+  for (const f of [path.join(REPO_PRUEBA, 'funcionalidades/amp/skills/inicializar/base', rel),
+                   path.join(REPO_PRUEBA, '.claude', rel)]) {
+    if (!fs.existsSync(f)) continue;
+    const antes = fs.readFileSync(f, 'utf8');
+    const despues = antes.replace(/\[([^\]]+)\]\(\.\.\/conocimiento\/[^)]+\.md\)/g, '$1');
+    if (antes !== despues) fs.writeFileSync(f, despues);
+  }
 }
 const leer = f => fs.readFileSync(path.join(REPO_PRUEBA, f), 'utf8');
 const escribir = (f, t) => fs.writeFileSync(path.join(REPO_PRUEBA, f), t);
@@ -104,6 +127,16 @@ caso('un Índice del Agente Desplegado viaja con filas', 'UN INDICE DEL AGENTE D
   () => fs.appendFileSync(path.join(REPO_PRUEBA, BASE_INST, 'herramientas/INDICE-LOCAL.md'),
     '| Local-0001 | una-tool | Que hace. | script | `node x.js` | vigente | [x/](x/) |\n'));
 
+// Lo que se instala en cada Agente Desplegado no puede apuntar a algo que se queda en este repo:
+// allá el enlace no lleva a ningún lado. El caso real lo encontró una persona —un Agente Desplegado
+// se topó con el enlace roto y terminó reescribiendo la página a mano—, no un control. Se repone
+// sobre un registro del Agente Desplegado y fuera de su tabla, para que el defecto que enciende sea
+// solo este y no el del encabezado ni el de las filas.
+caso('lo que viaja enlaza a una página que no viaja', 'ENLACES DE LO QUE VIAJA A ALGO QUE NO VIAJA',
+  () => fs.appendFileSync(path.join(REPO_PRUEBA, BASE_INST, 'conocimiento/INDICE.md'),
+    '\nVer la [página que se queda en el repo autor](../conocimiento/una-que-no-viaja.md).\n'),
+  'una-que-no-viaja.md');
+
 caso('funcionalidad en REGISTRO sin carpeta en disco', 'FANTASMAS (catalogadas pero sin carpeta)',
   () => fs.rmSync(path.join(REPO_PRUEBA, 'funcionalidades/amp-conducta'), { recursive: true, force: true }));
 
@@ -161,6 +194,21 @@ for (const c of casos) {
   }
   const otros = Object.entries(h).filter(([k, n]) => k !== c.seccion && n > 0).map(([k, n]) => `${k}=${n}`);
   console.log(`OK    ${c.nombre}  → 0→${propio}${otros.length ? '   (además: ' + otros.join(', ') + ')' : ''}`);
+}
+
+// -- CASO BUENO fino: un enlace a internet no es un enlace que no viaja ----
+// El control resuelve cada enlace contra el disco, y una dirección de internet nunca va a existir
+// ahí. Sin la exención, lo que viaja quedaría sin poder citar una fuente externa: cada enlace a un
+// `.md` publicado se marcaría como roto, y un control que marca lo legítimo se deja de leer.
+console.log('\n== CASO BUENO: un enlace a internet no cuenta como enlace roto ==');
+armar();
+fs.appendFileSync(path.join(REPO_PRUEBA, BASE_INST, 'conocimiento/INDICE.md'),
+  '\nVer el [estándar abierto Agent Skills](https://example.org/agent-skills/SKILL.md).\n');
+{
+  const h = hallazgos(correr());
+  const n = h['ENLACES DE LO QUE VIAJA A ALGO QUE NO VIAJA'] || 0;
+  console.log(`${n === 0 ? 'OK  ' : 'FALLA'} enlace https a un .md → ${n} hallazgos`);
+  if (n !== 0) malos++;
 }
 
 // -- CASO BUENO fino: citar un término vetado en lo que viaja no es usarlo --

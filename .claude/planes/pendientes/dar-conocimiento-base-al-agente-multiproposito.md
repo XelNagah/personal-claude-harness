@@ -85,9 +85,12 @@ ese precio se paga entero o si la Base arranca con menos.
 - Las páginas Base tienen que viajar en `base/conocimiento/`, y `sincronizar-base` llevarlas.
 - El manifiesto declara los dos Índices y sus dos líneas de importación (decisión 0042).
 - `lint-conocimiento` tiene que entender los dos orígenes.
-- Revisar si el `lint-harness` necesita el chequeo hermano del de citas a decisiones (dec. 0024): hoy
-  **nada detecta** una referencia a conocimiento que no viaja, y por eso el enlace roto lo encontró
-  una persona y no un control.
+- ~~Revisar si el `lint-harness` necesita el chequeo hermano del de citas a decisiones (dec. 0024)~~
+  **Hecho el 31/07/2026.** `lint-harness` tiene la sección `ENLACES DE LO QUE VIAJA A ALGO QUE NO
+  VIAJA`, generalizada a cualquier enlace relativo y no solo a los de `conocimiento/` (medido: 23
+  enlaces resuelven y 1 no, así que generalizar no trae ruido). **Su único hallazgo es el enlace de
+  este plan**, así que el repo queda con el control de cierre en 1 hasta que esto se ejecute — es a
+  propósito: el defecto pasó de invisible a medido.
 
 ## Alcance
 

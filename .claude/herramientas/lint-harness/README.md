@@ -1,6 +1,6 @@
 # lint-harness
 
-**Qué hace:** lint de coherencia del harness — punto de entrada (AGENTS.md fuente + CLAUDE.md adaptador, decisión 0010), funcionalidades en disco vs `marketplace.json` vs `REGISTRO.md`, sources del marketplace que no resuelven, archivos clave por funcionalidad (README, plugin.json, SKILL.md), versión instalada distinta de la publicada, divergencia de bloques textuales de memorias entre las PLANTILLA.md de cada funcionalidad y la del orquestador (hash normalizado), tamaño de los `MANIFIESTO.md` de subsistema (dec. 0017: van siempre en contexto, deben quedar breves — límite 220 palabras), y estructura mínima de esos manifiestos (dec. 0019: los 5 campos obligatorios —título, Disparador, declaración de carga, comando de lint— y coherencia entre la declaración de carga y la presencia de la línea `@INDICE`), **terminología vetada en el texto que viaja** y la **marca de orden de bytes (U+FEFF)** suelta en cualquier archivo del repo (ver abajo los dos). Sin LLM, sin red. Todo informativo, no corta el avance.
+**Qué hace:** lint de coherencia del harness — punto de entrada (AGENTS.md fuente + CLAUDE.md adaptador, decisión 0010), funcionalidades en disco vs `marketplace.json` vs `REGISTRO.md`, sources del marketplace que no resuelven, archivos clave por funcionalidad (README, plugin.json, SKILL.md), versión instalada distinta de la publicada, divergencia de bloques textuales de memorias entre las PLANTILLA.md de cada funcionalidad y la del orquestador (hash normalizado), tamaño de los `MANIFIESTO.md` de subsistema (dec. 0017: van siempre en contexto, deben quedar breves — límite 220 palabras), y estructura mínima de esos manifiestos (dec. 0019: los 5 campos obligatorios —título, Disparador, declaración de carga, comando de lint— y coherencia entre la declaración de carga y la presencia de la línea `@INDICE`), **enlaces de lo que viaja a algo que no viaja**, **terminología vetada en el texto que viaja** y la **marca de orden de bytes (U+FEFF)** suelta en cualquier archivo del repo (ver abajo los tres). Sin LLM, sin red. Todo informativo, no corta el avance.
 **Cómo se corre:** `node .claude/herramientas/lint-harness/lint-harness.js` (desde la raíz del repo del harness). Flag: `--quiet` (solo imprime si hay hallazgos).
 **Estado:** vigente.
 **Referenciado por:** nadie por ruta todavía (candidato a hook SessionStart de este repo si se quiere chequeo automático).
@@ -10,6 +10,14 @@
 ## Plugins instalados
 
 El lint consulta el registro de Plugins de Claude Code para este repositorio y compara la versión instalada con la publicada. Los Plugins ausentes no son hallazgos: la Herramienta `actualizar-plugins` diagnostica e instala los que correspondan.
+
+## Enlaces de lo que viaja a algo que no viaja
+
+Un archivo que se instala en cada Agente Desplegado no puede apuntar a algo que se queda en este repo: allá el enlace no lleva a ningún lado, y quien lo sigue no encuentra nada — o peor, lo resuelve escribiendo a mano la página que falta, con lo que cada consumidor termina con su propia versión de lo mismo.
+
+Es lo que pasó con `TERMINOLOGIA-FARLOPA.md`, que viaja y apunta a `../conocimiento/terminologia-farlopa.md`, que no. Lo encontró una persona, no un control, después de que un Agente Desplegado se topara con el enlace roto y reescribiera la página.
+
+Se mira **cualquier** enlace relativo, no solo los que van a `conocimiento/`: el defecto es que el destino no viaje, y eso le puede pasar a una decisión, a una preferencia o a lo que se sume mañana. Medido el 31/07/2026 sobre lo que viaja: 23 enlaces resuelven y 1 no, así que generalizar no trae ruido. Las direcciones de internet quedan exentas — nunca van a existir en el disco, y sin la exención lo que viaja no podría citar una fuente externa.
 
 ## Terminología vetada en el texto que viaja
 

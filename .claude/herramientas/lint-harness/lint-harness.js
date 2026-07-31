@@ -3,9 +3,10 @@
 // funcionalidades vs marketplace vs REGISTRO, archivos clave por funcionalidad, divergencia de bloques textuales entre PLANTILLAs,
 // tamaño de los MANIFIESTO.md de subsistema (dec. 0017: breves, siempre en contexto) y su estructura
 // minima (dec. 0019 + 0023: campos obligatorios incl. Skills + coherencia carga<->@INDICE), citas a
-// decisiones del harness en archivos distribuibles (dec. 0024), terminologia vetada en el texto que
-// viaja (funcionalidades/: lo que se escribe en cada Agente con Propósito) y la marca de orden de
-// bytes (U+FEFF) suelta en cualquier archivo del repo. Sin LLM, sin red.
+// decisiones del harness en archivos distribuibles (dec. 0024), enlaces de lo que viaja a algo que
+// se queda en este repo, terminologia vetada en el texto que viaja (funcionalidades/: lo que se
+// escribe en cada Agente con Propósito) y la marca de orden de bytes (U+FEFF) suelta en cualquier
+// archivo del repo. Sin LLM, sin red.
 // Uso: node lint-harness.js [--quiet]   (correr desde la raiz del repo del harness)
 const fs = require('fs'), path = require('path'), os = require('os'), crypto = require('crypto');
 const quiet = process.argv.includes('--quiet');
@@ -359,6 +360,37 @@ for (const js of buscarLints(path.join(repo, '.claude'), [])) {
   escanearCitas(js);
 }
 
+// -- [9b] enlaces de lo que viaja que no resuelven adentro de lo que viaja ---
+// Hermano del chequeo de arriba, y por el mismo motivo: un archivo que se instala en cada Agente
+// Desplegado no puede apuntar a algo que se queda en este repo. Alla el enlace no lleva a ningun
+// lado, y el que lo sigue no encuentra nada — o peor, lo resuelve escribiendo a mano la pagina que
+// falta, con lo que cada consumidor termina con su propia version de lo mismo.
+//
+// El caso que lo motivo: `TERMINOLOGIA-FARLOPA.md` viaja y apunta a `../conocimiento/
+// terminologia-farlopa.md`, que no viaja. Lo encontro una persona, no un control, despues de que un
+// Agente Desplegado se topara con el enlace roto y reescribiera la pagina.
+//
+// Se mira CUALQUIER enlace relativo, no solo los que van a `conocimiento/`: el defecto es que el
+// destino no viaje, y eso le puede pasar a una decision, a una preferencia o a lo que se sume
+// manana. Medido el 31/07/2026 sobre lo que viaja: 23 enlaces resuelven y 1 no, asi que generalizar
+// no trae ruido. El destino se busca adentro de la MISMA carpeta que viaja, que es lo unico que el
+// consumidor recibe.
+const enlaceMd = /\]\(([^)#\s]+\.md)(?:#[^)]*)?\)/g;
+const enlacesRotos = [];
+for (const baseDir of basesDeInstalacion) {
+  for (const r of listarArchivos(baseDir, '', [])) {
+    if (!r.endsWith('.md')) continue;
+    const archivo = path.join(baseDir, r);
+    const rotos = new Set();
+    for (const m of fs.readFileSync(archivo, 'utf8').matchAll(enlaceMd)) {
+      const ruta = m[1];
+      if (/^(?:https?:|\/)/.test(ruta)) continue;          // absoluto o externo: no es asunto de este control
+      if (!fs.existsSync(path.resolve(path.dirname(archivo), ruta))) rotos.add(ruta);
+    }
+    if (rotos.size) enlacesRotos.push(`${r}  — apunta a ${[...rotos].join(', ')}, que no viaja`);
+  }
+}
+
 // -- [10] terminologia vetada en el Producto ------------------------------
 // El Producto (funcionalidades/) es lo que viaja: un termino vetado en .claude/ lo lee el autor,
 // uno en una PLANTILLA lo hereda cada Agente con Propósito que se inicialice. Por eso el hallazgo
@@ -557,6 +589,7 @@ const secciones = [
   [`MANIFIESTOS QUE ENGORDARON (> ${LIMITE_MANIFIESTO} palabras)`, manifiestosLargos],
   ['MANIFIESTOS SIN CAMPOS MINIMOS (dec. 0019)', manifiestosSinCampos],
   ['CITAS A DECISIONES DEL HARNESS EN DISTRIBUIBLES (dec. 0024)', refsDecision],
+  ['ENLACES DE LO QUE VIAJA A ALGO QUE NO VIAJA', enlacesRotos],
   ['TERMINOLOGIA VETADA EN EL TEXTO QUE VIAJA (funcionalidades/)', vetadoEnProducto],
   ['MARCA DE ORDEN DE BYTES (U+FEFF) EN ARCHIVOS DEL REPO', marcaDeOrden],
 ];
