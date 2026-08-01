@@ -1,6 +1,6 @@
 # Que conocimiento tenga Índice del Agente Multipropósito
 
-**Estado: Nuevo · Creado 31/07/2026.**
+**Estado: Ejecutado · Creado 31/07/2026 · Cerrado 01/08/2026.**
 
 ## De qué se trata
 
@@ -23,7 +23,7 @@ viaja**. Enlace roto en cada repo instalado.
 **Y lo resolvió escribiendo la página en su conocimiento local.** Ahí está el costo real: cada repo
 que instale el Agente Multipropósito va a reescribir la misma página, cada uno con un agente distinto
 y un contexto distinto, y todas van a decir cosas parecidas pero no iguales. Es el defecto del
-conocimiento `Local-0014` —el mismo dato en dos lugares, sin nada que los sincronice— multiplicado
+conocimiento `Base-0001` —evitar el mismo dato escrito en varios lugares— multiplicado
 por cada consumidor.
 
 El enlace roto no es un enlace mal puesto: es un registro Base queriendo apuntar a un conocimiento
@@ -78,6 +78,19 @@ El Índice de conocimiento **se carga siempre**. Sumar ocho filas Base lo lleva 
 instalado, incluido uno recién inicializado que todavía no aprendió nada propio. Hay que decidir si
 ese precio se paga entero o si la Base arranca con menos.
 
+**Medido el 31/07/2026.** Dos correcciones a lo de arriba:
+
+1. **En este repo no se suman ocho filas: se mudan.** Las ocho páginas candidatas ya están en el
+   índice; se recodifican de `Local-` a `Base-` y cambian de archivo. Lo único nuevo es el encabezado
+   del segundo Índice — unos 500 bytes, tomando `SUBSISTEMAS-LOCAL.md` como referencia. El "de 15 a
+   23" describe al repo **destino**, que hoy tiene cero filas.
+2. **El presupuesto ya no bloquea.** Estaba en 47.8 KB de 48 (margen: 200 bytes). Se recortaron las
+   once descripciones del índice que excedían la convención de una línea —trabajo que correspondía
+   igual, el desarrollo ya estaba en cada página— y quedó en **45.3 KB**. Con la Preferencia Base-0016
+   asentada el mismo día, **45.9 KB**: 2.1 KB libres.
+
+Lo que sigue sin decidirse es la curaduría: cuántas de las ocho suben.
+
 ### 3. La mecánica
 
 - Recodificar: `Base-NNNN` para las páginas del Agente Multipropósito, `Local-NNNN` para las del repo.
@@ -106,3 +119,39 @@ pie—; escribir páginas de conocimiento nuevas.
 - Un repo recién inicializado recibe las páginas Base, y el enlace de `TERMINOLOGIA-FARLOPA.md`
   resuelve sin haber tocado esa línea.
 - Ningún Agente Desplegado necesita reescribir a mano una página que el Agente Multipropósito ya sabe.
+
+## Notas de implementación
+
+Ejecutado el 01/08/2026. Los tres criterios de cierre se cumplen: la **Decisión Local-0048** asienta el
+criterio, `lint-harness` ya no reporta el enlace de `TERMINOLOGIA-FARLOPA.md`, y las páginas viajan.
+
+**La curaduría dio tres, no ocho.** El criterio que el plan traía —*"sigue siendo cierta en un repo
+cuyo Propósito no es construir un harness"*— era de **verdad** y no separaba: casi toda la sabiduría
+sobre agentes sigue siendo cierta en cualquier lado. El criterio que quedó pregunta **por el
+beneficiario**: sube lo que le sirve al Agente Desplegado a hacer bien su trabajo —le explica cómo
+funciona algo que va a usar, le evita perderse, o es una regla útil para cualquier propósito—, y lo
+que este repo aprendió *construyendo y propagando* el Agente Multipropósito se queda como
+documentación del proyecto. Con eso pasan tres páginas: *Evitar el mismo dato escrito en varios
+lugares*, *Buscar con acentos en Windows devuelve cero aunque haya coincidencias* y *Terminología
+farlopa*.
+
+**Las páginas se reescribieron, no se mudaron.** Dos de las tres pasaban el criterio por su tesis pero
+tenían el cuerpo lleno de la historia de este repo —los cuatro lints, el marketplace, citas a
+decisiones propias—. Se escribieron de nuevo sin eso y las versiones anteriores se borraron: conservar
+las dos habría sido el defecto que la primera de ellas describe. Antes de borrar se rescató a
+`controles-que-no-avisan.md` lo único que no vivía en ningún otro lado (la prueba terminada que quedó
+en la carpeta temporal).
+
+**El presupuesto de contexto no bloqueó.** El plan temía sumar ocho filas; en este repo las páginas se
+**mudan** de archivo, así que lo único nuevo es el encabezado del segundo Índice. Se recortaron además
+las once descripciones del Índice que excedían la convención de una línea.
+
+**Dos defectos encontrados y arreglados en el camino**, ninguno previsto por el plan:
+
+- `lint-conocimiento` guardaba **un** Índice por carpeta, así que el segundo tapaba al primero y
+  reclamaba las doce páginas del tapado.
+- El nivelador habría **pisado el Índice de conocimiento de cada repo instalado**, con sus páginas
+  adentro: `INDICE.md` cambió de origen y pasó a viajar como mecanismo. Se sumó a `INDICES_PARTIDOS`,
+  que emite el renombre `partir por origen` antes de reemplazar.
+
+Los dos con su caso en el banco, verificados rompiendo cada condición por separado.
