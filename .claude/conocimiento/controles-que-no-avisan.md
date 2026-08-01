@@ -4,7 +4,7 @@ Un control roto no se comporta como un control roto: se comporta como un control
 
 Medido en este repo el 30/07/2026, con todos los lints en verde y el nivelador informando el `.claude/` al día.
 
-## Las cuatro formas en que un control se apaga solo
+## Las seis formas en que un control se apaga solo
 
 ### 1. Valida sobre un conjunto vacío
 
@@ -33,6 +33,23 @@ Un banco verde prueba el control **como un todo**: dice que se enciende ante su 
 Medido el 31/07/2026 sobre el nivelador, con su banco en verde: de **cinco condiciones nuevas, dos no hacían nada**. Una guarda agregada para que un subsistema entero ausente no saliera repetido ya estaba cubierta por la deduplicación, y una comparación del orden de las columnas no tenía ningún caso que la ejercitara. Ninguna de las dos habría aparecido nunca: el banco daba verde con ellas y sin ellas.
 
 Las dos terminaron distinto, y esa es la parte que importa. La guarda redundante **se sacó**, porque además de no hacer nada era dañina (ver abajo). La comparación de orden **se quedó**, porque al buscarle un caso apareció un defecto real que nadie había considerado. Una condición que no se puede romper no es necesariamente sobrante: puede ser una condición cuyo motivo nadie escribió todavía.
+
+### 6. Se queda sin población que controlar
+
+Las cinco anteriores describen un control que **nunca funcionó** o que **rompe un cambio externo**. Esta es distinta: el control funcionaba, sigue leyendo bien, y lo que se vació es aquello sobre lo que trabajaba. Le pasa a todo control que compara **varias copias de lo mismo**: si quedan cero o una, ya no hay con qué comparar, y la comparación contesta en verde pase lo que pase.
+
+Medido el 01/08/2026 sobre `lint-harness`, que vigilaba cuatro fragmentos de código compartidos entre lints. **Dos de los cuatro no controlaban nada**, y se habían apagado por caminos distintos:
+
+| Cómo se vació | Ejemplo | Qué corresponde |
+|---|---|---|
+| **Le migraron el patrón** | los lints dejaron de deducir la raíz del repo desde `__dirname`, y el ancla siguió buscando el código viejo | **reapuntar**: el fragmento compartido no desapareció, se mudó |
+| **Le retiraron el consumidor** | de los dos lints que recorrían subárbol, uno se fue con la generación retirada de Memoria | **retirar**: con un solo consumidor no hay nada que uniformar |
+
+**La pregunta que decide es por qué se vació, no que esté vacío.** Los dos casos se ven idénticos desde afuera —un control en verde que no mira nada—, y la respuesta correcta es opuesta: uno hay que arreglarlo, el otro sacarlo. Retirar el primero pierde un control que hacía falta; reparar el segundo deja código vivo vigilando algo que ya no existe.
+
+**Cómo se detecta:** recorriendo lo **declarado**, no lo **encontrado**. El control que junta cero muestras ni siquiera llega al registro de resultados, así que un barrido sobre lo encontrado no lo puede ver — es el caso más mudo, y justo el que más importa. La guarda es un mínimo de dos muestras por cosa declarada.
+
+Las dos formas se acumulan con la 4: acá el control de divergencia **no tenía ninguna prueba**, y por eso los dos fragmentos pudieron quedarse apagados durante meses con el control de cierre en verde.
 
 ## El remedio de una forma produce la otra
 

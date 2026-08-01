@@ -1,6 +1,6 @@
 # Unificar el parseo de frontmatter en vez de replicarlo a mano
 
-**Estado: Nuevo · Creado 31/07/2026.**
+**Estado: En curso · Creado 31/07/2026.**
 
 ## De qué se trata
 
