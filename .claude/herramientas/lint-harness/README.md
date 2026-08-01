@@ -36,6 +36,21 @@ El lint lee los términos de `.claude/semantica/TERMINOLOGIA-FARLOPA.md` y barre
 
 **Todo lo demás se corrige en el texto.** Se evaluó y se descartó un marcador en el archivo (`<!-- vetado-ok -->`) para eximir citas deliberadas: el único caso que lo pedía —un párrafo de la PLANTILLA que citaba las Bases viejas para poder reconocerlas— se resolvió reescribiendo el párrafo, que además dejó de envejecer con cada versión de la Base. La excepción parece barata en el momento y queda para siempre; corregir el texto hace que el caso no exista.
 
+## Los fragmentos compartidos entre lints
+
+Cada subsistema tiene su propio lint, pero varios comparten **fragmentos** de código que tienen que ser idénticos carácter a carácter: la deducción de la raíz del repo, la resolución de refs, el parseo de un Índice declarado por frontmatter. No se compara el lint entero —cada uno hace lo suyo—, sino esos bloques, y se los identifica por un **comentario ancla** listado en `FRAGMENTOS`.
+
+**Un fragmento con menos de dos muestras no controla nada.** `hashes.size > 1` no puede ser verdadero sobre cero o una copia, así que el fragmento contesta en verde pase lo que pase, sin emitir señal. Por eso el lint tiene un segundo control, `MUESTRAS_MINIMAS`: recorre los fragmentos **declarados** —no los que juntaron muestras, porque el que juntó cero ni siquiera llega al registro, que es el caso más mudo— y marca a los que se quedaron sin con quién compararse.
+
+Existe porque pasó, y por dos caminos distintos, los dos encontrados el 01/08/2026:
+
+| Fragmento | Cómo se apagó | Qué correspondía |
+|---|---|---|
+| `raiz del repo` | **le migraron el patrón**: los lints dejaron de deducirla desde `__dirname` al aplicar el conocimiento `Local-0008`, y el ancla siguió buscando el código viejo | reapuntar el ancla — el fragmento compartido no desapareció, se mudó a `repoDe` y hoy son cuatro copias |
+| `atribucion por ancestro` | **le retiraron el consumidor**: nació para los dos lints que recorren subárbol y uno era `lint-memoria`, retirado con su generación | retirarlo — con un solo consumidor no hay nada que uniformar |
+
+Los dos habían quedado en verde durante meses. El control de divergencia **no tenía ningún caso en el banco**, que es el modo de falla «nadie lo probó nunca» del conocimiento `Local-0013`; hoy tiene dos, uno por cada control.
+
 ## La marca de orden de bytes (U+FEFF)
 
 Un mismo carácter invisible, dos defectos según dónde caiga, y el lint los distingue en el mensaje:

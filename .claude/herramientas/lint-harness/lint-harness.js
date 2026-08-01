@@ -100,13 +100,22 @@ if (fs.existsSync(path.join(repo, '.claude', 'CLAUDE.md'))) entrada.push('.claud
 // todos los lints (no el lint entero: cada subsistema tiene el suyo, pero comparten fragmentos).
 // Se identifican por su comentario ancla. Los fragmentos NO se normalizan como las memorias:
 // deben coincidir caracter a caracter (solo se unifica el fin de linea).
-// Son tres fragmentos con alcance distinto: la raiz del repo la usan los 5 lints; la resolucion de
-// refs solo los 4 que validan links .md (lint-herramientas valida rutas en settings, no refs);
-// la atribucion por ancestro solo los 2 que recorren subarbol (lint-conocimiento y lint-memoria).
+// Son tres fragmentos con alcance distinto: la raiz del repo la usan los 4 lints que la derivan de
+// la carpeta que miran; la resolucion de refs solo los 3 que validan links .md (lint-herramientas
+// deriva la raiz pero valida rutas en settings, no refs); los indices por frontmatter, los 8 que
+// leen un Indice declarado.
+//
+// UN FRAGMENTO CON MENOS DE DOS MUESTRAS NO CONTROLA NADA: `hashes.size > 1` no puede ser verdadero
+// sobre cero o una copia, asi que el fragmento contesta en verde pase lo que pase. Pasa solo, por
+// dos caminos ya vistos (01/08/2026): al fragmento `raiz del repo` le migraron el patron —los lints
+// dejaron de deducirla de __dirname al aplicar el conocimiento `el-repo-que-un-script-describe`, y
+// el regex siguio buscando el codigo viejo—, y a `atribucion por ancestro` le retiraron el segundo
+// consumidor con `lint-memoria`. Por eso MUESTRAS_MINIMAS: un fragmento que se queda sin con quien
+// compararse es un hallazgo, no un verde. Conocimiento `controles-que-no-avisan`.
+const MUESTRAS_MINIMAS = 2;
 const FRAGMENTOS = [
-  { nombre: 'raiz del repo', re: /\/\/ La raiz del repo se deduce[\s\S]*?const repoRoot = path\.resolve\(__dirname, '\.\.', '\.\.', '\.\.'\);/g },
+  { nombre: 'raiz del repo', re: /\/\/ El repo se deriva de `root`[\s\S]*?\nconst repoRoot = repoDe\(root\);/g },
   { nombre: 'resolucion de refs', re: /const dentroDelRepo = p => \{[\s\S]*?\n\}\n/g },
-  { nombre: 'atribucion por ancestro', re: /\/\/ --- Atribucion por ancestro[\s\S]*?\/\/ --- fin atribucion por ancestro ---/g },
   { nombre: 'indices por frontmatter', re: /\/\/ --- Indices por frontmatter ---[\s\S]*?\/\/ --- fin indices por frontmatter ---/g },
 ];
 
@@ -160,6 +169,13 @@ const divergentes = [];
 for (const [name, arr] of bloques) {
   const hashes = new Set(arr.map(a => a.hash));
   if (hashes.size > 1) divergentes.push(`"${name}": ${arr.map(a => `${a.archivo} (${a.hash})`).join('  vs  ')}`);
+}
+// Los fragmentos declarados que se quedaron sin con quien compararse. Se recorre FRAGMENTOS, no
+// `bloques`: el que junto cero muestras no llego a entrar al Map, que es justo el caso mas mudo.
+const fragmentosSinMuestras = [];
+for (const frag of FRAGMENTOS) {
+  const n = (bloques.get('codigo: ' + frag.nombre) || []).length;
+  if (n < MUESTRAS_MINIMAS) fragmentosSinMuestras.push(`"${frag.nombre}": ${n} muestra(s) — el ancla no matchea el codigo actual, o quedo un solo consumidor: reapuntar el patron o retirar el fragmento`);
 }
 
 // -- [4b] el Agente Multiproposito que viaja vs el instalado en este repo ------
@@ -582,6 +598,7 @@ const secciones = [
   ['FUNCIONALIDADES INCOMPLETAS (archivos clave)', incompletas],
   ['VERSION EN DISCO DISTINTA DE LA INSTALADA', versionDesfasada],
   ['FRAGMENTOS DE CODIGO DIVERGENTES ENTRE LINTS', divergentes],
+  [`FRAGMENTOS VIGILADOS CON MENOS DE ${MUESTRAS_MINIMAS} MUESTRAS (no controlan nada)`, fragmentosSinMuestras],
   ['LO QUE VIAJA DIFIERE DE LO INSTALADO EN .claude/', viajaDistinto],
   ['VIAJA UN COMPONENTE QUE NO EXISTE EN .claude/', viajaSinInstalar],
   ['INFRA BASE EN .claude/ QUE NO VIAJA', sinViajar],

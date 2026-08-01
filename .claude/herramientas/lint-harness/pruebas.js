@@ -176,6 +176,38 @@ caso('carácter literal en medio de un .js', 'MARCA DE ORDEN DE BYTES (U+FEFF) E
     leer('.claude/herramientas/lint-harness/lint-harness.js') + `\nconst colado = /^${MARCA}/;\n`),
   'carácter literal en el texto');
 
+// Los dos controles sobre los FRAGMENTOS compartidos entre lints, que hasta el 01/08/2026 no tenian
+// ningun caso —y por eso dos de sus cuatro fragmentos se habian apagado sin que nadie lo viera—.
+//
+// Los dos casos tocan LOS DOS LADOS, el que viaja y el instalado: el control que los compara entre si
+// se enciende con tocar uno solo, y el conteo dejaria de decir cual defecto se vio.
+const LINTS_CON_REPO_DE = ['conocimiento/lint-conocimiento', 'decisiones/lint-decisiones',
+                           'herramientas/lint-herramientas', 'semantica/lint-semantica'];
+const ambosLados = sub => [`.claude/${sub}/${path.basename(sub)}.js`,
+                           `${BASE_INST}/${sub}/${path.basename(sub)}.js`];
+
+// El fragmento sigue existiendo en el codigo pero el ancla deja de matchearlo — que es exactamente
+// como murio `raiz del repo`: los lints migraron de __dirname a derivar la raiz de la carpeta que
+// miran, y el regex quedo buscando el patron viejo. Sin este control, cero muestras da verde.
+caso('un fragmento vigilado se queda sin muestras', 'FRAGMENTOS VIGILADOS CON MENOS DE 2 MUESTRAS (no controlan nada)',
+  () => {
+    for (const sub of LINTS_CON_REPO_DE) for (const f of ambosLados(sub)) {
+      escribir(f, leer(f).replace('// El repo se deriva de `root`', '// El repo sale de la carpeta mirada'));
+    }
+  },
+  'raiz del repo');
+
+// Y que el fragmento reparado SI vea una divergencia real: se le cambia el cuerpo a una sola de las
+// cuatro copias. Con el ancla vieja este caso pasaba desapercibido.
+caso('una copia de un fragmento compartido diverge', 'FRAGMENTOS DE CODIGO DIVERGENTES ENTRE LINTS',
+  () => {
+    for (const f of ambosLados('decisiones/lint-decisiones')) {
+      escribir(f, leer(f).replace('function repoDe(carpetaSubsistema) {',
+                                  'function repoDe(carpetaSubsistema) {   // divergencia sembrada'));
+    }
+  },
+  'raiz del repo');
+
 console.log('\n== CASOS MALOS: cada control se enciende ante su defecto ==');
 for (const c of casos) {
   armar();
