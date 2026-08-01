@@ -1,6 +1,6 @@
 # Unificar el parseo de frontmatter en vez de replicarlo a mano
 
-**Estado: En curso · Creado 31/07/2026.**
+**Estado: Ejecutado · Creado 31/07/2026 · Cerrado 01/08/2026.**
 
 ## De qué se trata
 
@@ -100,9 +100,36 @@ Y el fragmento que sí controla, `indices por frontmatter`, **cubre 8 de las 13 
 
 ### Lo que queda por decidir
 
-1. Si el módulo compartido se hace para los doce, y dónde vive en el destino (`.claude/comun/` es un componente suelto nuevo: lo vería `inventariar-componentes-sueltos`).
-2. Qué pasa con `amp-actualizar`: copia suelta declarada, o el módulo viaja también adentro del plugin.
-3. ~~Los dos fragmentos muertos de `lint-harness`.~~ **Hecho el 01/08/2026** (ver arriba). Queda una consecuencia para este plan: si el módulo compartido se hace, el fragmento `indices por frontmatter` se queda sin muestras y `MUESTRAS_MINIMAS` lo va a marcar — **eso es lo correcto**, hay que retirar el fragmento en la misma tanda, no después.
+1. ~~Si el módulo compartido se hace para los doce, y dónde vive.~~ **Hecho el 01/08/2026: se hizo, y para los trece.**
+2. ~~Qué pasa con `amp-actualizar`.~~ **No hacía falta la excepción** (ver abajo).
+3. ~~Los dos fragmentos muertos de `lint-harness`.~~ **Hecho el 01/08/2026.** El tercero, `indices por frontmatter`, se retiró en esta tanda al vaciarse.
+
+## Notas de implementación
+
+**01/08/2026 — el módulo existe y las trece copias se fueron.**
+
+**La excepción de `amp-actualizar` no existía.** El plan la daba por forzosa porque el nivelador corre fuera del repo destino. Pero `amp-actualizar.js` vive en `funcionalidades/amp/skills/actualizar/` y `base/` en `funcionalidades/amp/skills/inicializar/base/` — **el mismo plugin**. Requiere el módulo con la misma ruta relativa con la que ya resolvía `BASE` (`path.resolve(__dirname, '..', 'inicializar', 'base')`), que existe siempre que exista el plugin. Trece de trece, no doce.
+
+**Y lo duplicado era mucho más que el parseo.** Los ocho lints de subsistema no compartían un regex de doce líneas sino un bloque anclado de **94**: `ORIGENES`, `ETIQUETA_ORIGEN`, `sinMarcaDeOrden`, `leerFrontmatter`, `cabeceraTabla`, `indicesDe` y `problemasDeIndices`. Mover solo el regex habría arreglado 12 líneas de 94 y dejado el fragmento vigilado en pie.
+
+Quedó en `.claude/common/` (nombre elegido por estandarización), carpeta propia y no colgada de ningún subsistema, porque es justamente lo que no pertenece a uno:
+
+- **`frontmatter.js`** — lo requieren los trece.
+- **`indices.js`** — solo los ocho lints de subsistema; requiere a `frontmatter.js`.
+
+**Un cambio de comportamiento deliberado:** las cinco copias sueltas se unificaron hacia la forma **estricta** del cierre (`(?:\r?\n|$)`). Los dos hooks y `declaraIndice` usaban la laxa, que acepta un `---` con texto pegado en la misma línea. Era la divergencia que este plan ya había detectado.
+
+### Lo que apareció al hacerlo
+
+- **El control que vigila que la infra Base viaje no miraba `common/`.** Salteaba *toda* carpeta de primer nivel de `.claude/`, porque la raíz de un subsistema es donde cada repo acumula sus entradas y marcarlas daba 30 hallazgos falsos. `common/` cuelga igual de primer nivel y es lo contrario: infra pura donde todo debe viajar. Verificado borrando `base/common/frontmatter.js`: **contestó en verde**. Arreglado con `INFRA_RAIZ`, con su caso en el banco.
+- **El banco del módulo tampoco viajaba**, y lo encontró el control recién arreglado en su primera corrida.
+- **El escape `\uFEFF` no sobrevive a ninguna herramienta de escritura** — ni a `sed`, ni a las de edición directa: queda el carácter literal o `uFEFF`. En el módulo se resolvió comparando por código de carácter (`charCodeAt(0) === 0xFEFF`), que no se puede corromper en silencio.
+
+### Estado de los controles
+
+18 bancos y 251 casos en verde, control de cierre en verde, 82 archivos sincronizados con `base/`.
+
+**Lo que falta para cerrar el plan:** asentar la decisión sobre biblioteca vs. función propia (el tercer criterio de «cómo se sabe que terminó»), y decidir el tope de contexto, que la fila nueva del Índice de conocimiento pasó por 0,2 KB.
 
 ## Cómo se sabe que terminó
 

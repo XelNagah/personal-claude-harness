@@ -105,7 +105,11 @@ El repo quedó con nombres de plugin que el marketplace ya no ofrece. **No se ar
    - **Si no lo está** → respalda **fuera del repo**, en el directorio temporal del sistema, e imprime la ruta absoluta. Pasársela al usuario en el reporte final.
 
    ⚠️ **El respaldo no va adentro de `.claude/`,** y las dos razones se sufrieron en repos reales: ahí el agente **no puede borrarlo** —el borrado recursivo bajo `.claude/` está vedado, así que la limpieza que este mismo flujo manda hacer le queda al usuario a mano—, y además **contamina los lints**, que barren `.claude/` entero: cada copia congelada duplica los hallazgos viejos, que ya no se pueden corregir, y tapa los reales.
-5. **Aplicar Base** (el grupo Base del plan). La fuente canónica es la carpeta `base/` de `amp:inicializar`: los Componentes de Subsistema son **archivos**, con el mismo árbol que ocupan en el destino. Para cada ítem:
+5. **Aplicar Base** (el grupo Base del plan). La fuente canónica es la carpeta `base/` de `amp:inicializar`: los Componentes de Subsistema son **archivos**, con el mismo árbol que ocupan en el destino.
+
+   ⚠️ **`common/` va primero.** Los módulos que varios subsistemas comparten —hoy la lectura de frontmatter— los requieren los ocho lints y los dos hooks. Si se pisa un lint con la versión nueva y su módulo todavía no llegó, ese lint no arranca: falla al cargar, que en un hook es una sesión sin reglas entregadas. Copiar `common/` antes que el resto deja al repo corriendo en todo momento.
+
+   Para cada ítem:
    - **Subsistema ausente** (p. ej. `conducta/`) → correr `amp:inicializar` (idempotente: instala los subsistemas ausentes copiando su parte del árbol y preserva lo que ya está).
    - **`MANIFIESTO`/lint/estructura vieja** → **copiar encima** el archivo de `base/`. (A diferencia de la reconciliación normal de `amp:inicializar`, que preserva lo existente, acá el archivo Base **se pisa** — es del harness. El contenido aprendido del mismo subsistema no se toca.)
    - **`contenido viejo`** (un archivo Base instalado que difiere del que viaja) → **copiar el de `base/` encima**, entero y tal cual. Es el caso más frecuente al poner al día un repo que ya tenía el Agente Multipropósito: el Componente de Subsistema está, pero en la versión de cuando se instaló. No hay nada que preservar — los archivos Base no se ajustan por repo; lo que el repo aprendió vive en sus registros.

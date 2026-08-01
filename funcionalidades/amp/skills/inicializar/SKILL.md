@@ -54,6 +54,8 @@ Es exactamente el árbol de [`base/`](base/) colgado de `.claude/`, más lo que 
 - `.claude/planes/pendientes/`, `ejecutados/` y `descartados/`, cada una con su `.gitkeep`.
 - `AGENTS.md`, `CLAUDE.md`, `.claude/settings.json` y `.codex/hooks.json`, que se fusionan.
 
+`.claude/common/` no es un subsistema y no tiene manifiesto: son los módulos que usan varios y no son de ninguno —hoy la lectura de frontmatter, que requieren los ocho lints y los dos hooks—. **Se copia antes que el resto**: lo que lo requiere no corre sin él.
+
 Cargan su índice **subsistemas, preferencias, conocimiento y herramientas**; NO lo cargan **planes, semántica, decisiones y conducta** — cada manifiesto lo declara incluyendo o no su línea de importación.
 
 ## Flujo de trabajo

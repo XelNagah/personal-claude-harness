@@ -100,10 +100,15 @@ if (fs.existsSync(path.join(repo, '.claude', 'CLAUDE.md'))) entrada.push('.claud
 // todos los lints (no el lint entero: cada subsistema tiene el suyo, pero comparten fragmentos).
 // Se identifican por su comentario ancla. Los fragmentos NO se normalizan como las memorias:
 // deben coincidir caracter a caracter (solo se unifica el fin de linea).
-// Son tres fragmentos con alcance distinto: la raiz del repo la usan los 4 lints que la derivan de
+// Son dos fragmentos con alcance distinto: la raiz del repo la usan los 4 lints que la derivan de
 // la carpeta que miran; la resolucion de refs solo los 3 que validan links .md (lint-herramientas
-// deriva la raiz pero valida rutas en settings, no refs); los indices por frontmatter, los 8 que
-// leen un Indice declarado.
+// deriva la raiz pero valida rutas en settings, no refs).
+//
+// Fue tercero `indices por frontmatter`, el bloque de 94 lineas que los 8 lints de subsistema
+// llevaban copiado. Se retiro al mudarlo a `.claude/common/indices.js`: con una sola copia no hay
+// divergencia posible, asi que el fragmento se quedo sin nada que comparar. Un fragmento vigilado
+// se retira en la MISMA tanda en que desaparece su duplicacion — si no, MUESTRAS_MINIMAS lo marca
+// como si le hubieran migrado el patron, que es el caso opuesto y se arregla al reves.
 //
 // UN FRAGMENTO CON MENOS DE DOS MUESTRAS NO CONTROLA NADA: `hashes.size > 1` no puede ser verdadero
 // sobre cero o una copia, asi que el fragmento contesta en verde pase lo que pase. Pasa solo, por
@@ -116,7 +121,6 @@ const MUESTRAS_MINIMAS = 2;
 const FRAGMENTOS = [
   { nombre: 'raiz del repo', re: /\/\/ El repo se deriva de `root`[\s\S]*?\nconst repoRoot = repoDe\(root\);/g },
   { nombre: 'resolucion de refs', re: /const dentroDelRepo = p => \{[\s\S]*?\n\}\n/g },
-  { nombre: 'indices por frontmatter', re: /\/\/ --- Indices por frontmatter ---[\s\S]*?\/\/ --- fin indices por frontmatter ---/g },
 ];
 
 const bloques = new Map(); // name -> [{archivo, hash}]
@@ -193,15 +197,7 @@ for (const frag of FRAGMENTOS) {
 // del archivo que viaja no puede ver el que nunca viajo — es como se escondio por meses que la
 // Herramienta `instalar-plugins-codex` estuviera declarada en el registro Base y no se instalara.
 const normArch = s => s.replace(/\r\n/g, '\n').replace(/\s+$/, '');
-// La marca de orden de bytes se saca siempre: un `.md` guardado con ella deja de matchear `^---`,
-// pierde su `origen` y se compara entero — el archivo se ve igual en cualquier editor.
-const sinMarcaDeOrden = s => s.replace(/^\uFEFF/, '');
-function origenDe(txt) {
-  const m = /^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/.exec(sinMarcaDeOrden(txt));
-  if (!m) return null;
-  const o = /^origen:\s*(\S+)\s*$/m.exec(m[1]);
-  return o ? o[1] : null;
-}
+const { origenDe } = require('../../common/frontmatter.js');
 // Encabezado = todo lo anterior a la primera fila de datos de la primera tabla. El separador
 // `|---|` va incluido: es parte de la forma que manda el Agente Multiproposito.
 function encabezadoDe(txt) {
@@ -232,6 +228,9 @@ function filasDe(txt) {
   if (i === -1) return [];
   return ls.slice(i + 1).filter(l => /^\s*\|/.test(l.trim()));
 }
+// Carpetas de primer nivel de `.claude/` que NO son subsistemas sino infra compartida: no acumulan
+// entradas de ningun repo, asi que todo lo que tienen adentro debe viajar.
+const INFRA_RAIZ = new Set(['common']);
 const viajaDistinto = [], viajaSinInstalar = [], sinViajar = [], viajaConFilas = [];
 const carpetasQueViajan = new Set();
 for (const baseDir of basesDeInstalacion) {
@@ -277,7 +276,12 @@ if (basesDeInstalacion.length) {
   const queViajan = new Set();
   for (const baseDir of basesDeInstalacion) for (const r of listarArchivos(baseDir, '', [])) queViajan.add(r);
   for (const carpeta of carpetasQueViajan) {
-    if (!carpeta.includes('/')) continue;               // raiz de subsistema: ahi viven las entradas
+    // La excepcion es para la raiz de un SUBSISTEMA, no para todo lo de primer nivel. `common/`
+    // tambien cuelga directo de `.claude/` y es lo contrario: infra pura, sin entradas de ningun
+    // repo, donde TODO archivo tiene que viajar. Sin esta lista el control saltea la carpeta
+    // entera y un modulo compartido que nunca se copio a `base/` sale en verde — verificado
+    // borrando `base/common/frontmatter.js` el 01/08/2026: no lo marco nadie.
+    if (!carpeta.includes('/') && !INFRA_RAIZ.has(carpeta)) continue;
     const dir = path.join(repo, '.claude', carpeta);
     if (!fs.existsSync(dir)) continue;
     for (const e of fs.readdirSync(dir, { withFileTypes: true })) {

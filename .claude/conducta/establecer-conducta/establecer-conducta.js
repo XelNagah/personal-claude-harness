@@ -44,9 +44,7 @@ const repoRoot = path.resolve(__dirname, '..', '..', '..');   // .../conducta/es
 // Son los .md del subsistema que se declaran Indice en su frontmatter (uno por origen), con
 // INDICE.md de respaldo para la forma vieja. El repartidor los lee a TODOS: quedarse con el del
 // Agente Multiproposito dejaria sin entregar las reglas que el repo sumo, y sin ninguna senal.
-// La marca de orden de bytes se saca siempre: un `.md` guardado con ella deja de matchear `^---`
-// y un Indice declarado se lee como no declarado, sin emitir ninguna senal.
-const sinMarcaDeOrden = s => s.replace(/^\uFEFF/, '');
+const { leerFrontmatter } = require('../../common/frontmatter.js');
 function indicesDeReglas() {
   let nombres = [];
   try { nombres = fs.readdirSync(dirSub).filter(n => n.endsWith('.md')).sort(); } catch (e) { return []; }
@@ -57,9 +55,9 @@ function indicesDeReglas() {
   const declarados = [];
   for (const n of nombres) {
     let txt; try { txt = fs.readFileSync(path.join(dirSub, n), 'utf8'); } catch (e) { continue; }
-    const fm = /^---\r?\n([\s\S]*?)\r?\n---/.exec(sinMarcaDeOrden(txt));
-    if (!(fm && /^indice:\s*\S/m.test(fm[1]))) continue;
-    const esBase = /^origen:\s*agente-multiproposito\s*$/m.test(fm[1]);
+    const fm = leerFrontmatter(txt);
+    if (!(fm && fm.indice)) continue;
+    const esBase = fm.origen === 'agente-multiproposito';
     declarados.push({ nombre: n, orden: esBase ? 0 : 1 });
   }
   declarados.sort((a, b) => a.orden - b.orden || a.nombre.localeCompare(b.nombre));

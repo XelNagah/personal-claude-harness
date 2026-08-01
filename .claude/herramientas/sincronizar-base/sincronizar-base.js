@@ -28,14 +28,8 @@ const INSTALADO = path.join(REPO, '.claude');
 // trata como mecanismo y se copia ENTERO — con las filas de este repo adentro, a todo consumidor.
 // Es la falla más cara de esta Herramienta y la más difícil de ver, porque el archivo se lee igual
 // en cualquier editor. Al sacarla también del texto que se escribe, lo que viaja nunca la lleva.
-const sinMarcaDeOrden = s => s.replace(/^\uFEFF/, '');
+const { sinMarcaDeOrden, origenDe } = require('../../common/frontmatter.js');
 const norm = s => sinMarcaDeOrden(s).replace(/\r\n/g, '\n').replace(/\s+$/, '');
-function origenDe(txt) {
-  const m = /^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/.exec(sinMarcaDeOrden(txt));
-  if (!m) return null;
-  const o = /^origen:\s*(\S+)\s*$/m.exec(m[1]);
-  return o ? o[1] : null;
-}
 function hastaLaTabla(txt) {
   const ls = norm(txt).split('\n');
   const i = ls.findIndex(l => /^\s*\|[\s:|-]+\|\s*$/.test(l));

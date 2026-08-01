@@ -96,32 +96,16 @@ const INDICES_PARTIDOS = [
   { sub: 'conocimiento', amp: 'INDICE.md',      local: 'INDICE-LOCAL.md',      seccionLocal: /^##\s+P[áa]ginas\s*$/mi },
 ];
 
-// La marca de orden de bytes se saca siempre: un `.md` guardado con ella deja de matchear `^---`,
-// pierde su `origen` y se nivela como mecanismo — o sea, entero, filas del repo incluidas.
-const sinMarcaDeOrden = s => s.replace(/^\uFEFF/, '');
-// frontmatter de un Indice: se lo considera declarado cuando trae el campo `indice`.
-function declaraIndice(archivo) {
-  const fm = /^---\r?\n([\s\S]*?)\r?\n---/.exec(sinMarcaDeOrden(leer(archivo)));
-  return !!(fm && /^indice:\s*\S/m.test(fm[1]));
-}
+// El modulo comun de lectura de frontmatter. Se lo trae de la carpeta `base/` que este mismo plugin
+// lleva al lado —la que instala en el destino—, y NO del `.claude/` del repo que se esta nivelando:
+// ese es justo el que puede no tenerlo todavia, o tenerlo en la version vieja. Es la misma ruta
+// relativa con la que este script ya resuelve BASE, asi que existe siempre que exista el plugin.
+const { declaraIndice: declaraIndiceEn, cabeceraTabla, origenDe } = require('../inicializar/base/common/frontmatter.js');
+const declaraIndice = archivo => declaraIndiceEn(leer(archivo));
 
 // Nucleo de columnas que comparten todos los Indices de Subsistema. Cada uno suma ademas las
 // columnas operativas que su codigo consume (`Momento`, `Tipo`, `Estado`…), que no se chequean acá.
 const NUCLEO_INDICE = ['Código', 'Nombre', 'Descripción', 'Detalle'];
-
-// Encabezado real de la primera tabla markdown de un texto (null si no tiene tabla). Las celdas se
-// separan respetando las tuberias escapadas (`\|`), que de otro modo corren las columnas.
-function cabeceraTabla(txt) {
-  for (const linea of (txt || '').split(/\r?\n/)) {
-    const t = linea.trim();
-    if (!t.startsWith('|')) continue;
-    const celdas = t.replace(/^\|/, '').replace(/\|$/, '')
-      .split(/(?<!\\)\|/).map(c => c.replace(/\*/g, '').replace(/\\\|/g, '|').trim());
-    if (/^:?-{2,}:?$/.test((celdas[0] || '').replace(/\s/g, ''))) continue;
-    return celdas;
-  }
-  return null;
-}
 
 // Estas ocho entradas eran Base distribuida por la generación memoria/. Sus destinos ya forman
 // parte de la Base actual, así que actualizar las reconcilia sin preguntarle al usuario. Cualquier
@@ -161,12 +145,6 @@ const normalizar = s => s.replace(/\r\n/g, '\n').trimEnd();
 // El origen que cada archivo declara en su frontmatter decide cuanto se compara. No hay lista
 // escrita aca: la habia —once scripts con un ancla cada uno— y su defecto era estructural, porque
 // un Componente que nadie agregaba a la lista no se buscaba y no aparecia. El arbol es la lista.
-function origenDe(txt) {
-  const m = /^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/.exec(sinMarcaDeOrden(txt));
-  if (!m) return null;
-  const o = /^origen:\s*(\S+)\s*$/m.exec(m[1]);
-  return o ? o[1] : null;
-}
 // Encabezado = todo lo anterior a la primera fila de datos. De ahi para abajo estan las entradas
 // que puebla cada repo, que no se comparan ni se tocan.
 //

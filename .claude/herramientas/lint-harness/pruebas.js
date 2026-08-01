@@ -120,6 +120,16 @@ caso('viaja un Componente que no existe en .claude/', 'VIAJA UN COMPONENTE QUE N
 caso('infra Base instalada que no viaja', 'INFRA BASE EN .claude/ QUE NO VIAJA',
   () => fs.rmSync(path.join(REPO_PRUEBA, BASE_INST, 'subsistemas/lint-subsistemas/README.md'), { force: true }));
 
+// El mismo control, pero sobre `.claude/common/`, que cuelga directo de `.claude/`. El control
+// salteaba TODA carpeta de primer nivel —la raiz de un subsistema es donde cada repo acumula sus
+// entradas, y marcarlas daba 30 hallazgos falsos—, asi que la carpeta de infra compartida entraba
+// en la excepcion sin serlo: se le borro el modulo que viaja y contesto en verde (01/08/2026).
+// Es el caso que separa las dos clases de carpeta de primer nivel; sin el, la lista INFRA_RAIZ
+// puede quedar vacia o mal escrita y nada lo dice — los trece lectores del modulo se instalarian
+// con un `require` a un archivo que nunca llego.
+caso('el modulo comun instalado que no viaja', 'INFRA BASE EN .claude/ QUE NO VIAJA',
+  () => fs.rmSync(path.join(REPO_PRUEBA, BASE_INST, 'common/frontmatter.js'), { force: true }));
+
 // Un Indice del Agente Desplegado nace declarado y SIN filas. Si viaja con alguna, todo repo que
 // se instale arranca con las entradas de este como si fueran propias. El control del encabezado no
 // puede verlo —mira arriba de la tabla justamente para no comparar filas—, asi que va aparte.

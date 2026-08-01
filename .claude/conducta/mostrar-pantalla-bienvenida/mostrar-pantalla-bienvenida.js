@@ -67,13 +67,7 @@ function descubrirSubsistemas() {
 // Un subsistema puede tener más de un Índice (uno por origen), y cada archivo lo declara en su
 // frontmatter. Se cuentan TODOS: quedarse con el primero informaba 2 herramientas donde hay 8.
 // Sin frontmatter se cae a los nombres de la forma vieja, y ahí sí es el primero que exista.
-// La marca de orden de bytes se saca siempre: un `.md` guardado con ella deja de matchear `^---`
-// y un Índice declarado se lee como no declarado, sin emitir ninguna señal.
-const sinMarcaDeOrden = s => s.replace(/^\uFEFF/, '');
-function frontmatterDe(txt) {
-  const m = /^---\r?\n([\s\S]*?)\r?\n---/.exec(sinMarcaDeOrden(txt || ''));
-  return m ? m[1] : null;
-}
+const { bloqueFrontmatter: frontmatterDe } = require('../../common/frontmatter.js');
 function indicesDe(dir) {
   let nombres = [];
   try { nombres = fs.readdirSync(dir).filter(n => n.endsWith('.md')).sort(); } catch { return []; }
