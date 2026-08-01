@@ -89,32 +89,9 @@ console.log('\n== MIRA EL REPO QUE SE LE PASA ==');
     !/43 decisiones|81 |48 pendientes/.test(texto), 'sin métricas del repo autor');
 }
 
-console.log('\n== EL PESO DEL CONTEXTO ==');
-// Lo que se carga en cada sesión no lo vigilaba nadie y crece de a poco: cada índice liviano pesa nada
-// por sí solo. El modelo de carga por manifiesto se decidió para bajarlo, y sin un número a la vista
-// ese ahorro se vuelve a consumir sin que se note.
-{
-  const { texto } = correr(['--sin-lint']);
-  chequear('informa el peso del contexto siempre cargado',
-    /·\s+contexto\s+[\d.]+ KB en \d+ archivos/.test(texto),
-    (texto.match(/[\d.]+ KB en \d+ archivos/) || ['(no lo informa)'])[0]);
-  chequear('  …sin avisar si está dentro del presupuesto',
-    !/pasa el presupuesto/.test(texto), 'dentro del presupuesto');
-}
-{
-  // Un repo cuyo punto de entrada importa un archivo enorme: el aviso tiene que saltar.
-  fs.rmSync(REPO_PRUEBA, { recursive: true, force: true });
-  fs.mkdirSync(path.join(REPO_PRUEBA, '.claude'), { recursive: true });
-  fs.writeFileSync(path.join(REPO_PRUEBA, '.claude', 'identidad.md'), '# Repo pesado\n\nPropósito: probar el presupuesto\n');
-  fs.writeFileSync(path.join(REPO_PRUEBA, 'gordo.md'), 'x'.repeat(50 * 1024) + '\n');
-  fs.writeFileSync(path.join(REPO_PRUEBA, 'CLAUDE.md'), '@gordo.md\n');
-  const { texto } = correr(['--sin-lint'], REPO_PRUEBA);
-  chequear('avisa cuando el contexto pasa el presupuesto',
-    /pasa el presupuesto/.test(texto), (texto.match(/[\d.]+ KB en \d+ archivos[^║]*/) || ['(no avisa)'])[0].trim());
-  const ren = renglones(texto);
-  const anchos = [...new Set(ren.map(l => l.length))];
-  chequear('  …y la caja sigue pareja con el aviso adentro', anchos.length === 1, `${anchos[0] || '?'} caracteres`);
-}
+// El peso del contexto siempre cargado NO se mide acá: es una vigilancia del repo que publica el
+// Agente Multipropósito, no algo que le sirva a un Agente Desplegado, y su tope no es suyo para
+// mover. Vive en la Herramienta local `medir-contexto`, con su propio banco.
 
 console.log('\n== SALIDA PARA EL HOOK ==');
 {

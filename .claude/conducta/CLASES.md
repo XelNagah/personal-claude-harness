@@ -17,7 +17,7 @@ Vocabulario de las **clases** válidas para una regla de conducta. La clase dice
 | Clase | Qué es el Contenido | Qué hace el hook | A dónde va el resultado | Disponibilidad |
 |-------|---------------------|------------------|-------------------------|----------------|
 | Inyectar | texto fijo, escrito en el Índice | lo emite como `additionalContext` | al contexto del modelo; el usuario no lo ve | activo |
-| Ejecutar | la ruta de un programa, con sus flags | lo ejecuta y reenvía su salida tal cual | a la terminal del usuario (hoy el `systemMessage` de la Pantalla de bienvenida); no entra al contexto | activo |
+| Ejecutar | la ruta de un programa, con sus flags | lo ejecuta y reenvía su salida; si el momento tiene varias reglas, las fusiona en un único `systemMessage` | a la terminal del usuario (hoy el `systemMessage` de la Pantalla de bienvenida); no entra al contexto | activo |
 | Bloquear | la ruta de un programa, con sus flags | lo ejecuta y **lee** su respuesta | si trae `deny`, frena la acción; si trae `additionalContext`, se combina con las reglas `Inyectar` del mismo momento | activo en Claude Code; en Codex el `deny` todavía no frena (bug abierto del CLI), así que ahí degrada a aviso |
 
 > **Las clases no son configurables por repo.** A diferencia de los estados de `planes`, agregar una fila acá no hace que el repartidor la soporte: las tres están implementadas en `establecer-conducta/`. El archivo existe para que la lista y su significado vivan en un solo lugar, y para que el lint valide contra él.

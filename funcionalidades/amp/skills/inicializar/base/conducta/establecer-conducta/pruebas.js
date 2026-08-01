@@ -83,6 +83,21 @@ console.log('== ENTREGA: cada evento despacha las reglas de su momento ==');
     r.mensaje.length > 100, `${r.mensaje.length} caracteres`);
   chequear('  …y la caja llega armada, no en pedazos',
     r.mensaje.includes('╔') && r.mensaje.includes('╚'), r.mensaje.split('\n')[1] || '');
+  // Varias reglas `Ejecutar` en el mismo momento se FUSIONAN en un `systemMessage`. Escribir los
+  // JSON uno detrás del otro deja dos objetos pegados, que no es JSON válido: el harness lo
+  // descarta y no se ve NADA — ni siquiera la caja que sí funcionaba. Este repo tiene dos reglas en
+  // este momento, así que el caso corre de verdad; el chequeo afirma que la respuesta sigue siendo
+  // un JSON con `systemMessage` y que lo de la segunda regla llegó, no que haya exactamente dos.
+  chequear('  …y con varias reglas la respuesta sigue siendo un JSON solo',
+    r.crudo.trim().startsWith('{') && r.crudo.trim().endsWith('}') && !/\}\s*\{/.test(r.crudo),
+    `${r.crudo.length} caracteres, un objeto`);
+  // El orden lo decide el origen, no el nombre del archivo. `INDICE-LOCAL.md` ordena antes que
+  // `INDICE.md`, así que sin ordenar por origen lo que sumó el repo sale DELANTE de la Pantalla de
+  // bienvenida. Se afirma que no hay texto antes de la caja, que es lo que se rompe al invertirlo.
+  const antesDeLaCaja = r.mensaje.slice(0, r.mensaje.indexOf('╔')).trim();
+  chequear('  …con las del Agente Multipropósito antes que las del repo',
+    r.mensaje.includes('╔') && antesDeLaCaja === '',
+    antesDeLaCaja ? `"${antesDeLaCaja.slice(0, 50)}" quedó delante` : 'la caja primero');
 }
 
 console.log('\n== NO ENTREGA donde no corresponde ==');

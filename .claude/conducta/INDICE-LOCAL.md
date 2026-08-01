@@ -11,3 +11,4 @@ Las que este repo suma para su Propósito. El nivelador no toca este archivo; el
 
 | Código | Nombre | Descripción | Momento | Clase | Contenido | Estado | Detalle |
 |--------|--------|-------------|---------|-------|-----------|--------|---------|
+| Local-0001 | Informar el peso del contexto al arrancar | Pone a la vista lo que este repo carga en cada sesión contra su tope, porque decidir cuánto contexto puede mandar el Agente Multipropósito es vigilancia de acá y no de quien lo instala | al arrancar la sesión | Ejecutar | herramientas/medir-contexto/medir-contexto.js --hook | vigente | — |

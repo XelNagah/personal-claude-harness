@@ -14,9 +14,9 @@
 // Tres clases de despacho:
 //   - Inyectar: arma un texto y lo emite como additionalContext (llega al modelo).
 //   - Ejecutar: ejecuta la Herramienta cuya ruta es el Contenido de la regla y REENVIA su stdout
-//               tal cual (ej. la Pantalla de bienvenida emite {systemMessage} en SessionStart:
-//               ese campo es el unico que escribe en la terminal del usuario). No se combina: es para
-//               momentos donde la salida del hijo ES la respuesta del hook.
+//               (ej. la Pantalla de bienvenida emite {systemMessage} en SessionStart: ese campo es
+//               el unico que escribe en la terminal del usuario). Es para momentos donde la salida
+//               del hijo ES la respuesta del hook; si hay varias reglas, se fusionan (ver abajo).
 //   - Bloquear: ejecuta la Herramienta cuya ruta es el Contenido y LEE su respuesta. Si trae
 //               permissionDecision 'deny', se emite ese deny solo (frena la accion; el
 //               additionalContext se descartaria igual). Si trae additionalContext, se COMBINA
@@ -24,13 +24,14 @@
 //
 // Combinacion: en un mismo momento conviven reglas `Inyectar` (texto fijo, vive en el registro y lo
 // nivela el harness) y `Bloquear` (datos medidos, los produce un programa). Se emiten juntas, una
-// abajo de la otra. `Ejecutar` sigue sin combinarse (su salida no es additionalContext).
+// abajo de la otra. `Ejecutar` tambien se combina, pero por otro campo: sus salidas se fusionan en
+// un unico `systemMessage`, porque dos JSON pegados no son JSON valido y el harness los descarta.
 //
 // Contrato de hook (conocimiento hooks-claude-code): stdin = JSON del harness; stdout = JSON.
 //   UserPromptSubmit/PreToolUse: { hookSpecificOutput: { hookEventName, additionalContext } }
 //     (PreToolUse sin permissionDecision => 'defer': inyecta y deja el flujo de permisos intacto,
 //     verificado 2026-07-23; NO auto-aprueba. additionalContext llega junto al resultado de la tool.)
-//   SessionStart: lo que emita la Herramienta de la clase `Ejecutar` (ej. { systemMessage: <caja> }, visible al usuario).
+//   SessionStart: lo que emitan las Herramientas de la clase `Ejecutar` (ej. { systemMessage: <caja> }, visible al usuario).
 // Nunca rompe el turno: ante cualquier error o registro vacio, sale 0 sin emitir nada.
 //
 // Uso a mano (probar): echo {"hook_event_name":"SessionStart"} | node establecer-conducta.js
@@ -49,12 +50,20 @@ const sinMarcaDeOrden = s => s.replace(/^\uFEFF/, '');
 function indicesDeReglas() {
   let nombres = [];
   try { nombres = fs.readdirSync(dirSub).filter(n => n.endsWith('.md')).sort(); } catch (e) { return []; }
-  const declarados = nombres.filter(n => {
-    let txt; try { txt = fs.readFileSync(path.join(dirSub, n), 'utf8'); } catch (e) { return false; }
+  // Se guarda el `origen` de cada uno porque decide el ORDEN en que se entregan sus reglas, y ese
+  // orden se ve: cuando un momento tiene varias, salen una detras de la otra. Sin esto el orden lo
+  // decide el nombre del archivo —`INDICE-LOCAL.md` ordena antes que `INDICE.md`— y las reglas que
+  // sumo el repo saldrian delante de las del Agente Multiproposito, al reves que en todo registro.
+  const declarados = [];
+  for (const n of nombres) {
+    let txt; try { txt = fs.readFileSync(path.join(dirSub, n), 'utf8'); } catch (e) { continue; }
     const fm = /^---\r?\n([\s\S]*?)\r?\n---/.exec(sinMarcaDeOrden(txt));
-    return !!(fm && /^indice:\s*\S/m.test(fm[1]));
-  });
-  const elegidos = declarados.length ? declarados : ['INDICE.md'];
+    if (!(fm && /^indice:\s*\S/m.test(fm[1]))) continue;
+    const esBase = /^origen:\s*agente-multiproposito\s*$/m.test(fm[1]);
+    declarados.push({ nombre: n, orden: esBase ? 0 : 1 });
+  }
+  declarados.sort((a, b) => a.orden - b.orden || a.nombre.localeCompare(b.nombre));
+  const elegidos = declarados.length ? declarados.map(d => d.nombre) : ['INDICE.md'];
   return elegidos.map(n => path.join(dirSub, n)).filter(p => fs.existsSync(p));
 }
 
@@ -147,14 +156,27 @@ function ejecutar(regla, input) {
   } catch (e) { return ''; }   // no romper el turno: el hijo fallo, se ignora
 }
 
-// -- Ejecutar: reenviar el stdout del hijo tal cual (no se combina) -------
+// -- Ejecutar: reenviar el stdout del hijo ---------------------------------
+// Con UNA regla se reenvia tal cual, que es lo que el hijo produjo y ya es la respuesta del hook.
+// Con VARIAS hay que combinar: escribir los JSON uno detras del otro deja dos objetos pegados, que
+// no es JSON valido — el harness lo descarta y NO SE VE NADA, sin ninguna senal de que habia dos
+// reglas. Se fusionan por `systemMessage`, que es el unico campo que este evento muestra. Lo que no
+// venga como JSON con ese campo entra como texto, para que nada se pierda en silencio.
 function ejecutarClase(momento, input) {
   const reglas = reglasDe(momento, 'ejecutar');
   if (!reglas.length) return false;
+  const salidas = [];
   for (const r of reglas) {
     const out = ejecutar(r, input);
-    if (out && out.trim()) process.stdout.write(out);   // reenvio tal cual (JSON valido del hijo)
+    if (out && out.trim()) salidas.push(out.trim());
   }
+  if (!salidas.length) return true;
+  if (salidas.length === 1) { process.stdout.write(salidas[0]); return true; }
+  const mensajes = salidas.map(s => {
+    let o = null; try { o = JSON.parse(s); } catch { /* no era JSON: entra como texto */ }
+    return o && typeof o.systemMessage === 'string' ? o.systemMessage : s;
+  });
+  process.stdout.write(JSON.stringify({ systemMessage: mensajes.join('\n') }));
   return true;
 }
 
