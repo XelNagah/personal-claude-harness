@@ -47,7 +47,14 @@ console.log('== CASO BUENO: un repo liviano queda dentro del tope ==');
 
 console.log('\n== CASO MALO: pasar el tope se avisa ==');
 {
-  const repo = armar('pesado', { 'AGENTS.md': '@gordo.md\n', 'gordo.md': 'x'.repeat(50 * 1024) + '\n' });
+  // El tamaño se DERIVA del tope que informa la Herramienta, no se escribe acá. Estaba en 50 KB, que
+  // pasaba el tope de 48 y dejó de pasarlo el día que subió a 52: el caso se apagó solo, sin que
+  // nada cambiara en lo que prueba. Un número absoluto envejece adentro de una prueba igual que
+  // adentro de un registro — que es lo que el encabezado de este banco ya decía.
+  const sonda = correr(armar('sonda', { 'AGENTS.md': '# Solo para leer el tope\n' }));
+  const topeKb = parseFloat((sonda.texto.match(/tope: ([\d.]+) KB/) || [])[1]);
+  if (!(topeKb > 0)) { chequear('no se pudo leer el tope para armar el caso', false); }
+  const repo = armar('pesado', { 'AGENTS.md': '@gordo.md\n', 'gordo.md': 'x'.repeat(Math.ceil(topeKb * 2) * 1024) + '\n' });
   const { texto, codigo } = correr(repo);
   chequear('avisa cuando el contexto pasa el tope', /PASA EL TOPE/.test(texto), `${kbDe(texto)} KB`);
   // Reportar y fallar son contratos distintos: este reporta. Si saliera != 0, el control de cierre
@@ -94,6 +101,54 @@ console.log('\n== CASO BUENO: mide el repo que se le pasa ==');
 for (const n of ['liviano', 'pesado', 'importa', 'vacio', 'ajeno']) {
   fs.rmSync(path.join(BASE_TMP, 'repo-prueba-' + n), { recursive: true, force: true });
 }
-console.log('\ncasos: 8');
+// El piso es el otro numero: lo que carga un Agente Desplegado recien instalado, medido contra los
+// archivos de `base/` y no deducido. Cada caso rompe una condicion distinta, porque las tres se
+// apagan solas de formas distintas: sin `base/` el piso da 0 y se lee como "no manda nada"; un
+// registro del Agente Desplegado que viaja con filas infla el piso con entradas de este repo; y un
+// archivo que se fusiona no tiene contraparte, asi que contarlo como 0 o como su peso entero son
+// dos errores opuestos y ninguno emite senal.
+const pisoDe = t => (t.match(/piso del Agente Desplegado: ([\d.]+) KB/) || [])[1];
+const propioDe = t => (t.match(/propio de este repo: ([\d.]+) KB/) || [])[1];
+
+console.log('\n== EL PISO SALE DE `base/`, NO DEL REPO ==');
+{
+  // El Indice del Agente Desplegado: 2 KB de encabezado que viaja + 4 KB de filas que se quedan acá.
+  // Los tres numeros son distintos entre si a proposito. Si fueran parecidos, el caso pasaria igual
+  // con el piso en 0 —que es el modo de falla real, "no encontro `base/` y contesto"— y con el piso
+  // en el total, que es el otro error posible. Cada afirmacion tiene que poder distinguirlos.
+  const encabezado = '# Paginas\n\n' + 'convencion del registro. '.repeat(80) + '\n| A |\n|---|\n';
+  const repo = armar('piso', {
+    'AGENTS.md': '@.claude/conocimiento/INDICE-LOCAL.md\n',
+    '.claude/conocimiento/INDICE-LOCAL.md': encabezado + '| fila propia de este repo, que no hereda nadie |\n'.repeat(90),
+    'funcionalidades/amp/skills/inicializar/base/conocimiento/INDICE-LOCAL.md': encabezado,
+  });
+  const { texto } = correr(repo);
+  const piso = parseFloat(pisoDe(texto)), total = parseFloat(kbDe(texto)), propio = parseFloat(propioDe(texto));
+  chequear('el piso es el peso del archivo que viaja', piso >= 1.9 && piso <= 2.1,
+    `piso ${piso} KB (esperado ~2.0, ni 0 ni el total ${total})`);
+  chequear('el resto se atribuye a este repo', propio >= 3.5 && Math.abs(piso + propio - total) < 0.15,
+    `propio ${propio} KB, y piso + propio = ${(piso + propio).toFixed(1)} de ${total}`);
+}
+
+console.log('\n== LO QUE SE FUSIONA NO SE CUENTA COMO PISO NI COMO PROPIO ==');
+{
+  // `AGENTS.md` no esta en `base/`. Contarlo como piso mentiria sobre lo que este repo manda;
+  // contarlo como propio mentiria sobre lo que aprendio. Va aparte, declarado.
+  const repo = armar('fusionado', { 'AGENTS.md': 'x'.repeat(3 * 1024) + '\n' });
+  const { texto } = correr(repo);
+  chequear('AGENTS.md no infla el piso', parseFloat(pisoDe(texto)) === 0, `piso ${pisoDe(texto)} KB`);
+  chequear('AGENTS.md no infla lo propio', parseFloat(propioDe(texto)) === 0, `propio ${propioDe(texto)} KB`);
+  chequear('y se declara como sin medir', /sin medir: 3\.0 KB/.test(texto));
+}
+
+console.log('\n== UN REPO SIN `base/` NO INVENTA UN PISO ==');
+{
+  const repo = armar('sin-base', { 'AGENTS.md': '@.claude/X.md\n', '.claude/X.md': 'y'.repeat(2 * 1024) });
+  const { texto } = correr(repo);
+  chequear('sin carpeta que viaje, el piso es 0 y no el total', parseFloat(pisoDe(texto)) === 0,
+    `piso ${pisoDe(texto)} KB con total ${kbDe(texto)} KB`);
+}
+
+console.log('\ncasos: 14');
 console.log(malos ? `${malos} FALLARON.` : 'TODO VERDE.');
 process.exit(malos ? 1 : 0);

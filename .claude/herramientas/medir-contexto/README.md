@@ -24,9 +24,24 @@ Estuvo un tiempo adentro de la Pantalla de bienvenida, que viaja a cada Agente D
 
 Es una aplicación directa de la Decisión Local-0048.
 
-## De dónde sale el tope de 48 KB
+## Los dos números
 
-Se fijó el 30/07/2026 midiendo lo que había ese día —43,9 KB en 17 archivos— y dejando unos 4 KB de margen. **No sale de un límite del modelo ni de ningún cálculo**: es una disciplina auto-impuesta. Como referencia, ese texto son unos 13 a 16 mil tokens, del orden del 7% de las ventanas de contexto actuales.
+La Herramienta informa **dos** pesos, porque se mueven distinto y solo uno tiene tope:
+
+- **Total** — lo que carga este repo en cada arranque. Es el que se compara contra el tope. Sube cuando este repo aprende algo: cada fila que suma a un Índice cargado.
+- **Piso del Agente Desplegado** — lo que carga un repo recién instalado, antes de aprender nada. Es el costo que este repo le impone a todos, y solo baja recortando lo que viaja.
+
+Se mide contra los archivos de `base/`, **no se deduce**: para cada archivo cargado se busca su contraparte, y un registro `origen: agente-desplegado` viaja declarado y sin filas, así que su contraparte ya pesa lo que va a pesar el día uno de un repo nuevo. Lo que queda es «propio de este repo».
+
+Es una **cota inferior**: `AGENTS.md` y `CLAUDE.md` no están en `base/` —se fusionan desde la PLANTILLA de `amp:inicializar`— y no se pueden medir desde acá. Van declarados aparte como «sin medir», nunca sumados a uno de los otros dos: contarlos como piso mentiría sobre lo que este repo manda, y como propio, sobre lo que aprendió.
+
+Para qué sirve tenerlos separados: con un solo número, recortar una fila propia se ve igual que recortar una que viaja, y solo la segunda le devuelve contexto a los repos instalados.
+
+El piso **no tiene tope propio**. Es un dato, no un control.
+
+## De dónde sale el tope de 52 KB
+
+Se fijó el 30/07/2026 en 48 KB, midiendo lo que había ese día —43,9 KB en 17 archivos— y dejando unos 4 KB de margen. **Subió a 52 KB el 01/08/2026**, con el mismo criterio y después de recortar la celda que más había crecido: la de `actualizar-plugins`, que pesaba 1,4 KB en una columna que por convención es de una línea, con todo su desarrollo ya escrito en su propio `README.md`. **No sale de un límite del modelo ni de ningún cálculo**: es una disciplina auto-impuesta. Como referencia, ese texto son unos 13 a 16 mil tokens, del orden del 7% de las ventanas de contexto actuales.
 
 Lo que aporta el control es **que haya un número**, no cuál sea. El contexto siempre cargado no lo vigila nadie y crece de a poco: cada Índice liviano que se suma no pesa nada por sí solo. El modelo de carga por manifiesto se adoptó justamente para bajarlo —el registro de planes llegó a pesar casi la mitad del total—, y sin un número a la vista ese ahorro se vuelve a consumir sin que se note.
 

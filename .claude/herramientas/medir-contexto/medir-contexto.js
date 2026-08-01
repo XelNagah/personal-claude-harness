@@ -12,7 +12,9 @@
 // justamente porque no se cargan.
 //
 // De donde sale el tope: se fijo el 30/07/2026 midiendo lo que habia ese dia —43,9 KB en 17
-// archivos— y dejando unos 4 KB de margen. No sale de un limite del modelo ni de ningun calculo: es
+// archivos— y dejando unos 4 KB de margen. Subio a 52 KB el 01/08/2026, con el mismo criterio:
+// lo que habia mas ~4 KB, despues de recortar la celda que mas habia crecido.
+// No sale de un limite del modelo ni de ningun calculo: es
 // una disciplina auto-impuesta. Como referencia, ese texto son unos 13 a 16 mil tokens, del orden
 // del 7% de las ventanas de contexto actuales. Lo que aporta el control es QUE HAYA UN NUMERO, no
 // cual sea: el contexto siempre cargado no lo vigila nadie y crece de a poco —cada Indice liviano
@@ -33,7 +35,7 @@
 //            Sin el flag, el informe completo con el desglose por archivo.
 const fs = require('fs'), path = require('path');
 
-const TOPE = 48 * 1024;
+const TOPE = 52 * 1024;
 
 const args = process.argv.slice(2);
 const modoHook = args.includes('--hook');
@@ -60,8 +62,50 @@ function cargados(raiz) {
   return out;
 }
 
-const archivos = cargados(repo);
+// -- el piso del Agente Desplegado ---------------------------------------
+// El total de arriba mezcla dos cosas que se mueven distinto: lo que este repo MANDA —viaja en
+// `base/` y lo carga todo Agente Desplegado— y lo que este repo APRENDIO, que son sus propias filas
+// y no las hereda nadie. Con un solo numero, recortar una fila propia se ve igual que recortar una
+// que viaja, y solo la segunda le devuelve contexto a los repos instalados.
+//
+// El piso se mide contra los archivos de `base/`, no se deduce: un registro `origen:
+// agente-desplegado` viaja declarado y SIN filas, asi que su contraparte ya pesa lo que va a pesar
+// el dia uno de un repo nuevo. Es una COTA INFERIOR: `AGENTS.md` y `CLAUDE.md` no estan en `base/`
+// —se fusionan desde la PLANTILLA de `amp:inicializar`— y no se pueden medir desde aca.
+function basesDeInstalacion(raiz) {
+  const out = [];
+  const funcDir = path.join(raiz, 'funcionalidades');
+  if (!fs.existsSync(funcDir)) return out;
+  for (const f of fs.readdirSync(funcDir)) {
+    const skillsDir = path.join(funcDir, f, 'skills');
+    if (!fs.existsSync(skillsDir)) continue;
+    for (const s of fs.readdirSync(skillsDir)) {
+      const b = path.join(skillsDir, s, 'base');
+      if (fs.existsSync(b)) out.push(b);
+    }
+  }
+  return out;
+}
+// Bytes con que viaja un archivo cargado, o null si no viaja por archivo.
+function bytesQueViajan(rel, bases) {
+  // Defensa explicita, NO probada por si sola: hoy es redundante —un archivo de la raiz tampoco
+  // tiene contraparte en `base/`, asi que igual saldria null por el otro camino— y sacarla no hace
+  // fallar ningun caso. Se deja porque declara la intencion, no porque el banco la cubra.
+  if (!rel.startsWith('.claude/')) return null;   // se fusiona desde la PLANTILLA, no sale de base/
+  const dentro = rel.slice('.claude/'.length);
+  for (const b of bases) {
+    const cand = path.join(b, dentro);
+    if (!fs.existsSync(cand)) continue;
+    try { return Buffer.byteLength(fs.readFileSync(cand, 'utf8')); } catch { return null; }
+  }
+  return null;
+}
+
+const bases = basesDeInstalacion(repo);
+const archivos = cargados(repo).map(f => ({ ...f, viajan: bytesQueViajan(f.rel, bases) }));
 const total = archivos.reduce((a, f) => a + f.bytes, 0);
+const piso = archivos.reduce((a, f) => a + (f.viajan || 0), 0);
+const sinMedir = archivos.filter(f => f.viajan === null).reduce((a, f) => a + f.bytes, 0);
 const kb = n => (n / 1024).toFixed(1);
 
 // En modo hook: una linea sola. Se emite SIEMPRE, tambien dentro del tope — un aviso que solo
@@ -82,10 +126,16 @@ if (!archivos.length) {
   console.log('\nno se encontro CLAUDE.md ni AGENTS.md en la raiz: no hay contexto que medir.');
   process.exit(0);
 }
-console.log(`archivos: ${archivos.length} | total: ${kb(total)} KB | tope: ${kb(TOPE)} KB\n`);
+console.log(`archivos: ${archivos.length} | total: ${kb(total)} KB | tope: ${kb(TOPE)} KB`);
+// El piso NO tiene tope propio: es un dato, no un control. Sube solo cuando este repo le agrega
+// algo a la Base, y el unico que puede bajarlo es este repo.
+console.log(`piso del Agente Desplegado: ${kb(piso)} KB  ·  propio de este repo: ${kb(total - piso - sinMedir)} KB`
+  + `  ·  sin medir: ${kb(sinMedir)} KB (se fusiona desde la PLANTILLA)\n`);
 
+console.log('       acá     viaja');
 for (const f of [...archivos].sort((a, b) => b.bytes - a.bytes)) {
-  console.log(`    ${kb(f.bytes).padStart(6)} KB   ${f.rel}`);
+  const v = f.viajan === null ? '   —  ' : kb(f.viajan).padStart(6);
+  console.log(`    ${kb(f.bytes).padStart(6)} KB  ${v}    ${f.rel}`);
 }
 
 const libre = TOPE - total;
