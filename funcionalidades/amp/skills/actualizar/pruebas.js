@@ -326,6 +326,29 @@ console.log('\n== FORMAS ANTERIORES ==');
     marca(texto, 'herramientas/INDICE.md', 'partir por origen'));
 }
 {
+  // `conocimiento` gana Índice del Agente Multipropósito, así que su `INDICE.md` pasa a viajar como
+  // mecanismo y se pisa entero. En un repo instalado ese archivo tiene las páginas DEL REPO adentro:
+  // sin este renombre, el único hallazgo sería "instalar el que viaja" y quien lo aplique las pisa.
+  armarAlDia();
+  fs.rmSync(claude('conocimiento/INDICE-LOCAL.md'), { force: true });
+  escribir('conocimiento/INDICE.md',
+    '---\nindice: Índice de la base de conocimiento\norigen: agente-desplegado\ncolumnas: [Código, Nombre, Descripción, Detalle]\ndescripcion: de qué trata esa página, en una línea\n---\n\n' +
+    '# Índice de la base de conocimiento\n\n## Páginas\n\n| Código | Nombre | Descripción | Detalle |\n|---|---|---|---|\n' +
+    '| Local-0001 | Algo que aprendió el repo | Una página propia. | [algo.md](algo.md) |\n');
+  const { texto } = correr(REPO_PRUEBA);
+  chequear('el Índice de conocimiento en la forma vieja se marca para partir',
+    marca(texto, 'conocimiento/INDICE.md', 'partir por origen'));
+}
+{
+  // El par del anterior, y afirma "no avisa POR ESTO", no "no avisa nada": un repo YA migrado no
+  // puede quedar reportando una partición pendiente en cada corrida. Lo que lo separa es el `\s*$`
+  // del patrón, que distingue `## Páginas` de `## Páginas del Agente Multipropósito`.
+  armarAlDia();
+  const { texto } = correr(REPO_PRUEBA);
+  chequear('un repo ya migrado no reclama partir el Índice de conocimiento',
+    !marca(texto, 'conocimiento/INDICE.md', 'partir por origen'));
+}
+{
   // Una Herramienta Base ausente tiene que proponerse SOLA, no de rebote por el índice. El índice
   // Base se reemplaza entero y trae su fila, así que si la carpeta no se propone el nivelado deja
   // la Herramienta declarada y sin carpeta, y `lint-herramientas` sale con FILAS COLGADAS: el repo

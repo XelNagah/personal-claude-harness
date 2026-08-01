@@ -86,6 +86,14 @@ const INDICES_PARTIDOS = [
   { sub: 'preferencias', amp: 'PREFERENCIAS.md', local: 'PREFERENCIAS-LOCAL.md', seccionLocal: /^##\s+(?:Preferencias del Agente Desplegado|Adaptaciones)\b/mi },
   { sub: 'conducta',     amp: 'INDICE.md',      local: 'INDICE-LOCAL.md',      seccionLocal: /^##\s+Reglas del (?:Agente Desplegado|Prop[oó]sito)\b/mi },
   { sub: 'herramientas', amp: 'INDICE.md',      local: 'INDICE-LOCAL.md',      seccionLocal: /^##\s+Herramientas del (?:Agente Desplegado|Prop[oó]sito)\b/mi },
+  // `conocimiento` entra por otro camino que los cuatro de arriba: no tenia dos secciones sino UNA,
+  // y toda del Agente Desplegado —el Agente Multiproposito no aportaba ninguna pagina—. Al ganar su
+  // Indice Base, `INDICE.md` pasa a viajar como mecanismo y se pisa entero: sin este renombre, el
+  // hallazgo que ve quien aplica es "instalar el que viaja", sin ninguna senal de que ahi adentro
+  // estan las paginas del repo. El `\s*$` es lo que separa la forma vieja (`## Paginas`, la que hay
+  // que migrar) de la nueva (`## Paginas del Agente Multiproposito`): sin el, un repo ya migrado
+  // reportaria una particion pendiente en cada corrida, para siempre y sin nada que hacer.
+  { sub: 'conocimiento', amp: 'INDICE.md',      local: 'INDICE-LOCAL.md',      seccionLocal: /^##\s+P[áa]ginas\s*$/mi },
 ];
 
 // La marca de orden de bytes se saca siempre: un `.md` guardado con ella deja de matchear `^---`,
