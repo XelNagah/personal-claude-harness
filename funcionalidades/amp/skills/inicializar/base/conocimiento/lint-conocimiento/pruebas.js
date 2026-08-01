@@ -65,8 +65,8 @@ const casos = [];
 const caso = (nombre, seccion, romper) => casos.push({ nombre, seccion, romper });
 
 caso('página con un link a un archivo que no existe', 'REFS ROTAS',
-  () => escribir('grep-y-acentos-en-windows.md',
-    leer('grep-y-acentos-en-windows.md') + '\nVer [la página que no está](pagina-que-no-existe.md).\n'));
+  () => escribir('buscar-con-acentos-en-windows.md',
+    leer('buscar-con-acentos-en-windows.md') + '\nVer [la página que no está](pagina-que-no-existe.md).\n'));
 
 // El índice tiene que reclamar una página nueva, y la página tiene que quedar marcada como no
 // referenciada: son dos controles distintos y el mismo defecto los enciende a los dos.
@@ -99,15 +99,32 @@ armar();
 {
   // `AGENTS.md` existe en el repo real pero NO en el banco: si el lint mirara el repo real, esta
   // referencia resolveria y el control no diria nada.
-  escribir('grep-y-acentos-en-windows.md',
-    leer('grep-y-acentos-en-windows.md') + '\nVer [el punto de entrada](../../AGENTS.md).\n');
+  escribir('buscar-con-acentos-en-windows.md',
+    leer('buscar-con-acentos-en-windows.md') + '\nVer [el punto de entrada](../../AGENTS.md).\n');
   const h = hallazgos(correr());
   const n = h['REFS ROTAS'] || 0;
   console.log(`${n === 1 ? 'OK  ' : 'FALLA'} ref a un archivo que solo existe en el repo real → ${n} rota(s) (1 esperada)`);
   if (n !== 1) malos++;
 }
 
+// -- CASO BUENO fino: una carpeta con DOS Indices ----------------------------
+// El subsistema tiene un Indice por origen en la misma carpeta. Si el lint guardara un solo Indice
+// por carpeta, el segundo taparia al primero y todas las paginas del tapado se reportarian como no
+// listadas. Se afirma que no avisa POR ESTO, no que no avisa nada: una pagina listada en uno solo
+// de los dos Indices esta listada.
+console.log('\n== CASO BUENO: una pagina listada en el segundo Indice no se reclama ==');
+armar();
+{
+  fs.writeFileSync(path.join(BANCO, 'pagina-del-segundo-indice.md'), '# Pagina del segundo Indice\n\nSolo la lista uno de los dos.\n');
+  escribir('INDICE-LOCAL.md', leer('INDICE-LOCAL.md').trimEnd() +
+    '\n| Local-9999 | Pagina del segundo Indice | Solo la lista uno de los dos. | [pagina-del-segundo-indice.md](pagina-del-segundo-indice.md) |\n');
+  const h = hallazgos(correr());
+  const n = (h['INDICE INCOMPLETO'] || 0) + (h['HUERFANOS'] || 0);
+  console.log(`${n === 0 ? 'OK  ' : 'FALLA'} pagina listada solo en INDICE-LOCAL.md → ${n} reclamo(s) de indice (0 esperados)`);
+  if (n !== 0) malos++;
+}
+
 fs.rmSync(REPO_PRUEBA, { recursive: true, force: true });
-console.log(`\ncasos: ${casos.length + 2}`);
+console.log(`\ncasos: ${casos.length + 3}`);
 console.log(malos ? `${malos} FALLARON.` : 'TODO VERDE.');
 process.exit(malos ? 1 : 0);

@@ -239,13 +239,23 @@ const esIndice = p => path.basename(p) === 'INDICE.md' || archivosIndice.has(pat
 const indices = domain.filter(esIndice);
 const idxText = new Map(indices.map(i => [i, read(i)]));
 const dirsIndice = new Set(indices.map(i => path.dirname(i)));
-const idxPorDir = new Map(indices.map(i => [path.dirname(i), i]));
+// Una carpeta puede tener MAS de un Indice —uno por origen—, asi que el mapa guarda la lista y no
+// un solo archivo: con `new Map(indices.map(...))` el segundo Indice tapaba al primero y todas las
+// paginas del tapado se reportaban como no listadas. Una pagina esta listada si la nombra
+// CUALQUIERA de los Indices de su carpeta.
+const idxsPorDir = new Map();
+for (const i of indices) {
+  const d = path.dirname(i);
+  if (!idxsPorDir.has(d)) idxsPorDir.set(d, []);
+  idxsPorDir.get(d).push(i);
+}
+const nombradaPorAlguno = (idxs, p, dir) => idxs.some(idx => indiceNombra(idxText.get(idx), p, dir));
 const gaps = [];
 for (const p of domain) {
   const ownerDir = indiceAncestro(p, dirsIndice, esIndice(p));
   if (ownerDir === null) continue;                 // la raiz: sin indice ancestro
-  const idx = idxPorDir.get(ownerDir);
-  if (!indiceNombra(idxText.get(idx), p, ownerDir)) gaps.push([rel(idx), rel(p)]);
+  const idxs = idxsPorDir.get(ownerDir);
+  if (!nombradaPorAlguno(idxs, p, ownerDir)) gaps.push([idxs.map(i => rel(i)).join(' / '), rel(p)]);
 }
 
 const orphans = [];
@@ -254,9 +264,8 @@ for (const p of domain) {
   if (esIndice(p) || base === 'README.md') continue;
   if (referenced.has(rel(p))) continue;
   const ownerDir = indiceAncestro(p, dirsIndice, false);
-  const idx = ownerDir === null ? null : idxPorDir.get(ownerDir);
-  const mentioned = idx !== null && indiceNombra(idxText.get(idx), p, ownerDir);
-  if (!mentioned) orphans.push(rel(p));
+  const idxs = ownerDir === null ? [] : idxsPorDir.get(ownerDir);
+  if (!nombradaPorAlguno(idxs, p, ownerDir)) orphans.push(rel(p));
 }
 
 console.log(`== LINT CONOCIMIENTO: ${root} ==`);

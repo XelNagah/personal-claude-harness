@@ -6,7 +6,7 @@ Todo lo que el agente **sabe** vive en una ubicación única: este directorio (`
 
 **Skills:** `registrar-conocimiento` (asienta una página del dominio, evita duplicar, indexa y corre el lint) y `buscar-conocimiento` (recorre el repo y propone páginas nuevas); instalación con `inicializar-conocimiento`.
 
-**Índices:** `INDICE.md` (Agente Desplegado). **Se carga siempre** (liviano). Al cerrar una tarea que escribió conocimiento, correr el lint desde la raíz del repo:
+**Índices:** `INDICE.md` (Agente Multipropósito) · `INDICE-LOCAL.md` (Agente Desplegado). **Se cargan siempre** (livianos). Al cerrar una tarea que escribió conocimiento, correr el lint desde la raíz del repo:
 
 ```bash
 node .claude/conocimiento/lint-conocimiento/lint-conocimiento.js
@@ -15,3 +15,4 @@ node .claude/conocimiento/lint-conocimiento/lint-conocimiento.js
 Chequea refs rotas, índice incompleto y huérfanos. Convención completa en `README.md`.
 
 @INDICE.md
+@INDICE-LOCAL.md
