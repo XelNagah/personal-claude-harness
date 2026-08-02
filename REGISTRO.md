@@ -20,7 +20,7 @@ Todos los subsistemas Base tienen plugin y skill de operación. `commits` no es 
 
 ## Plugin y skill (Claude Code)
 
-El prefijo de skill **es** el nombre del plugin (`amp-planes:ciclo-de-plan` ≠ `amp-conocimiento:registrar-conocimiento`): agrupa al tipear "amp" y deja visible de qué subsistema es cada skill (decisión 0029, modifica 0013).
+El prefijo de skill **es** el nombre del plugin (`amp-planes:ciclo-de-plan` ≠ `amp-conocimiento:registrar-conocimiento`): agrupa al tipear "amp" y deja visible de qué subsistema es cada skill (Decisión Local-0029, empaquetado en un plugin por subsistema; modifica la Local-0013, segmentación de skills por prefijo de plugin).
 
 | Funcionalidad | Plugin | Skill |
 |---------------|--------|-------|

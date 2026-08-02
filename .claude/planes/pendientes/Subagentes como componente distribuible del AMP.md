@@ -1,6 +1,6 @@
 # Subagentes como componente distribuible del AMP
 
-**Estado: Nuevo · Creado 26-07-25.** Origen: [Modelo de distribución y empaquetado del harness](../ejecutados/Modelo%20de%20distribucion%20y%20empaquetado%20del%20harness.md), punto 5 de "Qué se decidió (firme)" — el único de los cinco que no se ejecutó. Los otros cuatro cayeron con la decisión 0029 y el nivelador `amp:actualizar`.
+**Estado: Nuevo · Creado 26-07-25.** Origen: [Modelo de distribución y empaquetado del harness](../ejecutados/Modelo%20de%20distribucion%20y%20empaquetado%20del%20harness.md), punto 5 de "Qué se decidió (firme)" — el único de los cinco que no se ejecutó. Los otros cuatro cayeron con la Decisión Local-0029 (empaquetado en un plugin por subsistema) y el nivelador `amp:actualizar`.
 
 ## Qué se decidió (viene del plan padre, sin ejecutar)
 

@@ -36,7 +36,7 @@ O sea: el Producto no puede quedar fuera del control. Dos partes:
 
 `lint-harness` ganó el chequeo **terminología vetada en el texto que viaja**: lee los términos de `TERMINOLOGIA-FARLOPA.md`, barre `funcionalidades/` y **cuenta como hallazgo**, así que el control de cierre se pone rojo (verificado con un archivo de prueba: 2 hallazgos, control rojo, `lint-semantica` sigue en verde e informativo). Detalle en el README de la Herramienta.
 
-**Las 41 apariciones eran 14 reales.** El resto no era texto: la medición original usaba la clasificación de `lint-semantica`, que trata todo lo que está entre backticks como código y —al revés— no distingue el bloque ` ```markdown ` de la PLANTILLA, que **es** el texto literal que se escribe en el repo destino. Clasificando por lenguaje de bloque y separando identificadores (backticks, destino de link, campo `name` del frontmatter), quedaron 14 para reescribir y 2 usos que el propio registro de farlopa declara legítimos (`capa mecánica`/`capa semántica`, además vocabulario de la decisión 0003 y de 4 planes vivos), que van en la lista `USOS_LEGITIMOS` del lint.
+**Las 41 apariciones eran 14 reales.** El resto no era texto: la medición original usaba la clasificación de `lint-semantica`, que trata todo lo que está entre backticks como código y —al revés— no distingue el bloque ` ```markdown ` de la PLANTILLA, que **es** el texto literal que se escribe en el repo destino. Clasificando por lenguaje de bloque y separando identificadores (backticks, destino de link, campo `name` del frontmatter), quedaron 14 para reescribir y 2 usos que el propio registro de farlopa declara legítimos (`capa mecánica`/`capa semántica`, además vocabulario de la Decisión Local-0003, integridad en dos capas: mecánica y semántica, y de 4 planes vivos), que van en la lista `USOS_LEGITIMOS` del lint.
 
 Barridas: `prosa` → *texto plano* (7), `capa` `.codex/` → *carpeta* (3), `cruce` → *encuentre* (Base de preferencias).
 
@@ -117,7 +117,7 @@ La 0025 previó *vetado conocido → `bloquear`*, a secas. Medido, eso frena esc
 
 Por eso el bloqueo se acota a los términos sin uso legítimo posible y el resto informa. La intención se cumple —lo que no debe existir no llega a escribirse— sin trabar el repo.
 
-⇒ **Modifica el punto (a) de la decisión 0025**, que sigue vigente en todo lo demás: el bloqueo deja de ser por *vetado conocido* y pasa a ser por *vetado sin uso legítimo posible*, con el resto en aviso.
+⇒ **Modifica el punto (a) de la Decisión Local-0025** (control de Terminología Farlopa en dos niveles), que sigue vigente en todo lo demás: el bloqueo deja de ser por *vetado conocido* y pasa a ser por *vetado sin uso legítimo posible*, con el resto en aviso.
 
 **Pendiente de ratificación:** dónde vive la marca de qué término bloquea y cuál avisa. Propuesta: una columna nueva en `TERMINOLOGIA-FARLOPA.md` (`Control`: `bloquea` / `avisa`), que es el dato semántico y ya lo lee el lint — pero toca un registro canónico, así que el texto exacto va al usuario antes de escribirse. La alternativa es una lista adentro del script, más barata y menos visible.
 

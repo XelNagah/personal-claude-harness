@@ -13,7 +13,7 @@ Un agente por subsistema, consultable en lenguaje natural, que responde desde **
 
 ## Análisis hecho (26-07-19)
 
-**Decisión ya tomada en esta sesión, analizada con `planificar`: complementa, no reemplaza.** El modelo actual (decisión 0002) tiene los `INDICE.md` **siempre en contexto**, lo que da *conciencia ambiente* (el principal sabe que algo existe sin preguntar). Reemplazar eso por consultas a agentes haría perder esa conciencia. El agente consultable es un **camino opcional** para consulta pesada, encima del índice-siempre-cargado.
+**Decisión ya tomada en esta sesión, analizada con `planificar`: complementa, no reemplaza.** El modelo actual (Decisión Local-0002, patrón de subsistema: índice, entradas y lint) tiene los `INDICE.md` **siempre en contexto**, lo que da *conciencia ambiente* (el principal sabe que algo existe sin preguntar). Reemplazar eso por consultas a agentes haría perder esa conciencia. El agente consultable es un **camino opcional** para consulta pesada, encima del índice-siempre-cargado.
 
 **La idea mezcla dos cosas distintas:**
 

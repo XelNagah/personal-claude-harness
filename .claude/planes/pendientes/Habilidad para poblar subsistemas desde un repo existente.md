@@ -1,6 +1,6 @@
 # Habilidad para poblar subsistemas desde un repo existente
 
-**Estado: Diferido · Creado 26-07-18.** Surgió al aclarar que el harness se instala **también sobre repos que ya tienen cosas** ([decisión 0001](../../decisiones/INDICE.md)), no solo vacíos.
+**Estado: Diferido · Creado 26-07-18.** Surgió al aclarar que el harness se instala **también sobre repos que ya tienen cosas** ([Decisión Local-0001, el repo es un setup para agentes multipropósito](../../decisiones/INDICE.md)), no solo vacíos.
 
 ## Objetivo
 

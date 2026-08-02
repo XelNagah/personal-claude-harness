@@ -14,7 +14,7 @@ Un lint que toma una **declaración de forma** del subsistema y corre los cheque
 
 - **solo-índice** (tabla, un dir) → refs de detalle, huérfanos en el dir, numeración/colisiones según aplique.
 - **índice + documento** → además, cada documento referenciado existe y está indexado.
-- **índice + carpeta recursiva** → atribución por ancestro más cercano (decisión 0011), sub-índices, fallback por cadena de carpetas.
+- **índice + carpeta recursiva** → atribución por ancestro más cercano (Decisión Local-0011, responsabilidad del índice en el Patrón recursivo), sub-índices, fallback por cadena de carpetas.
 
 Cada subsistema declara qué capacidades usa; el lint detecta lo que se defina. Las variaciones genuinas (numeración de decisiones, reconciliación disco↔registro de planes) quedan como módulos opcionales, no como lints enteros aparte.
 

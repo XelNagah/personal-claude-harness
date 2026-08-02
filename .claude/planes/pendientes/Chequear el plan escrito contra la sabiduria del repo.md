@@ -4,7 +4,7 @@
 
 ## Origen
 
-Incidente 2026-07-20. El agente escribió dos documentos de plan completos. La skill `planificar` manda leer glosario, decisiones y conocimiento **antes de arrancar**, y eso se hizo — pero nada chequea el texto **producido**. El agente acuñó `acote` (8 usos, sustantivo raro, nunca marcado como propuesto), contra la decisión 0004 y la preferencia de español corriente. Solo se detectó porque el usuario preguntó: *"¿ya lo analizaste contra el glosario? ¿Sin terminología farlopa?"*.
+Incidente 2026-07-20. El agente escribió dos documentos de plan completos. La skill `planificar` manda leer glosario, decisiones y conocimiento **antes de arrancar**, y eso se hizo — pero nada chequea el texto **producido**. El agente acuñó `acote` (8 usos, sustantivo raro, nunca marcado como propuesto), contra la Decisión Local-0004 (gobernanza de terminología) y la preferencia de español corriente. Solo se detectó porque el usuario preguntó: *"¿ya lo analizaste contra el glosario? ¿Sin terminología farlopa?"*.
 
 La pasada posterior encontró además `override`, `diffear` y `fallback` en texto plano. Ninguno lo habría frenado nadie.
 
@@ -54,7 +54,7 @@ El recordatorio actual es una **pregunta por sensación** (*"¿suena raro?"*) y 
 
 **El caso concreto:** aplicado a "zombi", la sustitución forzada da *"plan ya hecho que quedó abierto"*, y de ahí un rótulo llano — **"falso pendiente"** o **"ya-hecho"** — más coloquial y sin metáfora importada. Ese paso, corrido sobre la palabra que acababa de escribir, la habría reemplazado antes de mandarla. Lo que faltó no fue saber la regla: fue **correrla sobre el texto propio**.
 
-## Mecanismo decidido (26-07-23, `planificar` → decisión 0025)
+## Mecanismo decidido (26-07-23, `planificar` → Decisión Local-0025, control de Terminología Farlopa en dos niveles)
 
 El "mecanismo a decidir una vez" (que este plan compartía con *Hook de preferencias* —ya cerrado— y *Control de ratificación*) quedó **resuelto para la clase terminología** en la decisión 0025: control de TF en dos niveles según persistencia, dentro de `conducta`.
 
@@ -81,7 +81,7 @@ Se cruza con el plan [Capa semantica de coherencia](Capa%20semantica%20de%20cohe
 
 1. Resolver la pregunta de mecanismo compartido con los planes #1 y #2 (o registrar que se decidió no compartirlo, y por qué).
 2. Implementar la parte mecánica, si se decide que la hay.
-3. Implementar el disparo acordado; registro doble de hook si aplica (settings de Claude + `.codex/hooks.json`, decisión 0010).
+3. Implementar el disparo acordado; registro doble de hook si aplica (settings de Claude + `.codex/hooks.json`, Decisión Local-0010, arquitectura multiagente con AGENTS.md).
 4. Probar en negativo: introducir a propósito un término acuñado en un plan y verificar que el control lo frena. Sin esa prueba no se sabe si el control detecta o si no había nada que detectar.
 5. Si el mecanismo viaja a los repos consumidores, propagar con `propagar-harness` y subir las versiones.
 6. Cierre con `control-cierre` verde.

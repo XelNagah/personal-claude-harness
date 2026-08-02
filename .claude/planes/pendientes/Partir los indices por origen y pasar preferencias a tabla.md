@@ -14,7 +14,7 @@ El trato de excepción está cableado en tres lugares:
 
 - `.claude/subsistemas/lint-subsistemas/lint-subsistemas.js:28` — `&& fila.nombre !== 'preferencias'`, para no exigirle `MANIFIESTO.md`.
 - `AGENTS.md` importa **7** manifiestos para **8** subsistemas Base; preferencias entra por una sección propia.
-- La decisión 0036 le dio `README.md` a cada subsistema; preferencias no lo tiene.
+- La Decisión Local-0036 (memoria se retira y nace subsistemas) le dio `README.md` a cada subsistema; preferencias no lo tiene.
 
 Los campos del Patrón ya existen en el archivo, escritos como texto corrido: el ámbito son los encabezados en negrita (`Comunicación:`, `Principios de trabajo:`), el detalle es una frase adentro del bullet (*"Convención completa en `estilo-commits.md`"*), y hay hasta un estado como paréntesis (*"candidato a subir al harness"*), que el paso 3 de `registrar-preferencia` produce y no tiene dónde anotar. Consecuencia medible: `estilo-commits.md` y `archivo-de-estado.md` son páginas huérfanas que ningún índice declara.
 
@@ -40,7 +40,7 @@ Con dos secciones, el actualizador tiene que abrir el archivo y reemplazar media
 - **Formas que puede tomar una entrada del Patrón:** nada · un documento `.md` · una carpeta con su propio índice. Hay una cuarta forma en disco, ya contemplada al vetar `tripa`: la carpeta de una Herramienta, cuyo contenido ningún índice lista.
 - **Cómo se llaman las dos secciones ya está ratificado y asentado** (28/07/2026): `Herramientas del Agente Multipropósito` / `Herramientas del Agente Desplegado`, y así con reglas y preferencias. El resto de la nomenclatura **no se toca acá** — ver el plan `Ordenar la nomenclatura del harness`.
 
-## Diseño acordado el 29/07/2026 (sesión de `planificar`) — asentado en la decisión 0042
+## Diseño acordado el 29/07/2026 (sesión de `planificar`) — asentado en la Decisión Local-0042 (un subsistema tiene uno o más Índices, declarados)
 
 Lo que se resolvió cambia la forma del paso 1 y responde dos de los tres abiertos de abajo.
 
@@ -121,7 +121,7 @@ Los tres pasan por un hook: el hook es el mecanismo de entrega, no una clase. Ob
 
 **Lo que el encabezado deja de decir lo declara el frontmatter.** Cada Índice suma un campo que dice qué representa su `Descripción`. Ejemplos: `subsistemas` → *qué guarda ese subsistema*; `herramientas` → *qué hace la Herramienta*; `GLOSARIO` → *la definición del concepto*; `planes` → *de qué se trata el plan*; `decisiones` → *qué se decidió y por qué*.
 
-**`Significado vetado` pasa a `Significado Farlopa`** (ratificado por el autor el 29/07/2026). El término viejo venía de la **decisión 0026**, que lo fijó al crear el registro, así que el renombre la toca. Como el encabezado pasa a `Descripción`, el término nuevo vive en el frontmatter y en el texto que explica la tabla:
+**`Significado vetado` pasa a `Significado Farlopa`** (ratificado por el autor el 29/07/2026). El término viejo venía de la **Decisión Local-0026** (subsistema semántica, con dos registros pares), que lo fijó al crear el registro, así que el renombre la toca. Como el encabezado pasa a `Descripción`, el término nuevo vive en el frontmatter y en el texto que explica la tabla:
 
 ```yaml
 ---
@@ -190,7 +190,7 @@ Por qué así:
 
 **Resuelto el 29/07/2026 (segunda sesión de `planificar`), asentado en la 0042:** el manifiesto lista sus Índices como texto fijo del Agente Multipropósito, que los conoce de antemano, y el nivelador lo sigue copiando literal. Donde el Agente Multipropósito tiene contenido —`subsistemas`, `conducta`, `herramientas`, `preferencias`— `amp:inicializar` instala también el Índice del Agente Desplegado ya declarado: frontmatter con nombre, origen y columnas, y la tabla sin filas. Con eso `registrar-regla` y `agregar-subsistema` **no cambian**: siguen agregando una fila a un archivo que existe. Las columnas del Índice del Agente Multipropósito las declara el Agente Multipropósito; el del Agente Desplegado declara al menos esas mismas y puede sumar las suyas.
 
-**Observación para el plan de nomenclatura, no para éste:** el autor señaló que `Agente con Propósito` y `Agente Desplegado` son en la práctica sinónimos —la única diferencia que sostiene el glosario es un despliegue recién instalado y todavía sin Propósito—, y que mantener dos entradas para eso cuesta más de lo que aporta. Fusionarlas toca la decisión 0034, que las separó deliberadamente.
+**Observación para el plan de nomenclatura, no para éste:** el autor señaló que `Agente con Propósito` y `Agente Desplegado` son en la práctica sinónimos —la única diferencia que sostiene el glosario es un despliegue recién instalado y todavía sin Propósito—, y que mantener dos entradas para eso cuesta más de lo que aporta. Fusionarlas toca la Decisión Local-0034 (el Agente con Propósito contiene al Agente Multipropósito), que las separó deliberadamente.
 
 ## El trabajo
 

@@ -15,7 +15,7 @@ Hoy eso está separado **en un solo lugar**: `PREFERENCIAS.md` (Base vs Adaptaci
 
 Separar por origen **disuelve** el problema de marcar fronteras dentro de archivos mixtos: si Base y aprendido son archivos/secciones distintas, el nivelador **reemplaza lo de Base completo y nunca abre lo del repo**. Sin marcas invisibles, sin parsear títulos. El marcador de comentario era el síntoma de forzar dos orígenes en un archivo.
 
-## Diseño resuelto (planificar 24/07/2026 → decisión 0027)
+## Diseño resuelto (planificar 24/07/2026 → Decisión Local-0027, separación por origen en los subsistemas)
 
 La separación se realiza **según la granularidad del subsistema**, no con una forma única:
 

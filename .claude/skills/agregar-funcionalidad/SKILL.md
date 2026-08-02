@@ -13,7 +13,7 @@ Alta completa de una funcionalidad nueva (= un plugin del marketplace). El proce
 2. **Crear `funcionalidades/<nombre>/`:**
    - `.claude-plugin/plugin.json` — `name`, `description`, `version` (arrancar en `0.1.0`), `author`. Descripción en español corriente, sin términos vetados por el glosario.
    - `README.md` — qué hace, qué agrega al repo destino, dependencias.
-   - `skills/<nombre-skill>/SKILL.md` — **fuente única** del flujo (estándar Agent Skills, decisión 0010; rutas `.claude/` literales); `PLANTILLA.md` aparte si lleva textos que se copian tal cual.
+   - `skills/<nombre-skill>/SKILL.md` — **fuente única** del flujo (estándar Agent Skills — Decisión Local-0010, arquitectura multiagente con AGENTS.md; rutas `.claude/` literales); `PLANTILLA.md` aparte si lleva textos que se copian tal cual.
 3. **Sumar el plugin a `.claude-plugin/marketplace.json`**: `name` + `source: "./funcionalidades/<nombre>"` (el `source` debe arrancar con `./`).
 4. **Registrar en `REGISTRO.md`**: fila en la tabla de funcionalidades + fila en la tabla Plugin/Skill.
 5. **Orquestador** (solo si es de convención): sumarla a `setup-completo` — paso en su SKILL + textos duplicados en su `PLANTILLA.md`. Respetar el orden de dependencias.

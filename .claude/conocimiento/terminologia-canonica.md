@@ -2,7 +2,7 @@
 
 Dos mecanismos por los que la terminología ajena sobrevive aunque el usuario la haya señalado. Los dos observados en este repo el 2026-07-20.
 
-**1. Bucle de re-entrenamiento.** `PREFERENCIAS.md` enunciaba *"**Gate duro** en registros canónicos"* — la regla contra los anglicismos, escrita con un anglicismo. El glosario definía su propia convención con `<slug>.md`. La decisión 0004 repetía las dos. Cada vez que el agente releía la regla para corregirse, se re-entrenaba en el vocabulario que la regla prohíbe. Por eso describir el problema no lo frenaba.
+**1. Bucle de re-entrenamiento.** `PREFERENCIAS.md` enunciaba *"**Gate duro** en registros canónicos"* — la regla contra los anglicismos, escrita con un anglicismo. El glosario definía su propia convención con `<slug>.md`. La Decisión Local-0004 (gobernanza de terminología) repetía las dos. Cada vez que el agente releía la regla para corregirse, se re-entrenaba en el vocabulario que la regla prohíbe. Por eso describir el problema no lo frenaba.
 
 **2. Ratificación sin ejecución.** El 2026-07-19 el usuario ratificó los reemplazos (`gate`→control, `verbatim`→textual, `levelear`→nivelar, `slug`→nombre estable, `prosa`→texto plano) y entraron al glosario. El plan que los bajaba al texto quedó en `Nuevo`. Dos días después seguían circulando 68 usos de "verbatim", 52 de "slug" y 26 de "gate" — y la percepción del usuario era *"me canso de describirlas y siguen apareciendo"*, que era exacta.
 

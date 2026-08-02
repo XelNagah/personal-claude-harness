@@ -16,7 +16,7 @@ Referencia: Matt Pocock (`mattpocock/skills`) publica los dos canales desde un r
 
 ## Por qué está diferido
 
-El plan padre lo marcó **no urgente**, y el motivo sigue vigente: el canal principal (marketplace) recién quedó firme con la decisión 0029, y el harness todavía se está moviendo. Un segundo canal duplica la superficie a mantener —cada cambio hay que publicarlo dos veces— antes de que el primero esté estable.
+El plan padre lo marcó **no urgente**, y el motivo sigue vigente: el canal principal (marketplace) recién quedó firme con la Decisión Local-0029 (empaquetado en un plugin por subsistema), y el harness todavía se está moviendo. Un segundo canal duplica la superficie a mantener —cada cambio hay que publicarlo dos veces— antes de que el primero esté estable.
 
 **Reanudar cuando:** el harness esté estable y aparezca un consumidor real que no sea Claude Code, o alguien pida derivar una skill.
 

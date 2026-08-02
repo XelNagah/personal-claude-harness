@@ -16,7 +16,7 @@ Este plan agrupa todo ese desorden para resolverlo de una, en vez de corregir do
 |---|---|---|
 | **El archivo que lista** | `TERMINOLOGIA-FARLOPA.md` abre con *"Registro par del glosario"*; el manifiesto de planes dice *"`PLANES.md` es el registro más pesado del repo"*; `herramientas/INDICE.md` abre con *"Registro de las Herramientas del repo"* | 403 en texto vivo, más 108 en planes cerrados que el control excluye |
 | **Una línea de un índice** | El sentido que el autor le quiere dar. Hoy esa línea se llama `Entrada`, término que acuñó el agente | 223 de `Entrada`, en 11 archivos, incluidos dos lints y la `PLANTILLA` que viaja |
-| **Estado de sesión de una Herramienta** | La fila `Registro volátil` del glosario, acuñada por el agente en la decisión 0020 para `sessions.json` | 4, cero uso operativo |
+| **Estado de sesión de una Herramienta** | La fila `Registro volátil` del glosario, acuñada por el agente en la Decisión Local-0020 (test de demarcación) para `sessions.json` | 4, cero uso operativo |
 
 Propuesto, nada ratificado:
 
@@ -25,7 +25,7 @@ Propuesto, nada ratificado:
 - **`Registro volátil` se elimina** del glosario, no se renombra: nombra algo que ya se dice *"contenido interno de la Herramienta"*, el reemplazo ratificado cuando se vetó `tripa`. Es el punto más barato y el único independiente de los otros.
 - **Sin resolver:** si `Entrada` se borra del glosario o queda como otra forma de decir lo mismo. Si queda, las 223 apariciones siguen siendo válidas y no se toca ninguna; si se borra, se suman al barrido, más dos lints y la `PLANTILLA` que viaja.
 
-**Actualizado el 29/07/2026 por la decisión 0042, que cierra dos de los tres sentidos:**
+**Actualizado el 29/07/2026 por la Decisión Local-0042 (un subsistema tiene uno o más Índices, declarados), que cierra dos de los tres sentidos:**
 
 - **`Registro` queda tomado para la colección**, no para la línea: es el mecanismo que el plan `Subsistema de Registros genérico` diseña, con el nombre `Registro Multipropósito`. La propuesta de arriba —usar `Registro` para la fila— **queda descartada**: chocaría con un uso que ya está en dos planes y en la conversación del autor.
 - **La fila sigue siendo `Entrada`**, ahora asentada como `Entrada de Índice de Subsistema`. Sus 223 apariciones no se tocan.

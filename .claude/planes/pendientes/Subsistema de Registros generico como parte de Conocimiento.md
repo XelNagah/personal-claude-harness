@@ -27,7 +27,7 @@ El harness **ya** define **Subsistema** como "área que persiste estado siguiend
 
 ## Qué resolver (a diseñar con `planificar`)
 
-1. **¿Registro entra a la semántica** como concepto propio, y cómo se corta contra `Subsistema` y contra la subcarpeta-con-índice que ya usa `conocimiento` (decisión 0011)?
+1. **¿Registro entra a la semántica** como concepto propio, y cómo se corta contra `Subsistema` y contra la subcarpeta-con-índice que ya usa `conocimiento` (Decisión Local-0011, responsabilidad del índice en el Patrón recursivo)?
 2. **Alcance:** ¿solo dentro de `conocimiento`, o un mecanismo transversal (decisiones, planes también podrían tener "registros")?
 3. **Lint:** ¿cada registro trae su lint, o lo cubre el lint del subsistema anfitrión? Cruza directo con el plan **`Lint unificado parametrizable por capacidad de subsistema`** (índice-solo / índice+documento / índice+carpeta recursiva) — un Registro es justo una capacidad más.
 4. **Cómo se instancia** un registro nuevo (¿skill?, ¿plantilla?, ¿a mano?) y cómo se cataloga.

@@ -1,6 +1,6 @@
 # Una decisión, un tema — y baja de la reemplazada
 
-**Estado: Nuevo · Creado 26-07-26.** Origen: conversación del 26/07/2026 al asentar la decisión 0035, que modifica una cláusula de la 0029.
+**Estado: Nuevo · Creado 26-07-26.** Origen: conversación del 26/07/2026 al asentar la Decisión Local-0035 (el Agente Multipropósito se instala con alcance local), que modifica una cláusula de la Local-0029 (empaquetado en un plugin por subsistema).
 
 ## El problema
 
