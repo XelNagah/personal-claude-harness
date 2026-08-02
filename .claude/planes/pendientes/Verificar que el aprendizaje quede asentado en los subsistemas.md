@@ -36,7 +36,7 @@ El harness tiene subsistemas para capturar cada tipo de aprendizaje, pero **nada
 
 ## Deuda concreta que ya lo justifica
 
-Candidato a decisión detectado esta sesión y **todavía sin rutear**: *"el lint de un concepto transversal del harness vive en `lint-harness`, no repartido en los lints de subsistema; la dec. 0008 aplica a lints DE un subsistema, no a chequeos transversales"*. Coherente con lo que ya asume el plan **Vetar términos** ("chequeo de Base en `lint-harness`"). Es exactamente lo que este disparo tendría que haber cazado. Evaluar registrarlo (¿decisión nueva o nota en 0008?) al diseñar, como caso de prueba real.
+Candidato a decisión detectado esta sesión y **todavía sin rutear**: *"el lint de un concepto transversal del harness vive en `lint-harness`, no repartido en los lints de subsistema; la Decisión Local-0008 (lints co-ubicados con su subsistema) aplica a lints DE un subsistema, no a chequeos transversales"*. Coherente con lo que ya asume el plan **Vetar términos** ("chequeo de Base en `lint-harness`"). Es exactamente lo que este disparo tendría que haber cazado. Evaluar registrarlo (¿decisión nueva o nota en 0008?) al diseñar, como caso de prueba real.
 
 ## Comparable externo (fuente)
 
