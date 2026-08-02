@@ -22,6 +22,12 @@ En `settings.json` el `SessionStart` llama al repartidor `establecer-conducta`, 
 - **Lint:** corre cada `lint-<D>` (sin `--quiet`: ese flag da exit ≠ 0 en algunos lints artesanales) y suma los `(N)` de la salida, igual que `ejecutar-control-cierre`.
 - **Identidad:** lee `.claude/identidad.md` (Título + Propósito). Tolerante a indefinido → muestra `<sin definir>`.
 
+## El chequeo de plugins, en segundo plano
+
+Con `--hook` —y solo con `--hook`: a mano, o desde `amp:info`, nadie quiere que se le dispare un proceso— la Pantalla lanza `actualizar-plugins --avisar` **desprendido y sin esperarlo**, y sigue de largo. Ese chequeo cuesta ~1,7 s (y sin red se va al vencimiento del plazo por marketplace), contra un presupuesto de 100 ms para un evento bloqueante: pagarlo acá sería cuadruplicar el arranque. Deja lo que averigua en el Buzón de Avisos Generales y el hook repartidor lo entrega en el turno siguiente.
+
+Verificado el 02/08/2026 en Windows: con `detached` + `unref` el hijo sobrevive al proceso que lo lanzó y escribe su resultado después de que este murió. Medido acá: la Pantalla tarda lo mismo con el chequeo que sin él. Si la Herramienta no está en el repo —instalado antes de que existiera— no se lanza nada y la Pantalla sale igual.
+
 ## Emisión (verificado)
 
 Un `SessionStart` hook **no muestra un banner** propio como el logo del CLI. El único campo que se muestra en la terminal del usuario es `systemMessage`; el stdout crudo iría a `additionalContext`, que solo ve el modelo. Por eso `--hook` emite `{"systemMessage": <caja>}`. Sin `--hook`, la caja va envuelta en cerca de código para el transcript (skill `amp:info` y corridas a mano).

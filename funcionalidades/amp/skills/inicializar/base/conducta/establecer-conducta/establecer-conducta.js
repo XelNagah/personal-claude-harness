@@ -81,6 +81,11 @@ function rutasDe(ti) {
   return [];
 }
 
+// Que archivos realiza el momento `al escribir` lo define UN solo archivo del subsistema, que
+// tambien lee el control que despacha: escrito dos veces, una lista suma una extension y la otra no,
+// y queda un archivo sin revisar sin que nada lo diga.
+const { alcanzaAlEscribir } = require('../alcance-al-escribir.js');
+
 // -- que momento realiza cada evento, con su condicion sin juicio -------
 // Devuelve el nombre del momento a entregar, o null si el evento+datos no realiza ninguno.
 function momentoDe(data) {
@@ -90,11 +95,14 @@ function momentoDe(data) {
   if (ev === 'PreToolUse') {
     const tool = data.tool_name || '';
     if (tool !== 'Write' && tool !== 'Edit' && tool !== 'apply_patch') return null;
-    // condicion `al escribir`: escribir/editar un .md de cualquier parte del repo (lo que se
-    // publica incluido, que es por donde entra la terminologia ajena), salvo el directorio de
-    // borradores tmp/, que el repo gitignorea y es material descartable.
+    // condicion `al escribir`: escribir/editar un .md O UN ARCHIVO DE CODIGO de cualquier parte del
+    // repo (lo que se publica incluido, que es por donde entra la terminologia ajena), salvo el
+    // directorio de borradores tmp/, que el repo gitignorea y es material descartable.
+    // El codigo entro con la decision `Local-0052`: medido, un termino vetado se escribio nueve
+    // veces en un .js y viajo a base/ sin que ningun control lo tocara. ALLA EL CONTROL SOLO AVISA,
+    // y eso lo decide el propio control mirando la ruta, no este repartidor.
     const rutas = rutasDe(data.tool_input);
-    if (!rutas.some(r => /\.md$/i.test(r) && !/(^|\/)tmp\//.test(r))) return null;
+    if (!rutas.some(alcanzaAlEscribir)) return null;
     return 'al escribir';
   }
   return null;
@@ -154,6 +162,35 @@ function ejecutar(regla, input) {
   } catch (e) { return ''; }   // no romper el turno: el hijo fallo, se ignora
 }
 
+// -- Buzon de Avisos Generales -------------------------------------------
+// Un trabajo que corre en SEGUNDO PLANO deja lo que averiguo en `.claude/tmp/avisos/<origen>.txt`,
+// y este repartidor lo entrega en el turno siguiente y lo borra: un aviso se da una vez. Existe
+// porque un dato que tarda mas que el arranque no se puede dar al arrancar —consultarle al remoto
+// por los plugins cuesta ~1,7 s, y sin red se va al vencimiento del plazo, contra un presupuesto de
+// 100 ms para un evento bloqueante— y este repartidor es lo unico que ya corre en cada turno, asi
+// que leer un archivo no le cuesta arrancar un proceso. Un archivo por origen, para que el mismo
+// trabajo reemplace su aviso en vez de acumular copias.
+//
+// No sabe de que trata el aviso: cualquier trabajo en segundo plano escribe ahi.
+const DIR_AVISOS = path.join(repoRoot, '.claude', 'tmp', 'avisos');
+function levantarAvisos() {
+  let nombres = [];
+  try { nombres = fs.readdirSync(DIR_AVISOS).filter(n => n.endsWith('.txt')).sort(); }
+  catch (e) { return ''; }   // sin buzon no hay nada que entregar, y no es un error
+  const textos = [];
+  for (const n of nombres) {
+    const ruta = path.join(DIR_AVISOS, n);
+    try {
+      const t = fs.readFileSync(ruta, 'utf8').trim();
+      if (t) textos.push(t);
+    } catch (e) { continue; }        // ilegible: se deja y se intenta en el turno siguiente
+    // Se borra recien despues de leerlo: si el borrado falla, el aviso se repite — molesta, pero
+    // no se pierde. Al reves se perderia sin que nadie se entere.
+    try { fs.unlinkSync(ruta); } catch (e) { /* se repetira; no rompe el turno */ }
+  }
+  return textos.join('\n');
+}
+
 // -- Ejecutar: reenviar el stdout del hijo ---------------------------------
 // Con UNA regla se reenvia tal cual, que es lo que el hijo produjo y ya es la respuesta del hook.
 // Con VARIAS hay que combinar: escribir los JSON uno detras del otro deja dos objetos pegados, que
@@ -162,20 +199,28 @@ function ejecutar(regla, input) {
 // venga como JSON con ese campo entra como texto, para que nada se pierda en silencio.
 function ejecutarClase(momento, input) {
   const reglas = reglasDe(momento, 'ejecutar');
-  if (!reglas.length) return false;
+  if (!reglas.length) return { mensaje: '', extra: null };
   const salidas = [];
   for (const r of reglas) {
     const out = ejecutar(r, input);
     if (out && out.trim()) salidas.push(out.trim());
   }
-  if (!salidas.length) return true;
-  if (salidas.length === 1) { process.stdout.write(salidas[0]); return true; }
-  const mensajes = salidas.map(s => {
-    let o = null; try { o = JSON.parse(s); } catch { /* no era JSON: entra como texto */ }
-    return o && typeof o.systemMessage === 'string' ? o.systemMessage : s;
-  });
-  process.stdout.write(JSON.stringify({ systemMessage: mensajes.join('\n') }));
-  return true;
+  // Cada salida puede ser JSON con `systemMessage` (lo normal) o texto pelado. Se junta el mensaje
+  // de todas y se conservan los demas campos que hayan emitido, para no comerse nada al fusionar.
+  const mensajes = [];
+  let extra = null;
+  for (const s of salidas) {
+    let o = null;
+    try { o = JSON.parse(s); } catch (e) { /* no era JSON: entra como texto */ }
+    if (o && typeof o === 'object') {
+      if (typeof o.systemMessage === 'string' && o.systemMessage.trim()) mensajes.push(o.systemMessage.trim());
+      const { systemMessage, ...resto } = o;
+      if (Object.keys(resto).length) extra = Object.assign(extra || {}, resto);
+    } else {
+      mensajes.push(s);
+    }
+  }
+  return { mensaje: mensajes.join('\n'), extra };
 }
 
 // -- bloquear: leer la respuesta del hijo -------------------------------
@@ -207,10 +252,8 @@ process.stdin.on('end', () => {
 
   const ev = data.hook_event_name === 'PreToolUse' ? 'PreToolUse' : 'UserPromptSubmit';
 
-  // clase `Ejecutar` primero (SessionStart): ejecuta y reenvia; no se combina.
-  try { if (ejecutarClase(momento, input)) return process.exit(0); } catch (e) { /* sigue */ }
-
-  // clase `Bloquear`: si alguna frena, se emite el deny solo y no se sigue.
+  // clase `Bloquear`: si alguna frena, se emite el deny SOLO y no se sigue — si la escritura no va
+  // a ocurrir, el resto sobra (y Claude Code descarta el additionalContext en un deny).
   let medido = { contexto: '' };
   try { medido = bloquear(momento, input); } catch (e) { medido = { contexto: '' } }
   if (medido.deny) {
@@ -219,14 +262,32 @@ process.stdin.on('end', () => {
     return process.exit(0);
   }
 
-  // clase `Inyectar` (cada turno / al escribir), combinada con lo que midio `bloquear`.
+  // Las tres clases CONVIVEN en un mismo momento y se emiten en una sola respuesta. Antes `Ejecutar`
+  // se despachaba primero y CORTABA: una regla `Ejecutar` en un momento con reglas `Inyectar` las
+  // apagaba a todas sin emitir ninguna senal, y el registro esta pensado para editarse sin tocar
+  // este script. Se combinan por campos distintos, que es lo que las hace combinables: `Ejecutar` y
+  // el Buzon de Avisos Generales escriben en `systemMessage` (lo ve el usuario); `Inyectar` y
+  // `Bloquear`, en `additionalContext` (lo lee el modelo).
+  let corrida = { mensaje: '', extra: null };
+  try { corrida = ejecutarClase(momento, input); } catch (e) { corrida = { mensaje: '', extra: null }; }
+
   let ctx = '';
   try { ctx = construir(momento); } catch (e) { ctx = ''; }   // ante error, no romper el turno
   if (medido.contexto) ctx = ctx ? ctx + '\n' + medido.contexto : medido.contexto;
-  if (ctx) {
-    // PreToolUse: se OMITE permissionDecision a proposito (=> 'defer'): inyecta sin auto-aprobar.
-    process.stdout.write(JSON.stringify({ hookSpecificOutput: { hookEventName: ev, additionalContext: ctx } }));
-  }
+
+  // El buzon se levanta solo en `cada turno`: al arrancar, el trabajo en segundo plano recien sale.
+  let aviso = '';
+  if (momento === 'cada turno') { try { aviso = levantarAvisos(); } catch (e) { aviso = ''; } }
+
+  const mensaje = [corrida.mensaje, aviso].filter(t => t && t.trim()).join('\n');
+  const salida = Object.assign({}, corrida.extra || {});
+  if (mensaje) salida.systemMessage = mensaje;
+  // El aviso tambien va al modelo: el usuario decide, pero el agente tiene que poder responder si
+  // le preguntan. Se emite con las reglas `Inyectar`, no en lugar de ellas.
+  const contexto = [ctx, aviso].filter(t => t && t.trim()).join('\n');
+  // PreToolUse: se OMITE permissionDecision a proposito (=> 'defer'): inyecta sin auto-aprobar.
+  if (contexto) salida.hookSpecificOutput = { hookEventName: ev, additionalContext: contexto };
+  if (Object.keys(salida).length) process.stdout.write(JSON.stringify(salida));
   process.exit(0);
 });
 process.stdin.on('error', () => process.exit(0));

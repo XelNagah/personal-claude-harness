@@ -18,4 +18,8 @@ El subsistema `conducta` asegura comportamientos del tipo **"cuando hagas X, ase
 2. **Para agregar una regla:** elegir un momento existente de `MOMENTOS.md` (o declarar uno nuevo, en `declarado` hasta que tenga repartidor), sumar la fila al archivo que corresponda (`INDICE.md` si viene con el Agente Multipropósito, `INDICE-LOCAL.md` si es de este repo), y correr el lint. Una regla `vigente` no puede colgar de un momento sin repartidor: va en `pendiente`.
 3. **Al cerrar** una tarea que tocó conducta, correr el lint: `node .claude/conducta/lint-conducta/lint-conducta.js`.
 
+**El Buzón de Avisos Generales.** Un trabajo que corre **en segundo plano** —hoy, el chequeo de plugins que la Pantalla de bienvenida lanza al arrancar sin esperarlo— deja lo que averiguó en `.claude/tmp/avisos/<origen>.txt`, y el hook repartidor lo entrega en el momento `cada turno` y lo borra: un aviso se da una vez, y se rehace en el arranque siguiente mientras la condición persista. Existe porque un dato que tarda más que el arranque no se puede dar al arrancar, y el repartidor es lo único que ya corre en cada turno, así que leer un archivo no le cuesta arrancar un proceso. **No sabe de qué trata el aviso**: escribe ahí cualquier trabajo en segundo plano. Va por los dos canales —`systemMessage` para el usuario, que es quien decide, y `additionalContext` para el modelo, que tiene que poder responder si le preguntan— y **sin pisar** las reglas del momento.
+
+**Las tres clases conviven** en un mismo momento y salen en una sola respuesta, cada una por su campo (ver `CLASES.md`). Lo único que gana solo es un `deny`.
+
 Relacionado: [[flujo-planes]] (construcción del subsistema por plan), [[semantica]] (el control de terminología consume los momentos `cada turno` y `al escribir`).

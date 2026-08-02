@@ -103,13 +103,80 @@ console.log('== ENTREGA: cada evento despacha las reglas de su momento ==');
 console.log('\n== NO ENTREGA donde no corresponde ==');
 
 {
+  // El código entró al momento con la decisión `Local-0052`, pero solo avisando: el mismo término
+  // que en un `.md` rechaza la escritura, acá tiene que informarse y dejarla pasar.
   const r = disparar({ hook_event_name: 'PreToolUse', tool_name: 'Write',
-    tool_input: { file_path: path.join(REPO, 'caso.js').replace(/\\/g, '/'), content: 'hay mucho churn\n' } });
-  chequear('un archivo que no es .md no dispara «al escribir»', !r.crudo, r.crudo.slice(0, 60) || '(nada)');
+    tool_input: { file_path: path.join(REPO, 'caso.js').replace(/\\/g, '/'), content: '// hay que levelear\n' } });
+  chequear('un .js dispara «al escribir»', !!r.contexto, r.contexto.slice(0, 50) || '(no emitió nada)');
+  chequear('  …y en código nunca frena, aunque el término bloquee en texto',
+    r.decision !== 'deny', r.decision || 'sin decisión, como debe');
+}
+{
+  const r = disparar({ hook_event_name: 'PreToolUse', tool_name: 'Write',
+    tool_input: { file_path: path.join(REPO, 'caso.json').replace(/\\/g, '/'), content: 'hay mucho churn\n' } });
+  chequear('un archivo que no es texto ni código no dispara «al escribir»', !r.crudo, r.crudo.slice(0, 60) || '(nada)');
+}
+{
+  const md = path.join(REPO, 'caso-de-prueba-vetado.md').replace(/\\/g, '/');
+  const r = disparar({ hook_event_name: 'PreToolUse', tool_name: 'Write',
+    tool_input: { file_path: md, content: 'hay que levelear el repo\n' } });
+  chequear('el mismo término en un .md sí frena', r.decision === 'deny', r.decision || '(no frenó)');
 }
 {
   const r = disparar({ hook_event_name: 'Stop' });
   chequear('un evento sin momento realizado no emite nada', !r.crudo, r.crudo.slice(0, 60) || '(nada)');
+}
+
+console.log('\n== BUZÓN DE AVISOS GENERALES ==');
+// Un trabajo en segundo plano deja lo que averiguó y el repartidor lo entrega en el turno siguiente.
+// Lo que hay que fijar es que el aviso llegue POR LOS DOS CANALES —`systemMessage` para el usuario,
+// que es quien decide, y `additionalContext` para el modelo— SIN pisar las reglas `Inyectar`, y que
+// se borre: un aviso que no se borra se repite para siempre.
+{
+  const fs = require('fs');
+  const dir = path.join(REPO, '.claude', 'tmp', 'avisos');
+  const archivo = path.join(dir, 'prueba-repartidor.txt');
+  const MARCA = 'AVISO DE PRUEBA DEL REPARTIDOR';
+  const habia = fs.existsSync(dir) ? fs.readdirSync(dir) : null;
+  try {
+    fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(archivo, MARCA, 'utf8');
+    const r = disparar({ hook_event_name: 'UserPromptSubmit' });
+    chequear('el aviso llega al usuario por systemMessage', r.mensaje.includes(MARCA),
+      r.mensaje.slice(0, 40) || '(sin systemMessage)');
+    chequear('  …y también al modelo por additionalContext', r.contexto.includes(MARCA));
+    chequear('  …sin pisar las reglas Inyectar del momento',
+      r.contexto.includes('Recordatorio de conducta'), 'las reglas siguen ahí');
+    chequear('  …y el aviso se borra: no se repite', !fs.existsSync(archivo),
+      fs.existsSync(archivo) ? 'QUEDÓ SIN BORRAR' : 'borrado');
+    const otra = disparar({ hook_event_name: 'UserPromptSubmit' });
+    chequear('  …tanto que el turno siguiente ya no lo trae', !otra.mensaje.includes(MARCA));
+  } finally {
+    try { fs.unlinkSync(archivo); } catch (e) { /* ya no estaba */ }
+    // El directorio se saca solo si lo creó esta prueba: un buzón real con avisos no se toca.
+    if (habia === null) { try { fs.rmdirSync(dir); } catch (e) { /* tiene algo adentro */ } }
+  }
+}
+{
+  // Sin buzón no hay nada que entregar, y eso NO es un error: el turno sale igual con sus reglas.
+  const r = disparar({ hook_event_name: 'UserPromptSubmit' });
+  chequear('sin avisos pendientes el turno sale igual', r.codigo === 0 && !!r.contexto,
+    `código ${r.codigo}`);
+}
+
+console.log('\n== LAS CLASES CONVIVEN EN UN MOMENTO ==');
+// Hasta el 02/08/2026 el repartidor despachaba `Ejecutar` primero y CORTABA, así que una regla
+// `Ejecutar` en un momento con reglas `Inyectar` las apagaba a todas sin ninguna señal. Se fija por
+// los campos, que es lo que las hace combinables: `Ejecutar` escribe en `systemMessage` e `Inyectar`
+// en `additionalContext`, y el momento `al arrancar la sesión` tiene que seguir dando su caja.
+{
+  const r = disparar({ hook_event_name: 'SessionStart' });
+  chequear('«al arrancar la sesión» sigue emitiendo la Pantalla de bienvenida',
+    r.mensaje.includes('Agente Multipropósito'), r.mensaje.split('\n')[1] || '(sin caja)');
+}
+{
+  const r = disparar({ hook_event_name: 'UserPromptSubmit' });
+  chequear('«cada turno» entrega sus reglas Inyectar', r.contexto.includes('Recordatorio de conducta'));
 }
 
 console.log('\n== NUNCA ROMPE EL TURNO ==');
@@ -124,6 +191,6 @@ for (const [nombre, entrada] of [
   chequear(`${nombre} → sale 0 sin romper`, r.codigo === 0, `código ${r.codigo}`);
 }
 
-console.log(`\ncasos: 12`);
+console.log(`\ncasos: 26`);
 console.log(malos ? `${malos} FALLARON.` : 'TODO VERDE.');
 process.exit(malos ? 1 : 0);

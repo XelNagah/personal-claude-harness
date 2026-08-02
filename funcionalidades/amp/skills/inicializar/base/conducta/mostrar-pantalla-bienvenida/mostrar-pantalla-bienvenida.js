@@ -328,7 +328,26 @@ function pedidoDeIdentidad() {
     + 'que gobierna todo lo que el Agente acumula despues.';
 }
 
+// -- lanzar en segundo plano lo que tarda mas que el arranque -----------------
+// El estado de los plugins no se puede averiguar aca: cuesta ~1,7 s, y sin red se va al vencimiento
+// del plazo — contra un presupuesto de 100 ms para un evento bloqueante. Se lanza SIN ESPERARLO y
+// deja lo que averigua en el Buzon de Avisos Generales; el hook repartidor lo entrega en el turno
+// siguiente. `detached` + `unref` hacen que sobreviva a este proceso (verificado en Windows).
+//
+// Solo en --hook: a mano (o desde `amp:info`) nadie quiere que se le dispare un proceso de fondo.
+function lanzarChequeoDePlugins() {
+  const tool = path.join(CLAUDE_DIR, 'herramientas', 'actualizar-plugins', 'actualizar-plugins.js');
+  if (!fs.existsSync(tool)) return;   // repo instalado antes de que la Herramienta existiera
+  try {
+    const hijo = require('child_process').spawn(process.execPath, [tool, '--avisar'], {
+      cwd: REPO, detached: true, stdio: 'ignore', windowsHide: true,
+    });
+    hijo.unref();
+  } catch (e) { /* que no salga el aviso no puede costar la Pantalla de bienvenida */ }
+}
+
 if (HOOK) {
+  lanzarChequeoDePlugins();
   // Salto inicial: separa la caja del prefijo "SessionStart:… says:" que antepone el CLI.
   const salida = { systemMessage: '\n' + box };
   const pedido = pedidoDeIdentidad();

@@ -157,10 +157,20 @@ caso('un Índice del Agente Desplegado viaja con filas', 'UN INDICE DEL AGENTE D
 // se topó con el enlace roto y terminó reescribiendo la página a mano—, no un control. Se repone
 // sobre un registro del Agente Desplegado y fuera de su tabla, para que el defecto que enciende sea
 // solo este y no el del encabezado ni el de las filas.
-caso('lo que viaja enlaza a una página que no viaja', 'ENLACES DE LO QUE VIAJA A ALGO QUE NO VIAJA',
+caso('lo que viaja enlaza a una página que no viaja', 'LO QUE VIAJA APUNTA A ALGO QUE NO VIAJA (enlaces y require)',
   () => fs.appendFileSync(path.join(REPO_PRUEBA, BASE_INST, 'conocimiento/INDICE.md'),
     '\nVer la [página que se queda en el repo autor](../conocimiento/una-que-no-viaja.md).\n'),
   'una-que-no-viaja.md');
+
+// La forma GRAVE del mismo defecto: en código no confunde a nadie, mata el hook. Node resuelve el
+// `require` al cargar, antes de cualquier try/catch, así que el repartidor muere con MODULE_NOT_FOUND
+// y el Agente Desplegado se queda sin ninguna regla entregada, en cada turno. Medido el 02/08/2026
+// sobre un consumidor simulado sin `conducta/alcance-al-escribir.js`: exit 1 y ni una regla.
+// Entró porque `sincronizar-base` decide qué viaja recorriendo `base/`: un Componente nuevo no entra
+// solo, y hasta este control nada lo decía — ni el lint ni la Herramienta que sincroniza.
+caso('lo que viaja hace require de un módulo que no viaja', 'LO QUE VIAJA APUNTA A ALGO QUE NO VIAJA (enlaces y require)',
+  () => fs.rmSync(path.join(REPO_PRUEBA, BASE_INST, 'conducta/alcance-al-escribir.js'), { force: true }),
+  'alcance-al-escribir.js');
 
 caso('funcionalidad en REGISTRO sin carpeta en disco', 'FANTASMAS (catalogadas pero sin carpeta)',
   () => fs.rmSync(path.join(REPO_PRUEBA, 'funcionalidades/amp-conducta'), { recursive: true, force: true }));
@@ -281,7 +291,7 @@ fs.appendFileSync(path.join(REPO_PRUEBA, BASE_INST, 'conocimiento/INDICE.md'),
   '\nVer el [estándar abierto Agent Skills](https://example.org/agent-skills/SKILL.md).\n');
 {
   const h = hallazgos(correr());
-  const n = h['ENLACES DE LO QUE VIAJA A ALGO QUE NO VIAJA'] || 0;
+  const n = h['LO QUE VIAJA APUNTA A ALGO QUE NO VIAJA (enlaces y require)'] || 0;
   console.log(`${n === 0 ? 'OK  ' : 'FALLA'} enlace https a un .md → ${n} hallazgos`);
   if (n !== 0) malos++;
 }

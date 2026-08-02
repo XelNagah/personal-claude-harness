@@ -14,6 +14,9 @@ node .claude/herramientas/actualizar-plugins/actualizar-plugins.js --agente code
 
 # apuntarlo a otro repo de la máquina
 node .claude/herramientas/actualizar-plugins/actualizar-plugins.js --agente claude "D:/Proyectos/otro-repo"
+
+# en segundo plano: no imprime, deja el aviso en el Buzón de Avisos Generales
+node .claude/herramientas/actualizar-plugins/actualizar-plugins.js --avisar
 ```
 
 `amp:actualizar` elige el agente y ejecuta esta Herramienta con el argumento correspondiente; quien la usa no tiene que recordarlo. Si se corre el script a mano y no recibe `--agente`, solo acepta una detección inequívoca del proceso; ante duda pide el argumento en vez de revisar el estado equivocado.
@@ -118,9 +121,44 @@ Se distinguen dos clases, porque significan cosas distintas:
 - **Nombres que el marketplace ya no ofrece** — generaciones de nombres que quedaron bajadas después de una migración.
 - **Plugins vigentes en versiones que ya no corren** — el residuo normal de publicar seguido, y en volumen suele ser la mayoría.
 
-Nada limpia esto y crece con cada publicación. **No se borra automáticamente ni con `--aplicar`**: está afuera del repo, en la carpeta del usuario, y borrar es destructivo. Se informan las rutas y la decisión es del usuario.
+Nada limpia esto y crece con cada publicación: el CLI baja cada versión a su carpeta y, al actualizar, apunta el registro a la nueva sin borrar la anterior. Medido el 02/08/2026 en esta máquina: `amp` iba por la 0.25.0 con siete carpetas bajadas y una sola en uso.
 
 Un ejemplo de por qué el criterio prudente importa, medido el 30/07/2026 en esta máquina: `amp-memoria` es un nombre que el marketplace ya no ofrece, pero **no** figura como sobrante porque un repo todavía lo declara. Eso además delata un consumidor sin migrar, que es información útil por sí sola.
+
+### Borrarlo: `--limpiar-cache`
+
+**`--aplicar` no lo enciende**, y es a propósito: quien nivela un repo pidió eso, no que se borre nada de su carpeta de usuario. Son dos permisos distintos y llevan dos flags distintos.
+
+```bash
+node .claude/herramientas/actualizar-plugins/actualizar-plugins.js --agente claude --limpiar-cache
+```
+
+Que ninguna instalación declare una carpeta alcanza para **informarla**, no para borrarla: el registro puede no saber lo que la máquina está usando. Por eso hay dos guardas, y cada una saltea el plugin **entero** en vez de adivinar cuál de sus carpetas se salva:
+
+- **Registro incompleto** — una entrada sin `version` no aporta nada al conjunto en uso, así que *todas* las carpetas de ese plugin se ven libres. Hoy el registro siempre la trae (incluso los que versionan por commit, donde el campo lleva el hash), así que la guarda no se dispara nunca; existe porque el día que falte, el borrado se lleva puesta justo la versión que corre.
+- **Sesión viva** — un plugin `[SIN CARGAR]` se actualizó después de que arrancó la sesión, que sigue ejecutándose desde su carpeta anterior del cache. Esa carpeta ya no figura en el registro, o sea que aparece como huérfana, y borrarla no rompe la sesión que viene: rompe la que está abierta. Se saltea hasta el reinicio.
+
+Lo salteado se informa con su motivo, no se calla.
+
+## El aviso al arrancar (`--avisar`)
+
+La Pantalla de bienvenida lanza esta Herramienta **en segundo plano** en cada arranque y **no la espera**: corre con `--avisar`, no imprime nada y deja lo que averiguó en `.claude/tmp/avisos/plugins.txt`, el Buzón de Avisos Generales. El hook repartidor lo entrega en el turno siguiente y lo borra. Así el arranque no paga el diagnóstico —1,7 s con red, y sin red hasta el vencimiento del plazo por marketplace— contra un presupuesto de 100 ms para un evento bloqueante.
+
+El aviso **pone primero lo que rompe**: un plugin `SIN DECLARAR` o `NO INSTALADO` no carga, y sus skills no existen en la sesión sin que nada lo diga. Una versión atrasada, en comparación, es un inconveniente. Cierra diciendo que hay que **reiniciar** después de actualizar —los plugins nuevos no entran en la sesión viva— y que **informa, no actúa**, porque el mismo texto llega al modelo.
+
+Un repo sin desfases **no deja aviso**, y si había uno viejo lo borra: un aviso que aparece siempre se vuelve ruido y se deja de leer.
+
+### Apagar la salida a internet
+
+Lo único que sale a la red es preguntarle al remoto si hay algo publicado que esta máquina no bajó. Se apaga entero declarando `AMP_SIN_RED=1` en el bloque `env` del `settings.json` del repo:
+
+```json
+{ "env": { "AMP_SIN_RED": "1" } }
+```
+
+Con eso el aviso sigue funcionando con lo que hay en disco —que es donde se detecta lo que rompe— y no se consulta nada afuera. Existe porque esto corre en cada arranque de cada Agente Desplegado, y una salida a internet que el usuario no pidió tiene que poder no ocurrir.
+
+Además, la consulta al remoto no se repite si otra corrida la hizo hace menos de un minuto: sin eso, abrir varias sesiones de golpe dispara una por cada una. La marca es **solo de esa parte**; el aviso se rehace siempre, así que nunca queda uno viejo dando vueltas.
 
 ## Apuntarla a otro repo
 

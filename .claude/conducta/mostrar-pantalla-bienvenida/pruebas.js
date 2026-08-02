@@ -104,7 +104,19 @@ console.log('\n== SALIDA PARA EL HOOK ==');
   chequear('  …y sale 0', codigo === 0, `código ${codigo}`);
 }
 
+console.log('\n== EL CHEQUEO DE PLUGINS NO SE ESPERA ==');
+// Con --hook se lanza en segundo plano el chequeo de plugins, que tarda ~1,7 s y sin red se va al
+// vencimiento del plazo. Lo que se fija es que la Pantalla NO LO ESPERE: si algún día se lo llamara
+// de forma síncrona, el síntoma sería un arranque lento y nadie lo ataría a este cambio.
+{
+  const antes = Date.now();
+  const { codigo } = correr(['--hook', '--sin-lint']);
+  const tardo = Date.now() - antes;
+  chequear('con --hook la Pantalla sale sin esperar el chequeo', tardo < 1500, `${tardo} ms`);
+  chequear('  …y sale 0 igual', codigo === 0, `código ${codigo}`);
+}
+
 fs.rmSync(REPO_PRUEBA, { recursive: true, force: true });
-console.log(`\ncasos: 15`);
+console.log(`\ncasos: 17`);
 console.log(malos ? `${malos} FALLARON.` : 'TODO VERDE.');
 process.exit(malos ? 1 : 0);

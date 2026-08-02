@@ -13,6 +13,9 @@
 //
 //   node .claude/herramientas/actualizar-plugins/actualizar-plugins.js            (solo diagnostica)
 //   node .claude/herramientas/actualizar-plugins/actualizar-plugins.js --aplicar  (actualiza)
+//   node .claude/herramientas/actualizar-plugins/actualizar-plugins.js --limpiar-cache  (borra el
+//     cache huerfano: las carpetas de version que ninguna instalacion de la maquina declara. Flag
+//     aparte porque escribe AFUERA del repo y borra; `--aplicar` no lo enciende.)
 //
 // Sin argumentos NO toca nada: sirve como control de desfase disco<->cargado.
 // Generico: no hardcodea nombres de plugin ni de marketplace — sale de `enabledPlugins` del repo.
@@ -24,6 +27,14 @@ const os = require('os');
 const { spawnSync } = require('child_process');
 
 const APLICAR = process.argv.includes('--aplicar');
+// Flag propio, y a proposito NO lo enciende `--aplicar`: quien corre el nivelador pidio poner al dia
+// un repo, no borrar nada de su carpeta de usuario. Son dos permisos distintos.
+const LIMPIAR_CACHE = process.argv.includes('--limpiar-cache');
+// Modo de segundo plano: no imprime, deja el aviso en el Buzon de Avisos Generales y el hook
+// repartidor lo entrega en el turno siguiente. Lo lanza la Pantalla de bienvenida al arrancar.
+const AVISAR = process.argv.includes('--avisar');
+// La unica salida a internet de esta Herramienta se puede apagar por repo, con `env` en su settings.
+const SIN_RED = process.env.AMP_SIN_RED === '1';
 const INDICE_AGENTE = process.argv.indexOf('--agente');
 const AGENTE_PEDIDO = INDICE_AGENTE < 0 ? null : process.argv[INDICE_AGENTE + 1];
 if (AGENTE_PEDIDO && !['claude', 'codex'].includes(AGENTE_PEDIDO)) {
@@ -47,6 +58,9 @@ const PLUGINS_DIR = path.join(os.homedir(), '.claude', 'plugins');
 const COMANDO_APLICAR = '  node ' + JSON.stringify(process.argv[1])
   + (AGENTE_PEDIDO ? ` --agente ${AGENTE_PEDIDO}` : '')
   + (RUTA_ARG ? ' ' + JSON.stringify(RUTA_ARG) : '') + ' --aplicar';
+// El cache es de la MAQUINA: la limpieza no lleva la ruta de repo, que ahi no significa nada.
+const COMANDO_LIMPIAR = '  node ' + JSON.stringify(process.argv[1])
+  + (AGENTE_PEDIDO ? ` --agente ${AGENTE_PEDIDO}` : '') + ' --limpiar-cache';
 
 function leerJson(p) {
   try { return JSON.parse(fs.readFileSync(p, 'utf8')); } catch (e) { return null; }
@@ -341,11 +355,16 @@ function cacheHuerfano() {
   const registro = leerJson(path.join(PLUGINS_DIR, 'installed_plugins.json'));
   const plugins = (registro && registro.plugins) || {};
   // Todas las versiones en uso por cualquier repo, por nombre completo del plugin.
+  // `sinVersion` es la contracara: una entrada que no declara version no aporta nada a `enUso`, asi
+  // que TODAS las carpetas de ese plugin quedarian marcadas como libres — un plugin en uso que se ve
+  // entero huerfano. Como informe es ruido; para el borrado es fatal, y por eso se anota por plugin.
   const enUso = new Map();
+  const sinVersion = new Set();
   for (const [id, entradas] of Object.entries(plugins)) {
     for (const e of entradas || []) {
       if (!enUso.has(id)) enUso.set(id, new Set());
       if (e.version) enUso.get(id).add(e.version);
+      else sinVersion.add(id);
     }
   }
   const sobran = [];
@@ -369,10 +388,39 @@ function cacheHuerfano() {
       const libres = versiones.filter(v => !usadas.has(v));
       if (!libres.length) continue;
       const retirado = ofrecidos.size > 0 && !ofrecidos.has(n.name);
-      sobran.push({ id, ruta: path.join(raizMk, n.name), libres, total: versiones.length, retirado });
+      sobran.push({
+        id, ruta: path.join(raizMk, n.name), libres, total: versiones.length, retirado,
+        incompleto: sinVersion.has(id),
+      });
     }
   }
   return sobran;
+}
+
+// -- borrado del cache huerfano (solo con --limpiar-cache) --------------------
+// "Ninguna instalacion la declara" alcanza para INFORMAR una carpeta, no para borrarla: el registro
+// puede no saber lo que la maquina esta usando. Dos guardas, y cada una saltea el plugin ENTERO en vez
+// de adivinar cual de sus carpetas se salva:
+//   A) REGISTRO INCOMPLETO — una entrada sin `version` deja todas las carpetas de ese plugin sin
+//      dueno aparente. Hoy el registro siempre la trae, asi que la guarda no se dispara nunca; existe
+//      porque el dia que falte, el borrado se lleva puesta justo la version que corre.
+//   B) SESION VIVA — un plugin SIN CARGAR se actualizo despues de que arranco esta sesion, que sigue
+//      corriendo la version ANTERIOR desde su carpeta del cache. Esa version ya no figura en el
+//      registro, o sea que aparece como huerfana, y borrarla no rompe la sesion que viene: rompe la
+//      que esta abierta. Se saltea hasta el reinicio, que es cuando deja de estar en uso.
+function limpiarCache(sobra, filas) {
+  const sinCargar = new Set(filas.filter(f => f.sinCargar).map(f => f.id));
+  const borradas = [], fallidas = [], salteados = [];
+  for (const s of sobra) {
+    if (s.incompleto) { salteados.push({ id: s.id, motivo: 'el registro tiene una entrada suya sin version' }); continue; }
+    if (sinCargar.has(s.id)) { salteados.push({ id: s.id, motivo: 'esta SIN CARGAR: esta sesion corre una de estas carpetas' }); continue; }
+    for (const v of s.libres) {
+      const ruta = path.join(s.ruta, v);
+      try { fs.rmSync(ruta, { recursive: true, force: true }); borradas.push(ruta); }
+      catch (e) { fallidas.push({ ruta, error: e.message }); }
+    }
+  }
+  return { borradas, fallidas, salteados };
 }
 
 // -- desfase entre las DOS PARTES del Agente Multiproposito -------------------
@@ -705,6 +753,97 @@ function aplicar(filas) {
   }
 }
 
+// -- modo `--avisar`: correr en segundo plano y dejar el aviso en el buzon ----
+// Lo lanza la Pantalla de bienvenida al arrancar, sin esperarlo. No imprime nada y no toca nada
+// fuera del buzon: es una LECTURA del estado, asi que puede convivir con un `--aplicar` a mano.
+//
+// El aviso pone PRIMERO lo que rompe. Un plugin sin declarar o sin instalar no carga: Claude Code lo
+// descarta entero y sus skills no existen en la sesion, sin avisar. Eso es peor que una version
+// atrasada, y no necesita red para detectarse.
+const RUTA_AVISO = path.join(REPO, '.claude', 'tmp', 'avisos', 'plugins.txt');
+const MARCA_CONSULTA = path.join(REPO, '.claude', 'tmp', 'ultima-consulta-plugins.txt');
+// Sin esto, abrir varias sesiones de golpe dispara una consulta al remoto por cada una. La marca es
+// SOLO de la parte cara: el aviso se rehace siempre, asi que nunca queda uno viejo dando vueltas.
+const ESPERA_ENTRE_CONSULTAS_MS = 60 * 1000;
+
+function consultaReciente() {
+  try {
+    const t = Number(fs.readFileSync(MARCA_CONSULTA, 'utf8').trim());
+    return Number.isFinite(t) && (Date.now() - t) < ESPERA_ENTRE_CONSULTAS_MS;
+  } catch (e) { return false; }
+}
+
+function textoDelAviso(filas) {
+  const lineas = [];
+  const rompe = filas.filter(f => f.estado === 'SIN DECLARAR' || f.estado === 'NO INSTALADO');
+  const retirados = filas.filter(f => f.estado === 'RETIRADO');
+  const atrasados = filas.filter(f => f.estado === 'ACTUALIZAR');
+  const sinCargar = filas.filter(f => f.sinCargar);
+
+  if (rompe.length) {
+    lineas.push(`${rompe.length} plugin(s) NO CARGAN en esta sesion y sus skills no existen, sin ninguna senal:`);
+    for (const f of rompe) lineas.push(`  ${f.id} — ${f.estado}`);
+  }
+  if (retirados.length) {
+    lineas.push(`${retirados.length} plugin(s) con un nombre que el marketplace ya no ofrece (es migracion, no actualizacion):`);
+    for (const f of retirados) lineas.push(`  ${f.id}`);
+  }
+  if (sinCargar.length) {
+    lineas.push(`${sinCargar.length} plugin(s) se actualizaron despues de que arranco esta sesion: corre la version vieja.`);
+  }
+  if (atrasados.length) {
+    lineas.push(`${atrasados.length} plugin(s) con version nueva sin instalar:`);
+    for (const f of atrasados) lineas.push(`  ${f.id} — ${f.detalle}`);
+  }
+  return lineas;
+}
+
+if (AVISAR) {
+  try {
+    // Sin saber que agente corre no se puede mirar la configuracion correcta, y en segundo plano no
+    // hay a quien preguntarle: se sale sin escribir, que es callarse, no mentir.
+    if (!AGENTE) process.exit(0);
+    fs.mkdirSync(path.dirname(RUTA_AVISO), { recursive: true });
+    ARRANQUE = arranqueSesion();
+    const filas = diagnosticar();
+    const lineas = textoDelAviso(filas);
+
+    // La consulta al remoto es lo unico caro y lo unico que sale a internet. Se puede apagar entera
+    // con AMP_SIN_RED=1 en el bloque `env` del settings del repo: esto corre en cada arranque de
+    // cada Agente Desplegado, y una salida a internet que el usuario no pidio tiene que poder no
+    // ocurrir. Lo de arriba es todo de disco y sigue funcionando igual.
+    if (!SIN_RED && filas.length && !consultaReciente()) {
+      const nombresPorMkt = new Map();
+      for (const f of filas) {
+        if (!nombresPorMkt.has(f.marketplace)) nombresPorMkt.set(f.marketplace, []);
+        nombresPorMkt.get(f.marketplace).push(f.nombre);
+      }
+      const publicados = [];
+      for (const [m, nombres] of nombresPorMkt) {
+        const c = estadoCatalogo(m, nombres);
+        if (c.estado === 'ACTUALIZAR') publicados.push(`  ${m} — ${c.detalle}`);
+      }
+      try { fs.writeFileSync(MARCA_CONSULTA, String(Date.now()), 'utf8'); } catch (e) { /* sin marca, se reconsulta */ }
+      if (publicados.length) {
+        lineas.push(`${publicados.length} marketplace(s) con novedades publicadas que esta maquina no bajo:`);
+        lineas.push(...publicados);
+      }
+    }
+
+    if (!lineas.length) {
+      // Nada que decir: se limpia un aviso viejo en vez de dejarlo repitiendo algo ya resuelto.
+      try { fs.unlinkSync(RUTA_AVISO); } catch (e) { /* no habia */ }
+    } else {
+      const texto = ['Plugins del Agente Multiproposito — hay desfases:', ...lineas,
+        'Para resolverlo, pedi `amp:actualizar`; despues hay que REINICIAR la sesion para que los',
+        'plugins nuevos carguen. Esto informa, no actua: no actualices por tu cuenta sin que te lo pidan.',
+      ].join('\n');
+      fs.writeFileSync(RUTA_AVISO, texto, 'utf8');
+    }
+  } catch (e) { /* en segundo plano nadie lo mira: si falla, no hay aviso y listo */ }
+  process.exit(0);
+}
+
 // ---------------------------------------------------------------------------
 console.log(`== ACTUALIZAR PLUGINS: ${REPO} ==`);
 
@@ -816,8 +955,26 @@ if (!filas.length) {
       console.log(`\n  ${viejas.length} de plugins vigentes, en versiones que ya no corren:`);
       for (const s of viejas) console.log(`    ${s.id}  (${s.libres.length} de ${s.total})`);
     }
-    console.log('\nBorrarlas es seguro pero es DESTRUCTIVO y esta afuera del repo, en la carpeta del');
-    console.log('usuario, asi que no se hace automaticamente ni con --aplicar. Las rutas son:');
-    for (const s of sobra) for (const v of s.libres) console.log(`  ${path.join(s.ruta, v)}`);
+    if (LIMPIAR_CACHE) {
+      const { borradas, fallidas, salteados } = limpiarCache(sobra, filas);
+      console.log(`\n> Limpiando (--limpiar-cache): ${borradas.length} borrada(s)`
+        + (salteados.length ? `, ${salteados.length} plugin(s) salteado(s)` : '')
+        + (fallidas.length ? `, ${fallidas.length} con error` : '') + '.');
+      for (const r of borradas) console.log(`  borrada:  ${r}`);
+      for (const s of salteados) console.log(`  salteado: ${s.id} — ${s.motivo}`);
+      for (const f of fallidas) console.log(`  ERROR:    ${f.ruta} — ${f.error}`);
+      if (salteados.length) {
+        console.log('\nLo salteado no es un sobrante confirmado: son carpetas que el registro da por libres');
+        console.log('y que igual pueden estar en uso. Volver a correr la limpieza despues de reiniciar.');
+      }
+    } else {
+      console.log('\nBorrarlas es seguro pero es DESTRUCTIVO y esta afuera del repo, en la carpeta del');
+      console.log('usuario, asi que no se hace ni sin flags ni con --aplicar. Para borrarlas:');
+      console.log(COMANDO_LIMPIAR);
+      console.log('\nLas rutas son:');
+      for (const s of sobra) for (const v of s.libres) console.log(`  ${path.join(s.ruta, v)}`);
+    }
+  } else if (LIMPIAR_CACHE) {
+    console.log('\n(--limpiar-cache: no hay ninguna carpeta de version sin usar. Nada que borrar.)');
   }
 }

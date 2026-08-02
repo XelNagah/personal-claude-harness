@@ -420,17 +420,41 @@ for (const baseDir of basesDeInstalacion) {
 // manana. Medido el 31/07/2026 sobre lo que viaja: 23 enlaces resuelven y 1 no, asi que generalizar
 // no trae ruido. El destino se busca adentro de la MISMA carpeta que viaja, que es lo unico que el
 // consumidor recibe.
+// El mismo defecto tiene una forma MAS GRAVE en el codigo: un archivo que viaja que hace `require`
+// de uno que no viaja no confunde a nadie, MATA el hook. Node resuelve el require al cargar, antes
+// de cualquier try/catch, asi que el repartidor muere con `MODULE_NOT_FOUND` y el Agente Desplegado
+// se queda SIN NINGUNA REGLA ENTREGADA, en cada turno. Medido el 02/08/2026 sobre un consumidor
+// simulado al que le faltaba `conducta/alcance-al-escribir.js`: exit 1 y ni una regla.
+//
+// Por que este control y no uno que compare los dos arboles: `sincronizar-base` decide que viaja
+// recorriendo `base/`, asi que un Componente nuevo no entra solo. Comparar `.claude/` contra `base/`
+// para descubrirlo marca 24 archivos en este repo y LOS 24 son Aprendizaje legitimo que no debe
+// viajar (paginas de conocimiento, detalles de decisiones) — un control que marca todo entrena a
+// ignorarlo. Este, en cambio, no opina sobre que DEBERIA viajar: solo dice que lo que ya viaja no
+// puede quedar colgado. Cero falsos positivos por construccion.
 const enlaceMd = /\]\(([^)#\s]+\.md)(?:#[^)]*)?\)/g;
+const requireRelativo = /require\(\s*['"](\.[^'"]+)['"]\s*\)/g;
 const enlacesRotos = [];
+// Node acepta el require sin extension y resolviendo a un index: se prueban las tres formas antes de
+// dar por roto, para no marcar como faltante algo que alla si resuelve.
+const resuelveComoModulo = p => fs.existsSync(p) || fs.existsSync(p + '.js') || fs.existsSync(path.join(p, 'index.js'));
 for (const baseDir of basesDeInstalacion) {
   for (const r of listarArchivos(baseDir, '', [])) {
-    if (!r.endsWith('.md')) continue;
+    const esMd = r.endsWith('.md'), esJs = /\.(js|mjs|cjs)$/.test(r);
+    if (!esMd && !esJs) continue;
     const archivo = path.join(baseDir, r);
+    const texto = fs.readFileSync(archivo, 'utf8');
     const rotos = new Set();
-    for (const m of fs.readFileSync(archivo, 'utf8').matchAll(enlaceMd)) {
-      const ruta = m[1];
-      if (/^(?:https?:|\/)/.test(ruta)) continue;          // absoluto o externo: no es asunto de este control
-      if (!fs.existsSync(path.resolve(path.dirname(archivo), ruta))) rotos.add(ruta);
+    if (esMd) {
+      for (const m of texto.matchAll(enlaceMd)) {
+        const ruta = m[1];
+        if (/^(?:https?:|\/)/.test(ruta)) continue;        // absoluto o externo: no es asunto de este control
+        if (!fs.existsSync(path.resolve(path.dirname(archivo), ruta))) rotos.add(ruta);
+      }
+    } else {
+      for (const m of texto.matchAll(requireRelativo)) {
+        if (!resuelveComoModulo(path.resolve(path.dirname(archivo), m[1]))) rotos.add(m[1]);
+      }
     }
     if (rotos.size) enlacesRotos.push(`${r}  — apunta a ${[...rotos].join(', ')}, que no viaja`);
   }
@@ -635,7 +659,7 @@ const secciones = [
   [`MANIFIESTOS QUE ENGORDARON (> ${LIMITE_MANIFIESTO} palabras)`, manifiestosLargos],
   ['MANIFIESTOS SIN CAMPOS MINIMOS (dec. 0019)', manifiestosSinCampos],
   ['CITAS A DECISIONES DEL HARNESS EN DISTRIBUIBLES (dec. 0024)', refsDecision],
-  ['ENLACES DE LO QUE VIAJA A ALGO QUE NO VIAJA', enlacesRotos],
+  ['LO QUE VIAJA APUNTA A ALGO QUE NO VIAJA (enlaces y require)', enlacesRotos],
   ['TERMINOLOGIA VETADA EN EL TEXTO QUE VIAJA (funcionalidades/)', vetadoEnProducto],
   ['MARCA DE ORDEN DE BYTES (U+FEFF) EN ARCHIVOS DEL REPO', marcaDeOrden],
 ];

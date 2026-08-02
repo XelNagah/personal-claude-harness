@@ -49,6 +49,18 @@ const CASOS = [
   // --- caso malo: el control tiene que frenar ---
   { nombre: 'uso real de un termino que bloquea',
     entrada: { contenido: 'hay mucho churn en el repo' }, espera: 'bloquea', contiene: 'churn' },
+  // --- el codigo entro al momento avisando (decision `Local-0052`) ---
+  // El MISMO termino, el mismo contenido: lo unico que cambia es la extension. En un .md rechaza la
+  // escritura; en un .js informa y la deja pasar, porque ahi no hay forma de citar un termino sin
+  // usarlo (las comillas simples invertidas son plantillas de cadena, no cita).
+  { nombre: 'en codigo, un termino que bloquea solo avisa',
+    entrada: { ruta: 'D:/repo/script.js', contenido: 'hay mucho churn en el repo' }, espera: 'avisa', contiene: 'churn' },
+  { nombre: 'en codigo, un termino que avisa sigue avisando',
+    entrada: { ruta: 'D:/repo/script.js', contenido: 'esto es plomería del subsistema' }, espera: 'avisa', contiene: 'plomería' },
+  { nombre: 'un archivo que no es texto ni codigo queda fuera de alcance',
+    entrada: { ruta: 'D:/repo/datos.json', contenido: 'hay mucho churn' }, espera: 'nada' },
+  { nombre: 'el directorio de borradores queda afuera',
+    entrada: { ruta: 'D:/repo/.claude/tmp/nota.md', contenido: 'hay mucho churn' }, espera: 'nada' },
   { nombre: 'uso real con acento (limites de palabra no-ASCII)',
     entrada: { contenido: 'esto es plomería del subsistema' }, espera: 'avisa', contiene: 'plomería' },
   { nombre: 'expresion de varias palabras',
@@ -74,8 +86,10 @@ const CASOS = [
     entrada: { contenido: 'ejemplo:\n\n```js\nconst x = "hay mucho churn";\n```\n' }, espera: 'nada' },
   { nombre: 'palabra corriente que ya no esta en el registro (regresion de Local-0044)',
     entrada: { contenido: 'eso es la capa semántica, y aquella la capa de configuración' }, espera: 'nada' },
-  { nombre: 'archivo que no es .md',
-    entrada: { ruta: path.join(REPO, 'caso.js').replace(/\\/g, '/'), contenido: 'hay mucho churn' }, espera: 'nada' },
+  // Este caso esperaba 'nada' para un `.js` hasta que la decisión `Local-0052` metió el código en el
+  // alcance. Ahora el silencio es de los archivos que no son ni texto ni código, un caso más arriba.
+  { nombre: 'una imagen u otro binario no dispara nada',
+    entrada: { ruta: path.join(REPO, 'diagrama.png').replace(/\\/g, '/'), contenido: 'hay mucho churn' }, espera: 'nada' },
   { nombre: 'el propio subsistema semantica esta exento',
     entrada: { ruta: path.join(REPO, '.claude', 'semantica', 'TERMINOLOGIA-FARLOPA.md').replace(/\\/g, '/'),
                contenido: 'hay mucho churn' }, espera: 'nada' },

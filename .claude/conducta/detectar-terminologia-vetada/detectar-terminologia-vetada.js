@@ -23,6 +23,10 @@
 // Uso a mano (probar):
 //   echo {"tool_name":"Write","tool_input":{"file_path":"README.md","content":"hay mucho churn"}} | node detectar-terminologia-vetada.js
 const fs = require('fs'), path = require('path');
+// Que archivos alcanza el momento lo define UN solo archivo del subsistema, que tambien lee el hook
+// repartidor: si cada uno llevara su propia lista, la que sume una extension primero deja al otro
+// mirando para otro lado, sin emitir senal.
+const { alcanzaAlEscribir, esCodigo } = require('../alcance-al-escribir.js');
 const registro = path.resolve(__dirname, '..', '..', 'semantica', 'TERMINOLOGIA-FARLOPA.md');
 
 // Subsistema exento: el registro de vetados contiene los vetados por definicion.
@@ -115,8 +119,15 @@ process.stdin.on('end', () => {
     if (!contenido.trim()) return process.exit(0);
 
     const normal = rutas.map(r => r.replace(/\\/g, '/'));
-    if (!normal.some(r => /\.md$/i.test(r))) return process.exit(0);            // solo .md
+    if (!normal.some(alcanzaAlEscribir)) return process.exit(0);                 // texto o codigo
     if (normal.some(r => EXENTOS.some(re => re.test(r)))) return process.exit(0); // subsistema exento
+
+    // EN CODIGO EL CONTROL SOLO AVISA, cualquiera sea la columna `Control` de la fila (decision
+    // `Local-0052`). No es prudencia, es imposibilidad: la exencion que hace usable al bloqueo
+    // —se frena USAR el termino, no NOMBRARLO, mirando lo que queda fuera de las comillas simples
+    // invertidas— no se traduce a un .js, donde esas comillas son plantillas de cadena. Sin exencion
+    // de cita, bloquear dejaria archivos inescribibles y sin salida.
+    const soloCodigo = normal.every(esCodigo);
 
     const desnudo = textoDesnudo(contenido);
     const bloquear = [], avisar = [];
@@ -125,7 +136,7 @@ process.stdin.on('end', () => {
         const hits = apariciones(desnudo, v);
         if (!hits.length) continue;
         const item = `\`${v}\` (${hits.length === 1 ? 'línea ' : 'líneas '}${hits.slice(0, 5).join(', ')}) → ${fila.comoDecirlo}`;
-        (fila.control === 'bloquea' ? bloquear : avisar).push(item);
+        (fila.control === 'bloquea' && !soloCodigo ? bloquear : avisar).push(item);
       }
     }
 
