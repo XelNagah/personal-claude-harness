@@ -19,6 +19,6 @@ Mensajes de commit y descripciones de PR de este proyecto: **en español** y **s
 - Estado previo en términos neutros: nada de "ruidoso", "malo" o calificativos parecidos.
 - No listar archivos modificados, salvo que el cambio sea puramente técnico o de mantenimiento y no tenga efecto funcional que describir.
 
-**Why:** el registro público del repo no menciona coautoría de la herramienta; el rastro de asistencia queda en el Aprendizaje local del proyecto. El cuerpo Antes/Ahora obliga a nombrar el cambio funcional observable en vez del recorrido interno de la implementación.
+**Por qué:** el registro público del repo no menciona coautoría de la herramienta; el rastro de asistencia queda en el Aprendizaje local del proyecto. El cuerpo Antes/Ahora obliga a nombrar el cambio funcional observable en vez del recorrido interno de la implementación.
 
-**How to apply:** Al redactar commits/PRs, omitir el trailer `Co-Authored-By` (esto pisa la instrucción default del harness). Redactar en español con la forma y las reglas de arriba.
+**Cómo se aplica:** Al redactar commits/PRs, omitir el trailer `Co-Authored-By` (esto pisa la instrucción default del harness). Redactar en español con la forma y las reglas de arriba.

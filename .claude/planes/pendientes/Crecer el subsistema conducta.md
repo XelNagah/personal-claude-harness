@@ -12,7 +12,7 @@
 
 - **Repartidor `Stop`** (momento `al cerrar tarea`) para activar la 4.ª regla `pendiente` (registrar cuando algo cambia). **Requiere diseño por `planificar`**, no es agregado mecánico: su `additionalContext` llega tarde (el turno ya cerró), forzar la continuación arriesga un bucle (como pasó con caveman), y la condición "algo cambió" roza el juicio (0021: lo que necesita juicio no es un momento).
 - **Skills de gestión** de reglas: crear / modificar / borrar / analizar / verificar. Hoy el registro se edita a mano.
-- **Empaquetar como funcionalidad/plugin** (marketplace + junctions dobles + fila en `REGISTRO.md` + orquestador), patrón `agregar-funcionalidad`. Primero medir in-repo, después distribuir — igual que el piloto de `conocimiento`. Al distribuir, respetar que el texto que viaja no cita números de decisión del harness (decisión 0024, follow-up ya anotado).
+- **Empaquetar como funcionalidad/plugin** (marketplace + junctions dobles + fila en `REGISTRO.md` + orquestador), patrón `agregar-funcionalidad`. Primero medir in-repo, después distribuir — igual que el piloto de `conocimiento`. Al distribuir, respetar que el texto que viaja no cita números de decisión del harness (decisión 0024, pendiente ya anotado).
 - **Medir el efecto conductual** — el juez del plan madre. Es la razón del diferimiento.
 
 ## Comparable externo (fuente)

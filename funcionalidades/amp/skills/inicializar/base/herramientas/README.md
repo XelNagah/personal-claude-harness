@@ -4,9 +4,9 @@ Las **Herramientas** del repo son la maquinaria con que se construye y se mantie
 
 **Distinción clave:** los **lints de subsistema** (`lint-subsistemas`, `lint-semantica`, …) **no** son Herramientas. Son infraestructura del Patrón de cada subsistema (índice + entradas + **lint**) y viven con su subsistema. En el registro de Herramientas solo van tools del Propósito.
 
-**Why:** que la colección de tools del Propósito no se vuelva un conjunto de herramientas desordenadas sin saber qué son, de dónde salieron ni cómo se usan. Ubicación determinística + registro escaneable + ficha por tool. Y que la infraestructura interna del harness (lints) no se confunda con las tools de dominio.
+**Por qué:** que la colección de tools del Propósito no se vuelva un conjunto de herramientas desordenadas sin saber qué son, de dónde salieron ni cómo se usan. Ubicación determinística + registro escaneable + ficha por tool. Y que la infraestructura interna del harness (lints) no se confunda con las tools de dominio.
 
-**How to apply:**
+**Cómo se aplica:**
 
 1. Toda Herramienta nueva del repo va al registro `.claude/herramientas/INDICE-LOCAL.md` (una fila), con su `Tipo`. Un `script` vive en `.claude/herramientas/<tool>/` con su `README.md` (nunca suelto); una `skill`/`MCP`/`funcion` se apunta a donde vive.
 2. Marcar `Estado`; los `obsoleto` se pueden depurar.

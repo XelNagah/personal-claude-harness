@@ -9,7 +9,7 @@ Alta completa de una funcionalidad nueva (= un plugin del marketplace). El proce
 
 ## Pasos
 
-1. **Definir con el usuario** (si no está claro): nombre en español del dominio (decisión 0006), qué instala u opera, de qué depende (casi todo depende de `memoria-local`), y **si es de convención** (instala estructura → entra al orquestador) **u operacional** (solo se invoca, como `planificar` → no entra).
+1. **Definir con el usuario** (si no está claro): nombre en español del dominio (decisión 0006), qué instala u opera, de qué depende (los `amp-<sub>` de subsistema son independientes; `amp` depende de todos como paquete), y **si es de convención** (instala estructura → entra al orquestador) **u operacional** (solo se invoca, como `planificar` → no entra).
 2. **Crear `funcionalidades/<nombre>/`:**
    - `.claude-plugin/plugin.json` — `name`, `description`, `version` (arrancar en `0.1.0`), `author`. Descripción en español corriente, sin términos vetados por el glosario.
    - `README.md` — qué hace, qué agrega al repo destino, dependencias.

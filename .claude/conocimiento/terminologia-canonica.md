@@ -6,9 +6,9 @@ Dos mecanismos por los que la terminología ajena sobrevive aunque el usuario la
 
 **2. Ratificación sin ejecución.** El 2026-07-19 el usuario ratificó los reemplazos (`gate`→control, `verbatim`→textual, `levelear`→nivelar, `slug`→nombre estable, `prosa`→texto plano) y entraron al glosario. El plan que los bajaba al texto quedó en `Nuevo`. Dos días después seguían circulando 68 usos de "verbatim", 52 de "slug" y 26 de "gate" — y la percepción del usuario era *"me canso de describirlas y siguen apareciendo"*, que era exacta.
 
-**Why:** los canónicos (`PREFERENCIAS.md`, `AGENTS.md`, glosario, decisiones) están siempre en contexto **y** se copian a cada repo nuevo. Un término que sobrevive ahí no se queda quieto: se propaga a los consumidores y vuelve al agente en cada sesión.
+**Por qué:** los canónicos (`PREFERENCIAS.md`, `AGENTS.md`, glosario, decisiones) están siempre en contexto **y** se copian a cada repo nuevo. Un término que sobrevive ahí no se queda quieto: se propaga a los consumidores y vuelve al agente en cada sesión.
 
-**How to apply:**
+**Cómo se aplica:**
 
 1. **La ratificación no está hecha hasta que el texto cambió.** Ratificar y barrer en la misma tanda, o el término sigue vivo. Si no se puede barrer en el momento, el plan queda `En curso`, no `Nuevo`.
 2. **Barrer los canónicos primero**, antes que memorias, planes o funcionalidades. Es lo que corta el bucle.

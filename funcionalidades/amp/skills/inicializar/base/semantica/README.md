@@ -7,11 +7,11 @@ El subsistema `semántica` mantiene la coherencia semántica del dominio en el t
 
 **Términos por estado (glosario):** `Alias` (formas válidas, ratificadas), `Propuestos` (sugeridos por el agente, sin usar hasta ratificar). El glosario **NO tiene columna de vetados**: todo veto es una relación término→significado y vive en el registro par de Terminología Farlopa.
 
-**Why:** coherencia semántica a lo largo de la vida del repo. Los alias válidos **se registran** (saber que "birra/chela" son la misma cerveza evita confusión); los términos confusos o ajenos al dominio **se vetan** (dejan de usarse y se barren del texto vivo). Los agentes acumulan jerga sesión tras sesión —ver el conocimiento `terminologia-farlopa.md`—; la semántica la frena.
+**Por qué:** coherencia semántica a lo largo de la vida del repo. Los alias válidos **se registran** (saber que "birra/chela" son la misma cerveza evita confusión); los términos confusos o ajenos al dominio **se vetan** (dejan de usarse y se barren del texto vivo). Los agentes acumulan jerga sesión tras sesión —ver el conocimiento `terminologia-farlopa.md`—; la semántica la frena.
 
 **Gobernanza:** el agente **nunca** ratifica un alias ni veta por su cuenta: solo **propone** en `Propuestos`. Ratificar y vetar son del usuario. El agente **nunca usa** un término que esté en `Propuestos`, ni uno vetado en el significado que Terminología Farlopa prohíbe, ni en texto plano, memorias, planes o código.
 
-**How to apply:**
+**Cómo se aplica:**
 
 1. **Al planificar o analizar**, consultar los dos registros. Término nuevo válido → proponerlo en `Propuestos`. Término confuso o ajeno → proponer vetarlo (a Terminología Farlopa). En ambos casos, decide el usuario.
 2. Concepto **simple** → una fila del glosario. Concepto **complejo** → fila + página de detalle enlazada.

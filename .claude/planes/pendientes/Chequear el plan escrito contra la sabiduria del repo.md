@@ -56,13 +56,13 @@ El recordatorio actual es una **pregunta por sensación** (*"¿suena raro?"*) y 
 
 ## Mecanismo decidido (26-07-23, `planificar` → Decisión Local-0025, control de Terminología Farlopa en dos niveles)
 
-El "mecanismo a decidir una vez" (que este plan compartía con *Hook de preferencias* —ya cerrado— y *Control de ratificación*) quedó **resuelto para la clase terminología** en la decisión 0025: control de TF en dos niveles según persistencia, dentro de `conducta`.
+El "mecanismo a decidir una vez" (que este plan compartía con *Hook de preferencias* —ya cerrado— y *Control de ratificación*) quedó **resuelto para la clase terminología** en la decisión 0025: control de Terminología Farlopa en dos niveles según persistencia, dentro de `conducta`.
 
 - **Conversación (`cada turno`, soft):** recordatorio del criterio; minimiza la aparición, acepta fugas (efímero). Es la regla que ya existe.
-- **Al persistir (`al escribir`), dos velocidades:** vetado conocido → `lint-glosario` que **deniega** la escritura (programa); TF nueva → recordatorio fuerte que fuerza el criterio antes de persistir (juicio).
+- **Al persistir (`al escribir`), dos velocidades:** vetado conocido → `lint-glosario` que **deniega** la escritura (programa); Terminología Farlopa nueva → recordatorio fuerte que fuerza el criterio antes de persistir (juicio).
 - **Criterio de demarcación** (4 filtros, relativo al usuario del Propósito) asentado en el conocimiento `terminologia-farlopa`; el filtro 3 (metáfora acuñada, del inglés o del castellano) es el que cazaba `zombi`.
 
-**Este plan queda listo para ejecutar en sesión limpia.** Trabajo concreto pendiente: subir el momento `al escribir` de recordatorio a **bloqueo** (reusar `lint-glosario` en `PreToolUse`, deny), redactar la regla `al escribir`-fuerte para TF nueva, probar en negativo (meter un vetado y ver que frena), y propagar. La parte "detección en la conversación después del envío" (hook `Stop`) sigue abierta como techo honesto (la conversación no se puede frenar antes de mandarla).
+**Este plan queda listo para ejecutar en sesión limpia.** Trabajo concreto pendiente: subir el momento `al escribir` de recordatorio a **bloqueo** (reusar `lint-glosario` en `PreToolUse`, deny), redactar la regla `al escribir`-fuerte para Terminología Farlopa nueva, probar en negativo (meter un vetado y ver que frena), y propagar. La parte "detección en la conversación después del envío" (hook `Stop`) sigue abierta como techo honesto (la conversación no se puede frenar antes de mandarla).
 
 ## Conexión con lo ya decidido
 
