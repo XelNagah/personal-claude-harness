@@ -13,7 +13,7 @@ Son **dos fuentes para el mismo dato**, y nada las mantiene sincronizadas. Cada 
 
 ## La dirección
 
-Que el detector **derive la lista de la plantilla** en vez de duplicarla. Abierto: cómo, sin volver frágil el acoplamiento — la plantilla es prosa con bloques de código, no una estructura de datos. Alternativas a evaluar: un manifiesto declarativo de Componentes de Subsistema que la plantilla y el detector consuman los dos; o que el detector extraiga los nombres de archivo de los bloques de la plantilla.
+Que el detector **derive la lista de la plantilla** en vez de duplicarla. Abierto: cómo, sin volver frágil el acoplamiento — la plantilla es texto plano con bloques de código, no una estructura de datos. Alternativas a evaluar: un manifiesto declarativo de Componentes de Subsistema que la plantilla y el detector consuman los dos; o que el detector extraiga los nombres de archivo de los bloques de la plantilla.
 
 ## Tercera vez, 26/07/2026 — y esta vez sobre un consumidor real
 

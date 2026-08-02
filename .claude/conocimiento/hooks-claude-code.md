@@ -61,7 +61,7 @@ flowchart TD
 > **⛔ = evento bloqueante** (nodos hexagonales): corre en el camino crítico y puede frenar la acción — ver §4.
 > `SubagentStop` (⛔) es el gemelo de `Stop` dentro de un subagente. `Notification` es transversal: dispara cuando el harness avisa algo (pide permiso, sesión inactiva), fuera de este bucle.
 
-Lectura en prosa:
+Lectura en texto plano:
 
 1. **`SessionStart`** — al abrir, reanudar o limpiar la sesión. Punto para cargar contexto de arranque o correr un chequeo (el lint de este repo).
 2. **`UserPromptSubmit`** — apenas el usuario manda el mensaje, **antes** de que el modelo lo vea. Punto para inyectar reglas por turno o rechazar el prompt.

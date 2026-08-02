@@ -52,6 +52,6 @@ Los otros tres incidentes producen texto plano difuso —un plan, una pregunta a
 Anthropic, *"Building verification loops in Claude Code with skills"* (2026-07-22). Valida de afuera la dirección de este plan:
 
 - **El patrón "grader aparte" existe y está nombrado:** el artículo lista *"Rubrics in Claude Managed Agents — verificás resultados contra una rúbrica usando un agente evaluador separado; las fallas realimentan solas"*. Es la misma idea que este banco (correr un agente y evaluar su salida), pero como servicio administrado. Refuerza que **el verificador tiene que ser un tercero**, no el mismo agente auto-revisándose — que es justo el punto ciego que motiva este plan.
-- **On-PR** como destino natural de un gate conductual, si el banco madura de experimento a control recurrente.
+- **On-PR** como destino natural de un Control conductual, si el banco madura de experimento a control recurrente.
 - **Techo compartido:** el artículo insiste en probar la cadena antes de desplegar (el encadenado gasta tokens) — coincide con la pregunta abierta del costo (N corridas × variantes × agentes).
 - Análisis completo del solapamiento en el conocimiento de `como-uso-claude` (`documentos-investigacion/bucles-de-verificacion.md`).

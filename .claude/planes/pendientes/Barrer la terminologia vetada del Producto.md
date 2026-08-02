@@ -71,7 +71,7 @@ Más una cola larga de planes ejecutados y pendientes.
 
 ## No es un reemplazo a ciegas: tres poblaciones
 
-1. **Sustitución en prosa** — `harness` puesto donde iba *Agente Multipropósito*. Es lo que viola la preferencia. **Se reescribe.**
+1. **Sustitución en texto plano** — `harness` puesto donde iba *Agente Multipropósito*. Es lo que viola la preferencia. **Se reescribe.**
 2. **Nombres de identificador** — `lint-harness`, `propagar-harness`, y el marketplace `xelnagah-harness`. Son interfaces: renombrarlos rompe cosas. El del marketplace **rompe a los consumidores ya instalados** y ya figura como pendiente en el plan `Nombres y distribucion de las skills del harness`. `propagar-harness` se retira por el plan de la duplicación, así que se resuelve solo.
 3. **Uso legítimo del género** — el propio glosario dice: *"'Harness' es el término genérico —un setup de subsistemas cualquiera—; en este repo **denota** el AMP: no todo harness es un AMP, pero todo AMP es un harness."* Cuando el texto habla del género —comparar contra otros proyectos, como en el conocimiento `proyectos-similares-al-harness`— es correcto y **se deja**.
 
@@ -84,7 +84,7 @@ Los planes **ejecutados** y **descartados** son registro de lo que pasó, con la
 ## A decidir
 
 - **Si el Producto merece un control más duro que el repo.** Es lo único que viaja: un término vetado en `.claude/` lo lee el autor, uno en la Plantilla lo hereda cada Agente con Propósito. Candidato: que `lint-harness` —que ya mira el Producto— falle ante vetados en la Plantilla, mientras `lint-semantica` los sigue reportando como información.
-- Si la fila **Agente Multipropósito** del glosario tiene que distinguir `harness`-alias de `harness`-género. Hoy la definición explica la diferencia en prosa pero la columna `Alias` lo lista pelado, así que un lint que marque por término no puede separarlos.
+- Si la fila **Agente Multipropósito** del glosario tiene que distinguir `harness`-alias de `harness`-género. Hoy la definición explica la diferencia en texto plano pero la columna `Alias` lo lista pelado, así que un lint que marque por término no puede separarlos.
 - Si conviene un control que impida la reincidencia. Marcar cada aparición como hallazgo es ruidoso —el uso genérico es legítimo—; el candidato es una regla de conducta en el momento de escribir, no un lint.
 - El orden: la Plantilla primero (es lo que viaja), el resto después.
 

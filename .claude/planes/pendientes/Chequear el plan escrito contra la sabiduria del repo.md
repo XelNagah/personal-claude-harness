@@ -83,7 +83,7 @@ Se cruza con el plan [Capa semantica de coherencia](Capa%20semantica%20de%20cohe
 2. Implementar la parte mecánica, si se decide que la hay.
 3. Implementar el disparo acordado; registro doble de hook si aplica (settings de Claude + `.codex/hooks.json`, decisión 0010).
 4. Probar en negativo: introducir a propósito un término acuñado en un plan y verificar que el control lo frena. Sin esa prueba no se sabe si el control detecta o si no había nada que detectar.
-5. Si el mecanismo viaja a los repos consumidores, propagar con `propagar-harness` y bumpear versiones.
+5. Si el mecanismo viaja a los repos consumidores, propagar con `propagar-harness` y subir las versiones.
 6. Cierre con `control-cierre` verde.
 
 ## Riesgo

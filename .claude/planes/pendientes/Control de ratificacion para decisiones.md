@@ -37,7 +37,7 @@ El fallo es de la misma clase que el del plan pendiente [Hook de preferencias en
 2. Replicarlo textualmente a `funcionalidades/decisiones/skills/inicializar-decisiones/PLANTILLA.md` y al `SKILL.md`, y al `README.md` de la funcionalidad — paridad con los cuatro lugares del glosario.
 3. Si el alcance resulta ancho (pregunta 1), evaluar si va también a la Base de `PREFERENCIAS.md` — y si va, entra en el circuito de propagación de la Base.
 4. Si se adopta estado `propuesta` (pregunta 3), ajustar `lint-decisiones` y propagarlo.
-5. Propagar con `propagar-harness` a las funcionalidades tocadas y al orquestador `setup-completo`. Bumpear `version` de los `plugin.json`.
+5. Propagar con `propagar-harness` a las funcionalidades tocadas y al orquestador `setup-completo`. Subir la `version` de los `plugin.json`.
 6. Cierre: `control-cierre` verde.
 
 ## Riesgo
@@ -53,6 +53,6 @@ La pregunta 2 (mecanismo) tiene ahora un molde resuelto para la clase hermana: l
 Análisis de repeticiones en el repo `como-uso-claude` (ventana 07-18 → 07-24) reconfirma esta clase de fallo con dos aportes:
 
 1. **La regla escrita se sigue violando aunque esté en la Base v2.** El Base de `PREFERENCIAS.md` ya dice *"gate duro en registros canónicos: ningún término acuñado por el agente se asienta sin ratificación"*, y aun así el 24-07 el agente **borró el término `fabrica` del glosario y cambió una definición sin consultar**. Cita del usuario: *"Vos tocás el glosario así nomás sin consultarme nada? decidiste borrar `fabrica` y cambiar una definición sin mi intervención de ningún tipo?"*. Es exactamente la tesis del plan (regla en registro ≠ control en el punto de acción), ahora con evidencia sobre el **glosario**, no solo sobre decisiones.
-2. **Faceta nueva: la baja/modificación de lo ya canónico.** El gate existente es sobre el **alta** ("entrada nueva"). Borrar o redefinir una entrada ya ratificada es un acto distinto y no está gateado — es la pregunta 1, tercer grupo. La regla del usuario, textual, es *"preguntar antes de redefinir/remover algo canónico"*. **No se asienta como decidida acá** (el plan tiene diseño abierto; asentarla sin ratificar repetiría el propio incidente): queda como alcance a resolver al diseñar `conducta`.
+2. **Faceta nueva: la baja/modificación de lo ya canónico.** El Control existente es sobre el **alta** ("entrada nueva"). Borrar o redefinir una entrada ya ratificada es un acto distinto y no tiene Control — es la pregunta 1, tercer grupo. La regla del usuario, textual, es *"preguntar antes de redefinir/remover algo canónico"*. **No se asienta como decidida acá** (el plan tiene diseño abierto; asentarla sin ratificar repetiría el propio incidente): queda como alcance a resolver al diseñar `conducta`.
 
 Origen del análisis: pedido del usuario de detectar qué le repite a los agentes para volverlo skill/preferencia; la terminología acuñada por el agente salió como LA fricción recurrente (5+ repos), ya cubierta por reporte-de-mejora 07-21 #2 y por estos planes de punto-de-acción.

@@ -8,7 +8,7 @@ Una **skill que ejecute un plan de punta a punta** — desde un plan pendiente (
 
 ## A evaluar (no decidido)
 
-- **Contra `Workflow`** (orquestación multiagente determinista): ¿esta habilidad es una skill que *usa* Workflow para las partes paralelizables (copia verbatim, verificación por inclusión), o es una skill lineal que delega a subagentes frescos como hace hoy la memoria de propagación? Un plan grande = descubrir el work-list + pipeline sobre él.
+- **Contra `Workflow`** (orquestación multiagente determinista): ¿esta habilidad es una skill que *usa* Workflow para las partes paralelizables (copia Textual, verificación por inclusión), o es una skill lineal que delega a subagentes frescos como hace hoy la memoria de propagación? Un plan grande = descubrir el work-list + pipeline sobre él.
 - **Solape a resolver:** la parte "asentar el aprendizaje al cerrar" ya la cubre el plan [Verificar que el aprendizaje quede asentado en los subsistemas](Verificar%20que%20el%20aprendizaje%20quede%20asentado%20en%20los%20subsistemas.md) (reusa `/contrastar`, dirección hacia atrás). Esta habilidad sería el **motor de ejecución** que la invoca en la transición a Ejecutado — no duplicar ese mecanismo.
 - **Contra el ciclo de planes:** ya existe `ciclo-de-plan` (abrir/transicionar). Esta sería la capa que *ejecuta el cuerpo* del plan, no solo mueve su estado.
 

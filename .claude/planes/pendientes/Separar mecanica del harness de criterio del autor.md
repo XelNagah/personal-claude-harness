@@ -22,7 +22,7 @@ Y fuera de preferencias hay más: la memoria de estilo de commits impone **commi
 
 ## Direcciones a evaluar
 
-1. **Tres capas** — mecánica del harness / criterio del autor (ejemplo, editable) / adaptaciones del repo. La más clara conceptualmente; hay que ver si el versionado sigue funcionando con tres bloques y qué hace el nivelado con la capa del medio si el usuario la editó.
+1. **Tres capas** — mecánica del harness / criterio del autor (ejemplo, editable) / lo que suma el Agente Desplegado. La más clara conceptualmente; hay que ver si el versionado sigue funcionando con tres bloques y qué hace el nivelado con la capa del medio si el usuario la editó.
 2. **Dos capas, Base adelgazada** — la Base queda solo con mecánica, y el criterio del autor se distribuye como un *perfil* opcional que el usuario elige aplicar o no al instalar. Más trabajo de instalador, pero el default deja de imponer gusto ajeno.
 3. **Dejarlo y documentarlo** — la Base es declaradamente opinada; se avisa en el README y el usuario borra lo que no le sirve. Costo cero, pero cada nivelado se lo devuelve.
 

@@ -42,7 +42,7 @@ Se ordenan en **cinco ejes**. Ninguno fue inventado en el análisis; todos salen
 | **1. De quién es** | ¿harness/agente o producto? | *"Es parte del harness e ingeniería de contexto de cada repo, pero no del proyecto en sí"* · *"**Es un servicio, no un producto.** Distinto sería si el propósito es diseñar una página web"* |
 | **2. Qué relación tiene el agente con la cosa** | ¿la **lee**, la **sabe** o la **ejecuta**? | *"son lo que el agente **lee**, no lo que **sabe**"* · *"son lo que **se ejecuta**, no lo que el agente…"* |
 | **3. Cambia o está fijo** | ¿estado vivo o veredicto? | *"`sessions.json` es estado vivo… es **runtime, no fuente**"* · *"memoria = estado en curso que **cambia**; decisión = elección estructural que se toma **una vez**"* |
-| **4. Es invocable por sí mismo** | dentro de herramientas: ¿fila o tripa? | *"sus tripas no son filas"* · *"el **Comando es la forma de llamarla**"* |
+| **4. Es invocable por sí mismo** | dentro de herramientas: ¿fila o contenido interno? | *"sus tripas no son filas"* · *"el **Comando es la forma de llamarla**"* |
 | **5. Sustantivo o verbo** | glosario o memoria de comandos | *"Glosario = los sustantivos (qué **son**). Memoria de comandos = los verbos (qué **hacés**)"* |
 
 Con esos cinco ejes, los casos que se discutieron durante semanas se resuelven sin discusión — salvo **uno**: `sessions.json`, el estado vivo de una Herramienta, que **ningún subsistema acepta**. Es un hueco real de cobertura, no un error de ruteo.

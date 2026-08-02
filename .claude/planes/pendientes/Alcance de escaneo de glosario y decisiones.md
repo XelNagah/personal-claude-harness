@@ -32,7 +32,7 @@ Es la dirección **opuesta** al bug que originó el plan padre: allá sobraban a
 1. Línea de base de los lints afectados (verificando que la salida sea de lint, no un error — ver el error de método documentado en el plan padre).
 2. Aplicar el cambio de alcance acordado.
 3. Comparar contra la línea de base: cada hallazgo nuevo se justifica uno por uno. Acá se **esperan** hallazgos nuevos, al revés que en el plan padre.
-4. Propagar con `propagar-harness` a las plantillas de `glosario` y `decisiones` y al orquestador. Bumpear versiones.
+4. Propagar con `propagar-harness` a las plantillas de `glosario` y `decisiones` y al orquestador. Subir las versiones.
 5. Cierre con `control-cierre` verde.
 
 ## Nota
