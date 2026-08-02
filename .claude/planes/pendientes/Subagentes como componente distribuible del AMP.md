@@ -17,9 +17,9 @@ Análisis fuente en el conocimiento del agente `automejora` (repo `como-uso-clau
 
 ## A resolver
 
-- **Qué es un subagente para el AMP, y en qué se distingue de un subsistema y de una Herramienta.** Un subsistema es una casa de datos; una Herramienta, una tool invocable; un subagente es un ejecutor con contexto propio. La categoría nueva necesita entrar al glosario y, si define estructura, al Patrón (el Test de demarcación de 0020 aplica: ¿quién lo lee?).
+- **Qué es un subagente para el Agente Multipropósito, y en qué se distingue de un subsistema y de una Herramienta.** Un subsistema es una casa de datos; una Herramienta, una tool invocable; un subagente es un ejecutor con contexto propio. La categoría nueva necesita entrar al glosario y, si define estructura, al Patrón (el Test de demarcación de 0020 aplica: ¿quién lo lee?).
 - **¿Registro e índice, como todo subsistema?** Hoy el criterio del repo es que lo que existe se registra. Si hay `.claude/agents/`, ¿lleva índice y lint, o alcanza con que los archivos estén? Cruza directo con el plan del Registro genérico.
-- **Cuáles son los transversales que valen el viaje.** «Investigador, corredor de tests, revisor de código» viene de la sesión fuente, no de una necesidad medida acá. Un revisor de código en un repo de contabilidad no sirve igual que en uno de software: contrastar contra el hecho de que el AMP es multipropósito.
+- **Cuáles son los transversales que valen el viaje.** «Investigador, corredor de tests, revisor de código» viene de la sesión fuente, no de una necesidad medida acá. Un revisor de código en un repo de contabilidad no sirve igual que en uno de software: contrastar contra el hecho de que el Agente Multipropósito es multipropósito.
 - **Separación Base/aprendido (0027):** los transversales son Base (el nivelador los reemplaza enteros); los de dominio, aprendidos (nunca se tocan). Aplicar el mismo corte que ya usan `conducta` y `preferencias`.
 - **¿Empaquetados en `amp` o en un plugin propio?** La decisión 0029 fijó que un subsistema sin skill de operación no tiene plugin; los subagentes no son subsistema, así que la regla no los cubre.
 - **Relación con las skills que ya delegan.** Si `propagar-harness` describe su subagente en el `SKILL.md`, ¿pasa a apuntar a un subagente con archivo propio, o conviven las dos formas?

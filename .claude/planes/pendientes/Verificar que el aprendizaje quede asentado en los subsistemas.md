@@ -46,8 +46,8 @@ Relevamiento de mecanismos (2026-07-23), en el repo de mejora de uso:
 `D:\Proyectos\analisis\como-uso-claude\.claude\conocimiento\hermes-agent.md`
 
 Qué mirar de ahí para este plan:
-- **Auto-edición de memoria por el agente** (`memory_tool` add/replace/remove, con tope de tamaño y scan de prompt injection antes de escribir) — el AMP hoy asienta a mano; esto es lo que habilita el disparo automático.
-- **Sesiones pasadas buscables** (`session_search_tool` sobre SQLite/FTS) — sostiene "recuperar lo que se dijo antes", que al AMP le falta estructurado.
+- **Auto-edición de memoria por el agente** (`memory_tool` add/replace/remove, con tope de tamaño y scan de prompt injection antes de escribir) — el Agente Multipropósito hoy asienta a mano; esto es lo que habilita el disparo automático.
+- **Sesiones pasadas buscables** (`session_search_tool` sobre SQLite/FTS) — sostiene "recuperar lo que se dijo antes", que al Agente Multipropósito le falta estructurado.
 - Lo que **no** conviene copiar: los motores de entrenamiento en diferido (Atropos/GEPA) — fuera de alcance; acá alcanza `/contrastar` disparado por hook / cierre de plan.
 
 ## Depende de

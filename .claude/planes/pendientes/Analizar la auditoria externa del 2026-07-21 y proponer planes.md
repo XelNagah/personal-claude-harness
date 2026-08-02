@@ -26,4 +26,4 @@ Por cada uno: confirmar que el plan existente lo cubre de verdad; si cubre parci
 
 ## Cómo ejecutarlo
 
-Correr por `planificar` (contrastar contra glosario, decisiones y planes vivos). Salida esperada: anotaciones en los planes existentes del primer grupo + los planes nuevos que sobrevivan el análisis del segundo grupo. El orden sugerido por la auditoría para publicar: efecto conductual + renombre AMP + propagar Manifiesto → subsistemas a medias → recién ahí la migración a inglés (traducir congela; traducir deuda es pagarla dos veces).
+Correr por `planificar` (contrastar contra glosario, decisiones y planes vivos). Salida esperada: anotaciones en los planes existentes del primer grupo + los planes nuevos que sobrevivan el análisis del segundo grupo. El orden sugerido por la auditoría para publicar: efecto conductual + renombre al Agente Multipropósito + propagar Manifiesto → subsistemas a medias → recién ahí la migración a inglés (traducir congela; traducir deuda es pagarla dos veces).

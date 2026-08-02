@@ -23,7 +23,7 @@ También existen GitHub Spec Kit (especificaciones para código), bases de conoc
 
 Producto abierto de Nous Research (`pip install hermes-agent`): motor propio, varios proveedores de modelo, 24 plataformas de chat, 80+ skills de fábrica. **Es el mismo diseño de fondo que el Agente Multipropósito, pero como producto instalable con motor propio.** Se describe con cinco componentes: memoria, skills, persona, tareas agendadas y bucle de auto-mejora.
 
-| Componente Hermes | Qué es | Equivalente en el AMP |
+| Componente Hermes | Qué es | Equivalente en el Agente Multipropósito |
 |---|---|---|
 | Memoria | archivos que el propio agente edita con una herramienta de memoria, más sesiones pasadas buscables | `memoria/` tipada + `conocimiento/`, escritas a mano vía skills |
 | Skills | las crea desde la experiencia y las mejora con el uso | skills del harness (slash + disparo conversacional) |
@@ -31,9 +31,9 @@ Producto abierto de Nous Research (`pip install hermes-agent`): motor propio, va
 | Tareas agendadas | tareas de agente, no de shell, con corte por seguridad de costo | fuera del harness (repo `Alertas-Push`) |
 | Bucle de auto-mejora | observar → destilar → reusar → afinar, automático | **hueco**: hoy es manual (`buscar-conocimiento` + seguimientos que dispara el usuario) |
 
-**Terminología: acá el AMP está adelante, no atrás.** Los "glosarios" de Hermes son documentación *sobre* Hermes para humanos (una wiki autogenerada del código y páginas de presentación). Hermes **no tiene** gobernanza terminológica del dominio del usuario: ni glosario con alias registrados, ni convergencia (detectar sinónimos y anglicismos para ratificar o vetar), ni lint de colisiones, ni el Control "el agente propone, el usuario ratifica".
+**Terminología: acá el Agente Multipropósito está adelante, no atrás.** Los "glosarios" de Hermes son documentación *sobre* Hermes para humanos (una wiki autogenerada del código y páginas de presentación). Hermes **no tiene** gobernanza terminológica del dominio del usuario: ni glosario con alias registrados, ni convergencia (detectar sinónimos y anglicismos para ratificar o vetar), ni lint de colisiones, ni el Control "el agente propone, el usuario ratifica".
 
-Detalle de mecanismos y qué conviene copiar: [replicar Hermes en el AMP](replicar-hermes-en-el-amp.md).
+Detalle de mecanismos y qué conviene copiar: [replicar Hermes en el Agente Multipropósito](replicar-hermes-en-el-amp.md).
 
 ## Diferenciadores del harness (lo que nadie tiene junto)
 

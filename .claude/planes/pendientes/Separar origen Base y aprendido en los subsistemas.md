@@ -7,7 +7,7 @@
 Los subsistemas **no distinguen el origen de su contenido**. En casi todos se mezclan dos orígenes:
 
 - **Base** — lo que el diseñador del harness manda y espera que todo Agente Multipropósito cumpla (comportamiento río arriba).
-- **Aprendido** — lo que el AMP aprende persiguiendo su Propósito, generando su Producto (comportamiento de dominio).
+- **Aprendido** — lo que el Agente Multipropósito aprende persiguiendo su Propósito, generando su Producto (comportamiento de dominio).
 
 Hoy eso está separado **en un solo lugar**: `PREFERENCIAS.md` (Base vs Adaptaciones). En el resto está revuelto. Ejemplo: en `memoria/`, el harness siembra `feedback_flujo_planes.md` (Base) y el repo aprende sus propias memorias (aprendido), indistinguibles en la misma carpeta. El nivelador no puede saber cuál es suyo.
 

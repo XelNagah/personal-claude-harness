@@ -8,4 +8,4 @@ Propósito: Diseñar un Agente Multipropósito basado en subsistemas de aprendiz
      hardcodeada en mostrar-pantalla-bienvenida.js; el Título de acá es el nombre de ESTE repo.
      El formato definitivo, la captura en el setup y el @import desde AGENTS.md los define
      el plan `Identidad del Agente - Titulo y Proposito persistidos`. El renombre completo
-     (README, AGENTS.md, marketplace, plugins, AMP/MPA al glosario) es el plan de agrupación por prefijo. -->
+     (README, AGENTS.md, marketplace, plugins, nombre y siglas al glosario) es el plan de agrupación por prefijo. -->

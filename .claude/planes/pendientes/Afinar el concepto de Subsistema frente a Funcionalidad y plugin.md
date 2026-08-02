@@ -23,7 +23,7 @@ Y no hay correspondencia 1:1: de las 10 funcionalidades, **8 instalan un subsist
 ## Relación con otros planes
 
 - **Cruza con [Revisar la nomenclatura de los subsistemas](Revisar%20la%20nomenclatura%20de%20los%20subsistemas.md)** (Nuevo): eso ataca los nombres internos opacos del patrón (`Base`, `Entrada`, `Patrón`); esto ataca el par Subsistema/Funcionalidad. Misma familia (vocabulario de subsistemas), ejes distintos — **diseñar coordinados**, quizás en la misma sesión.
-- Toca `decisiones` 0001 (qué es el repo), 0002 (patrón de subsistema), 0009 (taxonomía de skills, que ya distingue Skill de Subsistema vs Skill del AMP).
+- Toca `decisiones` 0001 (qué es el repo), 0002 (patrón de subsistema), 0009 (taxonomía de skills, que ya distingue Skill de Subsistema vs Skill del Agente Multipropósito).
 
 ## Correr por
 

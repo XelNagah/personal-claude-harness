@@ -1,12 +1,12 @@
 # Título de sesión y momentos de disparo de la Pantalla de bienvenida
 
-**Estado: Nuevo · Creado 26-07-25.** Origen: [Distribuir la Pantalla de bienvenida como funcionalidad](../ejecutados/Distribuir%20la%20Pantalla%20de%20bienvenida%20como%20funcionalidad.md), cerrado por decisión 0030 (la Pantalla viaja como Regla Base de `conducta`, no como plugin propio). Ese plan resolvió **que la Pantalla llegue** a todo AMP; acá quedan los dos ajustes que no son distribución.
+**Estado: Nuevo · Creado 26-07-25.** Origen: [Distribuir la Pantalla de bienvenida como funcionalidad](../ejecutados/Distribuir%20la%20Pantalla%20de%20bienvenida%20como%20funcionalidad.md), cerrado por decisión 0030 (la Pantalla viaja como Regla Base de `conducta`, no como plugin propio). Ese plan resolvió **que la Pantalla llegue** a todo Agente Multipropósito; acá quedan los dos ajustes que no son distribución.
 
 ## Qué falta
 
 ### 1. Título del repo en el encabezado de la sesión (`sessionTitle`)
 
-Hoy el Título del repo aparece **dentro** de la caja de la Pantalla, que se ve una vez al arrancar y después se va con el hilo de la conversación. La idea es ponerlo también en el **encabezado de la sesión** (el campo `sessionTitle` del hook), que queda visible todo el tiempo. Ejemplo concreto: con 18 AMP abiertos en ventanas distintas, hoy hay que subir hasta el arranque de cada una para saber cuál es cuál; con el Título en el encabezado se lee de un vistazo.
+Hoy el Título del repo aparece **dentro** de la caja de la Pantalla, que se ve una vez al arrancar y después se va con el hilo de la conversación. La idea es ponerlo también en el **encabezado de la sesión** (el campo `sessionTitle` del hook), que queda visible todo el tiempo. Ejemplo concreto: con 18 Agentes Multipropósito abiertos en ventanas distintas, hoy hay que subir hasta el arranque de cada una para saber cuál es cuál; con el Título en el encabezado se lee de un vistazo.
 
 A resolver:
 

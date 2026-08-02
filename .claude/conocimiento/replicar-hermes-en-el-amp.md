@@ -1,12 +1,12 @@
-# Replicar los componentes de Hermes en el AMP con los subsistemas
+# Replicar los componentes de Hermes en el Agente Multipropósito con los subsistemas
 
-Diseño del **2026-07-23**. Toma los mecanismos de Hermes Agent (relevados en [proyectos similares al harness](proyectos-similares-al-harness.md)) y los baja a **cómo se instrumentan con los subsistemas del Agente Multipropósito**: qué ya existe, qué falta y qué plan lo cubre. Replicar Hermes no es construir un producto nuevo: es **cablear subsistemas que ya están**. Tampoco hace falta replicar todo — la tabla sirve como lista de qué tiene Hermes que el AMP no.
+Diseño del **2026-07-23**. Toma los mecanismos de Hermes Agent (relevados en [proyectos similares al harness](proyectos-similares-al-harness.md)) y los baja a **cómo se instrumentan con los subsistemas del Agente Multipropósito**: qué ya existe, qué falta y qué plan lo cubre. Replicar Hermes no es construir un producto nuevo: es **cablear subsistemas que ya están**. Tampoco hace falta replicar todo — la tabla sirve como lista de qué tiene Hermes que el Agente Multipropósito no.
 
 ## Principio rector
 
-La auto-mejora de Hermes **en vivo** no es magia estadística: son **dos componentes simples** — (1) un texto en el prompt de sistema que empuja al agente a guardar lo que aprendió, y (2) una herramienta que escribe ese aprendizaje a un archivo. La minería de sesiones y el entrenamiento corren **en diferido**, en un repo aparte, con una persona aprobando cada cambio: fuera del alcance del AMP y no hace falta.
+La auto-mejora de Hermes **en vivo** no es magia estadística: son **dos componentes simples** — (1) un texto en el prompt de sistema que empuja al agente a guardar lo que aprendió, y (2) una herramienta que escribe ese aprendizaje a un archivo. La minería de sesiones y el entrenamiento corren **en diferido**, en un repo aparte, con una persona aprobando cada cambio: fuera del alcance del Agente Multipropósito y no hace falta.
 
-Consecuencia clave: el AMP tiene un componente que Hermes **en vivo no** tiene — el subsistema `conducta` con reglas de clase **correr**, donde una Herramienta resuelve el momento **sin juicio del agente**. Donde Hermes solo puede *inyectar* un recordatorio y confiar en que el agente lo siga, el AMP puede *correr* la captura de forma determinística. En vivo, el AMP puede igualar o superar a Hermes.
+Consecuencia clave: el Agente Multipropósito tiene un componente que Hermes **en vivo no** tiene — el subsistema `conducta` con reglas de clase **correr**, donde una Herramienta resuelve el momento **sin juicio del agente**. Donde Hermes solo puede *inyectar* un recordatorio y confiar en que el agente lo siga, el Agente Multipropósito puede *correr* la captura de forma determinística. En vivo, el Agente Multipropósito puede igualar o superar a Hermes.
 
 Regla de traducción:
 
@@ -16,7 +16,7 @@ Regla de traducción:
 
 ## Tabla maestra
 
-| Componente Hermes | Mecanismo Hermes | Subsistema(s) del AMP | Estado | Plan que lo cubre |
+| Componente Hermes | Mecanismo Hermes | Subsistema(s) del Agente Multipropósito | Estado | Plan que lo cubre |
 |---|---|---|---|---|
 | **Bucle de auto-mejora** | empuje "guardá una skill tras una tarea compleja" + herramienta que escribe skills | `conducta` (dispara) + `conocimiento`/`decisiones`/… (escribe) vía `/contrastar` | Diseño listo; falta el repartidor del hook `Stop` | *Verificar que el aprendizaje quede asentado* + *Crecer el subsistema conducta* |
 | **Memoria — auto-escritura** | el agente agrega/reemplaza/borra en sus archivos de memoria, con chequeo de inyección de prompt antes de escribir | `memoria` + skills `registrar-*` | La escritura existe (a mano); falta el disparo | *Verificar que el aprendizaje quede asentado* (parcial); **auto-escritura sin plan propio** |
@@ -24,7 +24,7 @@ Regla de traducción:
 | **Skills — que el agente las escriba solo** | el agente crea y parcha sus propias skills; carga por niveles | skills del harness + `conducta` (empuje) | Las skills existen; la auto-escritura no | *Crecer el subsistema conducta* (empuje); auto-escritura sin plan |
 | **Tareas agendadas** | tarea de agente en lenguaje natural, modo sin LLM, corte por seguridad de costo, adjuntar skills | repo `Alertas-Push` (fuera del harness) | Existe base; sin corte por seguridad | **Falta** — vive en `Alertas-Push` |
 | **Persona** | `SOUL.md` | `preferencias` (separado por origen) | Cubierto | — |
-| **Gobernanza terminológica** | *(Hermes no tiene)* | `semantica` + `converger-terminologia` | **AMP adelante** | — (exportar, no importar) |
+| **Gobernanza terminológica** | *(Hermes no tiene)* | `semantica` + `converger-terminologia` | **Agente Multipropósito adelante** | — (exportar, no importar) |
 
 ## Cómo replicar cada componente
 
@@ -32,7 +32,7 @@ Regla de traducción:
 
 **Hermes:** observa la tarea y, tras repetirla varias veces, el agente decide guardar una skill y la afina con el uso.
 
-**AMP con subsistemas:**
+**Agente Multipropósito con subsistemas:**
 
 - **El disparo es `conducta`.** El momento *al cerrar tarea* (hook `Stop`) ya está declarado, y la 4.ª regla Base —*registrar en el subsistema cuando algo cambia*— ya está en el registro, hoy en estado `pendiente` porque falta el **hook repartidor de `Stop`**.
 - **La escritura es `/contrastar` mirando hacia atrás.** No se construye nada nuevo: detecta lo aprendido y lo rutea al subsistema con ratificación.
@@ -46,14 +46,14 @@ Regla de traducción:
 
 **Hermes:** el agente edita sus archivos de memoria con una herramienta propia (con topes de tamaño y un chequeo de inyección de prompt antes de escribir), y recupera de conversaciones pasadas con búsqueda de texto completo.
 
-**AMP con subsistemas:**
+**Agente Multipropósito con subsistemas:**
 
 - **Auto-escritura:** la herramienta que escribe ya existe (`registrar-memoria`). Falta el **disparo automático**, que cae de nuevo en `conducta` (el mismo hook `Stop`). Si la escritura pasa a ser automática, el chequeo de inyección de prompt de Hermes es un patrón a copiar.
-- **Búsqueda de sesiones:** **no hay equivalente.** El AMP no indexa las conversaciones pasadas. Sería una **Herramienta nueva** (indexar las transcripciones + buscar en ellas), no un subsistema de datos.
+- **Búsqueda de sesiones:** **no hay equivalente.** El Agente Multipropósito no indexa las conversaciones pasadas. Sería una **Herramienta nueva** (indexar las transcripciones + buscar en ellas), no un subsistema de datos.
 
 ### 3. Skills — que el agente las escriba solo
 
-El AMP ya tiene skills como slash y como disparo conversacional, y una carga por niveles equivalente: el índice liviano se carga, el cuerpo se lee al invocar. Lo que Hermes agrega es que **el agente las escribe solo**. En el AMP sería una regla de `conducta` que empuje *"esto que repetiste, ¿va como skill?"* más una skill que redacte skills. Baja prioridad: primero el bucle de conocimiento.
+El Agente Multipropósito ya tiene skills como slash y como disparo conversacional, y una carga por niveles equivalente: el índice liviano se carga, el cuerpo se lee al invocar. Lo que Hermes agrega es que **el agente las escribe solo**. En el Agente Multipropósito sería una regla de `conducta` que empuje *"esto que repetiste, ¿va como skill?"* más una skill que redacte skills. Baja prioridad: primero el bucle de conocimiento.
 
 ### 4. Tareas agendadas — con las salvaguardas de Hermes
 
@@ -75,15 +75,15 @@ Hermes además impide que una tarea agendada cree más tareas agendadas, para no
 3. **Corte por seguridad de costo en tareas agendadas** — vive en `Alertas-Push`, no en el harness.
 4. **Auto-escritura de skills** — baja prioridad.
 
-## Lo inverso: lo que el AMP tiene y Hermes no
+## Lo inverso: lo que el Agente Multipropósito tiene y Hermes no
 
-La **gobernanza terminológica** (glosario con alias y vetos ratificados por el usuario, `converger-terminologia`, lint de colisiones) no existe en Hermes. No es algo a replicar: es la ventaja del AMP, y al publicar es el ángulo que lo separa de "otro banco de memoria".
+La **gobernanza terminológica** (glosario con alias y vetos ratificados por el usuario, `converger-terminologia`, lint de colisiones) no existe en Hermes. No es algo a replicar: es la ventaja del Agente Multipropósito, y al publicar es el ángulo que lo separa de "otro banco de memoria".
 
 ## Qué NO conviene copiar
 
-- **Motor propio** — costo de mantenimiento que el AMP evita a propósito viviendo sobre el harness de Claude Code.
-- **Proveedores de memoria excluyentes** (uno solo activo a la vez) — el modelo de subsistemas tipados del AMP es más rico.
-- **Entrenamiento de modelo** — fuera de alcance: el AMP no entrena modelos.
+- **Motor propio** — costo de mantenimiento que el Agente Multipropósito evita a propósito viviendo sobre el harness de Claude Code.
+- **Proveedores de memoria excluyentes** (uno solo activo a la vez) — el modelo de subsistemas tipados del Agente Multipropósito es más rico.
+- **Entrenamiento de modelo** — fuera de alcance: el Agente Multipropósito no entrena modelos.
 
 ## Fuente
 
