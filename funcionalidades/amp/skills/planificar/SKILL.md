@@ -15,20 +15,20 @@ Si existen, leer:
 - **`.claude/decisiones/INDICE.md`** — las decisiones estructurales ya tomadas (y su detalle).
 - **`.claude/conocimiento/INDICE.md`** — lo que el agente sabe del dominio.
 
-Si alguna no existe, seguir igual (la sesión degrada, no se rompe). Si una pregunta se puede responder **explorando el código o esas docs**, explorar en vez de preguntar.
+Si alguna no existe, seguir igual (la sesión degrada, no se rompe).
 
 ## El modo de preguntar
 
-Recorré el **árbol de decisión**, resolviendo las dependencias una por una. Para **cada** pregunta, **ofrecé siempre tu respuesta recomendada** — así el usuario responde rápido (acepta o corrige) en vez de arrancar de cero. Pero **esperá su respuesta**: la recomendada es una sugerencia para agilizar, **no un default que se toma solo**. No avanzar sin que responda.
+**Antes de preguntar, fijate si la pregunta ya tiene respuesta.** Si sale de lo que el agente sabe —el conocimiento del repo, sus decisiones, su glosario— o de mirar el Producto del Propósito y su código, **resolvela vos y seguí**: decí en el texto de dónde salió la respuesta y no la conviertas en pregunta. Al usuario solo llega lo que **tiene que decidir** porque no está decidido ni es averiguable. Preguntar lo averiguable le gasta un turno en algo que el agente podía cerrar solo, y encima lo obliga a reconstruir un contexto que ya está escrito.
 
-Agrupá según el tipo de pregunta:
+Con lo que sí queda, recorré el **árbol de decisión** resolviendo **una decisión por vez**. Para **cada** pregunta, **ofrecé siempre tu respuesta recomendada** — así el usuario responde rápido (acepta o corrige) en vez de arrancar de cero. Pero **esperá su respuesta**: la recomendada es una sugerencia para agilizar, **no un valor que se toma solo**. No avanzar sin que responda.
 
-- **Preguntas de fondo que mandan** (las que reconfiguran lo de abajo) → **una por una, a fondo**, bien visibles, para que el usuario pueda redirigir. Nunca esconder una pregunta de fondo estructural dentro de una tanda.
-- **Racimo de preguntas independientes** (ninguna depende de la respuesta de otra) → **una sola tanda** (hasta 4 juntas). Preguntarlas de a una desperdicia turnos.
-- **Preguntas dependientes** (una necesita la respuesta de la anterior para siquiera existir) → **secuenciales**, nunca en tanda.
-- **La cola final de confirmaciones** (las que casi seguro son "sí") → presentarlas en **una sola tanda** con la recomendada de cada una, para que el usuario las revise juntas y corrija lo que no le cierre en una respuesta. Evita el arrastre de preguntar cada una por separado — pero igual espera su respuesta a la tanda.
+Cómo se presenta cada una lo fija la Preferencia Base-0002, que ya está siempre en contexto: acá no se repite su fundamento, se aplica. Salen dos formas, y ninguna más:
 
-Regla para decidir tanda vs. una por una: **¿la respuesta de esta pregunta cambia cómo formulo otra?** Sí → secuencial. No → se pueden agrupar.
+- **La decisión, sola.** Todo lo que el usuario tenga que **decidir** va en una pregunta propia, con su contexto desplegado en el texto de la respuesta **antes** de preguntarla — nunca comprimido dentro de las opciones. Vale igual para la pregunta de fondo que reconfigura todo lo de abajo y para una menor que no depende de ninguna otra: **agrupar dos decisiones porque son independientes entre sí es exactamente lo que la preferencia prohíbe.**
+- **La cola final de confirmaciones.** Las que casi seguro son "sí" —el trámite que cierra lo ya acordado— pueden ir juntas, con la recomendada de cada una visible. Es la única excepción.
+
+El test antes de agrupar: **¿el usuario tiene que decidir algo, o ratificar lo que ya decidió?** Decidir → sola. Ratificar → puede ir en la cola.
 
 ## Las dos miradas
 

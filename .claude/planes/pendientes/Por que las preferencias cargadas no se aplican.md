@@ -36,6 +36,7 @@ Hipótesis que sale de comparar las dos listas: **las cumplidas gobiernan el for
 - Si se sostiene: ¿qué momento de `conducta` puede atrapar el acto de plantear una decisión? No hay evento de hook para "voy a preguntarle algo al usuario".
 - ¿Corresponde que una preferencia de forma tenga un control que la verifique, o eso es chequeo semántico (decisión 0003) y por lo tanto no automatizable barato?
 - ¿Cambia algo la **redacción** de la preferencia? Base-0001 y Base-0003 son largas y densas; Local-0001 y Local-0005, que se cumplieron, son cortas y con un ejemplo adentro.
+- **Cuando una preferencia y el texto de una habilidad se contradicen, ¿qué gana y quién lo detecta?** Heredada del plan Local-0064 al ejecutarse el 02/08/2026: ahí se arregló la contradicción concreta, pero no el mecanismo. Las dos veces que ese choque produjo la conducta no deseada —25/07/2026 y 02/08/2026— lo detectó el usuario mirando, no un control. `lint-harness` no puede: entender que dos textos se contradicen es chequeo semántico (decisión 0003), así que la guarda barata no existe. Queda por decidir si hay alguna forma más floja de acotarlo —por ejemplo, que una habilidad no pueda enunciar una regla que un registro ya enuncia, solo nombrarla— o si se acepta que dependa de que alguien lo vea.
 
 ## Cruces
 

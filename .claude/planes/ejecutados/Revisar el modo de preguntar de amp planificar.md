@@ -1,6 +1,6 @@
 # Revisar el modo de preguntar de amp:planificar
 
-**Estado: Nuevo · Creado 26-07-25.**
+**Estado: Ejecutado · Creado 26-07-25 · Cerrado 26-08-02.**
 
 ## Problema
 
@@ -33,3 +33,17 @@ Sesión del 25/07/2026, corriendo `amp:planificar` sobre el plan *Ubicación de 
 ## Contexto
 
 Se desprende del registro de la preferencia (misma sesión). No bloquea nada: `amp:planificar` sigue funcionando, solo que su texto empuja en la dirección equivocada y el agente tiene que ignorarlo a favor de la preferencia.
+
+## Notas de implementación
+
+Ejecutado el 02/08/2026, tras una **segunda ocurrencia** del mismo caso: corriendo `amp:planificar`, el agente metió tres decisiones independientes dentro de una sola opción. Ocho días entre el diagnóstico y el arreglo, con el texto empujando en contra todo ese tiempo.
+
+Las tres preguntas abiertas quedaron contestadas:
+
+- **Se reescribió la sección entera**, no la fila de las independientes. Dar vuelta solo esa dejaba conviviendo el `hasta 4 juntas` y la regla de cierre (*«¿la respuesta cambia cómo formulo otra? No → se pueden agrupar»*), o sea dos instrucciones opuestas en la misma sección para que el agente elija una. Las cuatro categorías colapsaron a dos: **la decisión sola** y **la cola final de confirmaciones**, con el test *«¿tiene que decidir o ratificar?»* para separarlas.
+- **El texto de la regla no se repite: se nombra la preferencia.** Repetirlo la habría dejado viviendo en dos archivos que viajan por caminos distintos —`PREFERENCIAS.md` dentro de `base/`, este `SKILL.md` dentro del plugin— sin ningún control que los compare, así que la próxima reformulación de la preferencia habría dejado la habilidad enseñando la versión vieja (conocimiento Base-0001).
+- **La pregunta de fondo se mudó**, sin resolver, al plan `Por que las preferencias cargadas no se aplican` (Local-0089), que nació el mismo día y es su lugar natural: acá se arregló la contradicción concreta, no el mecanismo que la deja pasar.
+
+Se sumó además, a pedido del usuario, un **filtro previo al árbol de decisión**: si la respuesta sale del conocimiento del repo, de sus decisiones y su glosario, o de mirar el Producto del Propósito y su código, el agente la resuelve y sigue en vez de preguntar. Existía una versión débil de esa regla en la sección anterior (*«explorar en vez de preguntar»*); se sacó de ahí al absorberla, para no dejar el mismo dato en dos lugares.
+
+Alcance real: `funcionalidades/amp/skills/planificar/SKILL.md`, copia única verificada. Publicado en `amp` 0.23.0.
