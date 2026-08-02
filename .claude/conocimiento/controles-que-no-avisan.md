@@ -4,7 +4,7 @@ Un control roto no se comporta como un control roto: se comporta como un control
 
 Medido en este repo el 30/07/2026, con todos los lints en verde y el nivelador informando el `.claude/` al día.
 
-## Las seis formas en que un control se apaga solo
+## Las siete formas en que un control se apaga solo
 
 ### 1. Valida sobre un conjunto vacío
 
@@ -51,6 +51,16 @@ Medido el 01/08/2026 sobre `lint-harness`, que vigilaba cuatro fragmentos de có
 
 Las dos formas se acumulan con la 4: acá el control de divergencia **no tenía ninguna prueba**, y por eso los dos fragmentos pudieron quedarse apagados durante meses con el control de cierre en verde.
 
+### 7. La prueba lo cubre con un número que envejeció
+
+Las seis anteriores son del control. Esta es de su **prueba**: el control funciona, la prueba corre y contesta en verde, pero el caso que la hacía valer dejó de reproducir el defecto. Sigue afirmando y ya no puede fallar. Es la forma 4 disfrazada de lo contrario — hay banco, y el banco no cubre.
+
+Medido el 01/08/2026 sobre `medir-contexto`. El caso malo armaba un repo de 50 KB para probar que la Herramienta avisa al pasar el tope, que era 48. El día que el tope subió a 52 —un cambio legítimo, en otro archivo, hecho por otro motivo— 50 dejó de pasarlo: el caso siguió corriendo y siguió verde, midiendo un repo que ya no encendía nada. Nada cambió en lo que prueba.
+
+**Cómo se distingue de la 6:** ahí se vació la población sobre la que el control trabaja. Acá la población está intacta y lo que caducó es la **premisa del caso** —que 50 fuera más que el tope—. Ninguna guarda de conteo la ve: hay una muestra, el caso corre, la cantidad de casos no baja.
+
+**El arreglo es derivar, no actualizar.** Subirle el número al caso lo revive hasta el próximo cambio de tope. El caso lee el tope de la propia Herramienta y arma el repo a partir de él, así que la premisa no puede caducar. Regla general: un valor que la prueba comparte con lo que prueba se le pide a lo que prueba.
+
 ## El remedio de una forma produce la otra
 
 Las formas 1 y 2 tiran para lados opuestos, y ahí está la trampa: **lo que se agrega para que un control deje de marcar de más es lo que lo convierte en mudo.**
@@ -73,7 +83,7 @@ Los hallazgos de un control tienen que ser **resolubles**: cada uno nombra algo 
 - **Cada control se enciende ante su defecto, y solo ante el suyo.** Conviene informar qué *otros* controles se dispararon de más: si romper una cosa enciende cinco, alguno está mirando lo que no le toca.
 - **La prueba se verifica rompiendo el control a propósito.** Una prueba que nunca falló no prueba nada: es indistinguible de una que no chequea. Se rompe, se confirma que falla el caso que corresponde **y solo ese**, y se restaura comprobando que el archivo quedó idéntico.
 - **Se rompe cada condición, no el control entero.** Neutralizar el control de una y ver fallar el banco solo prueba que hay *alguna* condición viva. Cada guarda se desactiva por separado: la que deja el banco en verde no está probada, y hay que decidir entre sacarla o escribirle el caso.
-- **Nada de números absolutos adentro de la prueba.** Dos casos de la prueba de planes comparaban contra un `81` escrito a mano y empezaron a fallar solos el día que el repo abrió el plan 82 — avisando de un defecto que no existía. Un número absoluto envejece igual adentro de una prueba que adentro de un registro.
+- **Nada de números absolutos adentro de la prueba.** Un número absoluto envejece igual adentro de una prueba que adentro de un registro, y lo hace por dos caminos opuestos. El **ruidoso**: dos casos de la prueba de planes comparaban contra un `81` escrito a mano y empezaron a fallar solos el día que el repo abrió el plan 82, avisando de un defecto que no existía. El **mudo**, que es el que nadie ve: el caso deja de reproducir el defecto y pasa a no poder fallar (forma 7 de esta lista). Se arregla igual en los dos casos — derivar el número de lo que se prueba, no escribirlo.
 - **Banco aparte, nunca el repo real.** Y si el control mira el repo entero, el banco tiene que ser un repo, no una carpeta: si no, el barrido cae sobre el repo real y los casos no quedan aislados.
 - **Lo que no se cubre, se dice.** Un control que la prueba no puede ejercitar (porque depende del estado de la máquina, por ejemplo) se declara en la salida. Callarlo hace que la prueba en verde se lea como cobertura completa.
 - **Una prueba terminada no se deja en la carpeta temporal.** Una prueba completa de `lint-planes` —169 líneas, funcionando, con el criterio correcto escrito en su encabezado— quedó en `.claude/tmp/`, que el repo gitignorea. No era un borrador: era el trabajo hecho, esperando que alguien lo borrara. Un archivo de `tmp/` que dejó de ser descartable se mueve el mismo día.
