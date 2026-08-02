@@ -94,17 +94,30 @@ for (const c of casos) {
 // Regresion del 30/07/2026: nombrar un termino para explicar su veto es legitimo, y sin esta
 // exencion la lista de hallazgos se llenaba de menciones que no habia que corregir.
 console.log('\n== CASO BUENO: citar un término vetado no es usarlo ==');
+// Desde el 02/08/2026 se verifican los DOS grupos que el lint informa, no solo el de texto plano.
+// La cita caía fuera de texto plano —eso ya se probaba— pero se listaba igual bajo `codigo/nombres`,
+// que es donde van las apariciones que sí hay que refactorizar: 164 de 255 renglones eran citas y
+// sepultaban las pocas accionables. Ahora van a un tercer grupo que no se informa, y esta prueba es
+// lo único que lo vigila: si el clasificador de citas se rompiera y las mandara de vuelta a
+// cualquiera de los dos grupos, acá se enciende.
+const informados = s => {
+  const v = /APARICIONES DE VETADOS \(prosa: (\d+), codigo: (\d+)\)/.exec(s);
+  return v ? [parseInt(v[1], 10), parseInt(v[2], 10)] : [0, 0];
+};
 for (const [nombre, texto] of [
   ['entre comillas simples invertidas', 'El término `churn` está vetado en este repo.\n'],
   ['entre comillas rectas', 'El término "churn" está vetado en este repo.\n'],
   ['entre comillas angulares', 'El término «churn» está vetado en este repo.\n'],
 ]) {
+  // El banco puede traer apariciones propias en código, así que lo que se mide es el DELTA que
+  // introduce la nota: con el archivo agregado, ninguno de los dos grupos tiene que moverse.
   armar();
+  const [p0, c0] = informados(correr());
   fs.writeFileSync(path.join(REPO_PRUEBA, 'nota.md'), texto);
-  const h = hallazgos(correr());
-  const n = h['VETADOS EN TEXTO PLANO'] || 0;
-  console.log(`${n === 0 ? 'OK  ' : 'FALLA'} ${nombre} → ${n} en texto plano`);
-  if (n !== 0) malos++;
+  const [p1, c1] = informados(correr());
+  const bien = p1 === p0 && c1 === c0;
+  console.log(`${bien ? 'OK  ' : 'FALLA'} ${nombre} → texto plano ${p0}→${p1}, código ${c0}→${c1}`);
+  if (!bien) malos++;
 }
 
 // -- CASOS MALOS finos: los dos límites que `\b` no podía ------------------

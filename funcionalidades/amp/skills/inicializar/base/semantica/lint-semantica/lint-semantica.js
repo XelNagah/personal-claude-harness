@@ -235,7 +235,13 @@ const esc = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/\s+/g, '\\s+'
 // viene antes del termino, asi que el desplazamiento del hallazgo es `m.index + m[1].length`.
 const reTermino = (term, flags) => new RegExp(`(^|[^${LETRA}])(${esc(term)})(?=[^${LETRA}]|$)`, flags);
 const vetadosTerms = [...vetadoSet];
-const apariciones = { prosa: [], codigo: [] };
+// Tres grupos, y solo dos se informan. `citas` son las menciones de un termino DENTRO de un `.md`
+// entre comillas —hablar del termino en vez de usarlo—: el clasificador ya las reconoce como
+// legitimas, asi que listarlas deshace el trabajo que acaba de hacer. Iban a `codigo` bajo el titulo
+// "refactor manual" y eran 164 de 255 renglones: sepultaban los pocos que si habia que tocar. No se
+// listan ni se cuentan; quien las vigila es el banco de pruebas, que verifica que sigan sin caer en
+// ninguno de los dos grupos informados.
+const apariciones = { prosa: [], codigo: [], citas: [] };
 if (vetadosTerms.length) {
   const rel = p => path.relative(repoRoot, p).replace(/\\/g, '/');
   for (const f of walkRepo(repoRoot, [])) {
@@ -254,7 +260,7 @@ if (vetadosTerms.length) {
       while ((m = re.exec(contenido))) {
         // El grupo 1 es el caracter de antes del termino: el hallazgo empieza despues de el.
         const donde = m.index + m[1].length;
-        const grupo = (ext === '.md' && !enCodeSpan(spans, donde)) ? 'prosa' : 'codigo';
+        const grupo = ext === '.md' ? (enCodeSpan(spans, donde) ? 'citas' : 'prosa') : 'codigo';
         const linea = contenido.slice(0, donde).split('\n').length;
         apariciones[grupo].push([rel(f) + ':' + linea, term]);
         // El limite de la derecha es un lookahead, asi que no consume: sin esto, dos apariciones
