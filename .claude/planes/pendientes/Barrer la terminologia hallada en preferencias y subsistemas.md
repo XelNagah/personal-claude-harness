@@ -8,6 +8,8 @@
 
 Nada de lo que sigue está ratificado: vetar es potestad del usuario, así que el plan arranca por la ronda de ratificación y recién después barre.
 
+**Qué cubrió el barrido del 02/08/2026, y por qué no descuenta trabajo de acá.** Ese día se limpiaron los 18 usos vivos de términos **ya vetados** que quedaban en `.claude/` (planes pendientes, dos decisiones y el título de un plan en `PLANES.md`). Este plan persigue lo contrario: las doce relaciones **todavía no vetadas**, que ningún control mira porque el lint marca por término. Los dos trabajos no se solapan y el alcance de acá no cambia. Lo que sí quedó demostrado es el diagnóstico de arriba: los que nunca se vetaron siguen creciendo, y los que sí se vetaron sobreviven donde ningún barrido llegó.
+
 ## Estado
 
 | Punto | Qué es | Alcance medido | Decidido |
