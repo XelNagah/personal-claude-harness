@@ -14,7 +14,7 @@ Se eligió **una** decisión con los 5 ejes como test + esta página de ejemplos
 
 1. **De quién es** — ¿**Producto del Propósito** o harness? Lo que el repo produce (una web, una base de inmuebles, un informe) vive en la raíz, fuera de `.claude/`, y no pertenece a ningún subsistema. El harness (`.claude/…`) es lo que gestiona el trabajo, no el trabajo.
 2. **Qué relación tiene el agente con la cosa** — ¿la **lee**, la **sabe** o la **ejecuta**? Una regla que lee (preferencia, instrucción) ≠ algo que sabe del dominio (conocimiento) ≠ una capacidad que ejecuta (Herramienta).
-3. **Cambia o está fijo** — ¿estado vivo o veredicto? Lo que cambia sesión a sesión va a memoria (o a un Registro volátil si es estado de máquina); una elección que se toma una vez va a decisión.
+3. **Cambia o está fijo** — ¿estado vivo o veredicto? Lo que cambia sesión a sesión va a memoria (o al contenido interno de una Herramienta si es estado de máquina); una elección que se toma una vez va a decisión.
 4. **Es invocable por sí mismo** — ¿lo llamás con un comando (entonces es una **fila** del registro de Herramientas) o es el **contenido interno** de una tool (su código, su estado de trabajo — no lo lista ningún índice)?
 5. **Sustantivo o verbo** — ¿"qué **es** algo" (un concepto → glosario) o "qué **hacés**" (una acción repetible → Herramienta/comando)?
 
@@ -26,7 +26,7 @@ Ante *"¿dónde va X?"*, pasar X por los ejes hasta que un lugar lo reclame. Si 
 
 - **La base de inmuebles / la web del agente inmobiliario** → Producto del Propósito (eje 1): raíz del repo, fuera de `.claude/`. Por esto el inventario de fuera-de-subsistema barre solo `.claude/`, no la raíz.
 - **`REGISTRO.md` en la raíz** → **registro con lint**, no documentación humana (ejes 2 + 4): `lint-harness` lo abre como fuente de datos y falla si diverge del disco o de `marketplace.json`. Ser un `.md` de la raíz no lo vuelve texto para humanos — vive ahí porque su lector lo busca ahí. Por eso **no** baja a `docs/` cuando la documentación humana se muda (decisión 0031). El error a evitar: clasificar por extensión y ubicación en vez de por quién lo lee.
-- **`sessions.json`** (estado de sesión que dos Herramientas escriben en el repo consumidor `Agente-Coordinador`) → **Registro volátil** (ejes 3 + 4): es contenido interno de la Herramienta que lo administra; esa Herramienta sí es una fila del registro, el estado en sí no. No falta un subsistema — lo efímero es una propiedad, no un Tipo ni un cajón nuevo.
+- **`sessions.json`** (estado de sesión que dos Herramientas escriben en el repo consumidor `Agente-Coordinador`) → **contenido interno de la Herramienta** que lo administra (ejes 3 + 4): esa Herramienta sí es una fila del registro, el estado en sí no. No falta un subsistema — lo efímero es una propiedad, no un Tipo ni un cajón nuevo.
 
 ## Criterios finos ya acordados
 

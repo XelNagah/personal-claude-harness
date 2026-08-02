@@ -113,7 +113,7 @@ Cinco planes pendientes son **la misma falla** vista desde cinco ángulos — un
 Las cuatro preguntas abiertas quedaron contestadas:
 
 - **Forma de asentar A (era "fila por fila vs por eje").** Se ratifican los **5 ejes** como *test de demarcación* → **decisión 0020** + página de detalle con los casos resueltos y los criterios finos como ejemplos. **No** 22 decisiones sueltas (re-correría la evaporación). Los 5 ejes: de quién es · lee/sabe/ejecuta · cambia o fijo · invocable por sí mismo · sustantivo o verbo.
-- **`sessions.json` (era "¿hueco o subsistema nuevo?").** No es hueco: es un **Registro volátil** (glosario nuevo) — contenido interno de la Herramienta que lo administra; esa Herramienta es fila del registro, el estado no. Cero subsistemas nuevos. Lo efímero es una propiedad, no un Tipo.
+- **`sessions.json` (era "¿hueco o subsistema nuevo?").** No es hueco: es **contenido interno de la Herramienta** que lo administra; esa Herramienta es fila del registro, el estado no. Cero subsistemas nuevos. Lo efímero es una propiedad, no un Tipo. (El 02/08/2026 se retiró el término con que se había nombrado acá.)
 - **Producto del Propósito (glosario nuevo).** Lo que el repo produce vive en la raíz, fuera de `.claude/`, y es correcto que quede afuera — criterio que destraba el barrido de la raíz del frente B.
 - **Secuencia y espera del piloto.** A ahora (necesita al usuario presente, y ya arrancó: veto de `tripa`, 2 conceptos, `sessions.json`). B es mecánico, va después. **El piloto NO frena nada**: baja a telemetría de fondo (páginas de `conocimiento` en `/amp-info`); *solucionar* C se hace ahora, *verificar* se mide o se testea activo (`Banco de pruebas conductual`). Sin fecha fija.
 

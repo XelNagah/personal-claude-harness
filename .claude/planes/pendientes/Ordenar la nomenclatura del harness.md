@@ -31,7 +31,7 @@ Propuesto, nada ratificado:
 - **La fila sigue siendo `Entrada`**, ahora asentada como `Entrada de Índice de Subsistema`. Sus 223 apariciones no se tocan.
 - **El archivo se llama `Índice de Subsistema`**, también asentado. No es «el archivo que lista» a secas: es el que lista los elementos **de un subsistema**, y esa precisión lo separa de un Registro cualquiera.
 
-Queda vivo el tercer sentido, `Registro volátil`, y la propuesta de eliminarlo.
+**Cerrado el 02/08/2026:** `Registro volátil` se retiró del glosario y sus usos se barrieron. Los tres sentidos de `registro` quedan resueltos.
 
 ### 2. `Agente desplegado` se escribía de dos maneras — resuelto el 29/07/2026
 
