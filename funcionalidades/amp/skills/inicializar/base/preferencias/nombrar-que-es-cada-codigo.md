@@ -1,6 +1,6 @@
 # Nombrar qué es cada código al citarlo
 
-La regla: al citar una entrada, el código nunca va solo — lo precede qué es, y en la conversación también su título.
+Elaboración de la Preferencia Base-0016.
 
 **Por qué:** los códigos `Base-NNNN` y `Local-NNNN` se repiten entre registros. El mismo código puede ser una decisión, un plan, una preferencia, una página de conocimiento, una Herramienta o un término del glosario. Sin decir de cuál se trata, «Local-0047» a secas no identifica nada.
 

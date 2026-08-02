@@ -1,6 +1,6 @@
 # Buscar una solución existente antes de escribir una propia
 
-La regla: antes de escribir código propio, buscar si ya existe una biblioteca, función nativa o solución estándar del ecosistema que resuelva el problema. Buscar no obliga a adoptar, pero no se saltea ni la búsqueda ni su resultado.
+Elaboración de la Preferencia Base-0015.
 
 **Por qué buscar:** lo escrito a mano hereda los defectos que la solución madura ya tapó, y queda sin nadie que lo mantenga.
 

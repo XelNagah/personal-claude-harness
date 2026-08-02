@@ -1,6 +1,6 @@
 # Nombre completo, no la sigla sola
 
-La regla: en lo que queda escrito, el nombre del dominio va completo; la sigla puede acompañarlo pero nunca sustituirlo. En la conversación es libre.
+Elaboración de la Preferencia Base-0011.
 
 **Cómo presentar la sigla:** en la primera mención, junto al nombre —`Agente Multipropósito (AMP)`—, para que el lector la reconozca cuando la vuelva a encontrar.
 

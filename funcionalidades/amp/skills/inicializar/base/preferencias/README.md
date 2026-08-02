@@ -21,5 +21,9 @@ Las **preferencias** son las reglas de conducta del agente en este repo: qué es
 
 ## Páginas de detalle
 
-- [`estilo-commits.md`](estilo-commits.md) — la convención de commits y descripciones de PR con sus casos.
-- [`archivo-de-estado.md`](archivo-de-estado.md) — la convención del archivo de estado en tareas exploratorias.
+- [`nombre-completo-no-sigla.md`](nombre-completo-no-sigla.md) — Base-0011: cómo presentar la sigla y por qué el alias no autoriza a sustituir el nombre.
+- [`estilo-commits.md`](estilo-commits.md) — Base-0012: la convención de commits y descripciones de PR con sus casos.
+- [`archivo-de-estado.md`](archivo-de-estado.md) — Base-0013: la convención del archivo de estado en tareas exploratorias.
+- [`handoff.md`](handoff.md) — Base-0014: por qué el nombre es variable y por qué la ruta va en el texto para copiar.
+- [`buscar-solucion-existente.md`](buscar-solucion-existente.md) — Base-0015: por qué buscar y por qué buscar no obliga a adoptar.
+- [`nombrar-que-es-cada-codigo.md`](nombrar-que-es-cada-codigo.md) — Base-0016: por qué el código no va solo y por qué el título va en la conversación.

@@ -1,6 +1,6 @@
 # Handoff
 
-La regla: al cerrar la sesión, al cortar porque el contexto se llenó, o cuando el usuario lo pida, escribir un handoff en `.claude/tmp/` con nombre variable (`handoff-<tema>.md`), con las secciones en orden y un texto para copiar al final.
+Elaboración de la Preferencia Base-0014.
 
 **Por qué el nombre nunca es fijo:** en una misma tanda pueden hacer falta varios handoffs, y con un nombre fijo el que se pisa es siempre el que servía. El nombre tiene que decir de qué es.
 
