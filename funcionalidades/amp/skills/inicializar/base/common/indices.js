@@ -38,17 +38,48 @@ function indicesDe(dirSub, nombresViejos) {
   return salida;
 }
 
-// Dos controles sobre lo declarado. [a] Las columnas, en los DOS sentidos: la declarada que la
+// Tres controles sobre lo declarado. [a] Las columnas, en los DOS sentidos: la declarada que la
 // tabla no tiene y la que la tabla tiene sin declarar. Con un solo sentido el frontmatter puede
 // mentir por omision, y el codigo que ubica una columna por nombre —el repartidor de conducta
 // ubica Momento y Clase— deja de encontrarla sin emitir ningun error. [b] El manifiesto contra el
 // frontmatter: el manifiesto lista los Indices como texto fijo y el frontmatter es la autoridad;
-// sin compararlos, el mismo dato queda escrito en dos lugares que nada sincroniza.
+// sin compararlos, el mismo dato queda escrito en dos lugares que nada sincroniza. [c] Las filas
+// pegadas, abajo.
+// [c] Dos filas en una sola linea. Una edicion que pierde el salto fusiona la fila siguiente dentro
+// de la celda final de la anterior: el texto queda entero y se lee normal —abrir el archivo no lo
+// delata— pero la entrada deja de existir para todo el que lea el registro por filas. Una
+// preferencia deja de aplicarse, una Herramienta deja de estar registrada, un termino deja de estar
+// vetado, y ningun control lo dice.
+//
+// Medido el 01/08/2026: las Decisiones Local-0048 y Local-0049 estaban asi, y los once chequeos del
+// control de cierre daban verde. Se vio de casualidad, por la numeracion correlativa —que solo ese
+// registro tiene— y recien al sumarse una decision nueva que desalineo la cuenta. Repetido a
+// proposito en `preferencias`, donde no hay numeracion que lo delate: la entrada desaparecio del
+// registro y los once chequeos siguieron en verde.
+//
+// Va aca y no en un lint porque los ocho lints de subsistema ya corren esta funcion: es un solo
+// lugar para los ocho registros. Se cuenta el Codigo, que es la primera celda de toda fila de
+// entrada por convencion del Patron; una linea de tabla con dos o mas son filas fusionadas.
+function filasPegadas(idx) {
+  const out = [];
+  // `indicesDe` siempre trae el texto; la guarda es para el llamador que arme el objeto a mano.
+  if (typeof idx.texto !== 'string') return out;
+  for (const [n, linea] of idx.texto.split('\n').entries()) {
+    if (!linea.trim().startsWith('|')) continue;
+    const codigos = linea.match(/\|\s*(?:Base|Local)-\d{4}\s*\|/g) || [];
+    if (codigos.length > 1) {
+      out.push(`${idx.nombre}: linea ${n + 1} lleva ${codigos.length} entradas en una sola fila (falta el salto de linea): ${codigos.map(c => c.replace(/[|\s]/g, '')).join(', ')}`);
+    }
+  }
+  return out;
+}
+
 function problemasDeIndices(idxs, manifiestoTxt) {
   const out = [];
   const declarados = idxs.filter(i => i.indice);
   for (const i of declarados) {
     if (!ORIGENES.includes(i.origen)) out.push(`${i.nombre}: origen "${i.origen}" invalido (validos: ${ORIGENES.join(' / ')})`);
+    out.push(...filasPegadas(i));
     if (!i.columnas) continue;
     if (!i.cabecera) { out.push(`${i.nombre}: declara columnas pero no se encontro la tabla`); continue; }
     for (const c of i.columnas) if (!i.cabecera.includes(c)) out.push(`${i.nombre}: columna declarada "${c}" que la tabla no tiene`);

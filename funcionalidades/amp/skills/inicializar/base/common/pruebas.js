@@ -59,9 +59,9 @@ caso('sin tabla da null', fm.cabeceraTabla('# Solo texto\n'), null);
 caso('tuberia escapada no corre las columnas', fm.cabeceraTabla('| A \\| B | C |\n|---|---|\n'), ['A | B', 'C']);
 
 console.log('\n== problemasDeIndices: cada control se enciende con su defecto ==');
-const idxDe = (columnas, cabecera, origen) => [{
+const idxDe = (columnas, cabecera, origen, texto) => [{
   nombre: 'INDICE.md', indice: 'X', origen: origen === undefined ? 'agente-desplegado' : origen,
-  columnas, cabecera,
+  columnas, cabecera, texto: texto === undefined ? '' : texto,
 }];
 const MANI = '**Índices:** `INDICE.md` (Agente Desplegado)\n';
 caso('todo coherente no reclama nada', idx.problemasDeIndices(idxDe(['A'], ['A']), MANI), []);
@@ -74,6 +74,21 @@ caso('columna en la tabla sin declarar',
 // que quedaria mudo si alguien "arreglara" el cotejo devolviendo el origen crudo como etiqueta.
 caso('origen invalido enciende el origen y el cotejo con el manifiesto',
   idx.problemasDeIndices(idxDe(['A'], ['A'], 'agente-inventado'), MANI).length, 2);
+// Filas fusionadas: una edicion que pierde el salto mete la fila siguiente adentro de la celda
+// final de la anterior. El texto se lee igual y la entrada deja de existir para quien lea por
+// filas; medido en dos registros el 01/08/2026 con los once chequeos del cierre en verde.
+const TABLA_SANA = '| Código | Nombre |\n|---|---|\n| Local-0001 | Uno |\n| Local-0002 | Dos |\n';
+const TABLA_PEGADA = '| Código | Nombre |\n|---|---|\n| Local-0001 | Uno | | Local-0002 | Dos |\n';
+caso('dos filas en una sola linea se marcan',
+  idx.problemasDeIndices(idxDe(['A'], ['A'], undefined, TABLA_PEGADA), MANI).length, 1);
+// El caso bueno con las MISMAS filas separadas: sin el, un chequeo que marcara siempre pasaria.
+caso('las mismas filas bien separadas no se marcan',
+  idx.problemasDeIndices(idxDe(['A'], ['A'], undefined, TABLA_SANA), MANI), []);
+// Tres pegadas cuentan como UN hallazgo por linea, no como tres: la linea es la unidad a reparar.
+caso('tres filas pegadas dan un hallazgo por linea',
+  idx.problemasDeIndices(idxDe(['A'], ['A'], undefined,
+    '| Código |\n|---|\n| Local-0001 | a | | Local-0002 | b | | Local-0003 | c |\n'), MANI).length, 1);
+
 caso('el manifiesto no lista el Indice',
   idx.problemasDeIndices(idxDe(['A'], ['A']), '**Índices:** `OTRO.md` (Agente Desplegado)\n').length, 2);
 caso('el manifiesto le pone otro origen',
