@@ -174,7 +174,25 @@ caso('manifiesto sin el campo Disparador', 'MANIFIESTOS SIN CAMPOS MINIMOS (dec.
     leer('.claude/decisiones/MANIFIESTO.md').replace(/\*\*Disparador:\*\*/g, 'Cuando conviene:')));
 
 caso('cita a una decisión del harness en texto que viaja', 'CITAS A DECISIONES DEL HARNESS EN DISTRIBUIBLES (dec. 0024)',
-  () => escribir(PLANTILLA, leer(PLANTILLA).replace(/^# /m, 'Ver la decisión 0017 para el detalle.\n\n# ')));
+  () => escribir(PLANTILLA, leer(PLANTILLA).replace(/^# /m, 'Ver la decisión 0017 para el detalle.\n\n# ')),
+  'PLANTILLA.md');
+
+// El caso de arriba entra por la PLANTILLA, que el control nombra archivo por archivo. Los otros 86
+// que se despachan no los abria nadie: el barrido llegaba a tres nombres (PLANTILLA, MANIFIESTO,
+// lint) y todo lo demas de `base/` —preferencias, conocimiento, bancos— viajaba sin mirar. Asi
+// estuvieron cuatro citas en `base/preferencias/` hasta el 02/08/2026, con el control en verde.
+caso('cita en un archivo cualquiera de base/', 'CITAS A DECISIONES DEL HARNESS EN DISTRIBUIBLES (dec. 0024)',
+  () => fs.appendFileSync(path.join(REPO_PRUEBA, BASE_INST, 'conocimiento/INDICE.md'),
+    '\nEl reparto sale de la decisión 0011.\n'),
+  'conocimiento/INDICE.md');
+
+// Y la forma larga del codigo, que es la que pide la Preferencia Base-0016. El patron exigia digito
+// pegado a la palabra, asi que `decision Local-0044` —la forma que el propio repo escribe -- pasaba
+// entera sin marca.
+caso('cita con el prefijo de origen adelante', 'CITAS A DECISIONES DEL HARNESS EN DISTRIBUIBLES (dec. 0024)',
+  () => fs.appendFileSync(path.join(REPO_PRUEBA, BASE_INST, 'conocimiento/INDICE.md'),
+    '\nEl reparto sale de la Decisión Local-0011.\n'),
+  'Local-0011');
 
 caso('término vetado en el texto que viaja', 'TERMINOLOGIA VETADA EN EL TEXTO QUE VIAJA (funcionalidades/)',
   () => escribir('funcionalidades/amp/README.md',

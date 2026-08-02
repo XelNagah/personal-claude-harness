@@ -8,14 +8,14 @@ Elaboración de la Preferencia Base-0016.
 
 **Tres casos donde el título no va**, encontrados al aplicar la regla al repo el 02/08/2026:
 
-- **La cita múltiple.** *«las decisiones 0004/0016/0018 controlan el alta»* con tres títulos adentro
+- **La cita múltiple.** *«las decisiones NNNN/NNNN/NNNN controlan el alta»* con tres títulos adentro
   se vuelve ilegible. Lo que reemplaza al título es que la frase diga **qué tienen en común**, que es
   para lo que se las cita juntas.
 - **El inventario.** Cuando el código es un **dato contado** y no una referencia a seguir —*«106
-  apariciones: decisiones 0024, 0028, 0033, 0036, manifiestos, varios README»*— el título no ayuda a
+  apariciones: decisiones NNNN, NNNN, NNNN, NNNN, manifiestos, varios README»*— el título no ayuda a
   nadie: lo que importa es cuántas y dónde.
 - **La frase que ya lo dice.** *«citas a decisiones del harness en archivos distribuibles (dec.
-  0024)»* — el título de esa decisión es literalmente lo que la frase acaba de enunciar. Agregarlo
+  NNNN)»* — el título de esa decisión es literalmente lo que la frase acaba de enunciar. Agregarlo
   duplica la línea.
 
 El criterio detrás de los tres: el título está para que el lector no tenga que ir a buscar el

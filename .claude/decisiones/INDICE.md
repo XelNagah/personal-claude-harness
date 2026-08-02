@@ -11,7 +11,7 @@ Registro de las decisiones **estructurales al propósito del repo**: las que def
 
 Una fila por decisión:
 
-- **Código** — `Local-NNNN`, referencia estable. Se asigna al crear la entrada y no se reusa. En lo que queda escrito no va solo: se dice `Decisión Local-0042`.
+- **Código** — `Local-NNNN`, referencia estable. Se asigna al crear la entrada y no se reusa. En lo que queda escrito no va solo: se dice `Decisión Local-NNNN`.
 - **Nombre** — de qué trata la decisión, en una frase corta. Único en el registro.
 - **Descripción** — qué se decidió y por qué. Si requiere conceptualización mayor, la frase queda acá y el desarrollo va al `Detalle`.
 - **Fecha** — `AAAA-MM-DD`.

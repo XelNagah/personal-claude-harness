@@ -12,7 +12,8 @@
 // estables del registro y no cualquiera:
 //   - `churn`  -> control `bloquea` (anglicismo puro, sin uso legitimo posible)
 //   - `capa de plugins` -> control `avisa`, y ademas es EXPRESION de varias palabras
-//   - `capa` sola -> NO esta en el registro desde el 30/07/2026 (decision Local-0044)
+//   - `capa` sola -> NO esta en el registro desde el 30/07/2026: el termino montado sobre una
+//     palabra corriente se registra como expresion, no como la palabra suelta
 // Si alguna vez se cambia el control de esas filas, estas pruebas fallan y hay que actualizarlas:
 // eso es correcto, es el aviso de que el contrato cambio.
 //

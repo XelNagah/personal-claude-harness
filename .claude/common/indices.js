@@ -51,7 +51,7 @@ function indicesDe(dirSub, nombresViejos) {
 // preferencia deja de aplicarse, una Herramienta deja de estar registrada, un termino deja de estar
 // vetado, y ningun control lo dice.
 //
-// Medido el 01/08/2026: las Decisiones Local-0048 y Local-0049 estaban asi, y los once chequeos del
+// Medido el 01/08/2026: dos decisiones consecutivas del repo autor estaban asi, y los once del
 // control de cierre daban verde. Se vio de casualidad, por la numeracion correlativa —que solo ese
 // registro tiene— y recien al sumarse una decision nueva que desalineo la cuenta. Repetido a
 // proposito en `preferencias`, donde no hay numeracion que lo delate: la entrada desaparecio del

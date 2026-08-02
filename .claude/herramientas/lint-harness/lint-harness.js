@@ -364,7 +364,11 @@ if (fs.existsSync(claudeDir)) {
 // Un archivo que se instala (PLANTILLA, MANIFIESTO de subsistema, lint distribuido) no debe
 // citarlo: enuncia la razon inline. Se excluye lo que se queda en el harness: lint-harness
 // (Herramienta de este repo). SKILL/README son instruccion que no se persiste en el consumidor.
-const citaDec = /(?:decisi[óo]n(?:es)?|dec\.)\s+0\d{3}(?:\/0\d{3})?/g;
+// El prefijo de origen es opcional y la palabra va sin distinguir mayusculas: `Decisión Local-0044`
+// cita el mismo registro que `dec. 0044` y viaja igual de rota. Sin eso en el patron, la forma
+// larga —la que pide la Preferencia Base-0016, y con la que el repo escribe hoy— pasaba entera por
+// abajo del control.
+const citaDec = /(?:decisi[óo]n(?:es)?|dec\.)\s+(?:Local-|Base-)?0\d{3}(?:\/0\d{3})?/gi;
 const refsDecision = [];
 function escanearCitas(archivo) {
   if (!fs.existsSync(archivo)) return;
@@ -388,6 +392,17 @@ for (const js of buscarLints(path.join(repo, '.claude'), [])) {
   const b = path.basename(js);
   if (b === 'lint-harness.js') continue;
   escanearCitas(js);
+}
+// Y todo lo que viaja en las carpetas `base/`. Los tres barridos de arriba miran la copia instalada
+// en `.claude/` y nombran un archivo por vez (PLANTILLA, MANIFIESTO, lint), asi que solo alcanzaban
+// a tres de los 87 archivos que se despachan: el resto de `base/` —preferencias, conocimiento,
+// bancos de prueba— nunca se abria. Verificado el 02/08/2026: `base/preferencias/` citaba cuatro
+// decisiones de este repo y el control estaba en verde.
+for (const baseDir of basesDeInstalacion) {
+  for (const rel of listarArchivos(baseDir, '', [])) {
+    if (!/\.(md|js)$/.test(rel)) continue;
+    escanearCitas(path.join(baseDir, rel));
+  }
 }
 
 // -- [9b] enlaces de lo que viaja que no resuelven adentro de lo que viaja ---
