@@ -34,6 +34,7 @@
 //   --hook   una linea, en el formato que consume el repartidor de conducta: {"systemMessage": …}.
 //            Sin el flag, el informe completo con el desglose por archivo.
 const fs = require('fs'), path = require('path');
+const { basesDeInstalacion } = require('../../common/bases-de-instalacion.js');
 
 const TOPE = 52 * 1024;
 
@@ -72,20 +73,6 @@ function cargados(raiz) {
 // agente-desplegado` viaja declarado y SIN filas, asi que su contraparte ya pesa lo que va a pesar
 // el dia uno de un repo nuevo. Es una COTA INFERIOR: `AGENTS.md` y `CLAUDE.md` no estan en `base/`
 // —se fusionan desde la PLANTILLA de `amp:inicializar`— y no se pueden medir desde aca.
-function basesDeInstalacion(raiz) {
-  const out = [];
-  const funcDir = path.join(raiz, 'funcionalidades');
-  if (!fs.existsSync(funcDir)) return out;
-  for (const f of fs.readdirSync(funcDir)) {
-    const skillsDir = path.join(funcDir, f, 'skills');
-    if (!fs.existsSync(skillsDir)) continue;
-    for (const s of fs.readdirSync(skillsDir)) {
-      const b = path.join(skillsDir, s, 'base');
-      if (fs.existsSync(b)) out.push(b);
-    }
-  }
-  return out;
-}
 // Bytes con que viaja un archivo cargado, o null si no viaja por archivo.
 function bytesQueViajan(rel, bases) {
   // Defensa explicita, NO probada por si sola: hoy es redundante —un archivo de la raiz tampoco

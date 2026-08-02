@@ -7,7 +7,7 @@ description: Registra o actualiza una Herramienta del Propósito en .claude/herr
 
 1. Leer `.claude/herramientas/MANIFIESTO.md`, `README.md` e `INDICE.md`.
 2. Buscar por nombre y por finalidad. Si una fila existente ya cubre la Herramienta, actualizarla en vez de duplicar.
-3. Determinar el tipo: `script`, `skill` local o `MCP` local. La infraestructura interna de un subsistema, incluidos sus lints, no es una Herramienta.
+3. Determinar el tipo: `script`, `skill` local, `MCP` local, o `funcion` (código que no se ejecuta solo: lo requiere otro código, y vive en `.claude/common/`). Los lints y los hooks de un subsistema no se registran acá: vienen con su subsistema.
 4. Antes de mover o renombrar algo, buscar su ruta en `settings`, `.gitignore`, hooks, documentación y scripts. Actualizar todas las referencias en el mismo cambio.
 5. Escribir en `INDICE-LOCAL.md` (el Índice del Agente Desplegado, que ya existe declarado); nunca modificar `INDICE.md`, que es del Agente Multipropósito. La fila lleva `Código | Nombre | Descripción | Tipo | Cómo se invoca | Estado | Detalle`:
    - **Código** — `Local-NNNN`, porque el origen es el Agente Desplegado. El número es **el mayor de ese Índice más uno**, nunca la cantidad de filas más uno: si alguna vez se retiró una Herramienta, contar filas repite un código ya usado. Un código retirado deja un hueco y no se reusa.

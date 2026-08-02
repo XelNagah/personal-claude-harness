@@ -29,6 +29,7 @@ const INSTALADO = path.join(REPO, '.claude');
 // Es la falla más cara de esta Herramienta y la más difícil de ver, porque el archivo se lee igual
 // en cualquier editor. Al sacarla también del texto que se escribe, lo que viaja nunca la lleva.
 const { sinMarcaDeOrden, origenDe } = require('../../common/frontmatter.js');
+const { basesDeInstalacion: basesDe } = require('../../common/bases-de-instalacion.js');
 const norm = s => sinMarcaDeOrden(s).replace(/\r\n/g, '\n').replace(/\s+$/, '');
 function hastaLaTabla(txt) {
   const ls = norm(txt).split('\n');
@@ -44,18 +45,7 @@ function listar(raiz, rel, out) {
 }
 
 // Las carpetas `base/` de cada skill de instalacion que haya en el repo.
-const basesDeInstalacion = [];
-const funcDir = path.join(REPO, 'funcionalidades');
-if (fs.existsSync(funcDir)) {
-  for (const f of fs.readdirSync(funcDir)) {
-    const skillsDir = path.join(funcDir, f, 'skills');
-    if (!fs.existsSync(skillsDir)) continue;
-    for (const s of fs.readdirSync(skillsDir)) {
-      const b = path.join(skillsDir, s, 'base');
-      if (fs.existsSync(b)) basesDeInstalacion.push(b);
-    }
-  }
-}
+const basesDeInstalacion = basesDe(REPO);
 
 console.log(`== SINCRONIZAR BASE: ${REPO} ==`);
 if (!basesDeInstalacion.length) {

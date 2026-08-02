@@ -198,6 +198,8 @@ for (const frag of FRAGMENTOS) {
 // Herramienta `instalar-plugins-codex` estuviera declarada en el registro Base y no se instalara.
 const normArch = s => s.replace(/\r\n/g, '\n').replace(/\s+$/, '');
 const { origenDe } = require('../../common/frontmatter.js');
+const { basesDeInstalacion: basesDe } = require('../../common/bases-de-instalacion.js');
+const { indicesDe } = require('../../common/indices.js');
 // Encabezado = todo lo anterior a la primera fila de datos de la primera tabla. El separador
 // `|---|` va incluido: es parte de la forma que manda el Agente Multiproposito.
 function encabezadoDe(txt) {
@@ -212,15 +214,7 @@ function listarArchivos(raiz, rel, out) {
   }
   return out;
 }
-const basesDeInstalacion = [];
-for (const f of enDisco) {
-  const skillsDir = path.join(funcDir, f, 'skills');
-  if (!fs.existsSync(skillsDir)) continue;
-  for (const s of fs.readdirSync(skillsDir)) {
-    const b = path.join(skillsDir, s, 'base');
-    if (fs.existsSync(b)) basesDeInstalacion.push(b);
-  }
-}
+const basesDeInstalacion = basesDe(repo);
 // Filas de datos de la primera tabla (las que van despues del separador `|---|`).
 function filasDe(txt) {
   const ls = normArch(txt).split('\n');
@@ -229,8 +223,23 @@ function filasDe(txt) {
   return ls.slice(i + 1).filter(l => /^\s*\|/.test(l.trim()));
 }
 // Carpetas de primer nivel de `.claude/` que NO son subsistemas sino infra compartida: no acumulan
-// entradas de ningun repo, asi que todo lo que tienen adentro debe viajar.
+// entradas de ningun repo, asi que lo que tienen adentro debe viajar SALVO que este registrado como
+// Herramienta del Agente Desplegado (ver `registradasComoLocales`).
 const INFRA_RAIZ = new Set(['common']);
+
+// Las rutas que el Indice de Herramientas del AGENTE DESPLEGADO declara: son maquinaria de quien
+// publica el Agente Multiproposito, no de quien lo instala, asi que legitimamente no viajan.
+//
+// El indice se localiza por el `origen` de su frontmatter y no por su nombre (decision Local-0042):
+// el nombre dejo de codificar el origen. Si no se encuentra ninguno, el conjunto queda vacio y todo
+// vuelve a exigirse — el control marca de mas, que es el lado seguro.
+const registradasComoLocales = new Set();
+for (const idx of indicesDe(path.join(repo, '.claude', 'herramientas'))) {
+  if (idx.origen !== 'agente-desplegado') continue;
+  for (const m of idx.texto.matchAll(/\(\.{0,2}\/?([\w.-]+\/[\w.-]+\.js)\)/g)) {
+    registradasComoLocales.add(m[1]);
+  }
+}
 const viajaDistinto = [], viajaSinInstalar = [], sinViajar = [], viajaConFilas = [];
 const carpetasQueViajan = new Set();
 for (const baseDir of basesDeInstalacion) {
@@ -278,16 +287,17 @@ if (basesDeInstalacion.length) {
   for (const carpeta of carpetasQueViajan) {
     // La excepcion es para la raiz de un SUBSISTEMA, no para todo lo de primer nivel. `common/`
     // tambien cuelga directo de `.claude/` y es lo contrario: infra pura, sin entradas de ningun
-    // repo, donde TODO archivo tiene que viajar. Sin esta lista el control saltea la carpeta
-    // entera y un modulo compartido que nunca se copio a `base/` sale en verde — verificado
-    // borrando `base/common/frontmatter.js` el 01/08/2026: no lo marco nadie.
+    // repo, donde un archivo que no viaja tiene que estar declarado. Sin esta lista el control
+    // saltea la carpeta entera y un modulo compartido que nunca se copio a `base/` sale en verde —
+    // verificado borrando `base/common/frontmatter.js` el 01/08/2026: no lo marco nadie.
     if (!carpeta.includes('/') && !INFRA_RAIZ.has(carpeta)) continue;
     const dir = path.join(repo, '.claude', carpeta);
     if (!fs.existsSync(dir)) continue;
     for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
       if (!e.isFile()) continue;
       const r = carpeta + '/' + e.name;
-      if (!queViajan.has(r)) sinViajar.push(`.claude/${r}`);
+      if (queViajan.has(r) || registradasComoLocales.has(r)) continue;
+      sinViajar.push(`.claude/${r}`);
     }
   }
 }

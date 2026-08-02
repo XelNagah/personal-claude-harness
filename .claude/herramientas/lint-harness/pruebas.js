@@ -130,6 +130,21 @@ caso('infra Base instalada que no viaja', 'INFRA BASE EN .claude/ QUE NO VIAJA',
 caso('el modulo comun instalado que no viaja', 'INFRA BASE EN .claude/ QUE NO VIAJA',
   () => fs.rmSync(path.join(REPO_PRUEBA, BASE_INST, 'common/frontmatter.js'), { force: true }));
 
+// Ese caso prueba ademas que la exencion de abajo no exime de mas: `frontmatter` esta declarado en
+// el Indice del Agente MULTIPROPOSITO, asi que tiene que seguir marcandose. Si el filtro por origen
+// se cayera y cualquier fila eximiera, este caso dejaria de fallar.
+//
+// Y el reves: un archivo de `common/` puede legitimamente no viajar si lo declara el Indice del
+// Agente DESPLEGADO —es maquinaria de quien publica, no de quien instala—. El caso bueno ya lo
+// ejercita, pero solo mientras exista un archivo asi: el dia que no quede ninguno, la exencion deja
+// de tener con que probarse y el caso bueno pasa igual, sin que nada lo diga. Por eso se prueba
+// rompiendola: se le quita la fila al Indice y el archivo tiene que volver a marcarse.
+caso('un modulo comun que no viaja y perdio su fila en el Indice', 'INFRA BASE EN .claude/ QUE NO VIAJA',
+  () => {
+    const rel = '.claude/herramientas/INDICE-LOCAL.md';
+    escribir(rel, leer(rel).split('\n').filter(l => !l.includes('common/bases-de-instalacion.js')).join('\n'));
+  });
+
 // Un Indice del Agente Desplegado nace declarado y SIN filas. Si viaja con alguna, todo repo que
 // se instale arranca con las entradas de este como si fueran propias. El control del encabezado no
 // puede verlo —mira arriba de la tabla justamente para no comparar filas—, asi que va aparte.
