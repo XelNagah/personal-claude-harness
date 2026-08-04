@@ -30,12 +30,28 @@ Hipótesis que sale de comparar las dos listas: **las cumplidas gobiernan el for
 
 **Contraejemplo dentro de la misma sesión, que la hipótesis no explica:** Local-0003 (archivos temporales en `.claude/tmp/`) es de acción y también falló — se escribieron dos archivos de trabajo en el directorio temporal del sistema antes de corregir el rumbo. Es una hipótesis con evidencia de una sesión, no una conclusión.
 
+### Señal retrospectiva del 04/08/2026
+
+Al revisar si la Preferencia Base-0001 (Dar ejemplos concretos de cada postura) debía seguir en la Base pública, el usuario confirmó que es una elección personal reutilizable y agregó: *«no recuerdo que se cumpla mucho esa preferencia, la verdad»*. No identifica una corrida concreta y por eso no cuenta como un caso observable adicional, pero sí confirma que el incumplimiento de la sesión del 02/08/2026 coincide con la percepción acumulada del usuario, no con un episodio aislado.
+
+### Tercera ocurrencia observable del 04/08/2026
+
+En la sesión que migró las elecciones personales fuera de la Base pública, el agente abrió el trabajo pidiendo ratificar la migración de la Preferencia Base-0001 mediante una consulta que citaba Códigos sin decir qué contenían, sin explicar qué cambiaba en la práctica y sin comparar cómo es ahora contra cómo quedaría. El usuario lo cortó: *«¿Vos pensás que esa es la forma correcta de plantearme una decisión? Por alguna razón ignora TODAS mis preferencias»*.
+
+Es la **misma clase de falla que el 02/08/2026 y con las mismas dos Preferencias** —Base-0001 (ejemplos concretos de cada postura) y Base-0002 (contexto en la respuesta, no comprimido en las opciones)—, ambas siempre en contexto. Suma dos datos que la sesión anterior no tenía:
+
+- **El recordatorio de cada turno estaba activo y nombraba las preferencias.** No alcanzó. Refuerza lo ya anotado: entregar la regla en el momento no es por sí solo la solución.
+- **La falla ocurrió en el primer turno de trabajo, al retomar desde un traspaso.** El agente venía de leer el traspaso y los registros, y produjo la consulta reutilizando el vocabulario de los documentos —Códigos y nombres de fila— en lugar de traducirlo para el usuario. Es una hipótesis nueva a contrastar: **cuando el contexto inmediato está lleno de texto interno, el agente hereda su registro y le habla al usuario como si fuera otro documento.** Explicaría por qué falla justo la clase de preferencia que gobierna cómo se le plantea algo a una persona, y por qué las que gobiernan el formato de un producto (una fecha, un commit) sobreviven.
+
+Corregida la consulta con contexto, comparación y recomendación, el usuario ratificó sin fricción y la migración avanzó. La falla no fue de comprensión de la regla: el agente pudo enunciarla y aplicarla apenas se la señalaron.
+
 ## A resolver
 
 - ¿La distinción "formato de lo que se produce" vs. "forma de plantear una decisión" se sostiene sobre más sesiones, o es casualidad de esta?
 - Si se sostiene: ¿qué momento de `conducta` puede atrapar el acto de plantear una decisión? No hay evento de hook para "voy a preguntarle algo al usuario".
 - ¿Corresponde que una preferencia de forma tenga un control que la verifique, o eso es chequeo semántico (decisión 0003) y por lo tanto no automatizable barato?
 - ¿Cambia algo la **redacción** de la preferencia? Base-0001 y Base-0003 son largas y densas; Local-0001 y Local-0005, que se cumplieron, son cortas y con un ejemplo adentro.
+- ¿Se sostiene la hipótesis del 04/08/2026 de que el agente **hereda el registro del texto que acaba de leer**? Si se sostiene, el momento a atrapar no es "voy a preguntar" sino "vengo de leer documentos internos y ahora le hablo al usuario", y el arranque desde un traspaso es su caso más expuesto.
 - **Cuando una preferencia y el texto de una habilidad se contradicen, ¿qué gana y quién lo detecta?** Heredada del plan Local-0064 al ejecutarse el 02/08/2026: ahí se arregló la contradicción concreta, pero no el mecanismo. Las dos veces que ese choque produjo la conducta no deseada —25/07/2026 y 02/08/2026— lo detectó el usuario mirando, no un control. `lint-harness` no puede: entender que dos textos se contradicen es chequeo semántico (decisión 0003), así que la guarda barata no existe. Queda por decidir si hay alguna forma más floja de acotarlo —por ejemplo, que una habilidad no pueda enunciar una regla que un registro ya enuncia, solo nombrarla— o si se acepta que dependa de que alguien lo vea.
 
 ## Cruces

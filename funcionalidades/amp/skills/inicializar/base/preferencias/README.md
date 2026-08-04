@@ -19,11 +19,20 @@ Las **preferencias** son las reglas de conducta del agente en este repo: qué es
    node .claude/preferencias/lint-preferencias/lint-preferencias.js
    ```
 
+## Incorporar y copiar
+
+`amp-preferencias:registrar-preferencia` es la única operación de alta. Puede redactar una regla nueva desde el texto del usuario o copiar puntualmente una ya asentada en otro Agente Desplegado. En ambos casos:
+
+1. lee los dos Índices y compara el tema y el contenido;
+2. muestra la fila y el detalle exactos antes de escribir;
+3. incorpora en el Índice del Agente Desplegado con un Código `Local-NNNN` nuevo;
+4. copia la página declarada en `Detalle`, si existe, y repara las referencias al Código fuente;
+5. devuelve `agregado`, `ya estaba`, `divergente` o `rechazado` y corre el lint.
+
+La copia no convierte una elección personal en Base, no crea una suscripción y no propaga cambios posteriores. Si la Preferencia depende de Conducta, Herramientas u otro subsistema, esa dependencia se informa y se resuelve con su operación dueña.
+
 ## Páginas de detalle
 
-- [`nombre-completo-no-sigla.md`](nombre-completo-no-sigla.md) — Base-0011: cómo presentar la sigla y por qué el alias no autoriza a sustituir el nombre.
-- [`estilo-commits.md`](estilo-commits.md) — Base-0012: la convención de commits y descripciones de PR con sus casos.
 - [`archivo-de-estado.md`](archivo-de-estado.md) — Base-0013: la convención del archivo de estado en tareas exploratorias.
 - [`handoff.md`](handoff.md) — Base-0014: por qué el nombre es variable y por qué la ruta va en el texto para copiar.
-- [`buscar-solucion-existente.md`](buscar-solucion-existente.md) — Base-0015: por qué buscar y por qué buscar no obliga a adoptar.
 - [`nombrar-que-es-cada-codigo.md`](nombrar-que-es-cada-codigo.md) — Base-0016: por qué el código no va solo y por qué el título va en la conversación.

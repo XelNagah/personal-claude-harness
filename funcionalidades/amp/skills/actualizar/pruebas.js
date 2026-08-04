@@ -237,10 +237,10 @@ console.log('\n== ESTRUCTURA ==');
   // es Índice ni lint ni README. Si este pasara y el anterior no, el arreglo habría sido agregar un
   // nombre más a una lista en vez de recorrer el árbol — y el que viaje mañana volvería a faltar.
   armarAlDia();
-  fs.rmSync(claude('preferencias/estilo-commits.md'), { force: true });
+  fs.rmSync(claude('preferencias/archivo-de-estado.md'), { force: true });
   const { texto } = correr(REPO_PRUEBA);
   chequear('una página de detalle ausente también se marca (el árbol es la lista)',
-    marca(texto, 'preferencias/estilo-commits.md', 'ausente'));
+    marca(texto, 'preferencias/archivo-de-estado.md', 'ausente'));
 }
 {
   // Un archivo cambiado dispara DOS chequeos distintos: el de contenido, que lo compara con el que

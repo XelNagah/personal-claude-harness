@@ -1,39 +1,95 @@
 ---
 name: registrar-preferencia
-description: Detecta un feedback recurrente del usuario y propone registrarlo como preferencia — redacta la regla, decide si va al Índice del Agente Desplegado o amerita subirla al Agente Multipropósito, y corre el lint. Use when el usuario corrige lo mismo por segunda vez, dice "que esto sea una preferencia", "anotalo como regla", o al cerrar una sesión con correcciones repetidas.
+description: Incorpora una preferencia nueva o copia puntualmente una existente desde otro Agente Desplegado — compara todos los Índices, detecta equivalencias y contradicciones, muestra el texto exacto, escribe solo en el origen correcto y corre el lint. Use when el usuario corrige lo mismo por segunda vez, pide "que esto sea una preferencia", quiere agregar una regla o llevar una preferencia a otro agente o repo.
 ---
 
 # Registrar una preferencia
 
-Convierte un feedback recurrente en regla de conducta persistida (`.claude/preferencias/`), para que deje de depender de que el usuario lo repita. Es la "nivelación de preferencias" que la separación por origen prevé pero que nadie ejecutaba.
+Incorpora **una** regla de conducta persistida en `.claude/preferencias/`. La entrada puede nacer de un feedback del usuario o venir de otro Agente Desplegado. Copiarla es una operación puntual: en el destino se vuelve Aprendizaje local, recibe un Código nuevo y no conserva sincronización con la fuente.
 
 ## Cuándo dispara
 
-- El usuario corrige **lo mismo por segunda vez** (mismo tipo de corrección, aunque cambie el caso) — señal más fuerte que cualquier pedido explícito.
-- Pedido directo: "que esto quede como regla".
-- Al cerrar una sesión: repasar si hubo correcciones repetidas que ameriten subirse.
+- El usuario corrige **lo mismo por segunda vez**, aunque cambie el caso.
+- Pedido directo: «que esto quede como regla» o «agregá esta preferencia».
+- Pedido de reutilización: «llevá/copiá esta preferencia a este agente o repo».
+- Al cerrar una sesión, si hubo correcciones repetidas que ameriten persistirse.
+
+## Contrato de incorporación
+
+**Entrada:** contenido candidato, detalle opcional, procedencia informativa y modo `vista previa` o `aplicar`.
+
+**Salida:** `agregado`, `ya estaba`, `divergente` o `rechazado`, con las entradas y rutas alcanzadas.
+
+**Garantías:** leer todos los Índices antes de escribir; buscar equivalencias y contradicciones por tema, no solo por texto; mostrar el contenido canónico exacto; asignar el Código en el destino; no pisar divergencias; copiar solo la página de detalle declarada; repetir sin duplicar.
+
+El auxiliar `scripts/incorporar-preferencia.js` materializa la operación y entrega una salida estructurada. **No decide equivalencias semánticas ni ratifica contenido:** esas dos responsabilidades quedan en esta skill.
 
 ## Flujo
 
-1. **Aislar la regla.** ¿Qué conducta concreta pide el usuario, en general y no solo en el caso puntual? Redactarla como las existentes: **accionable y verificable en el punto de acción**, con el porqué si no es obvio. No registrar la anécdota — registrar la regla que la anécdota revela. Cada preferencia es una fila con cuatro columnas:
-   - **Nombre** — qué pide, en una frase con verbo adelante. Único dentro del Índice.
-   - **Descripción** — la preferencia en sí: **todo lo que hace falta para obedecerla**. Puede ser larga si todo su texto es norma; este registro está siempre en contexto, así que lo que se saca de la celda deja de estar cargado.
-   - **Detalle** — `—`, o la página con su **elaboración**: ejemplos, motivos y casos ya discutidos. Lo que **no** hace falta para obedecer.
-   - **Código** — ver el paso siguiente.
-2. **Chequear las preferencias existentes**: ¿ya hay una regla que lo cubre? → quizás el problema no es que falte la regla sino que no se cumple (eso no se arregla re-escribiéndola — decirlo). ¿Hay una parecida? → proponer **afinarla** en vez de agregar otra.
-3. **Decidir el destino** (la estructura es un archivo por origen):
-   - **`PREFERENCIAS-LOCAL.md`** (Índice del Agente Desplegado) — la regla es específica de este proyecto. Destino normal: es el único archivo editable localmente.
-   - **`PREFERENCIAS.md`** (Índice del Agente Multipropósito) — la regla vale para todos los repos del usuario. Ese archivo **no se edita localmente**: viene del Agente Multipropósito y se actualiza al nivelar. Proponer llevarla al repo que la publica (donde editarla implica subir la versión del plugin y propagar); mientras tanto puede vivir en el del Agente Desplegado.
-4. **Asignar el Código.** El prefijo es el origen: `Base-NNNN` en el Índice del Agente Multipropósito, `Local-NNNN` en el del Agente Desplegado. El número es **el mayor que haya en ese Índice, más uno** — nunca la cantidad de filas más uno: si alguna vez se retiró una entrada, contar filas repite un código ya usado. Un código retirado deja un hueco y **no se reusa**. En el texto que queda escrito el código nunca va solo: se dice `Preferencia Base-0007`, no `Base-0007`.
-5. **Confirmar con el usuario** el texto exacto y el destino — las preferencias son conducta del agente: nada se asienta sin ok.
-6. **Escribir y cerrar con el lint** desde la raíz del repo:
+1. **Determinar el modo.**
+   - **Nueva:** aislar la conducta general que revela el pedido; no registrar la anécdota.
+   - **Copia puntual:** identificar repo fuente, Preferencia fuente y repo destino. La procedencia sirve para explicar el movimiento; no crea un vínculo permanente.
+
+2. **Construir la propuesta.** Cada Preferencia tiene:
+   - **Nombre:** qué pide, en una frase con verbo adelante; único dentro del Índice.
+   - **Descripción:** todo lo necesario para obedecerla. Debe ser accionable y verificable en el punto de acción, con el porqué si no es obvio.
+   - **Detalle:** `—`, o una página con elaboración, ejemplos, motivos y casos discutidos. Lo necesario para obedecer no baja al detalle porque esa página no está siempre cargada.
+   - **Procedencia:** repo y Código fuente, o «texto del usuario». Es informativa y no se agrega como una columna nueva.
+
+3. **Leer el subsistema completo en el destino.** Partir de `.claude/preferencias/MANIFIESTO.md` y leer **todos** los Índices declarados, cualquiera sea su nombre. Comparar la propuesta por tema, intención, alcance y contenido:
+   - equivalente: devolver `ya estaba`; si no se cumple, señalar que es un problema de cumplimiento, no de registro;
+   - mismo tema con diferencias compatibles: proponer afinar la entrada local existente;
+   - incompatibilidad: devolver `divergente`, explicar la contradicción y no escribir;
+   - ausente: continuar.
+
+4. **Resolver el destino.**
+   - Una Preferencia nueva o copiada se incorpora normalmente al Índice con `origen: agente-desplegado`.
+   - Una copia **siempre** entra como local, aunque la fuente tenga Código `Base-NNNN`: reutilizar una elección no la convierte en Base.
+   - Solo editar el Índice con `origen: agente-multiproposito` cuando el repo actual sea explícitamente la fuente pública del Producto y el usuario esté promoviendo esa regla a mecanismo público. En cualquier otro repo, registrar localmente y proponer la promoción como una operación separada.
+
+5. **Preparar la vista previa mecánica.** Resolver la ruta de `scripts/incorporar-preferencia.js` desde la carpeta de esta skill, no desde el repo destino.
+
+   Para una copia:
+
+   ```bash
+   node <ruta-skill>/scripts/incorporar-preferencia.js --fuente <repo-fuente> --codigo <Base-NNNN|Local-NNNN> --destino <repo-destino>
+   ```
+
+   Para texto nuevo, crear una propuesta JSON temporal con este esquema y pasarla con `--propuesta`:
+
+   ```json
+   {
+     "nombre": "...",
+     "descripcion": "...",
+     "detalle": null,
+     "procedencia": { "tipo": "texto del usuario" }
+   }
+   ```
+
+   Si hay detalle: `"detalle": { "archivo": "nombre.md", "contenido": "..." }`. La vista previa no escribe. El auxiliar busca coincidencias exactas en todos los Índices, calcula `máximo local + 1`, comprueba colisiones de archivo y muestra la fila y las rutas resultantes. Su coincidencia textual complementa, pero no reemplaza, el control semántico del paso 3.
+
+6. **Mostrar y ratificar.** Presentar al usuario el texto exacto de la fila, el contenido completo del detalle si lo hay, el destino, la procedencia y las rutas alcanzadas. Esperar el visto bueno. Aprobar «registrarla» no equivale a aprobar un texto que todavía no vio.
+
+7. **Aplicar la misma propuesta.** Repetir el comando de vista previa con `--aplicar`. No reconstruirla después de la ratificación. El auxiliar:
+   - asigna `Local-NNNN` como el mayor del Índice local más uno, sin reusar huecos;
+   - reemplaza las referencias al Código fuente dentro del detalle;
+   - copia la página declarada sin pisar un archivo divergente;
+   - devuelve `ya estaba` en una segunda corrida.
+
+8. **Cerrar con el lint** desde la raíz del repo destino:
 
    ```bash
    node .claude/preferencias/lint-preferencias/lint-preferencias.js
    ```
 
-7. **Reportar**: regla asentada (texto final), destino, y si se recomendó subirla al Agente Multipropósito.
+9. **Reportar:** estado, Preferencia resultante con tipo y Código, procedencia, Índice y rutas modificadas, lint y cualquier dependencia externa que no se haya copiado.
+
+## Límites de la primera versión
+
+- Copia una Preferencia y, como máximo, su página declarada en `Detalle`.
+- Si esa página depende de otros archivos locales o la regla necesita Conducta, Herramientas u otro subsistema para cumplirse, informar la dependencia y coordinar al subsistema dueño; no copiarla en silencio ni ampliar el alcance por cuenta propia.
+- No copia conjuntos, no crea un tercer origen y no propaga cambios posteriores.
 
 ## Reconciliación (idempotencia)
 
-Releer todos los Índices antes de cada escritura. Una regla equivalente devuelve `ya estaba`; una entrada del mismo tema con contenido distinto devuelve `divergente`. La vista previa y una cancelación no modifican nada. Nunca modificar localmente el Índice del Agente Multipropósito de un Agente Desplegado.
+Releer todos los Índices antes de cada escritura. Una regla equivalente devuelve `ya estaba`; una entrada del mismo tema con contenido distinto devuelve `divergente`; un archivo de detalle preexistente con otro contenido tampoco se pisa. La vista previa y una cancelación no modifican nada. Nunca modificar localmente el Índice del Agente Multipropósito de un Agente Desplegado.

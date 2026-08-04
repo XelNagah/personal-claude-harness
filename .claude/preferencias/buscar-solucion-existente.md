@@ -1,6 +1,6 @@
 # Buscar una solución existente antes de escribir una propia
 
-Elaboración de la Preferencia Base-0015.
+Elaboración de la Preferencia Local-0012.
 
 **Por qué buscar:** lo escrito a mano hereda los defectos que la solución madura ya tapó, y queda sin nadie que lo mantenga.
 

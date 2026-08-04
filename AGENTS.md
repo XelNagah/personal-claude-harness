@@ -33,7 +33,7 @@ El repo es a la vez un **marketplace de plugins de Claude Code** (estilo Matt Po
 └── funcionalidades/                           # cada subcarpeta = un plugin
     ├── amp/                                   # plugin transversal: inicializar · planificar · actualizar · info; dep: los 8 amp-<sub>
     ├── amp-subsistemas/                       # catálogo + alta de casas + reubicación guiada del Aprendizaje
-    ├── amp-preferencias/                      # preferencias separadas por origen (@import); skill registrar-preferencia
+    ├── amp-preferencias/                      # preferencias por origen; alta o copia puntual con registrar-preferencia
     ├── amp-planes/                            # ciclo pendientes/ejecutados/descartados + PLANES.md + lint + hook
     ├── amp-conocimiento/                      # base .claude/conocimiento/ + lint
     ├── amp-semantica/                         # glosario + Terminología Farlopa + lint

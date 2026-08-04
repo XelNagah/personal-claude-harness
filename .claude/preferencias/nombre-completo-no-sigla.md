@@ -1,6 +1,6 @@
 # Nombre completo, no la sigla sola
 
-Elaboración de la Preferencia Base-0011.
+Elaboración de la Preferencia Local-0011.
 
 **Cómo presentar la sigla:** en la primera mención, junto al nombre —`Agente Multipropósito (AMP)`—, para que el lector la reconozca cuando la vuelva a encontrar.
 

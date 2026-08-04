@@ -1,0 +1,34 @@
+---
+indice: preferencias
+origen: agente-multiproposito
+columnas: Código, Nombre, Descripción, Detalle
+---
+
+# Preferencias Recomendadas
+
+Catálogo de preferencias que el Agente Multipropósito **ofrece**, no instala. Ninguna llega a un repo
+por instalar el plugin: la habilidad `adoptar-recomendadas` las muestra y el usuario elige cuáles
+adoptar. Lo adoptado entra en el Índice del Agente Desplegado del destino, con un Código propio.
+
+Son las elecciones de quien publica el Agente Multipropósito, ofrecidas como sugerencia. Adoptar una
+no crea vínculo con este catálogo ni propaga sus cambios posteriores.
+
+**Archivo derivado: no se edita a mano.** Se regenera desde el Índice del Agente Desplegado del repo
+que publica el Agente Multipropósito, con
+`node .claude/herramientas/sincronizar-recomendadas/sincronizar-recomendadas.js --aplicar`.
+
+| Código | Nombre | Descripción | Detalle |
+|--------|--------|-------------|---------|
+| Base-0001 | Usar fechas en formato argentino al hablar con el usuario | `DD/MM/AAAA` (`21/07/2026`) o en palabras (`21 de julio de 2026`). Nunca `MM/DD` ni ISO en la conversación. ⚠️ Esto es **solo la conversación**: los formatos de los registros no se tocan — `AA-MM-DD` en `PLANES.md` y `AAAA-MM-DD` en `decisiones/INDICE.md` son datos con lint. | — |
+| Base-0002 | Tomar los ejemplos del dominio del repo, sin analogías deportivas | Ejemplos y analogías: usar el dominio del repo o casos neutros. **Nada de analogías deportivas** (fútbol, jugadores, plantel). Si un ejemplo necesita un dominio inventado, preferir uno ya presente en el repo o un caso real ya decidido. | — |
+| Base-0003 | Guardar los archivos temporales en `.claude/tmp/` | Los archivos temporales de trabajo (traspasos, notas de sesión, borradores) van en `.claude/tmp/` dentro del repo, no en la raíz ni en el directorio temporal del sistema — así se referencian con ruta corta relativa y un agente limpio los encuentra. `.claude/tmp/` está gitignoreado. Pisa la regla global de usar el directorio temporal del sistema. | — |
+| Base-0004 | No contar como costo lo que ya está comprometido en todas las opciones | Al comparar alternativas, no contar como costo de una opción algo que ya está comprometido en todas. Si el trabajo se va a hacer igual por otro motivo, es precio ya pagado: sumarlo a una sola opción la hace ver artificialmente cara y empuja la decisión hacia el lado equivocado. | — |
+| Base-0005 | Enumerar tres o más elementos en lista de bullets | Al enumerar tres o más elementos en una respuesta, presentarlos en lista de bullets, no en una sola línea de texto corrido — es más fácil de escanear que un párrafo donde todo pesa igual. | — |
+| Base-0006 | Analizar y diseñar de alto a bajo nivel | Antes de implementar, entender conceptualmente el problema, descomponerlo en elementos y definir sus relaciones, límites y contratos de alto nivel. Considerar las extensiones razonablemente previsibles para favorecer cambios aditivos —que se incorporen a estructuras ya definidas sin romper lo anterior— y minimizar cambios sustractivos: tener que desarmar o romper lo construido para agregar funcionalidad. No intentar anticipar cualquier necesidad posible: asumir temprano el costo de análisis que reduzca fallas de diseño previsibles, sin agregar abstracciones especulativas. | [analizar-y-disenar-de-alto-a-bajo-nivel.md](analizar-y-disenar-de-alto-a-bajo-nivel.md) |
+| Base-0007 | Dar ejemplos concretos de cada postura | Al preguntar por una decisión o analizar alternativas, dar SIEMPRE ejemplos concretos de cada postura (numéricos si aplica): cómo es ahora vs. cómo quedaría y por qué, encadenando consecuencias ("A ⇒ B; si no fuera B ⇒ no A porque X"). Objetivo: ubicar inmediatamente al lector en la mecánica relevante sin que tenga que reconstruir contexto. | — |
+| Base-0008 | Pedir una decisión por vez, con contexto y recomendación | Antes de pedir una decisión, verificar si puede resolverse consultando los subsistemas y sus registros o inspeccionando el repo; si puede, resolverla, explicar de dónde salió la respuesta y no trasladarla al usuario. Cuando sí requiera su decisión, poner el contexto en el texto de la respuesta —nunca comprimido dentro de las opciones—, pedir una sola decisión por vez y recomendar una alternativa explicando por qué. Una cola final de confirmaciones cuya respuesta esperada sea "sí" puede agruparse, con la recomendación de cada una visible. | — |
+| Base-0009 | Acordar el formato con un esqueleto antes de calcular | Ante un informe o visualización de **formato nuevo**: mostrar primero el esqueleto con datos de prueba marcados como PROVISORIO, acordar la representación, recién después calcular en serio. **Nunca re-producir completo un formato rechazado**: volver al esqueleto y realinear. | — |
+| Base-0010 | Nombrar y explicar el dominio en español | Usar español corriente para nombrar y explicar el dominio, incluidos el texto plano y los diagramas. Evitar anglicismos, copias literales del inglés y palabras inventadas o innecesariamente raras. Conservar en inglés únicamente identificadores externos y términos de infraestructura técnica cuya traducción pierda precisión o rompa compatibilidad. Ante una palabra de origen inglés, aplicar el test: ¿la diría tal cual un desarrollador hispanohablante en una conversación en español (`commit`, `deploy`, `parsear`, `hardcodear`, `bug`) o es una metáfora o modismo del inglés (`churn`, `wedge`, `dogfooding`, `staleness`, `feasibility`)? Lo segundo, traducirlo; ante la duda, traducir. | [nombrar-el-dominio-en-espanol.md](nombrar-el-dominio-en-espanol.md) |
+| Base-0011 | No reemplazar los nombres del dominio por siglas | En documentación, registros, comentarios y textos que viajan a otros repos, escribir completos los nombres propios del dominio. La sigla puede acompañar al nombre para reconocerla, pero no sustituirlo. La regla no alcanza siglas técnicas externas ya establecidas ni identificadores que deban conservarse; en la conversación, su uso es libre. | [nombre-completo-no-sigla.md](nombre-completo-no-sigla.md) |
+| Base-0012 | Evaluar soluciones existentes antes de implementar una propia | Antes de implementar una capacidad general o un mecanismo no trivial, buscar primero en el repo, la biblioteca estándar, el framework y el ecosistema; consultar internet cuando esté permitido y sea pertinente. Informar qué se encontró y por qué se adopta o se descarta. Buscar no obliga a agregar una dependencia. La regla no alcanza adaptaciones triviales ni comportamiento verdaderamente específico del dominio. | [buscar-solucion-existente.md](buscar-solucion-existente.md) |
+| Base-0013 | Redactar commits y descripciones de PR con la convención Antes/Ahora | En español, sin coautoría ni atribución a la IA, con título `<Área>: <Resumen>` y cuerpo `Antes, … Ahora, …`. El área es funcional y el cuerpo describe el cambio observable. | [estilo-commits.md](estilo-commits.md) |

@@ -59,24 +59,24 @@ const casos = [];
 const caso = (nombre, fragmento, romper) => casos.push({ nombre, fragmento, romper });
 
 caso('código con prefijo que no corresponde al origen', 'no tiene la forma',
-  () => escribir(IDX, leer(IDX).replace('| Base-0005 |', '| Local-0005 |')));
+  () => escribir(IDX, leer(IDX).replace('| Base-0003 |', '| Local-0099 |')));
 
 caso('código duplicado', 'codigo duplicado',
-  () => escribir(IDX, leer(IDX).replace('| Base-0006 |', '| Base-0005 |')));
+  () => escribir(IDX, leer(IDX).replace('| Base-0009 |', '| Base-0003 |')));
 
 caso('fila sin Nombre', 'no tiene Nombre',
-  () => escribir(IDX, leer(IDX).replace(/(\| Base-0007 \| )[^|]+(\|)/, '$1 $2')));
+  () => escribir(IDX, leer(IDX).replace(/(\| Base-0009 \| )[^|]+(\|)/, '$1 $2')));
 
-// Se le pone a Base-0007 el Nombre que ya tiene Base-0006, que es otro: ponerle el suyo propio no
+// Se le pone a Base-0009 el Nombre que ya tiene Base-0003, que es otro: ponerle el suyo propio no
 // duplica nada y el caso pasaría en verde sin ejercitar el control.
 caso('nombre duplicado', 'nombre duplicado',
-  () => escribir(IDX, leer(IDX).replace(/(\| Base-0007 \| )[^|]+(\|)/, '$1Resolver lo conceptual antes que la implementación $2')));
+  () => escribir(IDX, leer(IDX).replace(/(\| Base-0009 \| )[^|]+(\|)/, '$1Mostrar el texto exacto antes de escribir en un registro canónico $2')));
 
 caso('fila sin Descripción', 'no tiene Descripción',
-  () => escribir(IDX, leer(IDX).replace(/(\| Base-0008 \| [^|]+\| )[^|]+(\|)/, '$1 $2')));
+  () => escribir(IDX, leer(IDX).replace(/(\| Base-0009 \| [^|]+\| )[^|]+(\|)/, '$1 $2')));
 
 caso('Detalle que apunta a una página que no existe', 'que no existe',
-  () => escribir(IDX, leer(IDX).replace('[estilo-commits.md](estilo-commits.md)', '[no-existe.md](no-existe.md)')));
+  () => escribir(IDX, leer(IDX).replace('[archivo-de-estado.md](archivo-de-estado.md)', '[no-existe.md](no-existe.md)')));
 
 caso('página que ninguna celda Detalle declara', 'pagina huerfana',
   () => fs.writeFileSync(path.join(BANCO, 'pagina-suelta.md'), '# Suelta\n\nNadie la declara.\n'));
@@ -117,8 +117,17 @@ console.log('\n== CASO BUENO: el Índice del Agente Desplegado sin filas propias
 armar();
 {
   const t = leer(LOCAL);
-  // se le quitan las filas dejando el encabezado: es el estado de un repo recién instalado
+  // Se le quitan las filas dejando el encabezado: es el estado de un repo recién instalado.
+  // También salen sus detalles exclusivos; conservarlos fabricaría páginas huérfanas que una
+  // instalación pública nunca recibe. Los detalles que además declare la Base se conservan.
+  const filasBase = leer(IDX).split('\n').filter(l => /^\| Base-/.test(l)).join('\n');
+  const filasLocales = t.split('\n').filter(l => /^\| Local-/.test(l)).join('\n');
+  const detallesBase = new Set([...filasBase.matchAll(/\]\(([^)]+\.md)\)/g)].map(m => m[1]));
+  const detallesLocales = [...filasLocales.matchAll(/\]\(([^)]+\.md)\)/g)].map(m => m[1]);
   escribir(LOCAL, t.split('\n').filter(l => !/^\| Local-/.test(l)).join('\n'));
+  for (const detalle of detallesLocales) {
+    if (!detallesBase.has(detalle)) fs.rmSync(path.join(BANCO, detalle), { force: true });
+  }
   const s = correr(), n = cuantos(s);
   console.log(`${n === 0 ? 'OK  ' : 'FALLA'} sin preferencias propias → ${n} hallazgos`);
   if (n !== 0) { malos++; console.log(s.split('\n').filter(l => l.includes('[x]')).join('\n')); }
