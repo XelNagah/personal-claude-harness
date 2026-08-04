@@ -7,6 +7,10 @@
 **Dependencias:** Node.js (sin libs externas).
 **Origen (opcional):** ítem 10 del plan de mejoras de uso 2026-07 (repo como-uso-claude): el desvío entre lo documentado y lo real del harness era recurrente y manual.
 
+## Skills publicadas
+
+El control recorre cada `funcionalidades/<plugin>/skills/<skill>/SKILL.md`. Valida el frontmatter mínimo y que el `name` coincida con la carpeta, exige un disparador `Use when`, una sección de reconciliación y un cierre verificable, resuelve los enlaces Markdown relativos y marca invocaciones a skills retiradas. Estas garantías tienen casos negativos en `pruebas.js`: un control que no se enciende ante su defecto no cuenta como probado.
+
 ## Plugins instalados
 
 El lint consulta el registro de Plugins de Claude Code para este repositorio y compara la versión instalada con la publicada. Los Plugins ausentes no son hallazgos: la Herramienta `actualizar-plugins` diagnostica e instala los que correspondan.

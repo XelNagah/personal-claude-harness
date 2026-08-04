@@ -17,29 +17,28 @@ Antes de escribir nada, ubicar el hallazgo. Cinco destinos, y solo uno es este s
 
 | Es… | Va a | Cómo se reconoce |
 |---|---|---|
-| Lo que el agente **sabe** del dominio | **`conocimiento/`** ✅ | Cómo funciona algo, un formato, una restricción real, un procedimiento externo |
+| Lo que el agente **sabe** del proyecto, el dominio o un sistema externo | **`conocimiento/`** ✅ | Un hecho verificable, cómo funciona algo, un formato, una restricción real o un procedimiento que hará falta de nuevo |
 | Cómo prefiere el usuario que el agente trabaje | `preferencias/` | Estilo, formato o principio recurrente |
 | Una elección que **condiciona el futuro** | `decisiones/` | Se toma una vez, se respeta después, tenía alternativas |
 | Qué significa una **palabra** | `semantica/` | Es un sustantivo del dominio, no un procedimiento |
 | Lo que el agente **lee**, no lo que sabe | se queda donde está | Fuentes crudas: documentos, datos, escaneos, exports |
 
-**La prueba que discrimina:** *¿esto seguiría siendo cierto si este repo no existiera?*
+**La prueba que discrimina:** *¿es un hecho o procedimiento verificado que la próxima sesión tendría que volver a averiguar para trabajar en este proyecto?*
 
-- **Sí → conocimiento.** *"PowerShell 5.1 lee un `.ps1` sin BOM como ANSI y rompe los acentos al parsear."* Es verdad del mundo; sirve en cualquier repo que toque PowerShell.
-- **No es conocimiento si gobierna la acción futura:** una preferencia va a Preferencias; una decisión estructural, a Decisiones; una tarea futura, a Planes; una regla ligada a un momento, a Conducta.
+- **Sí → conocimiento**, aunque solo sea cierto para este repo. Ejemplos: *"PowerShell 5.1 interpreta de esta manera un `.ps1` sin BOM"* y *"el generador de este proyecto corta las tablas en el separador declarado por el frontmatter"*.
+- **No, gobierna una acción futura → otro subsistema:** una preferencia va a Preferencias; una decisión estructural, a Decisiones; una tarea futura, a Planes; una regla ligada a un momento, a Conducta.
+- **No está verificado → todavía no es conocimiento:** verificarlo o dejar explícita la incertidumbre; no convertir una conjetura en hecho canónico.
 
-Segunda prueba, para el caso dudoso: *¿lo sabría un experto del dominio sin haber visto nunca este proyecto?* Si sí, es conocimiento.
-
-⚠️ **La documentación del proyecto no es conocimiento del agente.** `README.md`, `REGISTRO.md`, los ADRs de un repo de software: son texto para humanos sobre el proyecto, se quedan donde están. Enterrarlos bajo `conocimiento/` es el error clásico en la dirección opuesta.
+⚠️ **El público y el propósito distinguen documentación de conocimiento, no si el dato es específico del repo.** `README.md`, `REGISTRO.md` o una guía para personas se quedan donde están. Una síntesis operativa verificada que el agente necesita reutilizar puede ir a `conocimiento/`, incluso si su fuente es uno de esos documentos; no mover ni duplicar la documentación humana completa.
 
 Si el hallazgo no es conocimiento, **decirlo y derivar** a la skill dueña del subsistema correspondiente en vez de forzarlo acá.
 
 ### 2. Buscar si ya está asentado — por tema, no por nombre
 
-Leer `.claude/conocimiento/INDICE.md` y abrir las páginas candidatas. Tres salidas:
+Leer `.claude/conocimiento/MANIFIESTO.md`, **todos los Índices que declare** y las páginas candidatas. Buscar equivalentes y contradicciones en ambos orígenes antes de decidir dónde escribir. Tres salidas:
 
 - **Ya cubierto igual** → no tocar; reportar `ya estaba`.
-- **Cubierto pero incompleto, o contradice lo nuevo** → **actualizar esa página**, no crear otra. Si contradice, resolver la contradicción explícitamente en el texto (qué era, qué es, desde cuándo) en vez de dejar las dos versiones conviviendo.
+- **Cubierto pero incompleto, o contradice lo nuevo** → si es una entrada del Agente Desplegado, **actualizar esa página**, no crear otra. Si pertenece al Agente Multipropósito, no modificarla localmente: reportar la divergencia y proponer su corrección en la fuente pública.
 - **No cubierto** → crear.
 
 ### 3. Ubicar la página
@@ -72,9 +71,9 @@ Reglas duras:
 
 ### 5. Indexar
 
-Una fila en el `INDICE.md` que corresponda, con `Código | Nombre | Descripción | Detalle`. Solo el puntero; el índice nunca lleva contenido. Si se actualizó una página existente, revisar que su fila siga siendo fiel.
+Una entrada nueva se agrega al Índice declarado con `origen: agente-desplegado`, con `Código | Nombre | Descripción | Detalle`. Nunca agregarla al Índice del Agente Multipropósito. Solo el puntero; el índice nunca lleva contenido. Si se actualizó una página local existente, revisar que su fila siga siendo fiel.
 
-- **Código** — `Local-NNNN`, porque el conocimiento lo acumula el Agente Desplegado. El número es **el mayor de ese Índice más uno**, nunca la cantidad de filas más uno: si alguna vez se retiró una página, contar filas repite un código ya usado. Un código retirado deja un hueco y no se reusa.
+- **Código** — `Local-NNNN`, porque el conocimiento lo acumula el Agente Desplegado. El número es **el mayor del Índice local más uno**, nunca la cantidad de filas más uno: si alguna vez se retiró una página, contar filas repite un código ya usado. Un código retirado deja un hueco y no se reusa.
 - **Nombre** — el título de la página, sin link. **Descripción** — de qué trata, en una línea: lo suficiente para decidir si vale abrirla. **Detalle** — el link a la página, o a la carpeta con su propio índice.
 
 ### 6. Cerrar con el lint

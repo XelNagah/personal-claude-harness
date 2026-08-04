@@ -30,8 +30,8 @@ No mandar al usuario a invocar otra skill: `amp:actualizar` llama y coordina `am
 
 Lo mecánico y determinista lo hace el script `amp-actualizar.js` (decisión 0009); el juicio, este skill.
 
-- **Script** (`node <ruta-skill>/amp-actualizar.js`): barrido y clasificación de la estructura, respaldo, y el reporte / vista previa. Modos: `--vista-previa` (o sin flag) detecta y muestra el plan **sin escribir**; `--respaldo` copia `.claude/` a `.claude/.respaldo-amp/<fecha>/`. Acepta la raíz del repo como argumento (default: el repo actual).
-- **Skill** (este flujo): confirma el plan, **delega la instalación** al instalador consolidado `amp:inicializar` (que trae los Componentes de todos los subsistemas como archivos, ya limpios de citas a decisiones del harness, y es idempotente), migra términos y textos con criterio, y pregunta ante lo divergente.
+- **Script** (`node <ruta-skill>/amp-actualizar.js`): barrido y clasificación de la estructura, respaldo, y el reporte / vista previa. Modos: `--vista-previa` (o sin flag) detecta y muestra el plan **sin escribir**; `--respaldo` omite la copia si git ya cubre `.claude/` o la crea fuera del repo, bajo el temporal del sistema, e imprime la ruta absoluta. Acepta la raíz del repo como argumento (default: el repo actual).
+- **Skill** (este flujo): confirma el plan, usa `amp:inicializar` **solo para instalar Componentes ausentes**, pisa la Base vieja con las reglas de este nivelador, migra términos y textos con criterio, y pregunta ante lo divergente.
 
 ## Paso previo obligado: la fase de plugins
 
@@ -110,7 +110,7 @@ El repo quedó con nombres de plugin que el marketplace ya no ofrece. **No se ar
    ⚠️ **`common/` va primero.** Los módulos que varios subsistemas comparten —hoy la lectura de frontmatter— los requieren los ocho lints y los dos hooks. Si se pisa un lint con la versión nueva y su módulo todavía no llegó, ese lint no arranca: falla al cargar, que en un hook es una sesión sin reglas entregadas. Copiar `common/` antes que el resto deja al repo corriendo en todo momento.
 
    Para cada ítem:
-   - **Subsistema ausente** (p. ej. `conducta/`) → correr `amp:inicializar` (idempotente: instala los subsistemas ausentes copiando su parte del árbol y preserva lo que ya está).
+   - **Subsistema ausente** (p. ej. `conducta/`) → correr `amp:inicializar` (idempotente: instala los Componentes ausentes y no nivela los existentes).
    - **`MANIFIESTO`/lint/estructura vieja** → **copiar encima** el archivo de `base/`. (A diferencia de la reconciliación normal de `amp:inicializar`, que preserva lo existente, acá el archivo Base **se pisa** — es del harness. El contenido aprendido del mismo subsistema no se toca.)
    - **`contenido viejo`** (un archivo Base instalado que difiere del que viaja) → **copiar el de `base/` encima**, entero y tal cual. Es el caso más frecuente al poner al día un repo que ya tenía el Agente Multipropósito: el Componente de Subsistema está, pero en la versión de cuando se instaló. No hay nada que preservar — los archivos Base no se ajustan por repo; lo que el repo aprendió vive en sus registros.
    - **`encabezado viejo`** (un registro `origen: agente-desplegado` cuya convención quedó atrás) → **pisar solo hasta el separador de la tabla** y dejar las filas intactas. Arriba de la tabla está la convención, las columnas y la gobernanza, que manda el Agente Multipropósito y cambia con él; abajo están las entradas del repo. Sin esto, un repo instalado hace tres versiones lee instrucciones que ya no rigen y las obedece. El separador entra en lo que se pisa: es el que declara cuántas columnas tiene la tabla, así que es parte de la convención y no de las filas. Cuando el repo le sumó una columna propia el detector **no** emite este hallazgo, sino el divergente de abajo.
@@ -122,7 +122,7 @@ El repo quedó con nombres de plugin que el marketplace ya no ofrece. **No se ar
 6. **Aplicar Renombres** (el caso con más juicio — preservar lo aprendido):
    - **`glosario`→`semantica`:**
      1. Mover la carpeta `.claude/glosario/` → `.claude/semantica/` y `lint-glosario/` → `lint-semantica/` (renombrar también `lint-glosario.js` → `lint-semantica.js`).
-     2. Correr `amp:inicializar` en reconciliación: pone al día el mecanismo de semántica (lint nuevo, `MANIFIESTO`, estructura de columnas) **preservando** `GLOSARIO.md` y `TERMINOLOGIA-FARLOPA.md` con sus términos. Verificar que ningún término se haya perdido.
+     2. Aplicar sobre `semantica/` las reglas de nivelación del punto 5: instalar lo ausente, reemplazar el mecanismo Base y migrar los Índices conservando sus términos. No delegar esta actualización a `amp:inicializar`, que solo completa ausencias. Verificar que ningún término se haya perdido.
      3. Migrar las referencias: en `AGENTS.md`, `@.claude/glosario/MANIFIESTO.md` → `@.claude/semantica/MANIFIESTO.md`; el prefijo de skill `glosario:` → `semantica:` donde aparezca; y toda referencia por ruta al lint renombrado (settings, hooks).
    - **Encabezados de los índices separados por origen** (`preferencias/PREFERENCIAS.md`, `conducta/INDICE.md`, `herramientas/INDICE.md`): el detector lista cada encabezado viejo con su nombre nuevo.
      1. Reemplazar **solo la línea del encabezado**, dejando intacto todo el contenido de esa sección. No es un reemplazo de contenido: la sección del Agente Desplegado sigue siendo del repo y no se toca aunque cambie de nombre.
@@ -160,7 +160,7 @@ El repo quedó con nombres de plugin que el marketplace ya no ofrece. **No se ar
       | `feedback_base_conocimiento.md` | `.claude/conocimiento/README.md` |
       | `feedback_conducta.md` | `.claude/conducta/README.md` |
       | `feedback_herramientas.md` | `.claude/herramientas/README.md` |
-      | `feedback_estilo_commits.md` | `.claude/preferencias/estilo-commits.md` + regla Base de conducta correspondiente |
+      | `feedback_estilo_commits.md` | Aprendizaje del repo: la convención de commits es una elección personal y el Agente Multipropósito ya no la publica. Se propone incorporarla como Preferencia del Agente Desplegado con `registrar-preferencia`; no se la da por cubierta ni se la descarta |
       | `feedback_archivo_de_estado.md` | `.claude/preferencias/archivo-de-estado.md` + regla Base de conducta correspondiente |
 
       Si un Componente de Subsistema con uno de esos nombres contiene una adición propia del repo que no está cubierta por el destino, **solo esa adición** pasa al grupo de Aprendizaje; no se pregunta si se mueve el bloque Base entero.

@@ -5,9 +5,9 @@ description: Agrega, modifica o da de baja una regla del Propósito en .claude/c
 
 # Registrar una regla
 
-1. Leer `.claude/conducta/MANIFIESTO.md`, `README.md`, `MOMENTOS.md`, `CLASES.md` e `INDICE.md`.
-2. Buscar una regla equivalente por intención y momento. Actualizarla en vez de duplicar.
-3. Elegir un momento existente. Si hace falta uno nuevo, declararlo en `MOMENTOS.md`; queda `declarado` hasta tener repartidor.
+1. Leer `.claude/conducta/MANIFIESTO.md`, `README.md`, `MOMENTOS.md`, `MOMENTOS-LOCAL.md`, `CLASES.md` y **todos los Índices declarados por el manifiesto**.
+2. Buscar una regla equivalente por intención y momento en ambos orígenes. Si una regla local ya la cubre, actualizarla en vez de duplicar. Si la cubre la Base, reportar `ya estaba` o `divergente`; nunca sombrearla con una copia local ni modificar la Base desde este flujo.
+3. Elegir un momento existente de cualquiera de los dos registros. Si hace falta uno propio del repo, declararlo en `MOMENTOS-LOCAL.md`; nunca modificar `MOMENTOS.md`, que pertenece al Agente Multipropósito. El momento nuevo queda `declarado` hasta tener repartidor.
 4. Elegir la clase mínima de las declaradas en `CLASES.md`: `Inyectar` cuando requiere juicio, `Ejecutar` cuando una Herramienta decide mecánicamente, `Bloquear` solo si el falso positivo es imposible. Las clases **no son configurables**: agregar una fila a `CLASES.md` no hace que el repartidor la soporte.
 5. Escribir en `INDICE-LOCAL.md` (el Índice del Agente Desplegado, que ya existe declarado); nunca modificar `INDICE.md`, que es del Agente Multipropósito. La fila lleva `Código | Nombre | Descripción | Momento | Clase | Contenido | Estado | Detalle`:
    - **Código** — `Local-NNNN`. **El mayor de ese Índice más uno**, nunca la cantidad de filas más uno: si alguna vez se retiró una regla, contar filas repite un código ya usado. Un código retirado deja un hueco y no se reusa.

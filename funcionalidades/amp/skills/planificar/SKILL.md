@@ -9,11 +9,11 @@ Interrogá el plan o la idea a fondo, sin pausa, hasta llegar a un **entendimien
 
 ## Antes de arrancar: leer la sabiduría del repo
 
-Si existen, leer:
+Para cada subsistema relevante, leer primero su `MANIFIESTO.md` y después **todos los Índices o registros que declare**, sin suponer que hay uno solo ni inferir el origen por el nombre del archivo. Abrir también las páginas de detalle candidatas. En particular:
 
-- **`.claude/semantica/GLOSARIO.md`** y **`.claude/semantica/TERMINOLOGIA-FARLOPA.md`** — la terminología canónica del dominio (glosario) y las relaciones término→significado vetadas (Terminología Farlopa), más las páginas de detalle que enlacen.
-- **`.claude/decisiones/INDICE.md`** — las decisiones estructurales ya tomadas (y su detalle).
-- **`.claude/conocimiento/INDICE.md`** — lo que el agente sabe del dominio.
+- **Semántica:** glosario, Terminología Farlopa y sus detalles.
+- **Decisiones:** todos los Índices declarados y el detalle de las decisiones relacionadas.
+- **Conocimiento:** los Índices del Agente Multipropósito y del Agente Desplegado, más las páginas relacionadas.
 
 Si alguna no existe, seguir igual (la sesión degrada, no se rompe).
 
@@ -23,9 +23,9 @@ Si alguna no existe, seguir igual (la sesión degrada, no se rompe).
 
 Con lo que sí queda, recorré el **árbol de decisión** resolviendo **una decisión por vez**. Para **cada** pregunta, **ofrecé siempre tu respuesta recomendada** — así el usuario responde rápido (acepta o corrige) en vez de arrancar de cero. Pero **esperá su respuesta**: la recomendada es una sugerencia para agilizar, **no un valor que se toma solo**. No avanzar sin que responda.
 
-Cómo se presenta cada una lo fija la Preferencia Base-0002, que ya está siempre en contexto: acá no se repite su fundamento, se aplica. Salen dos formas, y ninguna más:
+Cada decisión se presenta de una de dos formas, y ninguna más:
 
-- **La decisión, sola.** Todo lo que el usuario tenga que **decidir** va en una pregunta propia, con su contexto desplegado en el texto de la respuesta **antes** de preguntarla — nunca comprimido dentro de las opciones. Vale igual para la pregunta de fondo que reconfigura todo lo de abajo y para una menor que no depende de ninguna otra: **agrupar dos decisiones porque son independientes entre sí es exactamente lo que la preferencia prohíbe.**
+- **La decisión, sola.** Todo lo que el usuario tenga que **decidir** va en una pregunta propia, con su contexto desplegado en el texto de la respuesta **antes** de preguntarla — nunca comprimido dentro de las opciones. Vale igual para la pregunta de fondo que reconfigura todo lo de abajo y para una menor que no depende de ninguna otra: **agrupar dos decisiones porque son independientes entre sí es exactamente lo que esta regla prohíbe.**
 - **La cola final de confirmaciones.** Las que casi seguro son "sí" —el trámite que cierra lo ya acordado— pueden ir juntas, con la recomendada de cada una visible. Es la única excepción.
 
 El test antes de agrupar: **¿el usuario tiene que decidir algo, o ratificar lo que ya decidió?** Decidir → sola. Ratificar → puede ir en la cola.
@@ -63,3 +63,7 @@ A medida que las cosas se cristalizan, no las acumules — capturalas en el mome
 ## Cierre
 
 Cuando se llega al entendimiento compartido: resumir el plan acordado, las decisiones que quedaron registradas, y los términos que se afinaron. Si esto corrió después del modo plan, el plan revisado queda listo para ejecutar.
+
+## Reconciliación
+
+Al retomar el análisis, volver a cargar la sabiduría y el estado actual del Producto. No reabrir decisiones ya ratificadas ni duplicar términos, decisiones o conocimiento: continuar desde la primera cuestión todavía no resuelta y reportar como `ya estaba` lo que el repo ya incorporó.

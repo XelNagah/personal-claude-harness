@@ -175,6 +175,32 @@ caso('lo que viaja hace require de un módulo que no viaja', 'LO QUE VIAJA APUNT
 caso('funcionalidad en REGISTRO sin carpeta en disco', 'FANTASMAS (catalogadas pero sin carpeta)',
   () => fs.rmSync(path.join(REPO_PRUEBA, 'funcionalidades/amp-conducta'), { recursive: true, force: true }));
 
+const SKILL_PRUEBA = 'funcionalidades/amp/skills/info/SKILL.md';
+caso('skill con frontmatter inválido', 'SKILLS CON FRONTMATTER INVALIDO',
+  () => escribir(SKILL_PRUEBA, leer(SKILL_PRUEBA).replace('name: info', 'name: Info fuera de estándar')),
+  'name invalido');
+
+caso('skill sin disparador', 'SKILLS SIN DISPARADOR EN DESCRIPTION',
+  () => escribir(SKILL_PRUEBA, leer(SKILL_PRUEBA).replace(/ Use when[^\n]+/, '')),
+  'description sin');
+
+caso('skill sin reconciliación', 'SKILLS SIN RECONCILIACION',
+  () => escribir(SKILL_PRUEBA, leer(SKILL_PRUEBA).replace(/\n## Reconciliaci[oó]n[\s\S]*$/, '\n')),
+  'falta sección');
+
+caso('referencia rota en una skill', 'REFERENCIAS ROTAS EN SKILLS',
+  () => escribir(SKILL_PRUEBA, leer(SKILL_PRUEBA) + '\nVer [detalle](no-existe.md).\n'),
+  'no-existe.md');
+
+caso('nombre retirado en una skill', 'NOMBRES DE SKILLS RETIRADOS TODAVIA REFERENCIADOS',
+  () => escribir(SKILL_PRUEBA, leer(SKILL_PRUEBA) + '\nUsar `inicializar-conocimiento`.\n'),
+  'inicializar-conocimiento');
+
+caso('skill sin cierre verificable', 'SKILLS SIN CIERRE VERIFICABLE',
+  () => escribir(SKILL_PRUEBA,
+    '---\nname: info\ndescription: Explica algo. Use when el usuario pide una explicación.\n---\n\n# Info\n\nExplicar el tema.\n\n## Reconciliación\n\nNo modifica archivos.\n'),
+  'no declara cómo');
+
 caso('manifiesto que engordó', 'MANIFIESTOS QUE ENGORDARON (> 220 palabras)',
   () => escribir('.claude/decisiones/MANIFIESTO.md',
     leer('.claude/decisiones/MANIFIESTO.md') + '\n' + 'palabra '.repeat(250) + '\n'));

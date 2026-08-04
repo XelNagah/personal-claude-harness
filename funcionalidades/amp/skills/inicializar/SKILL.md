@@ -5,30 +5,25 @@ description: Inicializa en el repo actual el setup estándar completo del Agente
 
 # Inicializar setup completo (orquestador)
 
-Instala el setup estándar completo del usuario: el catálogo de subsistemas y las ocho casas Base. (La skill de análisis `planificar` no se instala por-repo: es global.)
+Instala el setup estándar completo del Agente Multipropósito: el catálogo de subsistemas y las ocho casas Base. (La skill de análisis `planificar` no se instala por-repo: es global.)
 
 **Los Componentes de Subsistema son archivos reales**, en [`base/`](base/), con el mismo árbol que ocupan en el destino: `base/planes/lint-planes/lint-planes.js` va a `.claude/planes/lint-planes/lint-planes.js`. Instalar es **copiar ese árbol**, no transcribir texto. La estructura dice a dónde va cada archivo, así que no hay ninguna lista de Componentes de Subsistema que mantener al día — y no puede quedar afuera uno que nadie agregó a la lista.
 
 Lo que **no** se puede copiar está en [`PLANTILLA.md`](PLANTILLA.md): los pedazos que se suman a un archivo del repo sin pisarlo, los moldes con marcadores y las notas de reconciliación.
 
-## Las tres formas de escribir, y cómo se decide cuál
+## Las tres clases de archivo, y cómo se instalan
 
-**Cada archivo declara lo que hay que hacer con él.** No hay lista de excepciones en ningún lado: se lee el frontmatter del archivo de `base/` y sale la regla.
+**Cada archivo declara de quién es.** `amp:inicializar` usa esa declaración para reconocer el destino, pero su alcance es instalar ausencias, no nivelar versiones existentes.
 
 | Lo que dice el archivo | Qué es | Qué se hace |
 |---|---|---|
-| **sin frontmatter** | mecanismo del Agente Multipropósito: lints, hooks, manifiestos, README, páginas de convención | **se pisa entero** |
-| **`origen: agente-multiproposito`** | registro que manda el Agente Multipropósito; el repo no escribe ahí | **se pisa entero** |
-| **`origen: agente-desplegado`** | registro que el repo puebla con lo suyo | **si no existe → se copia; si existe → se pisa todo lo anterior a la tabla y se preservan sus filas** |
+| **sin frontmatter** | mecanismo del Agente Multipropósito: lints, hooks, manifiestos, README, páginas de convención | si falta, se copia; si coincide, `ya estaba`; si difiere, `divergente` |
+| **`origen: agente-multiproposito`** | registro que manda el Agente Multipropósito; el repo no escribe ahí | si falta, se copia; si coincide, `ya estaba`; si difiere, `divergente` |
+| **`origen: agente-desplegado`** | registro que el repo puebla con lo suyo | si falta, se copia declarado y sin filas; si existe, se preserva entero y se valida |
 
-La tercera es la que evita las dos pérdidas opuestas:
+**Esta skill nunca pisa un Componente existente para ponerlo al día.** Si encuentra una Base vieja, un encabezado local viejo o una forma anterior, el repo ya tiene una instalación viva: reportar la divergencia y continuar con `amp:actualizar`, que hace respaldo, distingue Base de Aprendizaje y aplica las migraciones en orden.
 
-- Si se copiara entero, un repo perdería sus términos del glosario, sus planes, sus decisiones y sus Herramientas en cada nivelada.
-- Si no se tocara nada, el **encabezado se quedaría viejo para siempre**: la convención, las columnas y las reglas de gobernanza que están arriba de la tabla son del Agente Multipropósito y cambian con él. Un repo instalado hace tres versiones lee instrucciones que ya no rigen y las obedece.
-
-El corte es la primera línea de la tabla: de ahí para arriba manda el Agente Multipropósito, de ahí para abajo manda el repo. Si el archivo no tiene tabla, se pisa entero.
-
-⚠️ **Divergencia en el encabezado.** Si el repo cambió el encabezado a propósito —no es lo esperado, pero pasa—, pisarlo se lo lleva. Antes de pisar, comparar: si difiere de la versión anterior conocida en algo que no sea la redacción del Agente Multipropósito, **reportar divergencia y preguntar** en vez de pisar.
+El corte en la primera línea de una tabla y el reemplazo de archivos Base son reglas del nivelador. Mantenerlas fuera de la inicialización evita que un pedido de “armá el setup” actualice silenciosamente un Agente Desplegado existente.
 
 ## Lo que se fusiona, no se copia
 
@@ -40,11 +35,11 @@ Tres archivos son del repo y el Agente Multipropósito solo les **suma** líneas
 
 ## Reconciliación (idempotencia)
 
-Segura de re-correr: este es también el modo de **nivelar** repos que ya tienen partes del setup. Reglas para todo paso que escribe:
+Segura de re-correr para completar un repo nuevo o una instalación parcial con Componentes ausentes. **No reemplaza a `amp:actualizar`** para una Base ya instalada. Reglas para todo paso que escribe:
 
 - **Inspeccionar antes de escribir.** Leer el destino primero. Los tres archivos que se fusionan nunca se reescriben de cuajo.
 - **Detectar equivalentes.** Un Componente de Subsistema puede estar con otro nombre o redacción, de pedidos previos. Buscar por tema, no solo por nombre exacto. Igual → no tocar. Distinto → **no pisar**: reportar divergencia y preguntar.
-- **Las formas anteriores** que hay que reconocer (preferencias en cuatro formas, el punto de entrada viejo, `glosario/` sin renombrar) están en `PLANTILLA.md` §Formas anteriores. Ninguna se resuelve copiando.
+- **Las formas anteriores** que hay que reconocer (preferencias en cuatro formas, el punto de entrada viejo, `glosario/` sin renombrar) están en `PLANTILLA.md` §Formas anteriores. Detectarlas acá sirve para derivar a `amp:actualizar`; ninguna se transforma durante la inicialización.
 - **Reportar al final** en tres grupos por subsistema: `agregado` (faltaba), `ya estaba` (ok), `divergente` (existe distinto, requiere decisión del usuario).
 
 ## Estructura objetivo
@@ -61,8 +56,8 @@ Cargan su índice **subsistemas, preferencias, conocimiento y herramientas**; NO
 ## Flujo de trabajo
 
 1. **Ubicar la raíz.** Si el directorio de trabajo contiene subproyectos independientes, preguntar en cuál inicializar antes de crear nada.
-2. **Copiar el árbol `base/`** a `.claude/`, archivo por archivo, aplicando la regla que declara cada uno. Crear las tres carpetas del ciclo de planes con su `.gitkeep`.
+2. **Completar el árbol `base/`** en `.claude/`, archivo por archivo: copiar solo lo ausente, empezando por `common/`; comparar lo existente y reportar toda diferencia sin pisarla. Crear las tres carpetas del ciclo de planes con su `.gitkeep` si faltan.
 3. **Fusionar** `AGENTS.md`, `CLAUDE.md`, `.claude/settings.json` y `.codex/hooks.json` desde `PLANTILLA.md`.
-4. **Reconciliar las formas anteriores** que el repo tenga, según `PLANTILLA.md` §Formas anteriores.
-5. **Verificar.** Correr todos los lints instalados y `../actualizar/amp-actualizar.js --vista-previa`. El grupo `BASE — INSTALAR / PISAR` tiene que quedar **vacío, o con `identidad.md` como única línea**: el Título y el Propósito **se preguntan, no se inventan**, así que una instalación limpia los deja pendientes y un repo que ya los tenía cierra en cero. Cualquier otra entrada en ese grupo es un paso que quedó sin hacer. No inventar el archivo para llegar a cero — la Pantalla de bienvenida pide el Título y el Propósito al arrancar la sesión siguiente, y ahí se asientan.
+4. **Detectar formas anteriores** según `PLANTILLA.md` §Formas anteriores. Si aparece alguna, no migrarla acá: incluirla entre las divergencias y derivar la continuación a `amp:actualizar`.
+5. **Verificar.** Correr todos los lints instalados y `../actualizar/amp-actualizar.js --vista-previa`. En una instalación nueva o parcial sin divergencias, el grupo `BASE — INSTALAR / PISAR` tiene que quedar **vacío, o con `identidad.md` como única línea**: el Título y el Propósito **se preguntan, no se inventan**. Si la vista previa muestra contenido viejo o migraciones, no aplicar desde esta skill; reportar que la instalación requiere `amp:actualizar`.
 6. **Reportar.** Por subsistema: `agregado` / `ya estaba` / `divergente`. Avisar que en Codex los hooks solo corren si la carpeta `.codex/` es de confianza. No hacer commit salvo pedido explícito.

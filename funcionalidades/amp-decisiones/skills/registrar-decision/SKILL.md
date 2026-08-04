@@ -32,3 +32,7 @@ Asienta una decisión en el registro (`.claude/decisiones/INDICE.md`) sin ruido 
 ## Detección pasiva
 
 Si en cualquier sesión se cristaliza una decisión estructural sin que nadie diga "registrala" (se eligió una arquitectura, se fijó una convención, se descartó un camino por una razón de fondo) → **ofrecer** registrarla en el momento, no acumular para el final.
+
+## Reconciliación
+
+Re-correr el flujo sobre la misma decisión consulta primero el registro: si ya está vigente, reportar `ya estaba`; si cambia el criterio, tratarlo como posible reemplazo y pedir ratificación. Nunca crear dos filas vigentes para el mismo tema ni pisar una divergencia.

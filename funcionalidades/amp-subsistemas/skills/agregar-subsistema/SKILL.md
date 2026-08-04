@@ -12,3 +12,7 @@ description: Agrega un subsistema del Propósito al catálogo y al disco siguien
    - **Nombre** — el nombre del subsistema, que es también el de su carpeta.
    - **Descripción** — qué guarda, en una línea. **Operación** — las skills que lo operan. **Detalle** — el link a su casa.
 4. Cablear su manifiesto al punto de entrada y validar el catálogo y el subsistema.
+
+## Reconciliación
+
+Inspeccionar primero los dos catálogos y el disco. Si el subsistema ya existe completo, reportar `ya estaba`; si está a medio crear, agregar solo los Componentes ausentes y volver a validar; si nombre, propósito o estructura divergen, reportar `divergente` y no pisar sin confirmación.

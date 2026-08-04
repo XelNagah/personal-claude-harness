@@ -33,3 +33,7 @@ Convierte un feedback recurrente en regla de conducta persistida (`.claude/prefe
    ```
 
 7. **Reportar**: regla asentada (texto final), destino, y si se recomendó subirla al Agente Multipropósito.
+
+## Reconciliación (idempotencia)
+
+Releer todos los Índices antes de cada escritura. Una regla equivalente devuelve `ya estaba`; una entrada del mismo tema con contenido distinto devuelve `divergente`. La vista previa y una cancelación no modifican nada. Nunca modificar localmente el Índice del Agente Multipropósito de un Agente Desplegado.

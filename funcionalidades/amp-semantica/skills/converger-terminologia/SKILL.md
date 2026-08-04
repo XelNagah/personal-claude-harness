@@ -60,3 +60,7 @@ Con un alcance acotado, las autoexclusiones del paso 3 siguen valiendo, pero lo 
 ## Cuándo dispararla
 
 Además de a pedido: si durante cualquier sesión el agente nota que él mismo u otros textos vienen usando un término ajeno al glosario, proponer una pasada — cuanto antes se converge, menos se propaga.
+
+## Reconciliación
+
+Re-correr sobre el mismo alcance vuelve a comparar contra los registros actuales. No duplicar conceptos, aliases ni vetos ya ratificados; reportarlos `ya estaba`. Una fila o uso incompatible se informa `divergente` y no se reescribe sin una nueva ratificación. El conteo final debe permitir verificar qué usos quedaron pendientes.

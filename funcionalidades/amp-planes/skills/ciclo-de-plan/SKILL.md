@@ -41,3 +41,7 @@ node .claude/planes/lint-planes/lint-planes.js
 ```
 
 Debe dar 0 hallazgos — caza justamente las transiciones a medias (estado vs. carpeta inconsistente, cierres sin fecha, filas colgadas, descartados sin motivo). Reportar la transición hecha y el resultado del lint.
+
+## Reconciliación
+
+Antes de abrir, buscar un plan equivalente en el registro y en los archivos. Antes de transicionar, comparar fila, encabezado y carpeta: completar solo lo faltante y conservar Código, Nombre y nombre de archivo. Reportar `ya estaba` si el estado pedido ya es consistente y `divergente` si las fuentes no coinciden; no adivinar cuál pisar.

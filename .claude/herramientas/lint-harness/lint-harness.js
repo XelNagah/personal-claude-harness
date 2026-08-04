@@ -38,6 +38,17 @@ const srcRotos = plugins.filter(p => !fs.existsSync(path.join(repo, p.source))).
 
 // -- [2] archivos clave por funcionalidad --------------------------------
 const incompletas = [];
+const frontmatterSkillInvalido = [];
+const skillSinDisparador = [];
+const skillSinReconciliacion = [];
+const refsRotasSkill = [];
+const nombresRetiradosSkill = [];
+const skillSinCierre = [];
+const NOMBRES_RETIRADOS_SKILL = [
+  'inicializar-subsistemas', 'inicializar-preferencias', 'inicializar-planes',
+  'inicializar-conocimiento', 'inicializar-semantica', 'inicializar-decisiones',
+  'inicializar-herramientas', 'inicializar-conducta',
+];
 for (const f of enDisco) {
   const base = path.join(funcDir, f);
   const faltan = [];
@@ -48,6 +59,55 @@ for (const f of enDisco) {
   const skills = fs.existsSync(skillsDir) ? fs.readdirSync(skillsDir).filter(s => fs.existsSync(path.join(skillsDir, s, 'SKILL.md'))) : [];
   if (!skills.length) faltan.push('skills/<skill>/SKILL.md');
   if (faltan.length) incompletas.push(`${f}/  [faltan: ${faltan.join(', ')}]`);
+
+  for (const s of skills) {
+    const skillMd = path.join(skillsDir, s, 'SKILL.md');
+    const rel = path.relative(repo, skillMd).replace(/\\/g, '/');
+    const txt = fs.readFileSync(skillMd, 'utf8').replace(/\r\n/g, '\n');
+    const fm = /^---\n([\s\S]*?)\n---(?:\n|$)/.exec(txt);
+    let name = '', description = '';
+    if (!fm) {
+      frontmatterSkillInvalido.push(`${rel}  [falta frontmatter YAML al inicio]`);
+    } else {
+      const campos = new Map();
+      const invalidas = [];
+      for (const linea of fm[1].split('\n')) {
+        const m = /^([A-Za-z][\w-]*):\s*(.*)$/.exec(linea);
+        if (!m) { invalidas.push(linea); continue; }
+        campos.set(m[1], m[2].trim());
+      }
+      name = campos.get('name') || '';
+      description = campos.get('description') || '';
+      const inesperados = [...campos.keys()].filter(k => !['name', 'description'].includes(k));
+      const problemas = [];
+      if (invalidas.length) problemas.push('lineas YAML no reconocidas');
+      if (!name) problemas.push('falta name');
+      else if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(name) || name.length > 64) problemas.push('name invalido');
+      else if (name !== s) problemas.push(`name ${name} no coincide con la carpeta ${s}`);
+      if (!description) problemas.push('falta description');
+      else if (description.length > 1024 || /[<>]/.test(description)) problemas.push('description invalida');
+      if (inesperados.length) problemas.push(`campos no admitidos: ${inesperados.join(', ')}`);
+      if (problemas.length) frontmatterSkillInvalido.push(`${rel}  [${problemas.join('; ')}]`);
+    }
+    if (!/\bUse when\b/.test(description)) skillSinDisparador.push(`${rel}  [description sin "Use when"]`);
+    if (!/^## Reconciliaci[oó]n\b/m.test(txt)) skillSinReconciliacion.push(`${rel}  [falta sección Reconciliación]`);
+    if (!/(?:^## (?:Cierre|Reportar)\b|\b(?:correr|ejecutar|verificar|validar|reportar)\b)/im.test(txt)) {
+      skillSinCierre.push(`${rel}  [no declara cómo verificar o reportar el resultado]`);
+    }
+    for (const retirado of NOMBRES_RETIRADOS_SKILL) {
+      if (new RegExp(`\\b${retirado}\\b`, 'i').test(txt)) nombresRetiradosSkill.push(`${rel}  [${retirado}]`);
+    }
+    for (const m of txt.matchAll(/\]\(([^)#]+)(?:#[^)]*)?\)/g)) {
+      const destino = m[1].trim();
+      if (/^(?:https?:|mailto:|\/)/i.test(destino)) continue;
+      let rutaLocal;
+      try { rutaLocal = decodeURIComponent(destino); }
+      catch { refsRotasSkill.push(`${rel}  [ruta inválida: ${destino}]`); continue; }
+      if (!fs.existsSync(path.resolve(path.dirname(skillMd), rutaLocal))) {
+        refsRotasSkill.push(`${rel}  [${destino}]`);
+      }
+    }
+  }
 }
 
 // nombre del marketplace que publica este repo (para no mirar plugins de otros)
@@ -649,6 +709,12 @@ const secciones = [
   ['FANTASMAS (catalogadas pero sin carpeta)', fantasmas],
   ['SOURCES DEL MARKETPLACE QUE NO RESUELVEN', srcRotos],
   ['FUNCIONALIDADES INCOMPLETAS (archivos clave)', incompletas],
+  ['SKILLS CON FRONTMATTER INVALIDO', frontmatterSkillInvalido],
+  ['SKILLS SIN DISPARADOR EN DESCRIPTION', skillSinDisparador],
+  ['SKILLS SIN RECONCILIACION', skillSinReconciliacion],
+  ['REFERENCIAS ROTAS EN SKILLS', refsRotasSkill],
+  ['NOMBRES DE SKILLS RETIRADOS TODAVIA REFERENCIADOS', nombresRetiradosSkill],
+  ['SKILLS SIN CIERRE VERIFICABLE', skillSinCierre],
   ['VERSION EN DISCO DISTINTA DE LA INSTALADA', versionDesfasada],
   ['FRAGMENTOS DE CODIGO DIVERGENTES ENTRE LINTS', divergentes],
   [`FRAGMENTOS VIGILADOS CON MENOS DE ${MUESTRAS_MINIMAS} MUESTRAS (no controlan nada)`, fragmentosSinMuestras],

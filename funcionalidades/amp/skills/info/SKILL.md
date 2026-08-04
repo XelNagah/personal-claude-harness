@@ -24,3 +24,7 @@ Renderiza la **Pantalla de bienvenida** (glosario): el bloque de estado del repo
 - La Herramienta descubre los subsistemas dinámicamente; no hay lista que mantener acá.
 - Título y Propósito salen de `.claude/identidad.md` (Identidad del Agente). Si no existe, muestra `<sin definir>`.
 - Detalle de diseño y límites en el README de la Herramienta: `.claude/conducta/mostrar-pantalla-bienvenida/README.md`.
+
+## Reconciliación
+
+Es una operación de solo lectura: re-ejecutarla no modifica el repo y debe reflejar su estado actual. Si la Herramienta falla, mostrar el error; no fabricar una pantalla parcial ni reutilizar una salida anterior.

@@ -3,7 +3,7 @@
 // Barre el .claude/ del repo actual (process.cwd()), clasifica cada archivo y carpeta contra la estructura
 // objetivo del harness y emite el plan/reporte. Ademas hace el respaldo. La parte de JUICIO
 // (confirmar el plan, migrar terminos, preguntar ante lo divergente, escribir el contenido Base
-// delegando en los inicializar-<sub>) vive en el SKILL; aca vive solo lo determinista (dec. 0009).
+// usando amp:inicializar solo para ausencias) vive en el SKILL; aca vive solo lo determinista (dec. 0009).
 // Sin LLM, sin red.
 //
 // Modos (uno por corrida):

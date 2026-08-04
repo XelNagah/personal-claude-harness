@@ -1,12 +1,12 @@
 ---
 name: registrar-herramienta
-description: Registra o actualiza una Herramienta del Propósito en .claude/herramientas/INDICE.md, crea o reconcilia su ficha y verifica referencias por ruta. Use when se fabrica o adopta una tool repetible del Propósito, o al reubicar un Componente de Subsistema cuyo destino es Herramientas.
+description: Registra o actualiza una Herramienta del Propósito en el Índice local de .claude/herramientas/, crea o reconcilia su ficha y verifica referencias por ruta. Use when se fabrica o adopta una tool repetible del Propósito, o al reubicar un Componente de Subsistema cuyo destino es Herramientas.
 ---
 
 # Registrar una Herramienta
 
-1. Leer `.claude/herramientas/MANIFIESTO.md`, `README.md` e `INDICE.md`.
-2. Buscar por nombre y por finalidad. Si una fila existente ya cubre la Herramienta, actualizarla en vez de duplicar.
+1. Leer `.claude/herramientas/MANIFIESTO.md`, `README.md` y **todos los Índices declarados por el manifiesto**.
+2. Buscar por nombre y por finalidad en ambos orígenes. Si una fila local existente ya cubre la Herramienta, actualizarla en vez de duplicar. Si la cubre la Base, reportar `ya estaba` o `divergente`; nunca crear una copia local para sombrearla ni modificar la Base desde este flujo.
 3. Determinar el tipo: `script`, `skill` local, `MCP` local, o `funcion` (código que no se ejecuta solo: lo requiere otro código, y vive en `.claude/common/`). Los lints y los hooks de un subsistema no se registran acá: vienen con su subsistema.
 4. Antes de mover o renombrar algo, buscar su ruta en `settings`, `.gitignore`, hooks, documentación y scripts. Actualizar todas las referencias en el mismo cambio.
 5. Escribir en `INDICE-LOCAL.md` (el Índice del Agente Desplegado, que ya existe declarado); nunca modificar `INDICE.md`, que es del Agente Multipropósito. La fila lleva `Código | Nombre | Descripción | Tipo | Cómo se invoca | Estado | Detalle`:
