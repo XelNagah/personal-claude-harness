@@ -134,6 +134,24 @@ Con `--quiet` el lint de planes solo imprime cuando hay hallazgos: sesión limpi
 
 ---
 
+## §Gitignore — merge en `.gitignore`
+
+**Merge, nunca pisar:** sumar las líneas que falten al `.gitignore` del repo; si el archivo no existe, crearlo con este contenido. Si una línea ya está, no duplicarla.
+
+```gitignore
+# Config de Claude Code propia de esta máquina
+.claude/settings.local.json
+
+# Temporales del agente: borradores, traspasos y el buzón de avisos
+.claude/tmp/
+```
+
+No son preferencias de nadie: son las dos rutas donde **el mecanismo mismo escribe**. `.claude/tmp/` es el buzón donde un trabajo en segundo plano deja lo que averiguó para que el repartidor lo entregue en el turno siguiente —la Pantalla de bienvenida lo usa para el diagnóstico de plugins—, y además es el directorio de borradores que los lints excluyen de su barrido por ser material descartable. Sin estas líneas, la primera sesión del repo deja esos archivos listos para entrar en el primer commit, y los cuatro mecanismos que dan por sentado que el directorio se ignora trabajan sobre una premisa que nadie estableció.
+
+El respaldo del nivelador **no va acá**: se escribe fuera del repo, en el temporal del sistema. Un `.claude/.respaldo-amp/` en un repo es de corridas viejas y lo levanta `amp:actualizar`, que ofrece borrarlo.
+
+---
+
 ## §Moldes — textos con marcador, que no son archivos a instalar
 
 Estos no se copian: los usa el agente cuando hay que crear una entrada nueva.
@@ -181,9 +199,3 @@ Un repo que ya tenía el Agente Multipropósito puede traer cualquiera de estas 
 **Punto de entrada.** Si el repo tiene secciones de texto plano por-subsistema ("## Memoria del proyecto", "## Glosario del proyecto"…) y/o el bloque "## Mapa del repo (siempre cargado)", `## Subsistemas` las **reemplaza**: al cablear cada subsistema, quitar su sección vieja y su línea `@…INDICE`/`@…MEMORIA`/`@…PLANES` del Mapa; cuando el bloque Mapa queda sin líneas de subsistema, quitar también su encabezado. La descripción del proyecto **no se toca**.
 
 **Semántica.** Un repo con `.claude/glosario/` tiene la generación anterior: la carpeta se renombra a `.claude/semantica/` y `lint-glosario/` a `lint-semantica/`, preservando los términos; después se migran las referencias (`@.claude/glosario/MANIFIESTO.md`, el prefijo de skill `glosario:`, y toda ruta al lint renombrado).
-
----
-
-## §Nota sobre la regla `Respetar las preferencias cargadas`
-
-Su `Contenido` nombra preferencias concretas: fechas, ejemplos del dominio, ubicación de los temporales. Un repo con preferencias propias afina esa fila para nombrar las suyas — esa afinación es del Propósito, no de la instalación, así que el nivelador la reporta como divergencia en vez de pisarla.

@@ -49,6 +49,15 @@ function armarAlDia() {
   fs.writeFileSync(path.join(REPO_PRUEBA, '.claude', 'identidad.md'),
     '# Repo de prueba\n\nPropósito: ejercitar el nivelador.\n');
   cablearHooks();
+  ignorarTemporales();
+}
+
+// Tampoco se copia de `base/`: se fusiona con el `.gitignore` que el repo ya tenga. Un repo al día
+// ignora las dos rutas donde escribe el mecanismo — si no, versiona el buzón de avisos en cada
+// commit y contradice la premisa de los lints que excluyen `.claude/tmp/` de su barrido.
+function ignorarTemporales() {
+  fs.writeFileSync(path.join(REPO_PRUEBA, '.gitignore'),
+    '.claude/settings.local.json\n.claude/tmp/\n');
 }
 
 // Los hooks no se copian de `base/`: se fusionan con los que el repo ya tenga, así que un repo al
@@ -286,6 +295,25 @@ console.log('\n== ESTRUCTURA ==');
   const { texto } = correr(REPO_PRUEBA);
   chequear('el repartidor sin cablear en Codex se marca aparte',
     marca(texto, '.codex/hooks.json', 'sin cablear') && !marca(texto, 'settings.json', 'sin cablear'));
+}
+{
+  // El mecanismo escribe en `.claude/tmp/` (el buzón de avisos) desde el primer SessionStart. Un
+  // repo que no lo ignora mete esos archivos en su primer commit, y los lints que excluyen ese
+  // directorio de su barrido por descartable trabajan sobre algo que ese repo no cumple.
+  armarAlDia();
+  fs.rmSync(path.join(REPO_PRUEBA, '.gitignore'), { force: true });
+  const { texto } = correr(REPO_PRUEBA);
+  chequear('sin .gitignore se marcan las dos rutas donde escribe el mecanismo',
+    marca(texto, '.gitignore', 'settings.local.json') && marca(texto, '.gitignore', 'tmp'));
+}
+{
+  // Se marca lo que falta, no el archivo entero: un repo que ya ignora una de las dos rutas no
+  // tiene que ver reclamada la que sí puso.
+  armarAlDia();
+  fs.writeFileSync(path.join(REPO_PRUEBA, '.gitignore'), '# lo suyo\nnode_modules/\n.claude/tmp\n');
+  const { texto } = correr(REPO_PRUEBA);
+  chequear('con una sola de las dos rutas se reclama únicamente la que falta',
+    marca(texto, '.gitignore', 'settings.local.json') && !marca(texto, '.gitignore', '.claude/tmp'));
 }
 
 console.log('\n== FORMAS ANTERIORES ==');

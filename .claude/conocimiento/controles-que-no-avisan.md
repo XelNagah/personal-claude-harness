@@ -4,7 +4,7 @@ Un control roto no se comporta como un control roto: se comporta como un control
 
 Medido en este repo el 30/07/2026, con todos los lints en verde y el nivelador informando el `.claude/` al día.
 
-## Las siete formas en que un control se apaga solo
+## Las ocho formas en que un control se apaga solo
 
 ### 1. Valida sobre un conjunto vacío
 
@@ -61,6 +61,20 @@ Medido el 01/08/2026 sobre `medir-contexto`. El caso malo armaba un repo de 50 K
 
 **El arreglo es derivar, no actualizar.** Subirle el número al caso lo revive hasta el próximo cambio de tope. El caso lee el tope de la propia Herramienta y arma el repo a partir de él, así que la premisa no puede caducar. Regla general: un valor que la prueba comparte con lo que prueba se le pide a lo que prueba.
 
+### 8. Corre en el único lugar donde la premisa es verdadera
+
+Las siete anteriores son defectos del control o de su prueba. Esta no: el control está bien escrito, bien probado, y mira exactamente lo que tiene que mirar. Lo que falla es **dónde corre**. El código que viaja da por sentada una condición de su entorno; en el repo autor esa condición se cumple, porque algo local la establece; el consumidor nunca recibe ese algo. Y el control, que solo se corre en el repo autor, contesta en verde con razón.
+
+Medido el 04/08/2026, en la primera instalación limpia del Agente Multipropósito contra un repo vacío.
+
+Cuatro archivos que viajan declaran por escrito que `.claude/tmp/` está gitignoreado: los lints de semántica y de conocimiento lo excluyen de su barrido por ser material descartable, y dos módulos de conducta lo tratan como directorio de borradores. Es verdad **acá**, donde lo establece la Preferencia Local-0003 (Guardar los archivos temporales en `.claude/tmp/`) — que no viaja. La instalación nunca creaba un `.gitignore` en el destino, así que un tercero versionaba el buzón de avisos desde su primer commit y los cuatro mecanismos trabajaban sobre algo que su repo no cumplía. **Los once controles del cierre daban verde, y ninguno estaba equivocado.**
+
+**Cómo se distingue de las anteriores.** No mira una copia por otra (forma 3): mira el original. No se quedó sin población (forma 6): la población está entera. Su prueba no caducó (forma 7): sigue reproduciendo lo que dice reproducir. La premisa que caducó no es del caso ni del control, es **del lugar donde se lo corre**.
+
+**Cómo se detecta:** instalando en un destino limpio y ejerciendo el mecanismo ahí. Es la única corrida en la que el entorno no lo provee el autor, y por eso ningún control que viva en el repo autor la puede reemplazar.
+
+**Regla general:** una condición que el código que viaja da por sentada, la instalación la tiene que establecer — o el código tiene que dejar de darla por sentada. Escribirla en un comentario no la establece. Acá lo que la establecía era un archivo que se quedó del lado del autor, y el comentario que la enunciaba viajó solo. Vale para cualquier condición del entorno, no solo para lo que git ignora: un directorio que tiene que existir, una herramienta que tiene que estar disponible, un ajuste que tiene que estar puesto.
+
 ## El remedio de una forma produce la otra
 
 Las formas 1 y 2 tiran para lados opuestos, y ahí está la trampa: **lo que se agrega para que un control deje de marcar de más es lo que lo convierte en mudo.**
@@ -85,6 +99,7 @@ Los hallazgos de un control tienen que ser **resolubles**: cada uno nombra algo 
 - **Se rompe cada condición, no el control entero.** Neutralizar el control de una y ver fallar el banco solo prueba que hay *alguna* condición viva. Cada guarda se desactiva por separado: la que deja el banco en verde no está probada, y hay que decidir entre sacarla o escribirle el caso.
 - **Nada de números absolutos adentro de la prueba.** Un número absoluto envejece igual adentro de una prueba que adentro de un registro, y lo hace por dos caminos opuestos. El **ruidoso**: dos casos de la prueba de planes comparaban contra un `81` escrito a mano y empezaron a fallar solos el día que el repo abrió el plan 82, avisando de un defecto que no existía. El **mudo**, que es el que nadie ve: el caso deja de reproducir el defecto y pasa a no poder fallar (forma 7 de esta lista). Se arregla igual en los dos casos — derivar el número de lo que se prueba, no escribirlo.
 - **Banco aparte, nunca el repo real.** Y si el control mira el repo entero, el banco tiene que ser un repo, no una carpeta: si no, el barrido cae sobre el repo real y los casos no quedan aislados.
+- **Lo que viaja se prueba además en un destino limpio.** Todo control que corre en el repo autor comparte el entorno del autor, así que ninguno puede contestar qué recibe el que instala (forma 8 de esta lista). Instalar contra un repo vacío y ejercer el mecanismo ahí es una corrida distinta, no una repetición: verifica lo que llega, no lo que hay.
 - **Lo que no se cubre, se dice.** Un control que la prueba no puede ejercitar (porque depende del estado de la máquina, por ejemplo) se declara en la salida. Callarlo hace que la prueba en verde se lea como cobertura completa.
 - **Una prueba terminada no se deja en la carpeta temporal.** Una prueba completa de `lint-planes` —169 líneas, funcionando, con el criterio correcto escrito en su encabezado— quedó en `.claude/tmp/`, que el repo gitignorea. No era un borrador: era el trabajo hecho, esperando que alguien lo borrara. Un archivo de `tmp/` que dejó de ser descartable se mueve el mismo día.
 

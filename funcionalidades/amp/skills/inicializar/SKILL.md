@@ -27,11 +27,12 @@ El corte en la primera línea de una tabla y el reemplazo de archivos Base son r
 
 ## Lo que se fusiona, no se copia
 
-Tres archivos son del repo y el Agente Multipropósito solo les **suma** líneas. Nunca se pisan: se hace merge, y si la entrada ya está, no se duplica.
+Cuatro archivos son del repo y el Agente Multipropósito solo les **suma** líneas. Nunca se pisan: se hace merge, y si la entrada ya está, no se duplica.
 
 - **`AGENTS.md`** → la sección `## Subsistemas`, con una línea `@.claude/<sub>/MANIFIESTO.md` por subsistema instalado, **`preferencias` incluido** (no lleva sección propia). La descripción del proyecto no se toca. Bloque en `PLANTILLA.md` §Subsistemas.
 - **`.claude/settings.json`** y **`.codex/hooks.json`** → el repartidor `establecer-conducta` en los tres eventos (`SessionStart`, `UserPromptSubmit`, `PreToolUse` con matcher `Write|Edit`) más el lint de planes en `SessionStart`, **sin sacar los hooks que ya estén**. Bloques en `PLANTILLA.md` §Hooks.
 - **`CLAUDE.md`** → el adaptador de una línea (`@AGENTS.md`), si el repo no lo tiene.
+- **`.gitignore`** → las dos rutas donde escribe el mecanismo: la config de Claude Code propia de la máquina y `.claude/tmp/`, que es el buzón de avisos y el directorio de borradores. **Sin esto la primera sesión deja archivos del buzón listos para el primer commit**, y los mecanismos que dan por sentado que ese directorio se ignora quedan apoyados en una premisa que nadie estableció. Bloque en `PLANTILLA.md` §Gitignore.
 
 ## Reconciliación (idempotencia)
 
@@ -47,7 +48,7 @@ Segura de re-correr para completar un repo nuevo o una instalación parcial con 
 Es exactamente el árbol de [`base/`](base/) colgado de `.claude/`, más lo que no es un archivo:
 
 - `.claude/planes/pendientes/`, `ejecutados/` y `descartados/`, cada una con su `.gitkeep`.
-- `AGENTS.md`, `CLAUDE.md`, `.claude/settings.json` y `.codex/hooks.json`, que se fusionan.
+- `AGENTS.md`, `CLAUDE.md`, `.claude/settings.json`, `.codex/hooks.json` y `.gitignore`, que se fusionan.
 
 `.claude/common/` no es un subsistema y no tiene manifiesto: son los módulos que usan varios y no son de ninguno —hoy la lectura de frontmatter, que requieren los ocho lints y los dos hooks—. **Se copia antes que el resto**: lo que lo requiere no corre sin él.
 
@@ -57,7 +58,7 @@ Cargan su índice **subsistemas, preferencias, conocimiento y herramientas**; NO
 
 1. **Ubicar la raíz.** Si el directorio de trabajo contiene subproyectos independientes, preguntar en cuál inicializar antes de crear nada.
 2. **Completar el árbol `base/`** en `.claude/`, archivo por archivo: copiar solo lo ausente, empezando por `common/`; comparar lo existente y reportar toda diferencia sin pisarla. Crear las tres carpetas del ciclo de planes con su `.gitkeep` si faltan.
-3. **Fusionar** `AGENTS.md`, `CLAUDE.md`, `.claude/settings.json` y `.codex/hooks.json` desde `PLANTILLA.md`.
+3. **Fusionar** `AGENTS.md`, `CLAUDE.md`, `.claude/settings.json`, `.codex/hooks.json` y `.gitignore` desde `PLANTILLA.md`.
 4. **Detectar formas anteriores** según `PLANTILLA.md` §Formas anteriores. Si aparece alguna, no migrarla acá: incluirla entre las divergencias y derivar la continuación a `amp:actualizar`.
 5. **Verificar.** Correr todos los lints instalados y `../actualizar/amp-actualizar.js --vista-previa`. En una instalación nueva o parcial sin divergencias, el grupo `BASE — INSTALAR / PISAR` tiene que quedar **vacío, o con `identidad.md` como única línea**: el Título y el Propósito **se preguntan, no se inventan**. Si la vista previa muestra contenido viejo o migraciones, no aplicar desde esta skill; reportar que la instalación requiere `amp:actualizar`.
 6. **Reportar.** Por subsistema: `agregado` / `ya estaba` / `divergente`. Avisar que en Codex los hooks solo corren si la carpeta `.codex/` es de confianza. No hacer commit salvo pedido explícito.

@@ -455,6 +455,14 @@ function clasificar() {
     add('base', '~', '.codex/hooks.json', `hook establecer-conducta sin cablear en Codex (${faltan}): agregar por merge`);
   }
 
+  // [4b] .gitignore: las rutas donde escribe el mecanismo mismo. `.claude/tmp/` es el buzon donde
+  // un trabajo en segundo plano deja lo que averiguo para el turno siguiente, y el directorio de
+  // borradores que los lints excluyen de su barrido POR SER descartable. Un repo que no lo ignora
+  // versiona el buzon en cada commit y contradice la premisa sobre la que trabajan esos lints.
+  const faltanIgnore = revisarGitignore(path.join(repo, '.gitignore'));
+  if (faltanIgnore.length)
+    add('base', '~', '.gitignore', `sin las rutas donde escribe el mecanismo (${faltanIgnore.join(' + ')}): agregar por merge`);
+
   // [5] contenido de los scripts Base ya instalados: existir no es estar al dia.
   chequearContenido(add);
 }
@@ -484,6 +492,21 @@ function revisarHook(settingsPath) {
   out.pre = tiene('PreToolUse');
   out.ses = tiene('SessionStart');
   return out;
+}
+
+// Las rutas donde escribe el mecanismo y que por eso el repo destino tiene que ignorar. La lista
+// es la misma que el bloque §Gitignore de la PLANTILLA de amp:inicializar. El respaldo del
+// nivelador NO esta: se escribe fuera del repo, en el temporal del sistema.
+const RUTAS_IGNORADAS = ['.claude/settings.local.json', '.claude/tmp/'];
+
+// lee .gitignore y devuelve cuales de esas rutas NO estan ignoradas. Normaliza cada linea sacando
+// el './' inicial y la barra final, que son la misma regla escrita distinto; alcanza para decidir
+// un merge que solo suma lo que falta. Sin archivo, `leer` da '' y faltan todas.
+function revisarGitignore(rutaGitignore) {
+  const puestas = new Set(leer(rutaGitignore).split('\n')
+    .map(l => l.trim().replace(/^\.\//, '').replace(/\/+$/, ''))
+    .filter(l => l && !l.startsWith('#')));
+  return RUTAS_IGNORADAS.filter(r => !puestas.has(r.replace(/\/+$/, '')));
 }
 
 // -- respaldo -----------------------------------------------------------
