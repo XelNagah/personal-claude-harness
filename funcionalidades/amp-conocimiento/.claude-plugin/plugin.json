@@ -1,6 +1,6 @@
 {
   "name": "amp-conocimiento",
   "description": "Base de conocimiento del agente: carpeta única .claude/conocimiento/ para todo lo que el agente sabe + lint de integridad. Incluye registrar-conocimiento y buscar-conocimiento.",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "author": { "name": "jllarens", "email": "jllarens@gmail.com" }
 }
