@@ -15,3 +15,7 @@ Desktop.ini
 # Respaldo que deja el nivelador antes de pisar lo Base: copia completa de .claude/,
 # de un solo uso. Se borra una vez verificado que el nivelado quedó bien.
 .claude/.respaldo-amp/
+
+# Adjuntos que deja una sesión remota de Codex (imágenes que se le pasaron al agente).
+# No son del repo: los escribe el cliente al costado del checkout.
+.codex-remote-attachments/
