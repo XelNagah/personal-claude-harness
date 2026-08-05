@@ -34,5 +34,5 @@ La copia no convierte una elección personal en Base, no crea una suscripción y
 ## Páginas de detalle
 
 - [`archivo-de-estado.md`](archivo-de-estado.md) — Base-0013: la convención del archivo de estado en tareas exploratorias.
-- [`handoff.md`](handoff.md) — Base-0014: por qué el nombre es variable y por qué la ruta va en el texto para copiar.
+- [`handoff.md`](handoff.md) — Base-0014: por qué un handoff no es un plan, por qué el nombre es variable, y por qué el texto de traspaso es corto, en bloque de código y sin el contenido adentro.
 - [`nombrar-que-es-cada-codigo.md`](nombrar-que-es-cada-codigo.md) — Base-0016: por qué el código no va solo y por qué el título va en la conversación.
