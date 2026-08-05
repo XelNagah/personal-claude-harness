@@ -89,6 +89,19 @@ caso('tres filas pegadas dan un hallazgo por linea',
   idx.problemasDeIndices(idxDe(['A'], ['A'], undefined,
     '| Código |\n|---|\n| Local-0001 | a | | Local-0002 | b | | Local-0003 | c |\n'), MANI).length, 1);
 
+// Forma anterior: el archivo se descubre por su nombre de siempre y no declara nada de si mismo.
+// Se tolera —hay Agentes Desplegados sin nivelar— pero se dice, porque los controles de origen y
+// columnas no corren sobre el y el silencio se lee como registro sano.
+const VIEJO = { nombre: 'PLANES.md', indice: null, origen: null, columnas: null, cabecera: ['Plan', 'Estado'], texto: '' };
+caso('el Indice sin frontmatter se marca',
+  idx.problemasDeIndices([VIEJO], null).length, 1);
+// Convive con uno declarado y sano: el hallazgo es del viejo, no del par.
+caso('el viejo se marca sin ensuciar al declarado',
+  idx.problemasDeIndices([VIEJO, ...idxDe(['A'], ['A'])], MANI).length, 1);
+// El caso bueno con el MISMO archivo ya declarado: sin el, un chequeo que marcara siempre pasaria.
+caso('declarado y sano no se marca por la forma anterior',
+  idx.problemasDeIndices(idxDe(['A'], ['A']), MANI), []);
+
 caso('el manifiesto no lista el Indice',
   idx.problemasDeIndices(idxDe(['A'], ['A']), '**Índices:** `OTRO.md` (Agente Desplegado)\n').length, 2);
 caso('el manifiesto le pone otro origen',

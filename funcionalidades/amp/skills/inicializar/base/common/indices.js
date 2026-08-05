@@ -74,8 +74,18 @@ function filasPegadas(idx) {
   return out;
 }
 
+// Un Indice en la forma anterior —descubierto por su nombre de siempre, sin frontmatter— se tolera
+// a proposito: hay Agentes Desplegados sin nivelar y romperles el lint no los nivela. Pero la
+// tolerancia se dice. Sin esta linea el archivo queda afuera de `declarados` y los controles de
+// origen y columnas no corren sobre el, con lo cual el lint contesta que no encontro nada: no es
+// que el registro este sano, es que nadie lo miro. Medido el 05/08/2026 sobre un consumidor cuyo
+// registro de planes no tenia ni Codigo ni Nombre ni Descripcion — el chequeo del nucleo dio cero
+// hallazgos y el lint salio en verde.
 function problemasDeIndices(idxs, manifiestoTxt) {
   const out = [];
+  for (const i of idxs.filter(i => !i.indice)) {
+    out.push(`${i.nombre}: sin frontmatter de Índice (forma anterior). Mientras falte no se controlan su origen ni sus columnas: nivelarlo con amp:actualizar`);
+  }
   const declarados = idxs.filter(i => i.indice);
   for (const i of declarados) {
     if (!ORIGENES.includes(i.origen)) out.push(`${i.nombre}: origen "${i.origen}" invalido (validos: ${ORIGENES.join(' / ')})`);
