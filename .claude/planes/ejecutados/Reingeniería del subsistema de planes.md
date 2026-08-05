@@ -1,6 +1,6 @@
 # Reingeniería del subsistema de planes
 
-**Estado: En curso · Creado 26-07-27.** Origen: `Partir las mega-skills en habilidades de un verbo`.
+**Estado: Ejecutado · Creado 26-07-27 · Cerrado 26-08-05.** Origen: `Partir las mega-skills en habilidades de un verbo`.
 
 ## Propósito
 
@@ -138,7 +138,7 @@ Marca evidencia faltante en lugar de inventar certeza. No persiste prioridades n
 
 No redefinirá estados, transiciones, plantilla ni lint. El cierre de aprendizaje continúa siendo una responsabilidad separada.
 
-## Avance
+## Notas de implementación
 
 ### 05/08/2026 — contrato ratificado y primera versión desplegable
 
