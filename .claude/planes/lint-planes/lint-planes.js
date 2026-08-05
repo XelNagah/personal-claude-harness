@@ -40,11 +40,56 @@ function leerEstados(archivo, esLocal) {
     if (esLocal && estados.has(clave)) { estadoRepetido.push(nombre); continue; }
     const carpeta = cells[2].replace(/[`/\\]/g, '').trim();
     const terminal = /^s[ií]$/i.test(cells[3].trim());
-    estados.set(clave, { nombre, carpeta, terminal });
+    estados.set(clave, { nombre, carpeta, terminal, esLocal });
   }
 }
 leerEstados(estPath, false);
 leerEstados(estLocalPath, true);
+
+// --- grafo de transiciones: tabla | Desde | Hacia | de ESTADOS.md ---------------------------
+// La transicion es un EVENTO y el lint solo ve el estado ACTUAL, asi que no puede cazar una
+// transicion ilegal ya hecha: cuando corre, el plan ya esta en su estado nuevo y no queda rastro
+// de por donde paso. Lo que SI controla es que el GRAFO este bien formado. La tabla es la fuente
+// unica que declara los destinos validos de cada estado —antes eso vivia como texto plano en tres
+// lugares que podian divergir—, y de la fila "En pausa" se DERIVAN los valores de estado_a_retomar.
+const sinAcento = s => s.normalize('NFD').replace(/[̀-ͯ]/g, '');
+function leerTransiciones(archivo) {
+  const t = new Map();
+  if (!fs.existsSync(archivo)) return t;
+  let enTabla = false;
+  for (const line of fs.readFileSync(archivo, 'utf8').split('\n')) {
+    const s = line.trim();
+    if (!s.startsWith('|')) { enTabla = false; continue; }
+    const c = s.split('|').slice(1, -1).map(x => x.trim());
+    if (c.length < 2) continue;
+    const c0 = c[0].replace(/[*`\s]/g, '').toLowerCase();
+    if (c0 === 'desde') { enTabla = true; continue; }   // encabezado de la tabla de transiciones
+    if (/^:?-{2,}:?$/.test(c0)) continue;                // separador
+    if (!enTabla) continue;                              // otras tablas (la de estados) no cuentan
+    const desde = c[0].replace(/[`*]/g, '').trim().toLowerCase();
+    const hRaw = c[1].replace(/[`*]/g, '').trim();
+    const hacia = (!hRaw || hRaw === '—' || hRaw === '-') ? []
+      : hRaw.split(',').map(x => x.trim().toLowerCase()).filter(Boolean);
+    t.set(desde, hacia);
+  }
+  return t;
+}
+const transiciones = leerTransiciones(estPath);
+const grafoMal = [];
+if (transiciones.size) {
+  // (a) cada estado de la Base tiene su fila; un estado propio del repo (ESTADOS-LOCAL) queda exento.
+  for (const [clave, e] of estados) {
+    if (!e.esLocal && !transiciones.has(clave)) grafoMal.push(`estado "${e.nombre}" sin fila en la tabla de transiciones`);
+  }
+  // (b) cada Desde es un estado; (c) terminal <=> sin salidas; (d) cada destino es un estado.
+  for (const [desde, hacia] of transiciones) {
+    const e = estados.get(desde);
+    if (!e) { grafoMal.push(`transición desde "${desde}", que no es un estado de ESTADOS.md`); continue; }
+    if (e.terminal && hacia.length) grafoMal.push(`"${e.nombre}" es terminal pero declara salidas (${hacia.join(', ')})`);
+    if (!e.terminal && !hacia.length) grafoMal.push(`"${e.nombre}" no es terminal pero no declara ninguna salida`);
+    for (const h of hacia) if (!estados.has(h)) grafoMal.push(`"${e.nombre}" transiciona a "${h}", que no es un estado`);
+  }
+}
 // Fallback si no hay ESTADOS.md (repo a medio configurar): convencion clasica de carpetas.
 const CARPETAS = estados.size
   ? [...new Set([...estados.values()].map(e => e.carpeta))]
@@ -204,7 +249,8 @@ const tieneNotasDeImplementacion = txt => /^#{1,6}\s+(?:Notas?\s+de\s+)?implemen
 // de ESTADOS.md sin nadie que lo controlara (conocimiento controles-que-no-avisan).
 const estadoDe = new Map(rows.map(r => [norm(r.ref), r.estado]));
 const reRetomar = /(?:^|\n)[ \t>*]*estado_a_retomar\**\s*[:：]\s*\**\s*([^\n*]+)/i;
-const VALIDOS_RETOMAR = new Set(['análisis', 'analisis', 'en curso']);
+const enPausaHacia = transiciones.get('en pausa') || [];
+const VALIDOS_RETOMAR = new Set((enPausaHacia.length ? enPausaHacia : ['análisis', 'en curso']).map(sinAcento));
 const resueltosSinMover = [], ejecSinNotas = [], retomarFaltante = [], retomarSobrante = [];
 for (const [rel, carpeta] of enDisco) {
   const txt = fs.readFileSync(path.join(root, rel), 'utf8');
@@ -213,7 +259,7 @@ for (const [rel, carpeta] of enDisco) {
   const est = estadoDe.get(norm(rel));
   const mRet = reRetomar.exec(txt);
   if (est === 'en pausa') {
-    const val = mRet ? mRet[1].replace(/[`*.]/g, '').trim().toLowerCase() : null;
+    const val = mRet ? sinAcento(mRet[1].replace(/[`*.]/g, '').trim().toLowerCase()) : null;
     if (!val) retomarFaltante.push(`${rel}  [falta estado_a_retomar]`);
     else if (!VALIDOS_RETOMAR.has(val)) retomarFaltante.push(`${rel}  estado_a_retomar="${mRet[1].trim()}" (solo Análisis o En curso)`);
   } else if (est && mRet) {
@@ -237,6 +283,7 @@ const secciones = [
   ['NUCLEO DEL INDICE (código, Nombre, Descripción, orden)', nucleoMal],
   ['ESTADOS.md AUSENTE O VACIO (no se valida el estado)', estados.size ? [] : [estPath]],
   ['ESTADO REPETIDO EN ESTADOS-LOCAL.md (el del Agente Multiproposito manda)', estadoRepetido],
+  ['GRAFO DE TRANSICIONES MAL FORMADO (ESTADOS.md)', grafoMal],
   ['SUELTOS EN LA RAIZ (mover a una carpeta del ciclo)', sueltos],
   ['ARCHIVOS SIN FILA EN PLANES.md', sinFila],
   ['FILAS COLGADAS (archivo no existe)', colgadas],

@@ -154,7 +154,7 @@ Sesión de análisis con `amp:planificar` + primer incremento desplegable. **El 
 **Diferido a incrementos siguientes** (cada uno desplegable por su cuenta):
 
 1. ~~**Retirar `ciclo-de-plan` y construir la familia por verbo**~~ — **hecho el 05/08/2026**, ver el avance de abajo.
-2. **Validar el grafo de transiciones** en `lint-planes` (hoy documentado en `ESTADOS.md`, no forzado por el lint).
+2. ~~**Validar el grafo de transiciones**~~ — **hecho el 05/08/2026**, ver el avance de abajo (con el matiz de qué es controlable estáticamente).
 3. **Envejecimiento de `En pausa`**: hoy el lint vigila la antigüedad solo de `En curso`; un plan pausado hace meses es igual de zombi.
 
 ### 05/08/2026 — familia de habilidades por verbo y retiro de ciclo-de-plan
@@ -166,6 +166,17 @@ Segundo incremento desplegable del mismo día (paso 3 del Alcance). El subsistem
 - **Versión** `amp-planes` 0.9.0. Control de cierre verde salvo el desfase de versión esperado. Los diez skills pasan los controles de disparador, reconciliación, cierre verificable y referencias.
 
 Queda diferido: validar el grafo de transiciones en el lint y vigilar la antigüedad de `En pausa`.
+
+### 05/08/2026 — grafo de transiciones legible por máquina
+
+Tercer incremento desplegable del día. **Matiz que reencuadró el trabajo:** un lint sobre `PLANES.md` ve el estado *actual* de cada plan, no sus *transiciones* —una transición es un evento y no deja rastro en el snapshot—, así que **no puede cazar una transición ilegal ya hecha**. Lo controlable estáticamente es que el grafo esté bien formado.
+
+- **`ESTADOS.md` gana una tabla `| Desde | Hacia |` legible por máquina**, fuente única del grafo; la lista en texto que lo repetía se retiró (el diagrama queda como ilustración). Antes el grafo vivía reescrito en tres lugares que podían divergir.
+- **`lint-planes` valida la buena formación del grafo**: cada estado de la Base tiene su fila (un estado propio del repo queda exento), los terminales no declaran salidas, los no-terminales sí, y todo destino es un estado. Con tres casos malos y el bueno en el banco.
+- **`estado_a_retomar` deja de tener sus valores escritos a mano**: se derivan de la fila `En pausa` del grafo, con normalización de acentos. Dos reglas atadas a una sola fuente.
+- **Versión** `amp` 0.31.0. Control de cierre verde salvo el desfase de versión esperado.
+
+Queda diferido: vigilar la antigüedad de `En pausa`.
 
 ## Criterios de cierre
 

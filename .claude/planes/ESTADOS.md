@@ -42,14 +42,20 @@ Los seis estados vivos comparten carpeta (`pendientes/`): lo que los distingue e
     └──► Descartado   (terminal, con motivo)
 ```
 
-- `Nuevo` → Análisis · Diferido · Descartado
-- `Análisis` → Listo · En pausa · Diferido · Descartado
-- `Listo` → Análisis · En curso · Diferido · Descartado
-- `En curso` → En pausa · Diferido · Ejecutado · Descartado
-- `En pausa` → vuelve a `estado_a_retomar` (Análisis o En curso)
-- `Diferido` → Análisis (siempre; nunca directo a Listo ni a En curso)
-- `Ejecutado` — terminal
-- `Descartado` — terminal
+El **grafo autoritativo** es esta tabla —la fuente única que lee el lint—: `Desde` es un estado y `Hacia` sus destinos válidos, separados por coma (`—` si es terminal). El diagrama de arriba la ilustra; si divergen, manda la tabla.
+
+| Desde | Hacia |
+|-------|-------|
+| Nuevo | Análisis, Diferido, Descartado |
+| Análisis | Listo, En pausa, Diferido, Descartado |
+| Listo | Análisis, En curso, Diferido, Descartado |
+| En curso | En pausa, Diferido, Ejecutado, Descartado |
+| En pausa | Análisis, En curso |
+| Diferido | Análisis |
+| Ejecutado | — |
+| Descartado | — |
+
+`Diferido` vuelve siempre a `Análisis`, nunca directo a `Listo` ni a `En curso`. Los destinos de `En pausa` (`Análisis`, `En curso`) son además los valores válidos de `estado_a_retomar`: el lint los deriva de esta fila, no los tiene escritos aparte.
 
 ### El dato `estado_a_retomar`
 

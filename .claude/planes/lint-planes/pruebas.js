@@ -80,6 +80,13 @@ caso('En pausa sin estado_a_retomar', 'EN PAUSA SIN estado_a_retomar VALIDO',
 caso('estado_a_retomar en un estado que no es En pausa', 'estado_a_retomar EN UN ESTADO QUE NO ES EN PAUSA',
   () => fs.appendFileSync(path.join(BANCO, 'pendientes/Estructura del documento de Plan.md'),
                           '\n**estado_a_retomar:** En curso\n'));
+const romperEstados = f => { const p = path.join(BANCO, 'ESTADOS.md'); fs.writeFileSync(p, f(fs.readFileSync(p, 'utf8'))); };
+caso('grafo: un terminal declara salidas', 'GRAFO DE TRANSICIONES MAL FORMADO (ESTADOS.md)',
+  () => romperEstados(t => t.replace('| Ejecutado | — |', '| Ejecutado | Nuevo |')));
+caso('grafo: transición a algo que no es estado', 'GRAFO DE TRANSICIONES MAL FORMADO (ESTADOS.md)',
+  () => romperEstados(t => t.replace('| Diferido | Análisis |', '| Diferido | Inventado |')));
+caso('grafo: un estado de la Base sin fila de transiciones', 'GRAFO DE TRANSICIONES MAL FORMADO (ESTADOS.md)',
+  () => romperEstados(t => t.replace('\n| Listo | Análisis, En curso, Diferido, Descartado |', '')));
 
 let malos = 0;
 console.log('== CASO MALO: cada control tiene que encenderse ==\n');
