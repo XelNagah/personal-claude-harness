@@ -87,6 +87,9 @@ caso('grafo: transición a algo que no es estado', 'GRAFO DE TRANSICIONES MAL FO
   () => romperEstados(t => t.replace('| Diferido | Análisis |', '| Diferido | Inventado |')));
 caso('grafo: un estado de la Base sin fila de transiciones', 'GRAFO DE TRANSICIONES MAL FORMADO (ESTADOS.md)',
   () => romperEstados(t => t.replace('\n| Listo | Análisis, En curso, Diferido, Descartado |', '')));
+caso('En pausa envejecido (interrumpido hace demasiado)', 'ACTIVOS ENVEJECIDOS (> 30 dias activo o en pausa: ¿sigue/retomar/diferido/descartado?)',
+  () => { escribir(reg().replace(/(\| Local-0015 \| [^|]+\| [^|]+\| )Nuevo \| [0-9]{2}-[0-9]{2}-[0-9]{2}/, '$1En pausa | 20-01-01'));
+          fs.appendFileSync(path.join(BANCO, 'pendientes/Estructura del documento de Plan.md'), '\n**estado_a_retomar:** En curso\n'); });
 
 let malos = 0;
 console.log('== CASO MALO: cada control tiene que encenderse ==\n');

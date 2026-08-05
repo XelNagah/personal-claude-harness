@@ -11,9 +11,11 @@ const diasIdx = args.indexOf('--dias');
 const MAX_DIAS = diasIdx >= 0 ? parseInt(args[diasIdx + 1], 10) : 30;
 const root = path.resolve(args.find(a => !a.startsWith('--') && !/^\d+$/.test(a)) || '.claude/planes');
 
-// Estado(s) cuya antiguedad se vigila: el plan se esta ejecutando hace demasiado y quedo frenado.
-// Si se renombra el estado activo en ESTADOS.md, ajustar esta lista (en minusculas).
-const VIGILAR_ANTIGUEDAD = ['en curso'];
+// Estado(s) cuya antiguedad se vigila: un plan que se esta ejecutando (En curso) o que quedo
+// interrumpido con intencion de retomar (En pausa) hace demasiado es un zombi que dice avanzar
+// mientras espera. Diferido NO se vigila: posponer a proposito es legitimo y puede durar. Si se
+// renombra un estado en ESTADOS.md, ajustar esta lista (en minusculas).
+const VIGILAR_ANTIGUEDAD = ['en curso', 'en pausa'];
 
 // --- estados: nombre -> {nombre, carpeta, terminal} ---
 // Se leen de DOS archivos: `ESTADOS.md` (lo manda el Agente Multiproposito y el nivelador lo
@@ -295,7 +297,7 @@ const secciones = [
   ['CIERRES A MEDIAS', cierreAMedias.map(([r, w]) => `${r}  [${w}]`)],
   ['DESCARTADOS SIN MOTIVO', sinMotivo],
   ['EJECUTADOS SIN SECCIÓN DE IMPLEMENTACIÓN', ejecSinNotas],
-  [`ACTIVOS ENVEJECIDOS (> ${MAX_DIAS} dias en curso: ¿sigue/diferido/descartado?)`, viejos.map(([r, d]) => `${r}  (${d} dias)`)],
+  [`ACTIVOS ENVEJECIDOS (> ${MAX_DIAS} dias activo o en pausa: ¿sigue/retomar/diferido/descartado?)`, viejos.map(([r, d]) => `${r}  (${d} dias)`)],
 ];
 const total = secciones.reduce((n, [, items]) => n + items.length, 0);
 if (quiet && total === 0) process.exit(0);

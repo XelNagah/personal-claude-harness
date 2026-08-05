@@ -155,7 +155,7 @@ Sesión de análisis con `amp:planificar` + primer incremento desplegable. **El 
 
 1. ~~**Retirar `ciclo-de-plan` y construir la familia por verbo**~~ — **hecho el 05/08/2026**, ver el avance de abajo.
 2. ~~**Validar el grafo de transiciones**~~ — **hecho el 05/08/2026**, ver el avance de abajo (con el matiz de qué es controlable estáticamente).
-3. **Envejecimiento de `En pausa`**: hoy el lint vigila la antigüedad solo de `En curso`; un plan pausado hace meses es igual de zombi.
+3. ~~**Envejecimiento de `En pausa`**~~ — **hecho el 05/08/2026**, ver el avance de abajo.
 
 ### 05/08/2026 — familia de habilidades por verbo y retiro de ciclo-de-plan
 
@@ -177,6 +177,12 @@ Tercer incremento desplegable del día. **Matiz que reencuadró el trabajo:** un
 - **Versión** `amp` 0.31.0. Control de cierre verde salvo el desfase de versión esperado.
 
 Queda diferido: vigilar la antigüedad de `En pausa`.
+
+### 05/08/2026 — En pausa envejece como En curso
+
+Cuarto incremento chico del día. `lint-planes` ahora vigila la antigüedad de los planes `En pausa` además de los `En curso`: un plan interrumpido con intención de retomar que lleva meses parado es tan zombi como uno que dice ejecutarse y no avanza. `Diferido` queda afuera a propósito —posponer es legítimo y puede durar—. Con su caso en el banco. Versión `amp` 0.32.0.
+
+Con esto **los tres incrementos diferidos quedaron hechos**. Para cerrar el plan falta solo el paso 5 del Alcance: probar `amp:inicializar` contra un repo vacío y `amp:actualizar` contra una copia de uno instalado, y verificar el lint verde — más publicar las versiones acumuladas (`amp` 0.32.0, `amp-planes` 0.9.0).
 
 ## Criterios de cierre
 
