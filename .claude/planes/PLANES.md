@@ -7,14 +7,14 @@ descripcion: de qué se trata el plan
 
 # Registro de planes
 
-Lo fino de cada plan vive en su archivo, no acá. Las carpetas dan el ciclo grueso: `pendientes/` (planes vivos: `Nuevo`, `En curso`, `Diferido`), `ejecutados/`, `descartados/`.
+Lo fino de cada plan vive en su archivo, no acá. Las carpetas dan el ciclo grueso: `pendientes/` (planes vivos: `Nuevo`, `Análisis`, `Listo`, `En curso`, `En pausa`, `Diferido`), `ejecutados/`, `descartados/`.
 
 Los **estados** y su semántica (a qué carpeta mapea cada uno, cuáles son terminales) están definidos en [`ESTADOS.md`](ESTADOS.md) — fuente de verdad configurable, que el lint lee.
 
 - **Código** — `Local-NNNN`. Se asigna al crear la entrada y no se reusa.
 - **Nombre** — el título del plan. Único en el Índice.
 - **Descripción** — de qué se trata el plan, en una línea.
-- **Estado** — uno de los definidos en `ESTADOS.md`: `Nuevo`, `En curso`, `Diferido` (vivos, en `pendientes/`), `Ejecutado`, `Descartado` (terminales).
+- **Estado** — uno de los definidos en `ESTADOS.md`: `Nuevo`, `Análisis`, `Listo`, `En curso`, `En pausa`, `Diferido` (vivos, en `pendientes/`), `Ejecutado`, `Descartado` (terminales).
 - **Fecha de creación / Fecha de cierre** — `AA-MM-DD`; la de cierre en `—` mientras el plan esté vivo.
 - **Origen** — plan del que se desprendió, si aplica.
 - **Detalle** — el archivo del plan, en la carpeta que le da su estado. Ahí vive todo lo largo: el diagnóstico, el trabajo, las notas de implementación y, en los descartados, el motivo.
@@ -95,7 +95,7 @@ Los **estados** y su semántica (a qué carpeta mapea cada uno, cuáles son term
 | Local-0072 | Retirar analizar-con-docs rescatando su test de tres condiciones | Retirar `analizar-con-docs`, ancestro de `amp:planificar`, rescatando antes su test de tres condiciones para decidir si algo amerita asentarse como decisión | Nuevo | 26-07-26 | — | — | [pendientes/Retirar analizar-con-docs rescatando su test de tres condiciones.md](pendientes/Retirar analizar-con-docs rescatando su test de tres condiciones.md) |
 | Local-0073 | Barrer la terminología vetada del Producto | Barrer los términos vetados del texto que se distribuye: cada Agente con Propósito hereda el vocabulario que este repo prohibió, porque el Producto nunca se barrió | En curso | 26-07-26 | — | Rework de memoria | [pendientes/Barrer la terminologia vetada del Producto.md](pendientes/Barrer la terminologia vetada del Producto.md) |
 | Local-0074 | Controlar terminología y preferencias en commits | Revisar el mensaje antes de crear cada commit, contra la Terminología Farlopa y contra las preferencias que se puedan verificar mecánicamente | Nuevo | 26-07-27 | — | — | [pendientes/Controlar terminologia y preferencias en commits.md](pendientes/Controlar terminologia y preferencias en commits.md) |
-| Local-0075 | Reingeniería del subsistema de planes | Reingeniería del subsistema: los ocho estados, las Skills de un verbo único y las consultas de prioridad sin persistencia | Nuevo | 26-07-27 | — | Partir las mega-skills en habilidades de un verbo | [pendientes/Reingeniería del subsistema de planes.md](pendientes/Reingeniería del subsistema de planes.md) |
+| Local-0075 | Reingeniería del subsistema de planes | Reingeniería del subsistema: los ocho estados, las Skills de un verbo único y las consultas de prioridad sin persistencia | En curso | 26-07-27 | — | Partir las mega-skills en habilidades de un verbo | [pendientes/Reingeniería del subsistema de planes.md](pendientes/Reingeniería del subsistema de planes.md) |
 | Local-0076 | Barrer la terminología hallada en preferencias y subsistemas | Barrer los trece puntos de vocabulario que el barrido del 28/07/2026 encontró y que ningún control mira, porque el lint solo marca lo que ya se vetó | Nuevo | 26-07-28 | — | — | [pendientes/Barrer la terminologia hallada en preferencias y subsistemas.md](pendientes/Barrer la terminologia hallada en preferencias y subsistemas.md) |
 | Local-0077 | Detectar dependencias de plugin sin declarar en actualizar-plugins | Que `actualizar-plugins` detecte la dependencia que el repo nunca declaró: sin eso el plugin que la pide no carga y la Herramienta informa todo al día | Ejecutado | 26-07-28 | 26-07-28 | — | [ejecutados/Detectar dependencias de plugin sin declarar en actualizar-plugins.md](ejecutados/Detectar dependencias de plugin sin declarar en actualizar-plugins.md) |
 | Local-0078 | Partir los índices por origen y pasar preferencias a tabla | Partir en dos archivos los Índices que mezclan dos orígenes y llevar `preferencias` a tabla, para que el nivelador reemplace uno entero sin abrir el otro | Nuevo | 26-07-28 | — | — | [pendientes/Partir los indices por origen y pasar preferencias a tabla.md](pendientes/Partir los indices por origen y pasar preferencias a tabla.md) |

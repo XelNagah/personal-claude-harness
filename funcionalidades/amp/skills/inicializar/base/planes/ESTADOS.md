@@ -17,29 +17,45 @@ Máquina de **un solo eje**: un plan está en exactamente **un** estado a la vez
 
 | Estado | Sentido | Carpeta | Terminal |
 |--------|---------|---------|----------|
-| Nuevo | Creado; todavía sin ejecutar. La revisión de alto nivel (con `planificar`) ocurre acá, antes de arrancar. | `pendientes/` | no |
-| En curso | Se tomó el plan y se está **ejecutando**. | `pendientes/` | no |
-| Diferido | Pospuesto a propósito; retomable más adelante. | `pendientes/` | no |
-| Ejecutado | Terminado con éxito. | `ejecutados/` | sí |
-| Descartado | Abandonado; no se hará (motivo obligatorio en el archivo del plan, en una sección `## Notas de cierre`). | `descartados/` | sí |
+| Nuevo | Registrado, pero todavía sin analizar. | `pendientes/` | no |
+| Análisis | Se delimita, contrasta o ajusta el plan antes de dejarlo listo para ejecutar. | `pendientes/` | no |
+| Listo | Analizado y suficientemente definido para iniciar su ejecución. | `pendientes/` | no |
+| En curso | Se está **ejecutando**; el contrato no impone cómo se realiza esa ejecución. | `pendientes/` | no |
+| En pausa | El análisis o la ejecución se interrumpieron temporalmente con intención de retomarlos. | `pendientes/` | no |
+| Diferido | Pospuesto a propósito para revisarlo más adelante. | `pendientes/` | no |
+| Ejecutado | Terminado con éxito (notas de implementación obligatorias en el archivo del plan). | `ejecutados/` | sí |
+| Descartado | No se hará; motivo obligatorio en el archivo del plan, en una sección `## Notas de cierre`. | `descartados/` | sí |
 
-No hay estado de "diseño": todo plan `Nuevo` se revisa en alto nivel antes de ejecutarse, así que la revisión es parte de estar `Nuevo`, no un estado aparte. El lint vigila la antigüedad del estado **activo** (`En curso`) — un plan que se está ejecutando hace demasiado y quedó frenado (ver la constante `VIGILAR_ANTIGUEDAD` en `lint-planes.js`).
+Los seis estados vivos comparten carpeta (`pendientes/`): lo que los distingue es la columna `Estado`, no dónde vive el archivo. El lint vigila la antigüedad del estado **activo** (`En curso`) — un plan que se está ejecutando hace demasiado y quedó frenado (ver la constante `VIGILAR_ANTIGUEDAD` en `lint-planes.js`).
 
 ## Transiciones
 
 ```
-  Nuevo ──────► En curso ──────► Ejecutado
-    │              │             (terminal)
-    ├──► Diferido ◄┘   (retomable → En curso)
+  Nuevo ──► Análisis ──► Listo ──► En curso ──► Ejecutado
+    │          │  ▲        │          │        (terminal)
+    │          │  └────────┘          │
+    │          ▼                      ▼
+    │       En pausa ────────────► (vuelve a Análisis o En curso)
+    │
+    ├──► Diferido ──► Análisis
     │
     └──► Descartado   (terminal, con motivo)
 ```
 
-- `Nuevo` → En curso · Diferido · Descartado
-- `En curso` → Diferido · Ejecutado · Descartado
-- `Diferido` → En curso · Descartado
+- `Nuevo` → Análisis · Diferido · Descartado
+- `Análisis` → Listo · En pausa · Diferido · Descartado
+- `Listo` → Análisis · En curso · Diferido · Descartado
+- `En curso` → En pausa · Diferido · Ejecutado · Descartado
+- `En pausa` → vuelve a `estado_a_retomar` (Análisis o En curso)
+- `Diferido` → Análisis (siempre; nunca directo a Listo ni a En curso)
 - `Ejecutado` — terminal
 - `Descartado` — terminal
+
+### El dato `estado_a_retomar`
+
+`En pausa` conserva obligatoriamente `estado_a_retomar`, cuyo único valor válido es `Análisis` o `En curso`. Al retomar, el plan vuelve exactamente a ese valor y el dato se elimina. Al pasar a `Diferido` se elimina cualquier `estado_a_retomar`; los estados terminales no lo llevan.
+
+Ese dato vive en el **archivo del plan**, no en `PLANES.md`: es transitorio del plan pausado. El registro conserva estado, fechas, origen y notas.
 
 ## Cómo cambiar los estados
 

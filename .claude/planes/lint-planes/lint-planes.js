@@ -197,12 +197,28 @@ for (const indice of new Set(rows.filter(r => r.conNucleo).map(r => r.indice))) 
 // Solo se reconocen encabezados explícitos; texto que menciona commits no alcanza.
 const tieneNotasDeImplementacion = txt => /^#{1,6}\s+(?:Notas?\s+de\s+)?implementaci[oó]n\b/im.test(txt);
 
-// contenido: pendientes con marcador de resolucion; ejecutados sin notas de implementacion
-const resueltosSinMover = [], ejecSinNotas = [];
+// contenido: pendientes con marcador de resolucion; ejecutados sin notas de implementacion;
+// coherencia de estado_a_retomar: SOLO "En pausa" lo lleva, con valor Analisis o En curso, y
+// vive en el archivo del plan (no en PLANES.md). Un plan pausado sin el dato no sabe a donde
+// volver; el dato en cualquier otro estado sobra. La ausencia del control dejaba el "obligatorio"
+// de ESTADOS.md sin nadie que lo controlara (conocimiento controles-que-no-avisan).
+const estadoDe = new Map(rows.map(r => [norm(r.ref), r.estado]));
+const reRetomar = /(?:^|\n)[ \t>*]*estado_a_retomar\**\s*[:：]\s*\**\s*([^\n*]+)/i;
+const VALIDOS_RETOMAR = new Set(['análisis', 'analisis', 'en curso']);
+const resueltosSinMover = [], ejecSinNotas = [], retomarFaltante = [], retomarSobrante = [];
 for (const [rel, carpeta] of enDisco) {
   const txt = fs.readFileSync(path.join(root, rel), 'utf8');
   if (carpeta === 'pendientes' && (/\bRESUELTO\b/.test(txt) || tieneNotasDeImplementacion(txt))) resueltosSinMover.push(rel);
   if (carpeta === 'ejecutados' && !tieneNotasDeImplementacion(txt)) ejecSinNotas.push(rel);
+  const est = estadoDe.get(norm(rel));
+  const mRet = reRetomar.exec(txt);
+  if (est === 'en pausa') {
+    const val = mRet ? mRet[1].replace(/[`*.]/g, '').trim().toLowerCase() : null;
+    if (!val) retomarFaltante.push(`${rel}  [falta estado_a_retomar]`);
+    else if (!VALIDOS_RETOMAR.has(val)) retomarFaltante.push(`${rel}  estado_a_retomar="${mRet[1].trim()}" (solo Análisis o En curso)`);
+  } else if (est && mRet) {
+    retomarSobrante.push(`${rel}  estado="${est}" no debe llevar estado_a_retomar`);
+  }
 }
 
 // activos envejecidos (estado vigilado, p. ej. "En curso", con Creado viejo)
@@ -226,6 +242,8 @@ const secciones = [
   ['FILAS COLGADAS (archivo no existe)', colgadas],
   ['ESTADO INVALIDO (no esta en ESTADOS.md)', estadoInvalido.map(([r, e]) => `${r}  estado="${e}"`)],
   ['ESTADO vs CARPETA INCONSISTENTE', estadoCarpeta.map(([r, e, c, esp]) => `${r}  estado="${e}" en ${c}/ (deberia ir en ${esp}/)`)],
+  ['EN PAUSA SIN estado_a_retomar VALIDO', retomarFaltante],
+  ['estado_a_retomar EN UN ESTADO QUE NO ES EN PAUSA', retomarSobrante],
   ['PENDIENTES CON MARCADOR DE RESUELTO (¿mover a ejecutados?)', resueltosSinMover],
   ['CIERRES A MEDIAS', cierreAMedias.map(([r, w]) => `${r}  [${w}]`)],
   ['DESCARTADOS SIN MOTIVO', sinMotivo],

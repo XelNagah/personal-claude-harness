@@ -75,6 +75,11 @@ caso('columna declarada que la tabla no tiene', 'INDICES DECLARADOS (frontmatter
   () => escribir(reg().replace('| Código | Nombre |', '| Codigo | Nombre |')));
 caso('fila sin Detalle (no apunta a ningún archivo)', 'NUCLEO DEL INDICE (código, Nombre, Descripción, orden)',
   () => escribir(reg().replace(/(\| Local-0020 \|[^\n]*\| )\[[^\n]*\](\([^)]*\)) \|/, '$1 |')));
+caso('En pausa sin estado_a_retomar', 'EN PAUSA SIN estado_a_retomar VALIDO',
+  () => escribir(reg().replace(/(\| Local-0015 \| [^|]+\| [^|]+\| )Nuevo /, '$1En pausa ')));
+caso('estado_a_retomar en un estado que no es En pausa', 'estado_a_retomar EN UN ESTADO QUE NO ES EN PAUSA',
+  () => fs.appendFileSync(path.join(BANCO, 'pendientes/Estructura del documento de Plan.md'),
+                          '\n**estado_a_retomar:** En curso\n'));
 
 let malos = 0;
 console.log('== CASO MALO: cada control tiene que encenderse ==\n');
@@ -209,6 +214,18 @@ fs.rmSync(path.join(BANCO, 'ESTADOS-LOCAL.md'), { force: true });
 const sinLocal = hallazgos(correr());
 console.log(`${total(sinLocal) === 0 ? 'OK  ' : 'FALLA'} sin ESTADOS-LOCAL.md no se queja → ${total(sinLocal)} hallazgos`);
 if (total(sinLocal) !== 0) { malos++; console.log(JSON.stringify(sinLocal)); }
+
+// Caso bueno de estado_a_retomar: un plan En pausa CON el dato valido no dispara ningun control.
+// El caso malo prueba que el control enciende sin el dato; este prueba que no es un control que
+// marca siempre (marcar el caso legitimo lo volveria ruido que se aprende a ignorar).
+console.log('\n== estado_a_retomar EN PAUSA (caso bueno) ==');
+armar();
+escribir(reg().replace(/(\| Local-0015 \| [^|]+\| [^|]+\| )Nuevo /, '$1En pausa '));
+fs.appendFileSync(path.join(BANCO, 'pendientes/Estructura del documento de Plan.md'),
+                  '\n**estado_a_retomar:** En curso\n');
+const pausaOk = hallazgos(correr());
+console.log(`${total(pausaOk) === 0 ? 'OK  ' : 'FALLA'} En pausa con estado_a_retomar válido → ${total(pausaOk)} hallazgos`);
+if (total(pausaOk) !== 0) { malos++; console.log(JSON.stringify(pausaOk)); }
 
 fs.rmSync(BANCO, { recursive: true, force: true });
 console.log(`\n${malos === 0 ? 'TODO OK' : malos + ' FALLAS'}`);
