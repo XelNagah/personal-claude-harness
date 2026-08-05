@@ -36,7 +36,7 @@ Se distribuye como **9 plugins**: el transversal `amp` más uno por cada subsist
 | `amp` | `inicializar` (arma el `.claude/` completo) · `planificar` (analiza un plan contra lo que el repo sabe) · `info` (estado) · `actualizar` (pone al día una instalación vieja) |
 | `amp-subsistemas` | `agregar-subsistema`, `reubicar-aprendizaje` |
 | `amp-preferencias` | `registrar-preferencia` |
-| `amp-planes` | `ciclo-de-plan` |
+| `amp-planes` | familia por verbo (`crear-plan`…`descartar-plan`) |
 | `amp-conocimiento` | `registrar-conocimiento` · `buscar-conocimiento` |
 | `amp-semantica` | `converger-terminologia` |
 | `amp-decisiones` | `registrar-decision` |

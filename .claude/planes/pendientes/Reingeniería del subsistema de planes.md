@@ -153,9 +153,19 @@ Sesión de análisis con `amp:planificar` + primer incremento desplegable. **El 
 
 **Diferido a incrementos siguientes** (cada uno desplegable por su cuenta):
 
-1. **Retirar `ciclo-de-plan` y construir la familia por verbo** (paso 3). El nombre está vetado (Terminología Farlopa Local-0035) y Local-0070 lo pide; el manejo de `estado_a_retomar` que hoy vive en `ciclo-de-plan` migra a `pausar-plan`/`retomar-plan`.
+1. ~~**Retirar `ciclo-de-plan` y construir la familia por verbo**~~ — **hecho el 05/08/2026**, ver el avance de abajo.
 2. **Validar el grafo de transiciones** en `lint-planes` (hoy documentado en `ESTADOS.md`, no forzado por el lint).
 3. **Envejecimiento de `En pausa`**: hoy el lint vigila la antigüedad solo de `En curso`; un plan pausado hace meses es igual de zombi.
+
+### 05/08/2026 — familia de habilidades por verbo y retiro de ciclo-de-plan
+
+Segundo incremento desplegable del mismo día (paso 3 del Alcance). El subsistema pasa de una mega-habilidad a diez habilidades por verbo.
+
+- **Diez habilidades nuevas** en `funcionalidades/amp-planes/skills/`: `crear-plan`, `analizar-plan`, `explicar-plan`, `priorizar-planes`, `sugerir-siguiente-plan`, `pausar-plan`, `retomar-plan`, `diferir-plan`, `cerrar-plan`, `descartar-plan`. Cada una es un verbo con sus pasos; las de transición apuntan al contrato (`ESTADOS.md`) y a la mecánica (README del subsistema) en vez de duplicarla, y `explicar-plan` lleva el formato fijo de siete puntos.
+- **`ciclo-de-plan` retirado**: carpeta borrada, sumado a la lista de nombres retirados de `lint-harness`, y todas sus referencias limpias (marketplace, plugin, REGISTRO, MANIFIESTO, SUBSISTEMAS, los README y el manual de instalación). El manejo de `estado_a_retomar` migró a `pausar-plan`/`retomar-plan`.
+- **Versión** `amp-planes` 0.9.0. Control de cierre verde salvo el desfase de versión esperado. Los diez skills pasan los controles de disparador, reconciliación, cierre verificable y referencias.
+
+Queda diferido: validar el grafo de transiciones en el lint y vigilar la antigüedad de `En pausa`.
 
 ## Criterios de cierre
 

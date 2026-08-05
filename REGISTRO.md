@@ -9,7 +9,7 @@ Catálogo de las funcionalidades que este repo instala para armar un agente de *
 | **amp** | Plugin transversal. Skills: `inicializar`, `planificar`, `info` y `actualizar`. El actualizador también conduce las migraciones de formas retiradas y no informa “al día” mientras quede `memoria/`. | los 8 `amp-<sub>` | [`amp/`](funcionalidades/amp/) |
 | **amp-subsistemas** | Catálogo Base/Propósito y coordinación de la reubicación del Aprendizaje. Skills: `agregar-subsistema` y `reubicar-aprendizaje`. | — | [`amp-subsistemas/`](funcionalidades/amp-subsistemas/) |
 | **amp-preferencias** | Preferencias versionadas en `preferencias/`, un archivo por origen (`PREFERENCIAS.md` del Agente Multipropósito + `PREFERENCIAS-LOCAL.md` del Agente Desplegado), los dos importados siempre vía `@`, + lint estructural. `registrar-preferencia` da de alta o copia puntualmente una regla con vista previa e idempotencia; `adoptar-recomendadas` muestra el catálogo de Preferencias Recomendadas que trae el plugin y adopta las que el usuario elija, sin instalar ninguna sola. | — | [`amp-preferencias/`](funcionalidades/amp-preferencias/) |
-| **amp-planes** | Ciclo de planes `pendientes/ejecutados/descartados` + registro, README, lint y hook. Skill `ciclo-de-plan`. | — | [`amp-planes/`](funcionalidades/amp-planes/) |
+| **amp-planes** | Ciclo de planes `pendientes/ejecutados/descartados` + registro, README, lint y hook. Familia de skills por verbo: `crear-plan`, `analizar-plan`, `explicar-plan`, `priorizar-planes`, `sugerir-siguiente-plan`, `pausar-plan`, `retomar-plan`, `diferir-plan`, `cerrar-plan`, `descartar-plan`. | — | [`amp-planes/`](funcionalidades/amp-planes/) |
 | **amp-conocimiento** | Base única de lo que el agente sabe + README y lint. Skills `registrar-conocimiento` y `buscar-conocimiento`. | — | [`amp-conocimiento/`](funcionalidades/amp-conocimiento/) |
 | **amp-semantica** | Glosario + Terminología Farlopa + README y lint. Skill `converger-terminologia`. | — | [`amp-semantica/`](funcionalidades/amp-semantica/) |
 | **amp-decisiones** | Decisiones estructurales + README y lint. Skill `registrar-decision`. | — | [`amp-decisiones/`](funcionalidades/amp-decisiones/) |
@@ -20,14 +20,14 @@ Todos los subsistemas Base tienen plugin y skill de operación. `commits` no es 
 
 ## Plugin y skill (Claude Code)
 
-El prefijo de skill **es** el nombre del plugin (`amp-planes:ciclo-de-plan` ≠ `amp-conocimiento:registrar-conocimiento`): agrupa al tipear "amp" y deja visible de qué subsistema es cada skill (Decisión Local-0029, empaquetado en un plugin por subsistema; modifica la Local-0013, segmentación de skills por prefijo de plugin).
+El prefijo de skill **es** el nombre del plugin (`amp-planes:crear-plan` ≠ `amp-conocimiento:registrar-conocimiento`): agrupa al tipear "amp" y deja visible de qué subsistema es cada skill (Decisión Local-0029, empaquetado en un plugin por subsistema; modifica la Local-0013, segmentación de skills por prefijo de plugin).
 
 | Funcionalidad | Plugin | Skill |
 |---------------|--------|-------|
 | amp | `amp@xelnagah-harness` | `inicializar`, `planificar`, `actualizar` |
 | amp-subsistemas | `amp-subsistemas@xelnagah-harness` | `agregar-subsistema`, `reubicar-aprendizaje` |
 | amp-preferencias | `amp-preferencias@xelnagah-harness` | `registrar-preferencia`, `adoptar-recomendadas` |
-| amp-planes | `amp-planes@xelnagah-harness` | `ciclo-de-plan` |
+| amp-planes | `amp-planes@xelnagah-harness` | `crear-plan`, `analizar-plan`, `explicar-plan`, `priorizar-planes`, `sugerir-siguiente-plan`, `pausar-plan`, `retomar-plan`, `diferir-plan`, `cerrar-plan`, `descartar-plan` |
 | amp-conocimiento | `amp-conocimiento@xelnagah-harness` | `registrar-conocimiento`, `buscar-conocimiento` |
 | amp-semantica | `amp-semantica@xelnagah-harness` | `converger-terminologia` |
 | amp-decisiones | `amp-decisiones@xelnagah-harness` | `registrar-decision` |

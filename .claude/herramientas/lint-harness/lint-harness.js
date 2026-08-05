@@ -48,6 +48,7 @@ const NOMBRES_RETIRADOS_SKILL = [
   'inicializar-subsistemas', 'inicializar-preferencias', 'inicializar-planes',
   'inicializar-conocimiento', 'inicializar-semantica', 'inicializar-decisiones',
   'inicializar-herramientas', 'inicializar-conducta',
+  'ciclo-de-plan',
 ];
 for (const f of enDisco) {
   const base = path.join(funcDir, f);

@@ -20,7 +20,7 @@ Un solo comando trae **9 plugins**: el transversal `amp` más los ocho por subsi
 | `amp` | `inicializar` · `planificar` · `info` · `actualizar` | Arma el `.claude/` completo, analiza planes contra lo que el repo ya sabe, muestra el estado, pone al día una instalación vieja |
 | `amp-subsistemas` | `agregar-subsistema` · `reubicar-aprendizaje` | Catálogo de casas y reparto de lo aprendido |
 | `amp-preferencias` | `registrar-preferencia` | Reglas de conducta del agente, versionadas |
-| `amp-planes` | `ciclo-de-plan` | Planes con estado, del alta al cierre |
+| `amp-planes` | familia por verbo (`crear-plan`…`descartar-plan`) | Planes con estado, del alta al cierre |
 | `amp-conocimiento` | `registrar-conocimiento` · `buscar-conocimiento` | Lo que el agente sabe del dominio |
 | `amp-semantica` | `converger-terminologia` | Glosario del dominio y términos vetados |
 | `amp-decisiones` | `registrar-decision` | Decisiones estructurales, para no re-decidir |

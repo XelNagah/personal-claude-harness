@@ -1,6 +1,6 @@
 {
   "name": "amp-planes",
-  "description": "Ciclo de planes pendientes→ejecutados: carpetas, registro, README y lint. Incluye ciclo-de-plan.",
-  "version": "0.8.0",
+  "description": "Ciclo de planes pendientes→ejecutados→descartados: carpetas, registro, README y lint. Familia de skills por verbo (crear-plan…descartar-plan).",
+  "version": "0.9.0",
   "author": { "name": "jllarens", "email": "jllarens@gmail.com" }
 }

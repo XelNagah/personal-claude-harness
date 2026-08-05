@@ -24,7 +24,7 @@
     {
       "name": "amp-planes",
       "source": "./funcionalidades/amp-planes",
-      "description": "Ciclo de planes pendientes→ejecutados→descartados + registro PLANES.md. Skill ciclo-de-plan."
+      "description": "Ciclo de planes pendientes→ejecutados→descartados + registro PLANES.md. Familia de skills por verbo (crear-plan…descartar-plan)."
     },
     {
       "name": "amp-conocimiento",

@@ -4,7 +4,7 @@ Los planes se persisten en este directorio (`planes/`): `pendientes/` (planes vi
 
 **Disparador:** el agente sabe que los planes existen; consultar `PLANES.md` a demanda cuando un plan se vuelve relevante — retomar, cerrar, o al detectar que un pendiente ya se implementó (la Pantalla de bienvenida da el conteo al arrancar). Escribir al abrir un plan o transicionarlo de estado.
 
-**Skills:** `ciclo-de-plan` (abre un plan —archivo con nombre estable + fila en `PLANES.md`— y lo transiciona por los estados de `ESTADOS.md`, incluida la pausa con su `estado_a_retomar`); instalación con `amp:inicializar`.
+**Skills:** familia por verbo — `crear-plan` y `analizar-plan` abren y afinan; `explicar-plan`, `priorizar-planes` y `sugerir-siguiente-plan` son de solo lectura; `pausar-plan`, `retomar-plan`, `diferir-plan`, `cerrar-plan` y `descartar-plan` transicionan por los estados de `ESTADOS.md`; instalación con `amp:inicializar`.
 
 **Flujo de trabajo:** multi-paso (abrir → transicionar → cerrar con lint); detalle en `README.md`.
 
