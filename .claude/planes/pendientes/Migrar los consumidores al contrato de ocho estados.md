@@ -1,4 +1,4 @@
-**Estado: Nuevo · Creado 26-08-05.**
+**Estado: Análisis · Creado 26-08-05.**
 
 # Migrar los consumidores al contrato de ocho estados
 
