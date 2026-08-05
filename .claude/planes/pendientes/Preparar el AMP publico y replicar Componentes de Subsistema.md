@@ -304,7 +304,37 @@ El saneamiento de contenido personal está cerrado; lo que queda no es criterio 
 - ~~**Publicar las versiones**~~ — **hecho el 04/08/2026.** El árbol se cortó en cinco commits verificados uno por uno, se subió a `origin/main` y `actualizar-plugins --aplicar` dejó los nueve plugins en la versión de disco. El control de cierre quedó **entero en verde por primera vez**: los nueve desfases permanentes de `lint-harness` bajaron a cero, y la Herramienta confirma que los archivos del repo son los que instalaría el plugin que corre.
 - ~~**Probar una instalación limpia**~~ — **hecho el 04/08/2026.** Ninguno de los cuatro criterios personales llega a un repo vacío. Los dos defectos que encontró están corregidos.
 - **Curar y traducir**, si el destino es un público que no lee español. El usuario lo marcó explícitamente como proyecto aparte, fuera de este plan.
-- **Extender el catálogo a comportamientos**, para que una Preferencia adoptada pueda traerse la Regla de Conducta que la refuerza. Hoy el catálogo solo publica Preferencias, y la dependencia entre una Preferencia y su Regla no está declarada como dato: vive en el texto del Contenido. Medido el 04/08/2026, declararla cuesta cuatro `.md` y ningún `.js` —los dos consumidores del registro de Conducta resuelven las columnas por nombre en cada corrida, y tres controles distintos avisan si el cambio queda a medias—, pero el mecanismo de adopción de reglas es el trabajo real.
+- **Extender el catálogo a Reglas de Conducta**, para que una Preferencia adoptada pueda traerse la Regla que la refuerza. Analizado el 05/08/2026 y **pendiente de decidir su alcance**: el detalle, con lo verificado y las tres opciones, está en la sección de avance de ese día.
+
+### 05/08/2026 — qué hace falta para que una Regla de Conducta viaje
+
+Análisis sin implementación. Queda abierta una sola decisión: **qué Reglas puede transportar la primera versión**. Lo demás está averiguado y no hace falta volver a medirlo.
+
+**Por qué una Regla no viaja como una Preferencia.** Una Preferencia es texto autocontenido, y por eso `incorporar-preferencia.js` la mueve reasignando el Código y copiando su página. Una fila del registro de Conducta trae además tres datos que apuntan afuera del registro:
+
+- **Momento** — tiene que existir en el destino y tener repartidor; si no, la regla entra `pendiente` y nunca se entrega.
+- **Clase** — `Inyectar` es texto, pero `Ejecutar` y `Bloquear` llevan en su `Contenido` la ruta de un programa.
+- **Contenido cuando es ruta** — el programa tiene que existir allá. Caso real: la única regla del Agente Desplegado de este repo, Local-0001 (Informar el peso del contexto al arrancar), tiene `herramientas/medir-contexto/medir-contexto.js --hook`; copiada tal cual, el repartidor del destino ejecuta una ruta inexistente.
+
+**El vínculo Preferencia↔Regla no existe como dato.** Hoy solo se reconoce porque los dos textos dicen lo mismo. Sin declararlo, adoptar una Preferencia no puede ofrecer su Regla. Tiene población en la Base pública: la regla Base-0007 (Mantener el archivo de estado antes de informar) entrega la norma de la Preferencia Base-0013 (Mantener un archivo de estado en tareas exploratorias), y la regla Base-0003 (No acuñar terminología del dominio) la de la Preferencia Base-0010 (No adoptar terminología del dominio sin ratificación). Un tercer par a revisar: la regla Base-0004 (Preguntar antes de redefinir o remover algo canónico) se solapa en parte con la Preferencia Base-0003 (Mostrar el texto exacto antes de escribir en un registro canónico).
+
+**Verificado sobre el código, para no volver a medirlo.** Sumarle una columna al registro de Conducta no rompe a ningún lector ni le deja deuda a un repo ya instalado:
+
+- `lint-conducta.js` arma las columnas que exige por nombre en cada corrida, y `establecer-conducta` también: una columna nueva les es indiferente.
+- En `amp-actualizar.js`, un Índice del Agente Desplegado con el encabezado viejo y sin columnas propias sale como `base ~` y se pisa solo; el hallazgo bloqueante de la Decisión Local-0046 (un encabezado solo se pisa si su tabla declara las columnas de la Base) es para el caso contrario, el repo que sumó una columna suya.
+- Falta actualizar el campo `columnas` del frontmatter de los dos Índices: el control de Índices declarados compara encabezado real contra declarado en los dos sentidos.
+
+**Las tres opciones de alcance**, de menor a mayor:
+
+1. **Solo `Inyectar` sobre momentos que el destino ya tiene.** Viaja la fila y nada más. Una `Ejecutar`/`Bloquear`, o una atada a un Momento ausente, se informa como dependencia no resuelta y no se adopta. Es el criterio con que arrancó el transporte de Preferencias, cuyo auxiliar ya rechaza una página que declara dependencias locales fuera de su alcance.
+2. **Sumar el arrastre del Momento.** Una regla atada a un Momento propio del origen copia también esa fila a `MOMENTOS-LOCAL.md` del destino, y queda `pendiente` si allá no hay repartidor. Sigue sin tocar programas.
+3. **Transporte completo.** Adoptar una `Ejecutar` o `Bloquear` dispara la adopción de la Herramienta que su `Contenido` nombra, delegando en `registrar-herramienta`. Es coordinación entre tres subsistemas con reparación de rutas; este mismo plan ya lo había dejado para después del primer caso de punta a punta.
+
+**Dos restricciones que el diseño hereda.** La escritura en el registro de Conducta pertenece a la habilidad de ese subsistema por la Decisión Local-0040 (las habilidades que clasifican Aprendizaje viven en su destino): el coordinador transporta y deriva. Y el catálogo tiene que seguir siendo derivado, por la Decisión Local-0056 (el catálogo de Recomendadas viaja en el Producto público sin instalarse), así que las Reglas ofrecibles salen del Índice del Agente Desplegado de este repo y no de un archivo escrito a mano.
+
+**Dato de estado, que no decide el alcance pero conviene saber.** Ese Índice tiene hoy una sola fila, la regla Local-0001 ya citada, que es vigilancia de quien publica y no le sirve a quien instala según la Decisión Local-0048 (qué sube a la Base y qué se queda como documentación de este proyecto). La regla que motivó el pendiente, Base-0008 (Aplicar el estilo de commits antes de confirmar), se retiró el 04/08/2026 y no migró a local. O sea que el catálogo de Reglas nace sin filas ofrecibles: el mecanismo se construye para que la Conducta pueda propagarse, no para transportar algo que ya esté esperando.
+
+**Terminología.** *Comportamiento* no es término del glosario; el canónico es **Regla de conducta**. Y el catálogo hoy se llama *Preferencias Recomendadas*: si le entran Reglas, su nombre deja de describir lo que contiene, y renombrarlo es potestad del usuario por la Decisión Local-0016 (los nombres de skills y Herramientas se ratifican).
 
 ## Criterios de cierre
 
