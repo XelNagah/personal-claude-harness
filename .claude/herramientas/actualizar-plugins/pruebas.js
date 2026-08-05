@@ -157,9 +157,23 @@ console.log('\n== CACHE HUÉRFANO Y SU LIMPIEZA ==');
 
       // El borrado escribe AFUERA del repo, en la carpeta del usuario. Lo que más importa fijar no es
       // que borre, sino qué NO borra: ninguna versión que el registro declare puede desaparecer.
+      // La guarda «sesion viva» saltea el plugin ENTERO cuando esta SIN CARGAR: esta sesion corre una
+      // de sus carpetas del cache, asi que borrarlas rompe la sesion abierta. Es correcto, y pasa
+      // siempre que se acaben de actualizar los plugins sin reiniciar — o sea, en el flujo normal de
+      // una publicacion. El caso DERIVA su expectativa de lo que la Herramienta informa de su propia
+      // guarda: exigir el borrado sin mirarla ponia el banco en rojo por una publicacion bien hecha,
+      // que es un control avisando de algo que no esta mal.
       const limpieza = correr(null, ['--limpiar-cache']);
-      chequear('--limpiar-cache borra lo que nadie declara', !fs.existsSync(sobrante),
-        (limpieza.texto.match(/\d+ borrada\(s\)/) || ['(no lo informa)'])[0]);
+      const anfitrionSalteado = new RegExp('salteado: '
+        + anfitrion.id.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).test(limpieza.texto);
+      if (anfitrionSalteado) {
+        chequear('--limpiar-cache saltea entero al plugin SIN CARGAR y no le borra ninguna carpeta',
+          fs.existsSync(sobrante),
+          'NO CUBIERTO el borrado: reiniciar la sesion y volver a correr para ejercitarlo');
+      } else {
+        chequear('--limpiar-cache borra lo que nadie declara', !fs.existsSync(sobrante),
+          (limpieza.texto.match(/\d+ borrada\(s\)/) || ['(no lo informa)'])[0]);
+      }
       chequear('  …y deja intacta la versión que el registro declara en uso',
         fs.existsSync(enUso), `${anfitrion.id} ${anfitrion.v}`);
     } finally {
