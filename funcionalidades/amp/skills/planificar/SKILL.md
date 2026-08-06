@@ -1,6 +1,6 @@
 ---
 name: planificar
-description: Sesión de análisis que interroga un plan o una idea contra la sabiduría del repo (semántica + decisiones + conocimiento) hasta llegar a un acuerdo, para descubrir qué hacer, y lo critica (problemas, faltantes, oportunidades, sobreingeniería). Actualiza semántica y decisiones sobre la marcha. Use when el usuario dice "planificar", "analizá el plan", "cuestionalo", "revisá contra las docs", o después de armar un plan (post modo plan).
+description: Sesión de análisis que interroga un plan o una idea contra la sabiduría del repo —los Índices de los subsistemas semántica, decisiones y conocimiento— hasta llegar a un acuerdo, y lo critica: problemas, faltantes, oportunidades, sobreingeniería. Actualiza semántica y decisiones sobre la marcha. Use when el usuario plantea un tema del repo, aunque no pida analizarlo ni nombre ningún subsistema: pedir una funcionalidad nueva, proponer cambiarle el comportamiento a algo que ya existe, discutir cómo debería funcionar una parte, o traer una idea suelta del Propósito. También cuando dice "planificar", "analizá el plan", "cuestionalo", o al salir del modo plan. Disparar antes de leer Componentes de Subsistema o de proponer un diseño — el análisis contra lo asentado va primero, y saltearlo hace re-decidir lo ya decidido. No usar para un pedido de ejecución mecánica ni para operar un plan ya persistido (eso es analizar-plan).
 ---
 
 # Planificar — análisis crítico contra la sabiduría del repo

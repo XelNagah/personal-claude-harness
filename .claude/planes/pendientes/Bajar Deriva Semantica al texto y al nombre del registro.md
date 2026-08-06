@@ -42,6 +42,7 @@ Por eso el orden es: primero verificar, uno por uno, que cada lector **falle rui
 3. Resolver cómo se llama la columna `Descripción` del registro, hoy **Significado Farlopa**.
 4. Decidir el renombre del archivo. Si se hace: en un solo movimiento, con el control de cierre y el banco completo, subiendo las versiones de los plugins que lo llevan.
 5. Revisar si el registro merece entrada propia en el glosario, distinta del concepto. Al asentar Local-0035 se resolvió que no —el registro se llama por el concepto y no agrega significado propio—, pero conviene reconfirmarlo si el archivo cambia de nombre.
+6. Decidir si el registro lleva **nombre propio en mayúsculas**: el usuario propuso **Registro de Deriva Semántica** el 06/08/2026, escribiéndolo como nombre propio y no como descripción. Queda delegado a este plan, sin ratificar. Hasta que se resuelva, el texto nuevo escribe «el registro de Deriva Semántica» en minúscula —que es lo que el paso 5 ya resolvió— y el alias **Terminología Farlopa** sigue siendo válido. La decisión arrastra al paso 3: si el registro pasa a tener nombre propio, la columna hoy llamada *Significado Farlopa* se nombra en la misma tanda.
 
 ## Criterios de cierre
 

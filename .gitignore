@@ -19,3 +19,6 @@ Desktop.ini
 # Adjuntos que deja una sesión remota de Codex (imágenes que se le pasaron al agente).
 # No son del repo: los escribe el cliente al costado del checkout.
 .codex-remote-attachments/
+
+# salida de corrida de probar-disparo-de-skills
+.claude/herramientas/probar-disparo-de-skills/ultima-corrida.json

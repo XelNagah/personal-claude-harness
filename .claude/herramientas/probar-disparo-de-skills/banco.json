@@ -1,0 +1,47 @@
+{
+  "descripcion": "Banco de consultas para probar si una Skill se invoca sola. Cada consulta se corre en una sesión limpia y se mira cuál es la PRIMERA herramienta que usa el agente. Las que no deben disparar son las que más valen: comparten palabras con la Skill pero necesitan otra cosa.",
+  "consultas": [
+    {
+      "id": "planificar-01",
+      "consulta": "quiero que los planes guarden la prioridad",
+      "skill": "planificar",
+      "debe_disparar": true,
+      "por_que": "Propone cambiarle el comportamiento a algo que ya existe, y hay decisión asentada de que priorizar-planes no persiste prioridades. Es la consulta original de la prueba del 06/08/2026."
+    },
+    {
+      "id": "planificar-02",
+      "consulta": "se me ocurre que los lints deberian correr solos cuando termino una tarea",
+      "skill": "planificar",
+      "debe_disparar": true,
+      "por_que": "Trae una idea suelta del Propósito, sin pedir análisis ni nombrar ningún subsistema."
+    },
+    {
+      "id": "planificar-03",
+      "consulta": "cuantos planes pendientes hay",
+      "skill": "planificar",
+      "debe_disparar": false,
+      "por_que": "Consulta de inventario sobre el subsistema planes. Comparte el dominio pero no plantea ningún tema que analizar."
+    },
+    {
+      "id": "planificar-04",
+      "consulta": "corre el control de cierre",
+      "skill": "planificar",
+      "debe_disparar": false,
+      "por_que": "Pedido de ejecución mecánica. La descripción lo excluye explícitamente."
+    },
+    {
+      "id": "converger-01",
+      "consulta": "a la carpeta que viaja adentro del plugin la llamaria capa de instalacion",
+      "skill": "converger-terminologia",
+      "debe_disparar": true,
+      "por_que": "Propone un nombre para algo, y además el término está vetado en la fila Local-0034 del registro de Deriva Semántica."
+    },
+    {
+      "id": "converger-02",
+      "consulta": "donde esta el archivo del glosario",
+      "skill": "converger-terminologia",
+      "debe_disparar": false,
+      "por_que": "Comparte la palabra glosario, pero es una pregunta de ubicación: no hay ningún término que juzgar."
+    }
+  ]
+}
