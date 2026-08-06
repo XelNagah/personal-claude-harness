@@ -1,6 +1,6 @@
 # Plan: Subagentes del AMP para el flujo de desarrollo por etapas
 
-**Estado: Nuevo · Creado 26-08-06.** Mudado desde el repo `como-uso-claude` (su Local-0003) el 26-08-06, con el contenido íntegro salvo ajustes de terminología vetada en este repo («gate de terminología» → «Control de terminología», «pieza» → «componente», «artefactos» → «archivos», «artefacto definido, no prosa suelta» → «resultado definido, no texto suelto»); las rutas relativas a `conocimiento/` referencian aquel repo.
+**Estado: En curso · Creado 26-08-06.** Mudado desde el repo `como-uso-claude` (su Local-0003) el 26-08-06, con el contenido íntegro salvo ajustes de terminología vetada en este repo («gate de terminología» → «Control de terminología», «pieza» → «componente», «artefactos» → «archivos», «artefacto definido, no prosa suelta» → «resultado definido, no texto suelto»); las rutas relativas a `conocimiento/` referencian aquel repo.
 
 Definir subagentes propios y **distribuirlos por el harness** a los repos AMP, para armar el flujo de desarrollo por etapas: diseño → crítica → desarrollo → tests → revisión de código → seguridad.
 
@@ -51,7 +51,18 @@ Dependen de un subsistema concreto del AMP. **Viajan con ese subsistema**, no en
 
 Consecuencia: si el repo no tiene `semantica` instalado, el agente nunca llega. La dependencia se resuelve por construcción, sin inventar un mecanismo de dependencias entre funcionalidades.
 
-Ninguno definido todavía — esta familia se puebla cuando un subsistema lo pida.
+**Ejecutada en parte el 26-08-06** (commit `f31495c`, publicado). Dos subagentes, los dos `model: sonnet` y `tools: [Read, Grep, Glob]` —de solo lectura por construcción—, cada uno en la carpeta `agents/` del plugin de su subsistema:
+
+| Subagente | Plugin | Lo invoca | Devuelve |
+|---|---|---|---|
+| `buscador-de-terminologia` | `amp-semantica` 0.11.0 | `converger-terminologia`, paso 2 | Apariciones con archivo y línea, separadas en texto plano y código |
+| `buscador-de-conocimiento` | `amp-conocimiento` 0.9.0 | `buscar-conocimiento`, paso 2 | Candidatos a página con su evidencia |
+
+El corte quedó fijado en la Decisión Local-0060 (el Agente Multipropósito transporta subagentes, y las habilidades delegan en ellos el recorrido): **se delega traer evidencia, nunca decidir sobre ella**. La forma del nombre, en la Decisión Local-0061 (los subagentes se nombran con sustantivo de rol). `lint-harness` gana un control con dos casos: un subagente sin `model` o con el `name` cambiado sigue andando y ningún control posterior lo veía.
+
+**Falta la verificación en ejecución**, que es lo único que valida la premisa: invocar `converger-terminologia` en una sesión arrancada después de la actualización y confirmar que el recorrido corrió en el subagente —el conteo de subagentes del seguimiento, que venía dando 0, tiene que dar más de 0— y comparar tokens del hilo principal con y sin delegación.
+
+`amp:actualizar` quedó **afuera a propósito**: es el único de los tres candidatos que escribe archivos del harness, corre pocas veces por repo y el ahorro no compensa darle escritura a un subagente. Se evalúa después de medir estos dos.
 
 ### Familia 2 — Agentes de trabajo de código
 
