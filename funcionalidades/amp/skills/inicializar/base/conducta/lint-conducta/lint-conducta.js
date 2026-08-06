@@ -38,9 +38,9 @@ const problemas = { estructura: [], indices: [], momentoInexistente: [], claseIn
 
 // -- vocabulario de momentos --------------------------------------------
 // El vocabulario se lee de DOS archivos: `MOMENTOS.md` (lo manda el Agente Multiproposito y el
-// nivelador lo reemplaza entero) y `MOMENTOS-LOCAL.md` (los momentos que suma el Propósito de cada
-// repo; el nivelador no lo abre). Sin el segundo, un repo que necesitaba un momento propio no tenia
-// donde declararlo: el unico archivo disponible era uno que el nivelador pisa en la corrida siguiente.
+// actualizador lo reemplaza entero) y `MOMENTOS-LOCAL.md` (los momentos que suma el Propósito de cada
+// repo; el actualizador no lo abre). Sin el segundo, un repo que necesitaba un momento propio no tenia
+// donde declararlo: el unico archivo disponible era uno que el actualizador pisa en la corrida siguiente.
 // El del Agente Desplegado es OPCIONAL — la mayoria de los repos no suma momentos— y su ausencia no
 // es un hallazgo.
 //
@@ -60,7 +60,7 @@ if (fs.existsSync(momLocalPath)) {
   if (!cols) problemas.estructura.push('MOMENTOS-LOCAL.md: no se encontro la tabla (columnas Momento, Disponibilidad)');
   else for (const f of filas) {
     const nombre = f.momento.toLowerCase();
-    // Un momento del repo que repite uno de la Base es ambiguo: el nivelador reemplaza el de arriba y
+    // Un momento del repo que repite uno de la Base es ambiguo: el actualizador reemplaza el de arriba y
     // el de abajo queda pisandolo en silencio, con otra disponibilidad.
     if (momentos.has(nombre)) problemas.estructura.push(`MOMENTOS-LOCAL.md: "${f.momento}" ya esta en MOMENTOS.md (el del Agente Multiproposito manda)`);
     else momentos.set(nombre, f.disponibilidad.toLowerCase());
@@ -70,7 +70,7 @@ if (fs.existsSync(momLocalPath)) {
 // -- vocabulario de clases ----------------------------------------------
 // La lista vivia escrita a mano aca; ahora sale de CLASES.md, para que el dato y su significado
 // no queden en dos lugares que nada sincroniza. Si el archivo falta —Agente Desplegado sin
-// nivelar— se cae a las tres de siempre en vez de dar por invalida toda regla.
+// actualizar— se cae a las tres de siempre en vez de dar por invalida toda regla.
 const clasPath = path.join(root, 'CLASES.md');
 let CLASES = ['inyectar', 'ejecutar', 'bloquear'];
 if (fs.existsSync(clasPath)) {
@@ -92,7 +92,7 @@ problemas.indices.push(...problemasDeIndices(indices, fs.existsSync(maniPath) ? 
 if (!indices.length) problemas.estructura.push('falta el Indice de reglas (INDICE.md)');
 for (const idx of indices) {
   // La columna del nombre es `Nombre` desde que el registro tomo el nucleo; `Regla` es la forma
-  // vieja, que se acepta mientras haya Agentes Desplegados sin nivelar. Sin ninguna de las dos
+  // vieja, que se acepta mientras haya Agentes Desplegados sin actualizar. Sin ninguna de las dos
   // no se lee una sola fila y el registro entero se valida en verde sin validar nada.
   const nombreCol = /^\|[^\n]*\bnombre\b/mi.test(idx.texto) ? 'nombre' : 'regla';
   const requeridas = [nombreCol, 'momento', 'clase', 'contenido', 'estado'];

@@ -21,7 +21,7 @@ Ese mismo conocimiento fija el remedio que esta Herramienta hace corrible: **una
 
 Cualquier archivo `pruebas.js` co-ubicado con lo que prueba —misma convención que los lints— en **dos raíces**: `.claude/` y `funcionalidades/`. No hay lista que mantener: una prueba nueva se corre sola con solo existir.
 
-`funcionalidades/` entra porque ahí vive código propio que ninguna otra raíz alcanza —hoy `amp-actualizar.js`, el motor del nivelador—, y un banco que no se corre es lo mismo que no tenerlo: existe, el repo informa todo verde, y nadie miró.
+`funcionalidades/` entra porque ahí vive código propio que ninguna otra raíz alcanza —hoy `amp-actualizar.js`, el motor del actualizador—, y un banco que no se corre es lo mismo que no tenerlo: existe, el repo informa todo verde, y nadie miró.
 
 De esa segunda raíz se excluye **`base/`**, y no por ruido incidental: sus `pruebas.js` son *copias* de las de `.claude/`, que ya corren por la primera raíz, y `lint-harness` compara los dos lados en ambos sentidos. Correrlas de nuevo no controla nada nuevo — solo llevaría el conteo de trece a veintiséis con doce duplicados adentro, y un tablero inflado de duplicados es un tablero que se deja de leer.
 
@@ -29,7 +29,7 @@ La exclusión va **por ruta completa, no por nombre**. Excluir la palabra `base`
 
 De la primera raíz se excluye **la carpeta de esta misma Herramienta**, y es la única exclusión que no es por duplicación: correr acá el banco propio no probaría nada, porque un descubrimiento roto tampoco encontraría ese archivo. Lo corre `ejecutar-control-cierre`, que es otra Herramienta, y así la circularidad desaparece sin inventar un piso numérico —«tienen que ser al menos dieciséis»— que envejece con solo abrir un lint más.
 
-Se excluyen además `tmp/`, `node_modules/`, `.git/` y los respaldos del nivelador.
+Se excluyen además `tmp/`, `node_modules/`, `.git/` y los respaldos del actualizador.
 
 ## Cero pruebas no es verde
 
@@ -54,4 +54,4 @@ Si además la prueba imprime `casos: N` o `(N casos)`, se muestra el conteo. Es 
 
 Una prueba que nunca falla no prueba nada. Para confiar en ella hay que romper el control a propósito y ver que la prueba avise; después restaurarlo. Así se verificaron las dos primeras: se le quitó a `detectar-terminologia-vetada` la exención por comillas y el filtro de `.md`, de a uno, y en los dos casos falló el caso que correspondía y solo ese.
 
-El banco de `amp-actualizar` se verificó igual, con dos roturas: apagar el chequeo de `identidad.md` hizo fallar ese caso y solo ese; hacer que los registros del Agente Desplegado se comparen como si fueran mecanismo hizo fallar tres, y el detalle mostró el daño que evita — el glosario del repo marcado como `contenido viejo`, o sea el nivelador proponiendo pisar el Aprendizaje.
+El banco de `amp-actualizar` se verificó igual, con dos roturas: apagar el chequeo de `identidad.md` hizo fallar ese caso y solo ese; hacer que los registros del Agente Desplegado se comparen como si fueran mecanismo hizo fallar tres, y el detalle mostró el daño que evita — el glosario del repo marcado como `contenido viejo`, o sea el actualizador proponiendo pisar el Aprendizaje.

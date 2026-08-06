@@ -2,7 +2,7 @@
 // Pruebas de `ejecutar-control-cierre`.
 //
 // Es la Herramienta que decide si el repo está verde, y la que más corre de todo: la invoca
-// `mostrar-pantalla-bienvenida`, o sea en cada arranque de sesión, y el nivelador la manda al
+// `mostrar-pantalla-bienvenida`, o sea en cada arranque de sesión, y el actualizador la manda al
 // cerrar. Su falla cara es de omisión: si dejara de descubrir un lint, el repo se informaría verde
 // sobre un conjunto más chico y nadie lo notaría, porque lo que falta no aparece en ninguna lista.
 //

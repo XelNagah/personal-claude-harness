@@ -7,7 +7,7 @@ descripcion: qué guarda ese subsistema
 
 # Subsistemas
 
-Catálogo de casas persistentes del Agente Multipropósito, separado por origen en **dos archivos** que lo declaran en su frontmatter: este (`origen: agente-multiproposito`, lo mantiene `amp:actualizar`, que lo reemplaza entero) y [`SUBSISTEMAS-LOCAL.md`](SUBSISTEMAS-LOCAL.md) (`origen: agente-desplegado`, las casas que suma el Propósito con `agregar-subsistema`; el nivelador no lo abre).
+Catálogo de casas persistentes del Agente Multipropósito, separado por origen en **dos archivos** que lo declaran en su frontmatter: este (`origen: agente-multiproposito`, lo mantiene `amp:actualizar`, que lo reemplaza entero) y [`SUBSISTEMAS-LOCAL.md`](SUBSISTEMAS-LOCAL.md) (`origen: agente-desplegado`, las casas que suma el Propósito con `agregar-subsistema`; el actualizador no lo abre).
 
 - **Código** — `Base-NNNN`. Se asigna al crear la entrada y no se reusa.
 - **Nombre** — el nombre del subsistema, que es también el de su carpeta.

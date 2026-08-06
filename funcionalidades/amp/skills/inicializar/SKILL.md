@@ -13,7 +13,7 @@ Lo que **no** se puede copiar está en [`PLANTILLA.md`](PLANTILLA.md): los pedaz
 
 ## Las tres clases de archivo, y cómo se instalan
 
-**Cada archivo declara de quién es.** `amp:inicializar` usa esa declaración para reconocer el destino, pero su alcance es instalar ausencias, no nivelar versiones existentes.
+**Cada archivo declara de quién es.** `amp:inicializar` usa esa declaración para reconocer el destino, pero su alcance es instalar ausencias, no actualizar versiones existentes.
 
 | Lo que dice el archivo | Qué es | Qué se hace |
 |---|---|---|
@@ -23,7 +23,7 @@ Lo que **no** se puede copiar está en [`PLANTILLA.md`](PLANTILLA.md): los pedaz
 
 **Esta skill nunca pisa un Componente existente para ponerlo al día.** Si encuentra una Base vieja, un encabezado local viejo o una forma anterior, el repo ya tiene una instalación viva: reportar la divergencia y continuar con `amp:actualizar`, que hace respaldo, distingue Base de Aprendizaje y aplica las migraciones en orden.
 
-El corte en la primera línea de una tabla y el reemplazo de archivos Base son reglas del nivelador. Mantenerlas fuera de la inicialización evita que un pedido de “armá el setup” actualice silenciosamente un Agente Desplegado existente.
+El corte en la primera línea de una tabla y el reemplazo de archivos Base son reglas del actualizador. Mantenerlas fuera de la inicialización evita que un pedido de “armá el setup” actualice silenciosamente un Agente Desplegado existente.
 
 ## Lo que se fusiona, no se copia
 

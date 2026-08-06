@@ -18,7 +18,7 @@ Este repo es **tres cosas a la vez**, y casi toda la confusión viene de que dos
 
 De ahí sale la trampa central: **el mismo contenido existe dos veces**, una como lo que este repo usa (`.claude/`) y otra como lo que viaja al instalarlo (`funcionalidades/amp/skills/inicializar/base/`). No son copias casuales: hay un script que las sincroniza y controles que vigilan que no se separen. Es la sección 3.
 
-Una consecuencia práctica: **nunca se corre `amp:actualizar` sobre este repo**. Nivelar sirve para un repo que *consume* el producto; acá los archivos son la fuente.
+Una consecuencia práctica: **nunca se corre `amp:actualizar` sobre este repo**. Actualizar sirve para un repo que *consume* el producto; acá los archivos son la fuente.
 
 ---
 
@@ -35,7 +35,7 @@ Una consecuencia práctica: **nunca se corre `amp:actualizar` sobre este repo**.
 | `.claude/` | **Los datos de los subsistemas de este repo**: sus planes, decisiones, conocimiento, glosario, preferencias. Más `settings.json` (hooks) e `identidad.md` (Título y Propósito). El nombre es cosmético — es la casa de datos para **todos** los agentes, no solo Claude. | (c) | todos los agentes |
 | `.codex/` | Solo `hooks.json`: los mismos tres hooks que `settings.json`, en el formato de Codex CLI. Registro doble para que los dos agentes se comporten igual. | (c) | Codex CLI |
 | `docs/` | Documentación larga para humanos: `INSTALAR.md` y este archivo. | (a) | el usuario |
-| `.gitignore` | Excluye `settings.local.json` (config de máquina), `.claude/tmp/` (temporales y traspasos) y `.claude/.respaldo-amp/` (el respaldo de un solo uso del nivelador). | — | git |
+| `.gitignore` | Excluye `settings.local.json` (config de máquina), `.claude/tmp/` (temporales y traspasos) y `.claude/.respaldo-amp/` (el respaldo de un solo uso del actualizador). | — | git |
 | `.gitattributes` | Normalización de fin de línea. | — | git |
 | `.codex-remote-attachments/` | **Sin seguimiento y sin dueño conocido.** Viene de hace varias sesiones; nadie determinó qué es. | ? | ? |
 
@@ -130,7 +130,7 @@ Las tools que el Propósito de este repo necesita. Las dos primeras son del prod
 
 | Script | Qué hace | Cuándo se corre |
 |---|---|---|
-| `actualizar-plugins` | Diagnostica los plugins de esta máquina y detecta los cuatro desfases (marketplace viejo, plugin faltante, el silencioso —traído pero no cargado— y la dependencia sin declarar, que deja al plugin que la pide sin cargar y sin señal). Con `--aplicar` los pone al día | Antes de nivelar, y al publicar |
+| `actualizar-plugins` | Diagnostica los plugins de esta máquina y detecta los cuatro desfases (marketplace viejo, plugin faltante, el silencioso —traído pero no cargado— y la dependencia sin declarar, que deja al plugin que la pide sin cargar y sin señal). Con `--aplicar` los pone al día | Antes de actualizar, y al publicar |
 | `instalar-plugins-codex` | Instala el paquete en Codex CLI resolviendo las dependencias en orden, que Codex no resuelve solo | Al configurar Codex |
 | `sincronizar-base` | **Decide qué viaja.** Copia de `.claude/` a `base/` aplicando el corte por frontmatter de la sección 3. Sin `--aplicar` solo informa | Después de editar cualquier componente |
 | `lint-harness` | El control de coherencia del producto: disco contra marketplace contra `REGISTRO.md`, los dos lados de la sección 3 en ambos sentidos, tamaño y estructura de los manifiestos, versión en disco contra la instalada, y terminología vetada en lo que viaja | Al cerrar cualquier tarea |
@@ -138,7 +138,7 @@ Las tools que el Propósito de este repo necesita. Las dos primeras son del prod
 | `ejecutar-pruebas` | Corre los dieciséis bancos de pruebas. Contesta lo que el control de cierre no puede: si los controles que lo declaran verde **siguen funcionando** | Al cerrar |
 | `inventariar-componentes-sueltos` | Barre `.claude/` y lista lo que no es subsistema ni infraestructura conocida. **Hoy no lo invoca nada**: nació para un plan que sigue pendiente | A mano |
 
-### 5.4 El nivelador (1)
+### 5.4 El actualizador (1)
 
 | Script | Qué hace |
 |---|---|

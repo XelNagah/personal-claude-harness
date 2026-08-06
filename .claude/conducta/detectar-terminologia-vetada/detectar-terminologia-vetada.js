@@ -43,7 +43,7 @@ function leerRegistro() {
     const norm = celdas.map(c => c.toLowerCase().replace(/\*/g, ''));
     if (!cols) {
       // El termino vive en `Nombre` desde que el registro tomo el nucleo de columnas; `Término` es
-      // la forma vieja y se acepta mientras haya Agentes Desplegados sin nivelar. Sin las dos, el
+      // la forma vieja y se acepta mientras haya Agentes Desplegados sin actualizar. Sin las dos, el
       // encabezado no matchea, el registro se lee VACIO y el control deja de frenar nada — sin error.
       const iTermino = norm.includes('nombre') ? norm.indexOf('nombre') : norm.indexOf('término');
       if (iTermino >= 0 && norm.includes('cómo decirlo')) {

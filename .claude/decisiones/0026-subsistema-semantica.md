@@ -48,5 +48,5 @@ para que la publicación en inglés y `converger-terminologia` no la "corrijan".
 ## Ejecución
 
 El rebautizo tuvo el tamaño del de `scripts` a `herramientas`: funcionalidad, plugin, orquestador,
-nivelador, `lint-glosario` a `lint-semantica`, y el prefijo `glosario:` a `semantica:` que fija la
+actualizador, `lint-glosario` a `lint-semantica`, y el prefijo `glosario:` a `semantica:` que fija la
 Decisión Local-0013 (segmentación de skills por prefijo de plugin).

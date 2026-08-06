@@ -15,7 +15,7 @@ Multipropósito cambie de versión mientras el Agente con Propósito sigue siend
 - **Decisión Local-0027 (separación por origen en los subsistemas):** Base *es* el Agente
   Multipropósito adentro, y aprendido *es* el Aprendizaje. La separación por origen no era una
   convención de archivos: era esta composición, escrita antes de tener el nombre.
-- **Decisión Local-0028 (diseño del nivelador):** el nivelador converge por estructura y no guarda
+- **Decisión Local-0028 (diseño del actualizador):** el actualizador converge por estructura y no guarda
   versión porque la versión es del Agente Multipropósito, y el Agente con Propósito no tiene ninguna.
 - **Decisión Local-0033 (poner al día un Agente instalado son dos fases):** son dos porque el Agente
   Multipropósito tiene dos partes que viajan por caminos distintos — los plugins traen las skills y

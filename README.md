@@ -112,7 +112,7 @@ En un repo que ya tiene el Agente Multipropósito, pedile al agente:
 amp:actualizar
 ```
 
-Es el único punto de entrada. Primero verifica el marketplace y los plugins; solo pide reiniciar si cambió lo que está cargado. Después nivela la Base. Si encuentra una generación retirada, como `memoria/`, instala la casa nueva, retira automáticamente la infraestructura y los duplicados Base conocidos, y pregunta de a un Componente de Subsistema por vez solo por el Aprendizaje del Propósito: nunca informa “al día” mientras la migración siga pendiente.
+Es el único punto de entrada. Primero verifica el marketplace y los plugins; solo pide reiniciar si cambió lo que está cargado. Después actualiza la Base. Si encuentra una generación retirada, como `memoria/`, instala la casa nueva, retira automáticamente la infraestructura y los duplicados Base conocidos, y pregunta de a un Componente de Subsistema por vez solo por el Aprendizaje del Propósito: nunca informa “al día” mientras la migración siga pendiente.
 
 📄 **[Manual de instalación completo](docs/INSTALAR.md)** — paso a paso, actualización, instalación para Codex / Cursor / Gemini, y problemas frecuentes.
 

@@ -7,7 +7,7 @@ hay error: hay un archivo que perdió todo lo que declaraba de sí mismo.
 Es la peor combinación posible de un defecto: **el archivo se lee idéntico en cualquier editor**, el
 lector no falla sino que contesta, y lo que contesta —"este archivo no declara nada"— suele ser una
 respuesta legítima que el código ya sabe manejar, porque es la forma vieja que se acepta a propósito
-mientras haya instalaciones sin nivelar. El camino de la falla y el camino previsto son el mismo.
+mientras haya instalaciones sin actualizar. El camino de la falla y el camino previsto son el mismo.
 
 ## Lo que cambia según quién lee
 
@@ -19,7 +19,7 @@ El frontmatter no dice lo mismo para todos, así que taparlo tampoco hace lo mis
 - **Un lector que descubre Índices por el campo `indice`** —los lints de subsistema, el repartidor de
   reglas, la pantalla de estado— lee un Índice declarado como **no declarado**. Los chequeos que
   dependen del origen dejan de correr y el lint sale en verde sobre lo que ya no mira.
-- **El nivelador** lee el origen del archivo que viaja, no del instalado, así que la marca en el
+- **El actualizador** lee el origen del archivo que viaja, no del instalado, así que la marca en el
   destino no le cambia la decisión: solo produce marcas de más.
 
 ## El arreglo es de a N, no de a uno

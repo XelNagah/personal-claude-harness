@@ -13,7 +13,7 @@
 // mantener.
 //
 // `funcionalidades/` entra porque ahí vive código propio que ningún otro barrido alcanza —hoy
-// `amp-actualizar.js`, el motor del nivelador—, y un banco que no se corre es lo mismo que no
+// `amp-actualizar.js`, el motor del actualizador—, y un banco que no se corre es lo mismo que no
 // tenerlo. Lo que se excluye de esa rama es `base/`: sus `pruebas.js` son COPIAS de las de
 // `.claude/`, que ya corren acá, y `lint-harness` compara los dos lados en ambos sentidos. Correrlas
 // de nuevo no controla nada nuevo — solo infla el número que este corredor informa, y un número

@@ -27,7 +27,7 @@ const os = require('os');
 const { spawnSync } = require('child_process');
 
 const APLICAR = process.argv.includes('--aplicar');
-// Flag propio, y a proposito NO lo enciende `--aplicar`: quien corre el nivelador pidio poner al dia
+// Flag propio, y a proposito NO lo enciende `--aplicar`: quien corre el actualizador pidio poner al dia
 // un repo, no borrar nada de su carpeta de usuario. Son dos permisos distintos.
 const LIMPIAR_CACHE = process.argv.includes('--limpiar-cache');
 // Modo de segundo plano: no imprime, deja el aviso en el Buzon de Avisos Generales y el hook
@@ -881,7 +881,7 @@ if (!filas.length) {
     console.log('\nREINICIAR LA SESION para que los cambios tomen efecto.');
     console.log('(`/reload-plugins` no alcanza: recarga los plugins en la version que ya tenian.)');
   } else if (desfasados.length) {
-    console.log(`\n${desfasados.length} plugin(s) con desfase. Para nivelarlos:`);
+    console.log(`\n${desfasados.length} plugin(s) con desfase. Para actualizarlos:`);
     console.log(COMANDO_APLICAR);
   } else if (catalogoDudoso.length) {
     console.log('\nCADA PLUGIN COINCIDE CON LO BAJADO, PERO EL MARKETPLACE HAY QUE ACTUALIZARLO');
@@ -932,7 +932,7 @@ if (!filas.length) {
     console.log('distintos, asi que cada uno puede estar al dia por su cuenta y no coincidir entre si.');
     for (const d of gen.distintos) console.log(`  distinto:  ${d}`);
     for (const d of gen.faltantes) console.log(`  no esta:   ${d}`);
-    console.log('\nSi los plugins ya estan al dia, esto se resuelve nivelando los archivos: pedir `amp:actualizar`.');
+    console.log('\nSi los plugins ya estan al dia, esto se resuelve actualizando los archivos: pedir `amp:actualizar`.');
     console.log('En el repo que PUBLICA el Agente Multiproposito es lo esperable cuando hay cambios sin publicar.');
   } else if (gen) {
     console.log('\nLas dos partes coinciden: los archivos del repo son los que instalaria el plugin que corre.');

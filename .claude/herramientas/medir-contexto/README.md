@@ -18,7 +18,7 @@ Reporta y no falla: sale 0 siempre. Describe el estado del repo, y pasar el tope
 
 Estuvo un tiempo adentro de la Pantalla de bienvenida, que viaja a cada Agente Desplegado. Se sacó de ahí porque **no le sirve al que la recibe**:
 
-- **El tope no es suyo para mover.** La constante vive en el código, y el código es mecanismo que el nivelador repone entero. Un Agente Desplegado que la edite pierde el cambio en la próxima corrida de `amp:actualizar`. Informarle un número sobre el que no puede actuar es ruido.
+- **El tope no es suyo para mover.** La constante vive en el código, y el código es mecanismo que el actualizador repone entero. Un Agente Desplegado que la edite pierde el cambio en la próxima corrida de `amp:actualizar`. Informarle un número sobre el que no puede actuar es ruido.
 - **Decidir si el tope sube es potestad de acá.** Es este repo el que decide cuánto contexto puede permitirse mandar el Agente Multipropósito. Esa vigilancia le corresponde a quien publica, no a quien instala.
 - **Lo único que sí está en manos de cada repo —bajar su propio contexto— no necesita esta Herramienta.**
 

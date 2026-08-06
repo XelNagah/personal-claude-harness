@@ -1,6 +1,6 @@
 # Preferencias
 
-Las **preferencias** son las reglas de conducta del agente en este repo: qué espera el usuario de cómo trabaja y de cómo se comunica. Se asientan en una tabla `Código | Nombre | Descripción | Detalle`, separada **por origen** en dos archivos que lo declaran en su frontmatter: `PREFERENCIAS.md` (`origen: agente-multiproposito`, el nivelador lo reemplaza entero) y `PREFERENCIAS-LOCAL.md` (`origen: agente-desplegado`, lo suma cada repo; el nivelador no lo abre).
+Las **preferencias** son las reglas de conducta del agente en este repo: qué espera el usuario de cómo trabaja y de cómo se comunica. Se asientan en una tabla `Código | Nombre | Descripción | Detalle`, separada **por origen** en dos archivos que lo declaran en su frontmatter: `PREFERENCIAS.md` (`origen: agente-multiproposito`, el actualizador lo reemplaza entero) y `PREFERENCIAS-LOCAL.md` (`origen: agente-desplegado`, lo suma cada repo; el actualizador no lo abre).
 
 **Para qué:** que el usuario no tenga que repetir la misma corrección. Una preferencia asentada es una corrección que no vuelve a hacer falta — y una que no está asentada vuelve en la sesión siguiente.
 

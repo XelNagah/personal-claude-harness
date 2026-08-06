@@ -119,10 +119,10 @@ console.log(`${total(limpio) === 0 ? 'OK  ' : 'FALLA'} banco sin tocar → ${tot
 if (total(limpio) !== 0) malos++;
 
 // Compatibilidad: la forma vieja (| Plan | Estado | Creado | Cerrado | Origen | Notas |) tiene que
-// seguir LEYENDOSE mientras haya Agentes Desplegados sin nivelar —el lint no se cae ni se queda sin
+// seguir LEYENDOSE mientras haya Agentes Desplegados sin actualizar —el lint no se cae ni se queda sin
 // filas— y ademas tiene que AVISAR que el registro quedo en la forma anterior. Son dos cosas
 // distintas: esta prueba exigia cero hallazgos, y ese cero era justamente el silencio que hacia que
-// un Agente Desplegado sin nivelar diera verde. Medido el 05/08/2026: cinco repos en la forma
+// un Agente Desplegado sin actualizar diera verde. Medido el 05/08/2026: cinco repos en la forma
 // anterior contestaban "hallazgos: 0". Se controla el aviso, no su ausencia.
 console.log('\n== FORMA VIEJA: se sigue leyendo Y avisa que quedo en la forma anterior ==');
 armar();
@@ -138,7 +138,7 @@ const filasEsperadasVieja = filasDelBanco();
   });
   const cabecera = `# Registro de planes\n\n| Plan | Estado | Creado | Cerrado | Origen | Notas |\n|---|---|---|---|---|---|`;
   escribir(cabecera + '\n' + viejas.join('\n') + '\n');
-  // El manifiesto de un Agente Desplegado sin nivelar tampoco declara sus Indices: sacar el
+  // El manifiesto de un Agente Desplegado sin actualizar tampoco declara sus Indices: sacar el
   // frontmatter y dejar el manifiesto declarandolo es un estado que no existe en la realidad, y
   // el lint lo marca con razon (el dato quedaria escrito en dos lugares que nada sincroniza).
   const mani = path.join(BANCO, 'MANIFIESTO.md');
@@ -210,7 +210,7 @@ if (!okDos) { malos++; console.log(JSON.stringify(h2)); }
 
 // El par de estados: los del Agente Multiproposito en ESTADOS.md y los que suma el Proposito de
 // cada repo en ESTADOS-LOCAL.md. Sin este par, un estado propio se escribia en el archivo que el
-// nivelador reemplaza entero, y al nivelar desaparecia junto con la validez de todos los planes
+// actualizador reemplaza entero, y al actualizar desaparecia junto con la validez de todos los planes
 // que lo usaban.
 console.log('\n== EL PAR DE ESTADOS ==');
 const estadosLocal = (filas) =>

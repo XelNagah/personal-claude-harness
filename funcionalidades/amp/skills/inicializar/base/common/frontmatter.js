@@ -1,5 +1,5 @@
 // Lectura del frontmatter de un `.md`. Unica copia del repo: la usan los lints de subsistema, los
-// hooks, las Herramientas y el nivelador que viaja en el plugin.
+// hooks, las Herramientas y el actualizador que viaja en el plugin.
 //
 // Por que existe: este parseo estuvo escrito a mano en trece piezas de codigo, y el defecto de la
 // marca de orden de bytes (conocimiento `marca-de-orden-de-bytes-y-frontmatter`) hubo que taparlo en
@@ -50,7 +50,7 @@ function leerFrontmatter(txt) {
   return campos;
 }
 
-// El `origen` declarado, o null. Es lo que decide el trato del nivelador y de `sincronizar-base`:
+// El `origen` declarado, o null. Es lo que decide el trato del actualizador y de `sincronizar-base`:
 // un registro sin origen se trata como mecanismo y se copia ENTERO, con las filas del repo adentro.
 function origenDe(txt) {
   const fm = leerFrontmatter(txt);

@@ -18,7 +18,7 @@ Los markdown de la raíz del repo (README y similares) son **documentación del 
 
 Convención completa en el [README del subsistema](README.md).
 
-> **Origen del contenido:** las páginas se separan por origen en **dos archivos**, y cada uno lo declara en su frontmatter — este (`origen: agente-multiproposito`, las manda el Agente Multipropósito; el nivelador lo reemplaza entero al poner al día un Agente con Propósito) e [`INDICE-LOCAL.md`](INDICE-LOCAL.md) (`origen: agente-desplegado`, las suma cada repo; el nivelador no lo abre). Una página nueva de este repo va siempre al segundo.
+> **Origen del contenido:** las páginas se separan por origen en **dos archivos**, y cada uno lo declara en su frontmatter — este (`origen: agente-multiproposito`, las manda el Agente Multipropósito; el actualizador lo reemplaza entero al poner al día un Agente con Propósito) e [`INDICE-LOCAL.md`](INDICE-LOCAL.md) (`origen: agente-desplegado`, las suma cada repo; el actualizador no lo abre). Una página nueva de este repo va siempre al segundo.
 
 ## Páginas del Agente Multipropósito
 

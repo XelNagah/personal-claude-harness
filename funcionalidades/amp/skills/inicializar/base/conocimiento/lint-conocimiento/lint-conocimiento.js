@@ -5,7 +5,7 @@ const fs = require('fs'), path = require('path');
 
 const { indicesDe, problemasDeIndices } = require('../../common/indices.js');
 const root = path.resolve(process.argv[2] || '.claude/conocimiento');
-// '.respaldo-amp' son copias congeladas de .claude/ que dejaron corridas viejas del nivelador:
+// '.respaldo-amp' son copias congeladas de .claude/ que dejaron corridas viejas del actualizador:
 // sus hallazgos ya no se pueden corregir y duplican el diagnostico real. No se barren.
 // 'tmp' es material de trabajo descartable (handoffs, notas, borradores) que el propio harness
 // gitignorea: sus hallazgos no se corrigen, se borra la carpeta. Excluye por NOMBRE, en

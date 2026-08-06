@@ -2,7 +2,7 @@
 
 ## Qué se decidió
 
-El nivelador pisa el encabezado de un registro `origen: agente-desplegado` **solo cuando su tabla declara exactamente las columnas de la Base**. Si aparece una columna que la Base no trae, frena y lo decide el usuario. Y si esa columna es lo único que difiere, no genera hallazgo. Refina 0045, respeta 0042. Ratificado el 31/07/2026.
+El actualizador pisa el encabezado de un registro `origen: agente-desplegado` **solo cuando su tabla declara exactamente las columnas de la Base**. Si aparece una columna que la Base no trae, frena y lo decide el usuario. Y si esa columna es lo único que difiere, no genera hallazgo. Refina 0045, respeta 0042. Ratificado el 31/07/2026.
 
 ## Por qué
 
@@ -25,9 +25,9 @@ El único rastro de la segunda historia es que las columnas de la Base **dejaron
 
 ## Por qué la columna sola no genera hallazgo
 
-Si el texto de la convención no cambió y las columnas de la Base siguen en su lugar, no hay nada que nivelar.
+Si el texto de la convención no cambió y las columnas de la Base siguen en su lugar, no hay nada que actualizar.
 
-Marcarla igual dejaba a ese repo con un hallazgo bloqueante **en cada corrida, para siempre**, y sin acción posible: la columna es legítima y no se va a ir. Eso rompe la idempotencia que el nivelador promete —una segunda corrida sobre un repo ya nivelado da todo «ya estaba»— y apaga el reporte entero, porque un tablero que nunca puede llegar a cero deja de significar «hay algo que hacer». Está asentado en el conocimiento [`controles-que-no-avisan`](../conocimiento/controles-que-no-avisan.md), bajo *el hallazgo que nadie puede resolver*.
+Marcarla igual dejaba a ese repo con un hallazgo bloqueante **en cada corrida, para siempre**, y sin acción posible: la columna es legítima y no se va a ir. Eso rompe la idempotencia que el actualizador promete —una segunda corrida sobre un repo ya actualizado da todo «ya estaba»— y apaga el reporte entero, porque un tablero que nunca puede llegar a cero deja de significar «hay algo que hacer». Está asentado en el conocimiento [`controles-que-no-avisan`](../conocimiento/controles-que-no-avisan.md), bajo *el hallazgo que nadie puede resolver*.
 
 ## Consecuencia sobre 0045
 

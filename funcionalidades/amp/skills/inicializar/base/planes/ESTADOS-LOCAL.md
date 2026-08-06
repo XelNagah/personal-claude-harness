@@ -4,7 +4,7 @@ origen: agente-desplegado
 
 # Estados de planes del Agente Desplegado
 
-Los **estados** que este repo suma para su Propósito. El nivelador **no toca este archivo**; [`ESTADOS.md`](ESTADOS.md) —el del Agente Multipropósito— sí lo reemplaza entero, así que un estado propio escrito allá se pierde en la corrida siguiente y deja inválidos todos los planes que lo usaban. Las columnas y la convención completa están en [`ESTADOS.md`](ESTADOS.md).
+Los **estados** que este repo suma para su Propósito. El actualizador **no toca este archivo**; [`ESTADOS.md`](ESTADOS.md) —el del Agente Multipropósito— sí lo reemplaza entero, así que un estado propio escrito allá se pierde en la corrida siguiente y deja inválidos todos los planes que lo usaban. Las columnas y la convención completa están en [`ESTADOS.md`](ESTADOS.md).
 
 Un estado de acá no puede repetir uno de `ESTADOS.md`: el del Agente Multipropósito manda, y tener el mismo nombre en los dos archivos deja al de abajo pisando al de arriba en silencio, con otra carpeta o distinta terminalidad. El `lint-planes` lo marca.
 

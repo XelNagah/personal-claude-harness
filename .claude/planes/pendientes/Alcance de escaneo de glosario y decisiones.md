@@ -23,7 +23,7 @@ Es la dirección **opuesta** al bug que originó el plan padre: allá sobraban a
 
 ## Preguntas a resolver (ninguna decidida)
 
-1. **¿Se unifica con memoria/conocimiento?** O sea, que los dos lints recorran todo el `.md` de su carpeta y validen refs con el mismo `resolverRef` que ya comparten. Es lo coherente con el patrón de subsistema (decisión 0002), pero cambia comportamiento: repos consumidores que hoy dan verde pueden empezar a reportar refs rotas **reales** que estaban escondidas. Eso es correcto, pero es ruido al nivelar.
+1. **¿Se unifica con memoria/conocimiento?** O sea, que los dos lints recorran todo el `.md` de su carpeta y validen refs con el mismo `resolverRef` que ya comparten. Es lo coherente con el patrón de subsistema (decisión 0002), pero cambia comportamiento: repos consumidores que hoy dan verde pueden empezar a reportar refs rotas **reales** que estaban escondidas. Eso es correcto, pero es ruido al actualizar.
 2. **¿Y los huérfanos?** Hoy `lint-glosario` marca huérfana toda página de `glosario/` no referenciada por la tabla. Si se pasa a escanear cuerpos, una página referenciada solo desde otra página de detalle deja de ser huérfana. ¿Se quiere ese cambio o el índice debe seguir siendo la única vía de entrada?
 3. **¿Alcanza a `lint-planes`?** No entró al análisis del plan padre. Resuelve las refs de `PLANES.md` contra un mapa de disco (`enDisco`), un sexto criterio, y tampoco lee el cuerpo de los documentos de plan. Se cruza con [Estructura del documento de Plan](Estructura%20del%20documento%20de%20Plan.md), que todavía no definió qué lleva adentro un plan.
 

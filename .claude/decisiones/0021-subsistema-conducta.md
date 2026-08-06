@@ -39,7 +39,7 @@ Resuelve de una la clase "control en el punto de acción": los planes `Hook de p
 - Empezar **fino** (un hook repartidor + registro de reglas + lint) y hacer crecer momentos/gestión a demanda, vs armar todo de entrada.
 - Latencia del repartidor que corre en cada tool call.
 - Viabilidad fina del desvío por Bash en Codex.
-- Cómo se genera/instala la config de cada agente (nivelador).
+- Cómo se genera/instala la config de cada agente (actualizador).
 - Reconciliar una discrepancia de fuentes: ¿`PreToolUse` inyecta contexto o solo bloquea? (el documento de hooks de `como-uso-claude` dice que sí; el guide consultado el 22/07 dijo que no).
 
 ## Relación

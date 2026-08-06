@@ -15,7 +15,7 @@ Reemplaza el viejo "Mapa del repo" **y** las secciones de texto plano por-subsis
 
 Cada subsistema tiene un **Manifiesto** (`.claude/<sub>/MANIFIESTO.md`): una descripción breve —qué es, cómo se usa, cuándo consultarlo— que va **siempre en contexto** y que **lista sus Índices de Subsistema con el origen de cada uno** y declara si se cargan, incluyendo —o no— su línea de importación. Lo que se carga siempre es el manifiesto, no necesariamente el índice.
 
-Un subsistema tiene **uno o más Índices**: hay dos cuando su contenido viene de dos orígenes, y cada archivo lo declara en su frontmatter (`indice`, `origen`, `columnas`). El `origen` —`agente-multiproposito` o `agente-desplegado`— es lo que decide el trato del nivelador, no el nombre del archivo: el sufijo `-LOCAL` solo distingue dos archivos que conviven.
+Un subsistema tiene **uno o más Índices**: hay dos cuando su contenido viene de dos orígenes, y cada archivo lo declara en su frontmatter (`indice`, `origen`, `columnas`). El `origen` —`agente-multiproposito` o `agente-desplegado`— es lo que decide el trato del actualizador, no el nombre del archivo: el sufijo `-LOCAL` solo distingue dos archivos que conviven.
 
 Si tu agente no expande imports, **leé estos manifiestos al inicio de la sesión** (y, si el manifiesto importa sus índices, esos índices también).
 
@@ -130,7 +130,7 @@ Con `--quiet` el lint de planes solo imprime cuando hay hallazgos: sesión limpi
 
 > El matcher `Write|Edit` alcanza igual en Codex: toda edición de archivos pasa por `apply_patch`, que dispara `PreToolUse` y matchea como `apply_patch`, `Edit` o `Write`. La salvedad es el `deny`, que **hoy no frena** la escritura en Codex (bug abierto del CLI): ahí una regla `bloquear` degrada a aviso.
 > En Codex el momento `al arrancar la sesión` **corre igual el repartidor** (mismo `SessionStart`), pero Codex no soporta `SessionStart` → `systemMessage` de la misma forma que Claude Code: la caja de la Pantalla de bienvenida sale solo si el agente muestra `systemMessage`; si no, degrada sin caja y la corrida no falla.
-> ⚠️ Codex carga hooks de proyecto solo si la carpeta `.codex/` del repo es de **confianza** (revisar con `/hooks`) y con `features.hooks` habilitado en su config. La confianza se registra contra el texto del hook, así que **cada actualización que lo cambie lo vuelve a frenar hasta que se lo apruebe de nuevo**. Avisarle al usuario al instalar y al nivelar.
+> ⚠️ Codex carga hooks de proyecto solo si la carpeta `.codex/` del repo es de **confianza** (revisar con `/hooks`) y con `features.hooks` habilitado en su config. La confianza se registra contra el texto del hook, así que **cada actualización que lo cambie lo vuelve a frenar hasta que se lo apruebe de nuevo**. Avisarle al usuario al instalar y al actualizar.
 
 ---
 
@@ -148,7 +148,7 @@ Con `--quiet` el lint de planes solo imprime cuando hay hallazgos: sesión limpi
 
 No son preferencias de nadie: son las dos rutas donde **el mecanismo mismo escribe**. `.claude/tmp/` es el buzón donde un trabajo en segundo plano deja lo que averiguó para que el repartidor lo entregue en el turno siguiente —la Pantalla de bienvenida lo usa para el diagnóstico de plugins—, y además es el directorio de borradores que los lints excluyen de su barrido por ser material descartable. Sin estas líneas, la primera sesión del repo deja esos archivos listos para entrar en el primer commit, y los cuatro mecanismos que dan por sentado que el directorio se ignora trabajan sobre una premisa que nadie estableció.
 
-El respaldo del nivelador **no va acá**: se escribe fuera del repo, en el temporal del sistema. Un `.claude/.respaldo-amp/` en un repo es de corridas viejas y lo levanta `amp:actualizar`, que ofrece borrarlo.
+El respaldo del actualizador **no va acá**: se escribe fuera del repo, en el temporal del sistema. Un `.claude/.respaldo-amp/` en un repo es de corridas viejas y lo levanta `amp:actualizar`, que ofrece borrarlo.
 
 ---
 
@@ -185,7 +185,7 @@ Ficha de una Herramienta de tipo `script`, `.claude/herramientas/<tool>/README.m
 
 ---
 
-## §Formas anteriores — lo que hay que reconocer al nivelar un repo viejo
+## §Formas anteriores — lo que hay que reconocer al actualizar un repo viejo
 
 Un repo que ya tenía el Agente Multipropósito puede traer cualquiera de estas formas. Ninguna se resuelve copiando: hay que reconocer la vieja y transformarla conservando lo que el repo aprendió.
 

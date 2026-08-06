@@ -13,7 +13,7 @@ const dirPref = path.join(claudeDir, 'preferencias');
 const problems = [];
 
 // Un Indice por origen. La forma vieja —un solo archivo con las dos secciones adentro— se acepta
-// mientras haya Agentes Desplegados sin nivelar; ahi el corte se chequea por encabezado.
+// mientras haya Agentes Desplegados sin actualizar; ahi el corte se chequea por encabezado.
 const indices = indicesDe(dirPref, ['PREFERENCIAS.md']);
 const declarados = indices.filter(i => i.indice);
 const maniPath = path.join(dirPref, 'MANIFIESTO.md');
@@ -31,7 +31,7 @@ if (!indices.length) {
 } else {
   const txt = indices[0].texto;
   // Los nombres viejos ("## Base" / "## Adaptaciones") se aceptan mientras haya Agentes
-  // Desplegados sin nivelar: el nivelador los migra, y hasta entonces el lint no debe fallar.
+  // Desplegados sin actualizar: el actualizador los migra, y hasta entonces el lint no debe fallar.
   if (!/^##\s+(Preferencias del Agente Multiprop[oó]sito|Base)\b/mi.test(txt)) problems.push('falta la seccion "## Preferencias del Agente Multiproposito"');
   if (!/^##\s+(Preferencias del Agente Desplegado|Adaptaciones)\b/mi.test(txt)) problems.push('falta la seccion "## Preferencias del Agente Desplegado"');
   if (txt.trim().length < 50) problems.push('PREFERENCIAS.md casi vacio (sin contenido util)');
@@ -99,7 +99,7 @@ if (declarados.length) {
 // --- la cadena que deja las preferencias en contexto -----------------------
 // Son tres saltos: el punto de entrada importa el MANIFIESTO y el manifiesto importa cada Indice.
 // Con dos Indices, un solo import deja al otro afuera sin que nada lo marque. Mientras haya
-// Agentes Desplegados sin nivelar —sin MANIFIESTO.md— se acepta la forma vieja, donde el punto de
+// Agentes Desplegados sin actualizar —sin MANIFIESTO.md— se acepta la forma vieja, donde el punto de
 // entrada importa los Indices directo.
 // Fuente: AGENTS.md en la raiz; layouts legacy: CLAUDE.md en la raiz o dentro de <config>/.
 const root = path.dirname(claudeDir);

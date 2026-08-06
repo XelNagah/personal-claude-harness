@@ -13,7 +13,7 @@ Una versión de un plugin no está en un solo lugar: **vive en seis, y cada uno 
 | 5 | Plugins cargados | en memoria, desde que arrancó la sesión | **reiniciar la sesión** |
 | 6 | Archivos desplegados | lo que el plugin escribe dentro de cada repo | lo que provea el plugin |
 
-Las paradas 1 a 5 son mecanismo de Claude Code y valen para cualquier marketplace. La 6 existe solo si el plugin escribe archivos en el repo destino; en el Agente Multipropósito es el `.claude/` que nivela la skill `amp:actualizar`.
+Las paradas 1 a 5 son mecanismo de Claude Code y valen para cualquier marketplace. La 6 existe solo si el plugin escribe archivos en el repo destino; en el Agente Multipropósito es el `.claude/` que actualiza la skill `amp:actualizar`.
 
 Vocabulario para no confundirlas: **publicado** (parada 2) · **bajado** (3) · **instalado** (4) · **cargado** (5).
 
@@ -70,7 +70,7 @@ La prueba útil es una copia congelada de un consumidor viejo bajo `.claude/tmp/
 3. Permitir que itere sobre la copia, nunca sobre el repo autor.
 4. Exigir como cierre la **forma final en disco**, no el relato del agente: la casa retirada no existe, los destinos conservan el contenido, los índices y referencias están reparados, todos los lints terminan bien y una nueva vista previa da cero acciones.
 5. Verificar también la **superficie de confirmación**: la infraestructura y los duplicados Base conocidos se reconcilian automáticamente; sólo el Aprendizaje propio o ambiguo llega al usuario como pregunta. Una migración que termina bien después de pedir permiso por cada Componente de Subsistema del Agente Multipropósito todavía tiene mal separado el trabajo mecánico del juicio.
-6. Después de cualquier cambio en un archivo Base embebido, repetir la última nivelación: el detector debe volver a ponerse rojo ante esa diferencia y regresar a cero sólo después de copiar el Componente de Subsistema nuevo.
+6. Después de cualquier cambio en un archivo Base embebido, repetir la última actualización: el detector debe volver a ponerse rojo ante esa diferencia y regresar a cero sólo después de copiar el Componente de Subsistema nuevo.
 
 El detector necesita **invariantes de generación**, además de comparar los Componentes de Subsistema conocidos. Ejemplo: mientras exista `.claude/memoria/`, la migración está incompleta aunque sus archivos sean válidos para la versión vieja. Sin esa invariante, una lista manual de Componentes de Subsistema puede olvidar justamente la novedad que debería buscar.
 

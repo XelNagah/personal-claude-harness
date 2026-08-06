@@ -11,7 +11,7 @@ Hoy tiene dos módulos:
 
 Porque el mismo código escrito en varios lugares diverge siempre, y acá divergía en trece.
 
-La lectura de frontmatter estuvo copiada a mano en trece lugares: los ocho lints de subsistema, los dos hooks, dos Herramientas y el nivelador. Cuando apareció el defecto de la marca de orden de bytes —un `.md` guardado con U+FEFF deja de matchear `^---` y pierde todo lo que declaraba de sí mismo, sin emitir señal— hubo que taparlo en doce archivos **a la vez**: taparlo en uno solo no habría sido una mejora parcial sino una divergencia nueva.
+La lectura de frontmatter estuvo copiada a mano en trece lugares: los ocho lints de subsistema, los dos hooks, dos Herramientas y el actualizador. Cuando apareció el defecto de la marca de orden de bytes —un `.md` guardado con U+FEFF deja de matchear `^---` y pierde todo lo que declaraba de sí mismo, sin emitir señal— hubo que taparlo en doce archivos **a la vez**: taparlo en uno solo no habría sido una mejora parcial sino una divergencia nueva.
 
 Y aun así quedaron cuatro copias divergiendo sin que nadie lo viera: los hooks aceptaban como cierre del frontmatter un `---` con texto pegado en la misma línea, que no es frontmatter válido. Nadie las comparaba.
 

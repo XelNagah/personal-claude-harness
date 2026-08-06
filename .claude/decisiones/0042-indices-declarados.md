@@ -18,7 +18,7 @@ contra lo declarado y falla en los dos sentidos. Es el caso general del conocimi
 
 Sin un control que compare los dos, el mismo dato queda escrito en dos lugares que nada sincroniza.
 No es hipotético: es el defecto que se midió **dos veces el 26/07/2026** con la lista de Componentes
-de Subsistema del nivelador.
+de Subsistema del actualizador.
 
 ## Lo que se evaluó y se descartó
 
@@ -26,7 +26,7 @@ de Subsistema del nivelador.
   importación sobre un presupuesto que la Decisión Local-0019 (cableado y estructura del Manifiesto
   de subsistema) ya midió al ras del límite documentado de cuatro, con margen cero. Y deja a los
   agentes que no expanden imports leyendo dos rutas en vez de la tabla, sin ninguna señal de error.
-- **Un nombre uniforme para todos los Índices.** Su único motivo era que el nivelador pudiera
+- **Un nombre uniforme para todos los Índices.** Su único motivo era que el actualizador pudiera
   identificar el archivo por el nombre, y el frontmatter lo reemplaza.
 - **Unificar el Índice con el mecanismo de Registros Multipropósito.** Obligaría a todo subsistema a
   usarlo, y ese mecanismo es opcional —un subsistema puede usar cero—; además se diseña en su propio

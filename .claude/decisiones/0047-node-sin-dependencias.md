@@ -2,7 +2,7 @@
 
 ## Qué se decidió
 
-Todo el código que el Agente Multipropósito distribuye —los lints de cada subsistema, el hook repartidor, las Herramientas, el motor del nivelador— se escribe en Node y usa solo su biblioteca nativa. No hay `package.json` ni `node_modules`, y los scripts corren con `node <archivo>` pelado, sin paso de instalación previo. Ratificado el 31/07/2026.
+Todo el código que el Agente Multipropósito distribuye —los lints de cada subsistema, el hook repartidor, las Herramientas, el motor del actualizador— se escribe en Node y usa solo su biblioteca nativa. No hay `package.json` ni `node_modules`, y los scripts corren con `node <archivo>` pelado, sin paso de instalación previo. Ratificado el 31/07/2026.
 
 Son dos decisiones que se sostienen en el mismo razonamiento pero se pueden revisar por separado: **el lenguaje** y **la ausencia de bibliotecas**.
 

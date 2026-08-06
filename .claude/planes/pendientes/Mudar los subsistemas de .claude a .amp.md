@@ -31,14 +31,14 @@ Conteo del 29/07/2026 sobre el texto `.claude/`, en cuatro pilas muy desparejas:
 
 En este repo la mudanza es un renombre. En los diecisiete Agentes con Propósito instalados es una **migración de datos**, que `amp:actualizar` tiene que conducir sin perder Aprendizaje: mover `.claude/<subsistema>/` a `.amp/<subsistema>/`, dejar la configuración donde está, y reconciliar un repo que quedó a mitad de camino.
 
-Precedente exacto y ya vivido: el retiro de `memoria/`, que sigue siendo el paso más delicado del nivelador. La lección de ahí aplica entera — hay que decidir qué pasa con un repo que tiene las dos carpetas a la vez, y no informar "al día" hasta que la vieja desaparezca.
+Precedente exacto y ya vivido: el retiro de `memoria/`, que sigue siendo el paso más delicado del actualizador. La lección de ahí aplica entera — hay que decidir qué pasa con un repo que tiene las dos carpetas a la vez, y no informar "al día" hasta que la vieja desaparezca.
 
 ## Frentes
 
 1. **Decidir el nombre y asentarlo.** `.amp/` es una sigla, y la preferencia Base pide el nombre completo en lo que queda escrito. Como nombre de carpeta la sigla es un identificador, no texto corriente, pero la decisión merece quedar registrada con su motivo.
 2. **Mudar este repo:** los ocho subsistemas, los 17 archivos de código, los `@import` de `AGENTS.md`, y los índices y manifiestos vivos.
 3. **Mudar el texto que viaja:** `PLANTILLA.md` del instalador consolidado y las habilidades que nombran rutas.
-4. **Sumar el paso de migración al nivelador**, con su reconciliación y su prueba sobre un consumidor viejo.
+4. **Sumar el paso de migración al actualizador**, con su reconciliación y su prueba sobre un consumidor viejo.
 5. **Poner al día los lints** que hoy asumen la ruta, incluido el barrido que excluye `tmp/`.
 
 ## Relación con otros planes

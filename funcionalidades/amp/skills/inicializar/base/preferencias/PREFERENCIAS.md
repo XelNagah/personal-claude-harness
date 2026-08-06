@@ -14,7 +14,7 @@ Reglas de conducta del agente en este repo. Siempre en contexto (importado desde
 - **Descripción** — la preferencia en sí: todo lo que hace falta para obedecerla.
 - **Detalle** — `—`, o la página con su elaboración: ejemplos, motivos y casos ya discutidos. Lo que no hace falta para obedecer.
 
-> **Origen del contenido:** las preferencias se separan por origen en dos archivos, y cada uno lo declara en su frontmatter — este (`origen: agente-multiproposito`, las manda el Agente Multipropósito; el nivelador lo reemplaza entero) y [`PREFERENCIAS-LOCAL.md`](PREFERENCIAS-LOCAL.md) (`origen: agente-desplegado`, las suma cada repo; el nivelador no lo abre).
+> **Origen del contenido:** las preferencias se separan por origen en dos archivos, y cada uno lo declara en su frontmatter — este (`origen: agente-multiproposito`, las manda el Agente Multipropósito; el actualizador lo reemplaza entero) y [`PREFERENCIAS-LOCAL.md`](PREFERENCIAS-LOCAL.md) (`origen: agente-desplegado`, las suma cada repo; el actualizador no lo abre).
 
 ## Preferencias del Agente Multipropósito
 

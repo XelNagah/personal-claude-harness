@@ -16,7 +16,7 @@ Este plan ataca algo que ese no ve: **nombres en español, correctos, y aun así
 
 Todos los nombres que el harness le impone al usuario:
 
-- **Preferencias:** `Base` (¿base de qué?), `Adaptaciones`, `nivelar`.
+- **Preferencias:** `Base` (¿base de qué?), `Adaptaciones`, `actualizar`.
 - **Subsistemas:** `Subsistema`, `Patrón`, `Funcionalidad` vs `plugin` vs `skill` (tres palabras que a veces nombran lo mismo y a veces no), `Herramienta` vs `tool`.
 - **Patrón de índice:** `Entrada`, `Documento`, `Carpeta` — los tres definidos en el glosario, los tres genéricos.
 - **Recién acuñados (26-07-20):** `Textual`, `Control`. Ratificados hace días; conviene pasarlos por el mismo examen antes de que se asienten.

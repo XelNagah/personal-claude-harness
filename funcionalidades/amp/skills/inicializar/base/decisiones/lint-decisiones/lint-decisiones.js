@@ -47,7 +47,7 @@ function resolverRef(t, fdir) {
 // -- filas de la tabla, leidas por NOMBRE de columna ------------------------
 // Cada dato se ubica por el nombre de su columna, no por su posicion, y el numero se acepta con
 // prefijo de origen (`Local-0042`) o pelado (`0042`, la forma vieja) mientras haya Agentes
-// Desplegados sin nivelar. Leer por posicion dejaba el registro en CERO filas apenas la primera
+// Desplegados sin actualizar. Leer por posicion dejaba el registro en CERO filas apenas la primera
 // celda paso a ser el Codigo: la numeracion se validaba sobre un conjunto vacio y salia limpia.
 // Y las celdas se separan RESPETANDO las tuberias escapadas (`\|`): sin eso, dos filas de este
 // mismo registro —que nombran columnas adentro de una celda— corrian su Estado y su Detalle.

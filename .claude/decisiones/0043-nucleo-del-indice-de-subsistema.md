@@ -47,8 +47,8 @@ A eso cada subsistema suma **solo las columnas operativas que su código realmen
 
 ## Consecuencias
 
-- Cambian los diez Índices, sus lints, y el código que lee sus tablas: el repartidor de conducta, la Pantalla de bienvenida y el nivelador.
+- Cambian los diez Índices, sus lints, y el código que lee sus tablas: el repartidor de conducta, la Pantalla de bienvenida y el actualizador.
 - `planes` reparte 48.649 caracteres en 80 archivos de plan, verificando en cada fila qué parte ya está en el archivo y qué parte solo vive en la celda.
 - `decisiones` gana Nombre y Código. Sus 213 referencias en texto vivo quedan escritas en la forma vieja, sin apuntar mal: el número sigue identificando.
 - `conducta` mantiene su `Contenido` y mueve sus clases a un registro propio.
-- El nivelador gana contra qué validar la forma de un Índice, que hoy no tiene.
+- El actualizador gana contra qué validar la forma de un Índice, que hoy no tiene.

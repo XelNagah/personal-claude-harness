@@ -16,10 +16,10 @@ La parte **glosario ↔ repo** la materializó `converger-terminologia`. Queda l
 
 ## Preguntas de diseño abiertas (para cuando se retome)
 
-- **Forma:** ¿skill de revisión a pedido (`/coherencia`), paso del nivelado, extensión de `planificar`, o un "lint semántico" que invoca LLM? Hoy es informal (el agente lo hace en sesión).
+- **Forma:** ¿skill de revisión a pedido (`/coherencia`), paso del actualizado, extensión de `planificar`, o un "lint semántico" que invoca LLM? Hoy es informal (el agente lo hace en sesión).
 - **Encaje en el patrón general:** ¿es un séptimo elemento del patrón de subsistema, o una pasada ortogonal que recorre todos? (El usuario quiere analizarlo *como parte de la estructura/patrón general*, no como parche.)
 - **Alcance por subsistema:** contradicción (preferencias, decisiones), incompatibilidad (glosario), duplicación (memoria, conocimiento), desactualización (conocimiento). ¿Uno que hace todo o especializados?
-- **Costo/gatillo:** ¿cuándo corre? (caro: consume LLM). ¿Al cerrar tarea, on demand, en nivelado?
+- **Costo/gatillo:** ¿cuándo corre? (caro: consume LLM). ¿Al cerrar tarea, on demand, en actualizado?
 
 ## Depende de
 Conceptualmente, de tener el patrón mecánico completo (plan [Completar cobertura de lint mecánico](Completar%20cobertura%20de%20lint%20mecanico%20-%20memoria%20y%20preferencias.md)) y el README que nombra las dos capas.

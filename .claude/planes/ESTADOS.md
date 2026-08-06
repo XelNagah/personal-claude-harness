@@ -6,7 +6,7 @@ origen: agente-multiproposito
 
 Define los estados disponibles para los planes de este repo y su semántica. Es la **fuente de verdad**: el lint (`lint-planes`) lee este archivo para validar la columna `Estado` de `PLANES.md` y el mapeo estado↔carpeta. Cambiar el juego de estados = editar esta tabla, no el código del lint.
 
-> **Este archivo es del Agente Multipropósito y el nivelador lo reemplaza entero.** Los estados que suma el Propósito de un repo van en [`ESTADOS-LOCAL.md`](ESTADOS-LOCAL.md), que el nivelador no abre; escribirlos acá los pierde en la corrida siguiente, y con ellos quedan inválidos todos los planes que los usaban. El `lint-planes` lee los dos y valida que ninguno se repita.
+> **Este archivo es del Agente Multipropósito y el actualizador lo reemplaza entero.** Los estados que suma el Propósito de un repo van en [`ESTADOS-LOCAL.md`](ESTADOS-LOCAL.md), que el actualizador no abre; escribirlos acá los pierde en la corrida siguiente, y con ellos quedan inválidos todos los planes que los usaban. El `lint-planes` lee los dos y valida que ninguno se repita.
 
 Máquina de **un solo eje**: un plan está en exactamente **un** estado a la vez.
 
@@ -69,7 +69,7 @@ Ese dato vive en el **archivo del plan**, no en `PLANES.md`: es transitorio del 
 
 ## Cómo cambiar los estados
 
-Un estado propio del Propósito se agrega en [`ESTADOS-LOCAL.md`](ESTADOS-LOCAL.md), no acá: esta tabla la reemplaza el nivelador. Reglas que el lint espera, valgan para el archivo que valgan:
+Un estado propio del Propósito se agrega en [`ESTADOS-LOCAL.md`](ESTADOS-LOCAL.md), no acá: esta tabla la reemplaza el actualizador. Reglas que el lint espera, valgan para el archivo que valgan:
 
 - Cada estado no-terminal debe mapear a una carpeta que exista bajo `planes/`.
 - Debe haber al menos un estado terminal por carpeta de cierre.

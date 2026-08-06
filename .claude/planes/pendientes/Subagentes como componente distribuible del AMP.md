@@ -1,6 +1,6 @@
 # Subagentes como componente distribuible del AMP
 
-**Estado: Nuevo · Creado 26-07-25.** Origen: [Modelo de distribución y empaquetado del harness](../ejecutados/Modelo%20de%20distribucion%20y%20empaquetado%20del%20harness.md), punto 5 de "Qué se decidió (firme)" — el único de los cinco que no se ejecutó. Los otros cuatro cayeron con la Decisión Local-0029 (empaquetado en un plugin por subsistema) y el nivelador `amp:actualizar`.
+**Estado: Nuevo · Creado 26-07-25.** Origen: [Modelo de distribución y empaquetado del harness](../ejecutados/Modelo%20de%20distribucion%20y%20empaquetado%20del%20harness.md), punto 5 de "Qué se decidió (firme)" — el único de los cinco que no se ejecutó. Los otros cuatro cayeron con la Decisión Local-0029 (empaquetado en un plugin por subsistema) y el actualizador `amp:actualizar`.
 
 ## Qué se decidió (viene del plan padre, sin ejecutar)
 
@@ -20,7 +20,7 @@ Análisis fuente en el conocimiento del agente `automejora` (repo `como-uso-clau
 - **Qué es un subagente para el Agente Multipropósito, y en qué se distingue de un subsistema y de una Herramienta.** Un subsistema es una casa de datos; una Herramienta, una tool invocable; un subagente es un ejecutor con contexto propio. La categoría nueva necesita entrar al glosario y, si define estructura, al Patrón (el Test de demarcación de 0020 aplica: ¿quién lo lee?).
 - **¿Registro e índice, como todo subsistema?** Hoy el criterio del repo es que lo que existe se registra. Si hay `.claude/agents/`, ¿lleva índice y lint, o alcanza con que los archivos estén? Cruza directo con el plan del Registro genérico.
 - **Cuáles son los transversales que valen el viaje.** «Investigador, corredor de tests, revisor de código» viene de la sesión fuente, no de una necesidad medida acá. Un revisor de código en un repo de contabilidad no sirve igual que en uno de software: contrastar contra el hecho de que el Agente Multipropósito es multipropósito.
-- **Separación Base/aprendido (0027):** los transversales son Base (el nivelador los reemplaza enteros); los de dominio, aprendidos (nunca se tocan). Aplicar el mismo corte que ya usan `conducta` y `preferencias`.
+- **Separación Base/aprendido (0027):** los transversales son Base (el actualizador los reemplaza enteros); los de dominio, aprendidos (nunca se tocan). Aplicar el mismo corte que ya usan `conducta` y `preferencias`.
 - **¿Empaquetados en `amp` o en un plugin propio?** La decisión 0029 fijó que un subsistema sin skill de operación no tiene plugin; los subagentes no son subsistema, así que la regla no los cubre.
 - **Relación con las skills que ya delegan.** Si `propagar-harness` describe su subagente en el `SKILL.md`, ¿pasa a apuntar a un subagente con archivo propio, o conviven las dos formas?
 

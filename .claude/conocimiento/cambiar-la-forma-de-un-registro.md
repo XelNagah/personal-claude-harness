@@ -43,7 +43,7 @@ se habría enterado.
 4. **Una prueba por control, con un caso bueno y uno malo.** Es lo único que distingue *verde porque
    está bien* de *verde porque no valida nada*: se rompe el registro de a un defecto por vez y se
    verifica que **el hallazgo esperado aparezca**. En este repo quedaron 22 pruebas para el lint de
-   planes y 5 para el nivelador, cada una con su defecto sembrado.
+   planes y 5 para el actualizador, cada una con su defecto sembrado.
 
 ## Tres trampas de parseo, todas verificadas
 

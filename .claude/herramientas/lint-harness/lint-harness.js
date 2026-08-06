@@ -549,7 +549,7 @@ try {
     if (!cols) {
       const norm = cells.map(c => c.replace(/\*/g, '').trim().toLowerCase());
       // `Nombre` es la forma con nucleo; `Término` la vieja, que se acepta mientras haya Agentes
-      // Desplegados sin nivelar. Sin encabezado reconocible no se lee ninguna fila.
+      // Desplegados sin actualizar. Sin encabezado reconocible no se lee ninguna fila.
       const i = norm.indexOf('nombre') >= 0 ? norm.indexOf('nombre') : norm.indexOf('término');
       if (i >= 0 && norm.includes('cómo decirlo')) cols = { termino: i };
       continue;

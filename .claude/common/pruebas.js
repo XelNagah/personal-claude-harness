@@ -1,5 +1,5 @@
 // Banco del modulo comun. Es la pieza mas apoyada del repo —la requieren los ocho lints de
-// subsistema, los dos hooks, dos Herramientas y el nivelador que viaja en el plugin—, asi que un
+// subsistema, los dos hooks, dos Herramientas y el actualizador que viaja en el plugin—, asi que un
 // defecto aca no rompe una cosa: apaga a los trece a la vez y cada uno contesta lo que sabe
 // contestar cuando no hay frontmatter, que es "no lo declara". Ninguno emite una senal.
 //
@@ -90,7 +90,7 @@ caso('tres filas pegadas dan un hallazgo por linea',
     '| Código |\n|---|\n| Local-0001 | a | | Local-0002 | b | | Local-0003 | c |\n'), MANI).length, 1);
 
 // Forma anterior: el archivo se descubre por su nombre de siempre y no declara nada de si mismo.
-// Se tolera —hay Agentes Desplegados sin nivelar— pero se dice, porque los controles de origen y
+// Se tolera —hay Agentes Desplegados sin actualizar— pero se dice, porque los controles de origen y
 // columnas no corren sobre el y el silencio se lee como registro sano.
 const VIEJO = { nombre: 'PLANES.md', indice: null, origen: null, columnas: null, cabecera: ['Plan', 'Estado'], texto: '' };
 caso('el Indice sin frontmatter se marca',

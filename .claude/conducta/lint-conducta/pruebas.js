@@ -119,7 +119,7 @@ for (const c of casos) {
 }
 
 // -- EL PAR DE MOMENTOS: el repo puede sumar los suyos -----------------------
-// Hasta el 30/07/2026 el único archivo de momentos era el del Agente Multipropósito, que el nivelador
+// Hasta el 30/07/2026 el único archivo de momentos era el del Agente Multipropósito, que el actualizador
 // reemplaza entero: un repo que necesitaba un momento propio no tenía dónde declararlo sin perderlo
 // en la corrida siguiente.
 console.log('\n== EL PAR DE MOMENTOS ==');
@@ -166,7 +166,7 @@ console.log('\n== EL PAR DE MOMENTOS ==');
 
 // -- CASO BUENO fino: sin CLASES.md el lint NO se queja -----------------------
 // Es deliberado y conviene dejarlo escrito para que nadie lo "arregle": un Agente Desplegado sin
-// nivelar todavía no tiene ese archivo, y el lint se cae a las tres clases de siempre en vez de dar
+// actualizar todavía no tiene ese archivo, y el lint se cae a las tres clases de siempre en vez de dar
 // por inválida cada regla del repo. Si algún día esto se vuelve un hallazgo, es una decisión, no un
 // descuido.
 console.log('\n== CASO BUENO: sin CLASES.md se cae a las tres clases de siempre ==');

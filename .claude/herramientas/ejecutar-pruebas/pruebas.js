@@ -83,7 +83,7 @@ console.log('\n== DESCUBRIMIENTO: LAS DOS RAÍCES, Y NADA MÁS ==');
 {
   // Las dos raíces existen por motivos distintos: `.claude/` es donde viven los lints de cada
   // subsistema, y `funcionalidades/` porque ahí vive código propio que ningún otro barrido alcanza
-  // —el motor del nivelador—. Que encuentre una y no la otra deja bancos sin correr, y un banco que
+  // —el motor del actualizador—. Que encuentre una y no la otra deja bancos sin correr, y un banco que
   // no se corre es lo mismo que no tenerlo.
   repoVacio();
   ponerHermano(ponerBanco('.claude/planes/lint-planes'), 'lint-planes');

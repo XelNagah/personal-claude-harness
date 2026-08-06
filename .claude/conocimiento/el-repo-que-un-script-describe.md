@@ -1,6 +1,6 @@
 # El repo que un script describe sale del directorio de trabajo, no de su ubicación
 
-Un script que inspecciona "el repo" —diagnosticarlo, medirlo, nivelarlo— tiene que tomar la raíz del **directorio de trabajo** (`process.cwd()`), no deducirla desde su propia ubicación (`path.resolve(__dirname, '..', '..', '..')`).
+Un script que inspecciona "el repo" —diagnosticarlo, medirlo, actualizarlo— tiene que tomar la raíz del **directorio de trabajo** (`process.cwd()`), no deducirla desde su propia ubicación (`path.resolve(__dirname, '..', '..', '..')`).
 
 Deducirla desde `__dirname` funciona mientras el script viva adentro del repo que describe. Deja de funcionar en cuanto existe **una segunda copia del script**, que en un proyecto distribuible aparece siempre:
 

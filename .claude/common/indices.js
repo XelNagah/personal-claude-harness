@@ -5,7 +5,7 @@
 // minimo (indice, origen, columnas). Se los descubre por ese frontmatter y no por un nombre fijo:
 // el nombre dejo de codificar el origen, asi que deducirlo del nombre volveria a atarlos.
 // Se acepta la forma vieja —el archivo de siempre, sin frontmatter— mientras haya Agentes
-// Desplegados sin nivelar: ahi el origen queda en null y los chequeos que dependen de el no corren.
+// Desplegados sin actualizar: ahi el origen queda en null y los chequeos que dependen de el no corren.
 
 const fs = require('fs');
 const path = require('path');
@@ -75,7 +75,7 @@ function filasPegadas(idx) {
 }
 
 // Un Indice en la forma anterior —descubierto por su nombre de siempre, sin frontmatter— se tolera
-// a proposito: hay Agentes Desplegados sin nivelar y romperles el lint no los nivela. Pero la
+// a proposito: hay Agentes Desplegados sin actualizar y romperles el lint no los actualiza. Pero la
 // tolerancia se dice. Sin esta linea el archivo queda afuera de `declarados` y los controles de
 // origen y columnas no corren sobre el, con lo cual el lint contesta que no encontro nada: no es
 // que el registro este sano, es que nadie lo miro. Medido el 05/08/2026 sobre un consumidor cuyo
@@ -84,7 +84,7 @@ function filasPegadas(idx) {
 function problemasDeIndices(idxs, manifiestoTxt) {
   const out = [];
   for (const i of idxs.filter(i => !i.indice)) {
-    out.push(`${i.nombre}: sin frontmatter de Índice (forma anterior). Mientras falte no se controlan su origen ni sus columnas: nivelarlo con amp:actualizar`);
+    out.push(`${i.nombre}: sin frontmatter de Índice (forma anterior). Mientras falte no se controlan su origen ni sus columnas: actualizarlo con amp:actualizar`);
   }
   const declarados = idxs.filter(i => i.indice);
   for (const i of declarados) {

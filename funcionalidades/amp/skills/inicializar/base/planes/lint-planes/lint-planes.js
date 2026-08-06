@@ -18,9 +18,9 @@ const root = path.resolve(args.find(a => !a.startsWith('--') && !/^\d+$/.test(a)
 const VIGILAR_ANTIGUEDAD = ['en curso', 'en pausa'];
 
 // --- estados: nombre -> {nombre, carpeta, terminal} ---
-// Se leen de DOS archivos: `ESTADOS.md` (lo manda el Agente Multiproposito y el nivelador lo
+// Se leen de DOS archivos: `ESTADOS.md` (lo manda el Agente Multiproposito y el actualizador lo
 // reemplaza entero) y `ESTADOS-LOCAL.md` (los estados que suma el Proposito de cada repo, que
-// el nivelador no abre). El del Agente Desplegado es OPCIONAL —la mayoria de los repos no suma
+// el actualizador no abre). El del Agente Desplegado es OPCIONAL —la mayoria de los repos no suma
 // estados— y su ausencia no es un hallazgo. Mismo molde que los momentos en `lint-conducta`.
 const estPath = path.join(root, 'ESTADOS.md');
 const estLocalPath = path.join(root, 'ESTADOS-LOCAL.md');
@@ -111,7 +111,7 @@ const reg = indices.map(i => i.texto).join('\n');
 // creacion | Fecha de cierre | Origen | Detalle |, y la ruta del plan vive en Detalle, no en la
 // primera celda. Leer por posicion dejaba el registro leyendo el Codigo como si fuera el link:
 // 81 archivos "sin fila" y la tabla entera invalidada. Se acepta la forma vieja —| Plan | Estado
-// | Creado | Cerrado | Origen | Notas |— mientras haya Agentes Desplegados sin nivelar.
+// | Creado | Cerrado | Origen | Notas |— mientras haya Agentes Desplegados sin actualizar.
 // Y las celdas se separan RESPETANDO las tuberias escapadas (`\|`), que de otro modo corren
 // todas las columnas siguientes.
 function celdasDe(linea) {

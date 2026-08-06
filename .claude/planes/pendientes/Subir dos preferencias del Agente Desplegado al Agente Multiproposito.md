@@ -9,11 +9,11 @@
 
 ## Qué implica subir una preferencia
 
-No es mover una fila de un archivo al otro. Cambiar de origen la saca del Aprendizaje y la mete en lo que el nivelador reemplaza entero, así que viaja a cada Agente Desplegado:
+No es mover una fila de un archivo al otro. Cambiar de origen la saca del Aprendizaje y la mete en lo que el actualizador reemplaza entero, así que viaja a cada Agente Desplegado:
 
 1. La entrada sale de `PREFERENCIAS-LOCAL.md` y entra en `PREFERENCIAS.md` con un código nuevo (`Base-0014`, `Base-0015`): el prefijo es el origen, así que promover cambia el código y la referencia vieja muere. Está previsto en la Decisión Local-0043 (núcleo del Índice de Subsistema).
 2. El texto pasa a `PLANTILLA.md`, la copia que `amp:inicializar` escribe en cada repo, y hay que verificarlo con `lint-harness`.
-3. Sube la versión del plugin `amp-preferencias`, y cada Agente Desplegado la recibe recién al nivelar.
+3. Sube la versión del plugin `amp-preferencias`, y cada Agente Desplegado la recibe recién al actualizar.
 
 ## Falta decidir
 

@@ -2,7 +2,7 @@
 
 Un control roto no se comporta como un control roto: se comporta como un control que **no encuentra nada**. Y "no encuentro nada" es indistinguible de "está todo bien". Ese es el modo de falla más caro de un repo gobernado por controles, porque el verde es lo que autoriza a seguir.
 
-Medido en este repo el 30/07/2026, con todos los lints en verde y el nivelador informando el `.claude/` al día.
+Medido en este repo el 30/07/2026, con todos los lints en verde y el actualizador informando el `.claude/` al día.
 
 ## Las ocho formas en que un control se apaga solo
 
@@ -30,7 +30,7 @@ Un control sin prueba no avisa cuando deja de controlar, y el control de cierre 
 
 Un banco verde prueba el control **como un todo**: dice que se enciende ante su defecto y se calla ante lo sano. No dice nada de cada condición por separado. Una condición que sobra —o que quedó cubierta por otra— pasa desapercibida mientras el control acierta por los otros caminos.
 
-Medido el 31/07/2026 sobre el nivelador, con su banco en verde: de **cinco condiciones nuevas, dos no hacían nada**. Una guarda agregada para que un subsistema entero ausente no saliera repetido ya estaba cubierta por la deduplicación, y una comparación del orden de las columnas no tenía ningún caso que la ejercitara. Ninguna de las dos habría aparecido nunca: el banco daba verde con ellas y sin ellas.
+Medido el 31/07/2026 sobre el actualizador, con su banco en verde: de **cinco condiciones nuevas, dos no hacían nada**. Una guarda agregada para que un subsistema entero ausente no saliera repetido ya estaba cubierta por la deduplicación, y una comparación del orden de las columnas no tenía ningún caso que la ejercitara. Ninguna de las dos habría aparecido nunca: el banco daba verde con ellas y sin ellas.
 
 Las dos terminaron distinto, y esa es la parte que importa. La guarda redundante **se sacó**, porque además de no hacer nada era dañina (ver abajo). La comparación de orden **se quedó**, porque al buscarle un caso apareció un defecto real que nadie había considerado. Una condición que no se puede romper no es necesariamente sobrante: puede ser una condición cuyo motivo nadie escribió todavía.
 
@@ -87,7 +87,7 @@ Ese mismo día, la guarda que se agregó para que un subsistema ausente no salie
 
 Una variante de la forma 2 que no depende del volumen: **un solo hallazgo permanente alcanza para apagar el reporte entero**, si el usuario no tiene ninguna manera de resolverlo.
 
-El primer intento del chequeo de columnas del nivelador marcaba a todo Agente Desplegado que le hubiera sumado una columna propia a un registro suyo —cosa que tiene permitida— aunque no hubiera nada que nivelar. Ese repo quedaba con un hallazgo bloqueante **en cada corrida, para siempre**, y sin acción posible: la columna es legítima y no se va a ir. Un reporte que nunca puede llegar a cero deja de significar «hay algo que hacer».
+El primer intento del chequeo de columnas del actualizador marcaba a todo Agente Desplegado que le hubiera sumado una columna propia a un registro suyo —cosa que tiene permitida— aunque no hubiera nada que actualizar. Ese repo quedaba con un hallazgo bloqueante **en cada corrida, para siempre**, y sin acción posible: la columna es legítima y no se va a ir. Un reporte que nunca puede llegar a cero deja de significar «hay algo que hacer».
 
 Los hallazgos de un control tienen que ser **resolubles**: cada uno nombra algo que alguien puede llevar a cero. Si un estado legítimo y permanente enciende un hallazgo, el defecto es del control.
 

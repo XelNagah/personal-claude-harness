@@ -3,7 +3,7 @@
 //
 // Por que es una Herramienta de ESTE repo y no algo que viaje: el tope lo fija el Agente
 // Multiproposito y decidir si sube es potestad de aca. Un Agente Desplegado no puede moverlo —el
-// nivelador le repone cualquier archivo que edite—, asi que informarselo seria darle un numero
+// actualizador le repone cualquier archivo que edite—, asi que informarselo seria darle un numero
 // sobre el que no puede actuar. Lo unico que si esta en sus manos, bajar su propio contexto, no
 // necesita esta Herramienta para hacerse.
 //

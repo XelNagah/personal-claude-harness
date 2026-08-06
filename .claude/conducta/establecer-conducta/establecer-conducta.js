@@ -23,7 +23,7 @@
 //               con el texto de las reglas `Inyectar` del mismo momento.
 //
 // Combinacion: en un mismo momento conviven reglas `Inyectar` (texto fijo, vive en el registro y lo
-// nivela el harness) y `Bloquear` (datos medidos, los produce un programa). Se emiten juntas, una
+// actualiza el harness) y `Bloquear` (datos medidos, los produce un programa). Se emiten juntas, una
 // abajo de la otra. `Ejecutar` tambien se combina, pero por otro campo: sus salidas se fusionan en
 // un unico `systemMessage`, porque dos JSON pegados no son JSON valido y el harness los descarta.
 //
@@ -118,7 +118,7 @@ function leerReglas(txt) {
     const norm = celdas.map(c => c.toLowerCase().replace(/\*/g, ''));
     if (!cols) {
       // La columna del nombre es `Nombre` desde que el registro tomo el nucleo; `Regla` es la
-      // forma vieja y se acepta mientras haya Agentes Desplegados sin nivelar. Sin ninguna de las
+      // forma vieja y se acepta mientras haya Agentes Desplegados sin actualizar. Sin ninguna de las
       // dos el encabezado no matchea, no se lee una sola fila y el repartidor deja de entregar
       // reglas SIN emitir error: es el fallo silencioso que motivo declarar las columnas.
       if ((norm.includes('nombre') || norm.includes('regla')) && norm.includes('momento')) {

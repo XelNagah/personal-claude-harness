@@ -143,7 +143,7 @@ function detallePlanes(txt, estadosTxt) {
 // el archivo es cuántas son propias, así que ese es el único número que se desglosa. Con
 // frontmatter cada archivo dice de qué origen es; sin frontmatter (forma vieja) los dos orígenes
 // viven adentro de un archivo, partidos por encabezado, y se aceptan además los viejos
-// ("## Base (harness vN)" / "## Adaptaciones") mientras haya Agentes Desplegados sin nivelar.
+// ("## Base (harness vN)" / "## Adaptaciones") mientras haya Agentes Desplegados sin actualizar.
 function detallePreferencias(archivos) {
   // Se cuenta con el contador generico —filas de tabla si hay tabla, si no bullets con link—, no
   // con un contador de bullets propio: el registro paso de bullets a tabla y este numero se fue a

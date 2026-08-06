@@ -26,8 +26,8 @@ Lo que sigue es lo **específico de este harness**.
 Confirmado por tres vías independientes:
 
 1. **Código.** En los 8 lints, la raíz de barrido es siempre el directorio del propio subsistema. `repoRoot` aparece únicamente para *resolver* referencias, nunca para *recorrer*.
-2. **Nivelador.** Su chequeo de la raíz del repo fue literalmente `ls -1 AGENTS.md CLAUDE.md` — preguntó por los dos archivos que espera encontrar; nunca listó la carpeta.
-3. **Reporte.** *"Nivelado completo… prácticamente la implementación de referencia del harness. Nada que agregar, nada divergente"* — dicho sobre un repo con `conocimiento/` vacío, la lista de comandos fuera de todo subsistema, y cuatro artefactos sin rutear en la raíz (`fichas/`, `tools/`, `sessions.json`, `contenedores/`).
+2. **Actualizador.** Su chequeo de la raíz del repo fue literalmente `ls -1 AGENTS.md CLAUDE.md` — preguntó por los dos archivos que espera encontrar; nunca listó la carpeta.
+3. **Reporte.** *"Actualizado completo… prácticamente la implementación de referencia del harness. Nada que agregar, nada divergente"* — dicho sobre un repo con `conocimiento/` vacío, la lista de comandos fuera de todo subsistema, y cuatro artefactos sin rutear en la raíz (`fichas/`, `tools/`, `sessions.json`, `contenedores/`).
 
 **No es que el control tolere lo de afuera: es que mira solamente adentro y vuelve orgulloso.** Hueco adicional: los `SKILL.md` no están cubiertos por ningún lint de terminología — un término vetado sobrevivió ahí.
 
@@ -66,7 +66,7 @@ Ambas cifras son ruido. **La decisión no es económica**: lo que se paga caro s
 
 **A — Asentar los criterios.** Ratificar los cinco ejes y los 22 criterios, uno por uno, y bajarlos a `decisiones/` y `glosario/`. Sin esto no hay contra qué chequear, y las discusiones se reabren solas (pasó: una se reabrió a las ocho horas).
 
-**B — Cerrar el punto ciego.** Que el control barra la raíz del repo y reporte lo no ruteado; que el nivelador liste de verdad; que los `SKILL.md` entren al alcance del lint de terminología. Es mecánico y barato, y **no se puede desobedecer porque es un programa**. Versión mínima útil: inventariar sin juzgar — *"estas cuatro cosas están fuera de todo subsistema"* no necesita los criterios de A para servir.
+**B — Cerrar el punto ciego.** Que el control barra la raíz del repo y reporte lo no ruteado; que el actualizador liste de verdad; que los `SKILL.md` entren al alcance del lint de terminología. Es mecánico y barato, y **no se puede desobedecer porque es un programa**. Versión mínima útil: inventariar sin juzgar — *"estas cuatro cosas están fuera de todo subsistema"* no necesita los criterios de A para servir.
 
 **C — El mecanismo en el punto de acción.** Re-inyección en el punto de acción en vez de texto cargado al arranque. **Se diseña ahora** (no se espera): separar *solucionar* (construir el mecanismo, con la cabeza) de *verificar* (que efectivamente cambie la conducta, que sí lleva medición). Evidencia local en vivo de que funciona: el hook de caveman (`UserPromptSubmit`) se re-inyectó cada turno de la sesión del 22/07 y **se pegó** — hubo que anularlo a mano. El diseño es un mapa **{clase de regla → punto de acción → tipo de hook}**: cada turno (`UserPromptSubmit` → preferencias, no acuñar términos) · antes de escribir/crear (`PreToolUse` sobre `Write`/`Edit` → demarcación 0020) · antes de afirmar/preguntar (`PreToolUse` sobre `AskUserQuestion` → ratificación). Ese mapa es la resolución **única** que absorbe `Hook de preferencias`, `Control de ratificación` y `Chequear el plan escrito`.
 
@@ -80,7 +80,7 @@ Primera parte del frente B. Herramienta `inventariar-componentes-sueltos` (`.cla
 
 Alcance **opción A** (acordada 21/07/2026): solo `.claude/`, no la raíz del repo. Motivo: barrer la raíz sin los criterios del frente A marca todo el Propósito real como sospechoso; `.claude/` sí es decidible hoy. Probada en verde acá (0 sin rutear) y contra un repo de prueba desordenado (caza carpetas/archivos mal puestos, incluida una carpeta con nombre de subsistema pero sin su lint). Control de cierre 9/9.
 
-**De B todavía falta:** (1) extender el barrido a la **raíz** del repo — espera criterios del frente A; (2) que el **nivelador liste de verdad** (hoy pregunta por los archivos que espera, no lista la carpeta); (3) que los **`SKILL.md`** entren al alcance del lint de terminología (un término vetado sobrevivió ahí); (4) **distribuir** el inventario a los 15 consumidores (hoy es instrumento de diagnóstico manual).
+**De B todavía falta:** (1) extender el barrido a la **raíz** del repo — espera criterios del frente A; (2) que el **actualizador liste de verdad** (hoy pregunta por los archivos que espera, no lista la carpeta); (3) que los **`SKILL.md`** entren al alcance del lint de terminología (un término vetado sobrevivió ahí); (4) **distribuir** el inventario a los 15 consumidores (hoy es instrumento de diagnóstico manual).
 
 ### Ya ejecutado (21/07/2026): el piloto de `conocimiento`
 
@@ -120,5 +120,5 @@ Las cuatro preguntas abiertas quedaron contestadas:
 ## Falta
 
 - **A:** sumar a la página 0020 los criterios finos que aún no se enumeraron (arqueología: ~24 rescatados, varios sin escribir), cada uno con ratificación.
-- **B:** (1) barrido de la **raíz** — ya destrabado por *Producto del Propósito*; (2) nivelador que **liste de verdad**; (3) `SKILL.md` al alcance del lint de terminología (un vetado sobrevivió ahí — el lint del 22/07 confirmó backlog de vetados en PLANTILLAs distribuibles); (4) **distribuir** el inventario a los consumidores.
+- **B:** (1) barrido de la **raíz** — ya destrabado por *Producto del Propósito*; (2) actualizador que **liste de verdad**; (3) `SKILL.md` al alcance del lint de terminología (un vetado sobrevivió ahí — el lint del 22/07 confirmó backlog de vetados en PLANTILLAs distribuibles); (4) **distribuir** el inventario a los consumidores.
 - **C:** construir el mapa de hooks (arriba). **Avance 26-07-23:** para la clase **terminología**, el mecanismo del punto de acción quedó decidido (decisión 0025: control de Terminología Farlopa en dos niveles según persistencia, dentro de `conducta`) — falta construirlo (vive en *Chequear el plan escrito*). *Control de ratificación* reusará el mismo molde sobre su propio momento.

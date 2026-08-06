@@ -4,8 +4,8 @@ Plugin transversal del Agente Multipropósito.
 
 ## Skills
 
-- `inicializar`: instala los Componentes ausentes de la Base en un repo nuevo o parcial; no nivela una Base existente.
-- `actualizar`: nivela una instalación viva, migra nombres retirados y conduce reacomodos de Aprendizaje.
+- `inicializar`: instala los Componentes ausentes de la Base en un repo nuevo o parcial; no actualiza una Base existente.
+- `actualizar`: actualiza una instalación viva, migra nombres retirados y conduce reacomodos de Aprendizaje.
 - `planificar`: contrasta un plan contra Semántica, Decisiones y Conocimiento.
 - `info`: muestra identidad, métricas descubiertas y estado de lints.
 

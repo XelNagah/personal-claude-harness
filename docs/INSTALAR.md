@@ -93,10 +93,10 @@ amp:actualizar
 
 Es el único comando que necesitás recordar. La skill se encarga del resto:
 
-- **Chequea los plugins** antes de tocar archivos. Si algo quedó atrasado, lo pone al día y pide reiniciar la sesión. Al volver, pedí otra vez `amp:actualizar`; la misma skill retoma el nivelado. No ejecutes los comandos de marketplace o plugins a mano.
+- **Chequea los plugins** antes de tocar archivos. Si algo quedó atrasado, lo pone al día y pide reiniciar la sesión. Al volver, pedí otra vez `amp:actualizar`; la misma skill retoma el actualizado. No ejecutes los comandos de marketplace o plugins a mano.
 - **Si al paquete le faltan dependencias**, las instala. Es el caso del repo que se instaló antes de que `amp` sumara un subsistema: la declaración de plugins del repo quedó con el conjunto viejo, y un plugin al que le falta una dependencia **no carga** — sus skills no existen en la sesión y Claude Code no lo dice. Si `amp:actualizar` no te responde, es probablemente esto: corré la Herramienta de abajo, que lo diagnostica y lo arregla.
 - **Si hay nombres de plugin retirados**, hace la migración —instalar lo nuevo, desinstalar lo viejo con el alcance que le toca a cada uno— previa confirmación tuya, porque desinstalar no se puede deshacer.
-- **Nivela el `.claude/`** contra la plantilla nueva: pisa lo Base (mecanismo del harness) y **no toca nunca** lo aprendido — tus memorias, planes, decisiones, términos, y las Herramientas y reglas de tu Propósito.
+- **Actualiza el `.claude/`** contra la plantilla nueva: pisa lo Base (mecanismo del harness) y **no toca nunca** lo aprendido — tus memorias, planes, decisiones, términos, y las Herramientas y reglas de tu Propósito.
 - **Respalda solo si hace falta**: si `.claude/` está versionado en git, lo omite (git ya es la red); si no, deja la copia fuera del repo y te dice dónde.
 - **Trae vista previa** y pregunta ante cualquier cosa dudosa antes de escribirla.
 

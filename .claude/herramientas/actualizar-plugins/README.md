@@ -1,6 +1,6 @@
 # actualizar-plugins
 
-Prepara el marketplace y los **plugins** que este Agente con Propósito usa en Claude Code o Codex antes de nivelar sus archivos. Evita diagnosticar un agente mirando la configuración del otro.
+Prepara el marketplace y los **plugins** que este Agente con Propósito usa en Claude Code o Codex antes de actualizar sus archivos. Evita diagnosticar un agente mirando la configuración del otro.
 
 ```bash
 # diagnostica, no toca nada
@@ -107,7 +107,7 @@ La comparación se hace contra la **PLANTILLA del plugin que efectivamente corre
 Tres resultados posibles, y los tres significan cosas distintas:
 
 - **Coinciden** — los archivos del repo son los que instalaría el plugin que corre. Es lo normal.
-- **Difieren** — hay que nivelar los archivos con `amp:actualizar`. En el repo que **publica** el Agente Multipropósito es lo esperable mientras haya cambios sin publicar.
+- **Difieren** — hay que actualizar los archivos con `amp:actualizar`. En el repo que **publica** el Agente Multipropósito es lo esperable mientras haya cambios sin publicar.
 - **No se compara** — el plugin no está instalado para ese repo, así que no hay contra qué comparar. Se calla a propósito: tomar la versión instalada para *otro* repo sería el modo de falla que esta Herramienta existe para no cometer.
 
 Ojo con no confundirlo con el desfase de versiones: un repo puede tener los plugins atrasados **y** las dos partes coincidiendo, porque las dos son de la misma generación vieja. Medido el 30/07/2026 en un consumidor: nueve plugins atrasados y los archivos en perfecta correspondencia con ellos.
@@ -127,7 +127,7 @@ Un ejemplo de por qué el criterio prudente importa, medido el 30/07/2026 en est
 
 ### Borrarlo: `--limpiar-cache`
 
-**`--aplicar` no lo enciende**, y es a propósito: quien nivela un repo pidió eso, no que se borre nada de su carpeta de usuario. Son dos permisos distintos y llevan dos flags distintos.
+**`--aplicar` no lo enciende**, y es a propósito: quien actualiza un repo pidió eso, no que se borre nada de su carpeta de usuario. Son dos permisos distintos y llevan dos flags distintos.
 
 ```bash
 node .claude/herramientas/actualizar-plugins/actualizar-plugins.js --agente claude --limpiar-cache

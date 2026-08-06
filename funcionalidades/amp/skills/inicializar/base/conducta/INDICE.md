@@ -18,11 +18,11 @@ Registro de las **reglas de conducta** del repo: cada fila ata un **momento** (d
 - **Estado** — `vigente` (se entrega) · `pendiente` (declarada, su momento aún no tiene repartidor) · `obsoleto` (no se entrega; se puede depurar).
 - **Detalle** — `—`, o la página donde se conceptualiza la regla.
 
-> **Origen del contenido:** las reglas se separan por origen en **dos archivos**, y cada uno lo declara en su frontmatter — este (`origen: agente-multiproposito`, las manda el Agente Multipropósito; el nivelador `amp:actualizar` lo reemplaza entero al poner al día un Agente con Propósito) e [`INDICE-LOCAL.md`](INDICE-LOCAL.md) (`origen: agente-desplegado`, las suma cada repo; el nivelador no lo abre). El repartidor lee los dos. Hoy tienen repartidor los momentos `al arrancar la sesión` (`SessionStart`, clase `Ejecutar`), `cada turno` (`UserPromptSubmit`) y `al escribir` (`PreToolUse`); la regla de momento `al cerrar tarea` (`Stop`) queda en `pendiente` (honesta, sin entregar) hasta que se sume su repartidor.
+> **Origen del contenido:** las reglas se separan por origen en **dos archivos**, y cada uno lo declara en su frontmatter — este (`origen: agente-multiproposito`, las manda el Agente Multipropósito; el actualizador `amp:actualizar` lo reemplaza entero al poner al día un Agente con Propósito) e [`INDICE-LOCAL.md`](INDICE-LOCAL.md) (`origen: agente-desplegado`, las suma cada repo; el actualizador no lo abre). El repartidor lee los dos. Hoy tienen repartidor los momentos `al arrancar la sesión` (`SessionStart`, clase `Ejecutar`), `cada turno` (`UserPromptSubmit`) y `al escribir` (`PreToolUse`); la regla de momento `al cerrar tarea` (`Stop`) queda en `pendiente` (honesta, sin entregar) hasta que se sume su repartidor.
 
 ## Reglas del Agente Multipropósito
 
-Las que instala el Agente Multipropósito. El nivelador `amp:actualizar` reemplaza **este archivo entero** al poner al día un Agente con Propósito; nunca abre el del Agente Desplegado.
+Las que instala el Agente Multipropósito. El actualizador `amp:actualizar` reemplaza **este archivo entero** al poner al día un Agente con Propósito; nunca abre el del Agente Desplegado.
 
 | Código | Nombre | Descripción | Momento | Clase | Contenido | Estado | Detalle |
 |--------|--------|-------------|---------|-------|-----------|--------|---------|

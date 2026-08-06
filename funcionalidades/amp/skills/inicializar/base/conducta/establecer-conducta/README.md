@@ -20,7 +20,7 @@ Eventos que realiza hoy:
 | `correr` | Ejecuta la Herramienta cuya ruta es el `Contenido` y **reenvía su salida tal cual** (la Pantalla de bienvenida emite `systemMessage`, el único campo que escribe en la terminal) | no: su salida **es** la respuesta del hook |
 | `bloquear` | Ejecuta la Herramienta y **lee su respuesta**: un `deny` frena la acción y se emite solo; un `additionalContext` se suma al de las reglas `inyectar` | sí |
 
-En un mismo momento conviven el texto fijo de las `inyectar` —que vive en el registro y lo nivela el Agente Multipropósito— y los datos medidos de las `bloquear`, que produce un programa. Se emiten juntos, uno abajo del otro.
+En un mismo momento conviven el texto fijo de las `inyectar` —que vive en el registro y lo actualiza el Agente Multipropósito— y los datos medidos de las `bloquear`, que produce un programa. Se emiten juntos, uno abajo del otro.
 
 ## Contrato
 

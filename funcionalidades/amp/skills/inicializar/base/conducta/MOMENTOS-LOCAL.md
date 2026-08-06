@@ -4,7 +4,7 @@ origen: agente-desplegado
 
 # Momentos de conducta del Agente Desplegado
 
-Los **momentos** que este repo suma para su Propósito. El nivelador **no toca este archivo**; `MOMENTOS.md` —el del Agente Multipropósito— sí lo reemplaza entero, así que un momento propio escrito allá se pierde en la corrida siguiente. Las columnas y la convención completa están en [`MOMENTOS.md`](MOMENTOS.md).
+Los **momentos** que este repo suma para su Propósito. El actualizador **no toca este archivo**; `MOMENTOS.md` —el del Agente Multipropósito— sí lo reemplaza entero, así que un momento propio escrito allá se pierde en la corrida siguiente. Las columnas y la convención completa están en [`MOMENTOS.md`](MOMENTOS.md).
 
 Un momento de acá no puede repetir uno de `MOMENTOS.md`: el del Agente Multipropósito manda, y tener el mismo nombre en los dos archivos deja al de abajo pisando al de arriba en silencio, con otra disponibilidad. El `lint-conducta` lo marca.
 
