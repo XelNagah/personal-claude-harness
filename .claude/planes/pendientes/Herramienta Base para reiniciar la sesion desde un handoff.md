@@ -65,3 +65,14 @@ Deliberadamente chico, para probar la mecánica antes de decidir nada de lo de a
 - [Título de sesión y momentos de disparo de la Pantalla de bienvenida](Titulo%20de%20sesion%20y%20momentos%20de%20disparo%20de%20la%20Pantalla%20de%20bienvenida.md) — con sesiones que se reinician solas, distinguir cuál ventana es cuál pesa más.
 
 Correr por `amp:planificar` antes de construir, salvo que se decida ir directo al piloto mínimo por ser barato y reversible.
+
+## Achique contra la plataforma (26-08-06)
+
+De los tres disparadores del reinicio, la plataforma ya cubre dos sin matar ni lanzar procesos:
+`/compact` resume el contexto y sigue en la misma sesión (contexto lleno), y `/clear` limpia la
+conversación dejando la terminal en escucha (ruido acumulado). El alcance vivo de este plan queda
+en el único caso que exige un proceso nuevo: reiniciar para recargar plugins actualizados, que ni
+`/compact` ni `/clear` hacen — el que `actualizar-plugins` deja colgado. Al analizarlo, evaluar
+primero si un solo disparador justifica la mecánica completa de terminar y lanzar, o si alcanza
+con algo más chico. Achique ratificado en la poda de pendientes contra la plataforma (ítem 5 del
+plan de consumo de tokens).

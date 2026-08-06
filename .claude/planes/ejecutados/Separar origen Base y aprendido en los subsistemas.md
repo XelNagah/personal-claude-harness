@@ -43,3 +43,15 @@ La separación se realiza **según la granularidad del subsistema**, no con una 
 - Toca `Versionado del harness dentro del .claude del repo host` (qué se versiona de cada origen).
 
 Correr por `planificar`. Probablemente asiente una o más decisiones estructurales.
+
+## Notas de implementación
+
+**Ejecutado, cerrado el 26-08-06.** Los dos puntos de «Falta ejecutar» quedaron resueltos y la fila
+había quedado sin transicionar. Conducta ya está empaquetada: el plugin `amp-conducta` figura en el
+marketplace y su carpeta viaja en la Base de instalación con sus dos Índices adentro, así que el
+corte por origen llegó al plugin. El segundo punto no tenía trabajo. La forma final superó a la
+prevista: el corte que este plan resolvía como dos secciones dentro de un archivo terminó siendo
+dos archivos que declaran su origen en el frontmatter, que es lo que ejecutó el plan Local-0078
+(Partir los índices por origen y pasar preferencias a tabla) y lo que este plan ya derivaba allá
+como abierto heredado. Cierre de la poda de pendientes por razón interna (falso pendiente), no de
+plataforma.

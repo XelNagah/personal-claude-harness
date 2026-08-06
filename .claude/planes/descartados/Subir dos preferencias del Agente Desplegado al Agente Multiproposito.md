@@ -19,3 +19,20 @@ No es mover una fila de un archivo al otro. Cambiar de origen la saca del Aprend
 
 - **Si las dos suben, o solo una.** Se ratificó que son candidatas, no que suban.
 - **Si hace falta un mecanismo general.** Este caso va a repetirse: un Agente Desplegado descubre una preferencia que sirve para todos. Hoy no hay flujo — la habilidad `registrar-preferencia` decide el origen al dar de alta, pero no contempla mover una que ya existe.
+
+## Notas de cierre
+
+**Descartado el 26-08-06.** Lo contradice la Decisión Local-0053 (La Base pública no incluye
+elecciones personales del autor), ratificada el 03/08/2026: las dos candidatas son criterios
+personales de comparación y de estilo, y subirlas revertiría el saneamiento que ya sacó de la Base
+las ocho que quedaban. El propio plan Local-0090 (Preparar el AMP público y replicar Componentes de
+Subsistema) lo anticipa: una preferencia útil en varios agentes del autor no es por eso parte
+neutral del Producto público.
+
+El objetivo real —que estas dos lleguen a otros Agentes Desplegados— ya está cumplido por una vía
+mejor: el catálogo de Preferencias Recomendadas de la Decisión Local-0056, que viaja en el plugin
+y del que no se instala nada sin adopción explícita. Las dos figuran hoy en ese catálogo, generadas
+por la Herramienta `sincronizar-recomendadas` desde el Índice del Agente Desplegado de este repo.
+Eso responde además el segundo abierto del plan, el del mecanismo general para promover una
+preferencia. Descarte de la poda de pendientes por razón interna (contradicho por una decisión
+posterior), no de plataforma.

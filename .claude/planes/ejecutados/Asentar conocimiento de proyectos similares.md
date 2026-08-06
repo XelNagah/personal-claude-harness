@@ -23,3 +23,15 @@ Valor de asentarlo acá: `/planificar` contrasta contra `conocimiento/`, así qu
 ## Nota
 
 Referenciar la página nueva desde el plan "Publicar el harness en ingles" (Diferido): este relevamiento es insumo directo de ese plan (posicionamiento y nombre público). Marcar la fecha del relevamiento — el ecosistema se mueve rápido y esto caduca.
+
+## Notas de implementación
+
+**Ejecutado, cerrado el 26-08-06.** El trabajo estaba hecho y la fila había quedado sin
+transicionar. Las dos páginas viven en `.claude/conocimiento/` e indexadas en el Índice del Agente
+Desplegado: `proyectos-similares-al-harness.md` (conocimiento Local-0006), con la conclusión de que
+el espacio está libre, la tabla de comparables, la sección de Hermes Agent como el más cercano, los
+diferenciadores y el riesgo de posicionamiento; y `replicar-hermes-en-el-amp.md` (conocimiento
+Local-0007), con la tabla maestra de los cinco componentes de Hermes y los huecos sin plan. Las dos
+llevan la marca de que caducan, como pedía la Nota. El plan Local-0040 (Publicar el harness en
+inglés) ya cita la página del relevamiento. Cierre de la poda de pendientes por razón interna
+(falso pendiente), no de plataforma.

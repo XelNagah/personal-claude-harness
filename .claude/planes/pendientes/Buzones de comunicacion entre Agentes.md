@@ -40,3 +40,12 @@ Salieron de descartar un primer intento —una regla que al arrancar leyera cual
 - [Verificar que el aprendizaje quede asentado en los subsistemas](Verificar%20que%20el%20aprendizaje%20quede%20asentado%20en%20los%20subsistemas.md) — un mensaje aceptado tiene que terminar asentado en algún subsistema, no quedarse en la bandeja.
 
 Correr por `amp:planificar` antes de construir nada.
+
+## Achique contra la plataforma (26-08-06)
+
+De las tres distancias del problema, la plataforma ya cubre la más corta: hacia adentro de una
+sesión, la herramienta SendMessage continúa un subagente ya lanzado conservando su contexto, y las
+notificaciones de tareas devuelven el resultado sin que el usuario copie nada. El alcance vivo de
+este plan queda en lo que la plataforma no hace: mensajes entre repos y entre sesiones no
+simultáneas — SendMessage no cruza ni sesiones ni repos. Achique ratificado en la poda de
+pendientes contra la plataforma (ítem 5 del plan de consumo de tokens).

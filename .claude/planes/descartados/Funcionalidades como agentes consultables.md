@@ -1,6 +1,6 @@
 # Funcionalidades como agentes consultables
 
-**Estado: Diferido · Creado 26-07-19.** Idea a analizar más adelante: que cada subsistema pueda **encarnarse como un agente con el que se dialoga** — "che, agente conocimiento, ¿sabemos algo de X?" y ese agente busca en su subsistema (contexto propio) y responde, sin volcar todo el material leído al contexto del agente principal. Diferido porque su valor depende del **volumen** de cada subsistema, y cuánto crece cada uno depende del propósito del repo (multipropósito) — hoy no se sabe.
+**Estado: Descartado · Creado 26-07-19 · Cerrado 26-08-06.** Idea a analizar más adelante: que cada subsistema pueda **encarnarse como un agente con el que se dialoga** — "che, agente conocimiento, ¿sabemos algo de X?" y ese agente busca en su subsistema (contexto propio) y responde, sin volcar todo el material leído al contexto del agente principal. Diferido porque su valor depende del **volumen** de cada subsistema, y cuánto crece cada uno depende del propósito del repo (multipropósito) — hoy no se sabe.
 
 ## La idea
 
@@ -39,3 +39,7 @@ Cuando un subsistema curado (conocimiento sobre todo; también memoria) crezca l
 
 ## No confundir con
 El plan [Proponer skills operativas por funcionalidad](Proponer%20skills%20operativas%20por%20funcionalidad.md): eso es *skills para administrar* cada subsistema. Esto es *el subsistema encarnado como agente consultable*. Cosas distintas.
+
+## Notas de cierre
+
+**Motivo del descarte (26-08-06):** la mecánica que este plan pedía la dan los tipos de agente nativos de la plataforma — `agents/<nombre>.md` con `tools` y `model`, distribuidos dentro del mismo plugin del subsistema, con contexto propio y devolviendo solo su informe. La única pregunta que quedaba viva (qué subsistema amerita su propio agente) es la familia 1 del plan Local-0094 (Subagentes del AMP para el flujo de desarrollo por etapas), que la retoma. Descarte ratificado por el usuario en la poda de pendientes contra la plataforma (ítem 5 del plan de consumo de tokens).

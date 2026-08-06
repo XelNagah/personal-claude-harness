@@ -35,3 +35,14 @@ Y fuera de preferencias hay más: la memoria de estilo de commits impone **commi
 ## Depende de
 
 Conviene resolverlo **antes** de que el repo se comparta con otras personas. Mientras sea de un solo usuario el problema no se nota.
+
+## Notas de cierre
+
+**Descartado el 26-08-06.** Absorbido por el plan Local-0090 (Preparar el AMP público y replicar
+Componentes de Subsistema), que lo declara («este bloque absorbe el problema del plan Local-0020»)
+y ya ejecutó el saneamiento: las elecciones personales del autor migraron de la Base a Preferencias
+del Agente Desplegado, las dos Reglas de Conducta mixtas se partieron conservando la garantía, y la
+instalación limpia sobre un repo vacío verificó que ningún criterio personal llega a un tercero.
+De las tres direcciones que este plan dejaba a evaluar, se ejecutó la segunda —Base adelgazada—,
+con el catálogo de Preferencias Recomendadas como mejora sobre el perfil opcional previsto.
+Descarte de la poda de pendientes por razón interna (absorción), no de plataforma.

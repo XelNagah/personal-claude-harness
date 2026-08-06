@@ -331,3 +331,20 @@ Por qué así:
 - **[Separar origen Base y aprendido en los subsistemas](Separar%20origen%20Base%20y%20aprendido%20en%20los%20subsistemas.md)** — su abierto es literal *"dos-archivos vs dos-secciones, qué subsistemas aplican"*. Este plan lo responde; conviene cerrarlo contra este o absorberlo.
 - **[Lint unificado parametrizable por capacidad de subsistema](Lint%20unificado%20parametrizable%20por%20capacidad%20de%20subsistema.md)** — el punto 4 del trabajo es una capacidad más a parametrizar.
 - **[Revisar cada subsistema - sentido, disparador y skill de operacion](Revisar%20cada%20subsistema%20-%20sentido,%20disparador%20y%20skill%20de%20operacion.md)** — asume que el índice ya existe; este plan es la precondición para preferencias.
+
+## Notas de implementación
+
+**Ejecutado, cerrado el 26-08-06.** Seis de los siete pasos de «El trabajo» están ejecutados y
+documentados arriba con su fecha: los cuatro Índices partidos por origen, los diez llevados al
+núcleo —`preferencias` incluido, que pasó de bullets a tabla y entró al Patrón con manifiesto y
+README—, los lints y el repartidor reparados uno por uno, los encabezados renombrados y todo
+propagado a lo que viaja. De «Falta decidir» quedaban dos puntos y los dos están resueltos: el 12
+es la Decisión Local-0043 (Núcleo del Índice de Subsistema), ya asentada; el 11 quedó por la vía
+del frontmatter, que declara el Significado Farlopa sin sumarle una fila al glosario.
+
+El paso 7 —migrar los Agentes Desplegados con la forma vieja— **no es trabajo de este repo**: lo
+hace el Agente Coordinador, según el reencuadre acordado con el usuario el 05/08/2026 en el plan
+Local-0092 (Garantizar que actualizar un Agente Desplegado no rompa nada), que además ya censó los
+cinco repos con el registro de la generación anterior. La garantía de que actualizarlos no rompa
+nada vive allá. Cierre de la poda de pendientes por razón interna (trabajo hecho, resto derivado),
+no de plataforma.

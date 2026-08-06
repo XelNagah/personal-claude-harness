@@ -1,6 +1,6 @@
 # Subagentes como componente distribuible del AMP
 
-**Estado: Nuevo · Creado 26-07-25.** Origen: [Modelo de distribución y empaquetado del harness](../ejecutados/Modelo%20de%20distribucion%20y%20empaquetado%20del%20harness.md), punto 5 de "Qué se decidió (firme)" — el único de los cinco que no se ejecutó. Los otros cuatro cayeron con la Decisión Local-0029 (empaquetado en un plugin por subsistema) y el actualizador `amp:actualizar`.
+**Estado: Descartado · Creado 26-07-25 · Cerrado 26-08-06.** Origen: [Modelo de distribución y empaquetado del harness](../ejecutados/Modelo%20de%20distribucion%20y%20empaquetado%20del%20harness.md), punto 5 de "Qué se decidió (firme)" — el único de los cinco que no se ejecutó. Los otros cuatro cayeron con la Decisión Local-0029 (empaquetado en un plugin por subsistema) y el actualizador `amp:actualizar`.
 
 ## Qué se decidió (viene del plan padre, sin ejecutar)
 
@@ -31,3 +31,7 @@ Análisis fuente en el conocimiento del agente `automejora` (repo `como-uso-clau
 - [Habilidad de ejecución de planes](Habilidad%20de%20ejecucion%20de%20planes.md) — esa skill sería el consumidor más directo de un subagente transversal.
 
 Correr por `amp:planificar` antes de construir.
+
+## Notas de cierre
+
+**Motivo del descarte (26-08-06):** sucedido por el plan Local-0094 (Subagentes del AMP para el flujo de desarrollo por etapas), que retoma todas sus preguntas con más detalle y más actualidad: la mecánica de distribución la da la plataforma (un plugin transporta `agents/` junto a `skills/`, con `tools` y `model` en el frontmatter), y el reparto entre lo que viaja con el harness y lo que escribe cada repo son las dos familias de aquel plan. Mantener los dos era duplicar la misma pregunta. Descarte ratificado por el usuario en la poda de pendientes contra la plataforma (ítem 5 del plan de consumo de tokens).

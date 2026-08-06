@@ -21,3 +21,7 @@ Una **skill que ejecute un plan de punta a punta** — desde un plan pendiente (
 ## Evidencia que lo motiva
 
 Esta sesión (26-07-22): un handoff de ~170 líneas guió la propagación a 6 funcionalidades + orquestador con subagente fresco + verificación por inclusión + control de cierre. Todo el andamiaje (byte-source, verificación, asentar §6) estaba escrito a mano en el handoff. Una habilidad lo volvería repetible.
+
+## Achique contra la plataforma (26-08-06)
+
+La orquestación que la sección «A evaluar» dejaba abierta ya no se construye: la dan la herramienta Workflow (encadenar subagentes de forma determinista), las tareas de seguimiento y los subagentes continuables de la plataforma. El alcance vivo de este plan queda en lo que la plataforma no hace: leer el plan persistido, conservar los puntos de ratificación del usuario, asentar el aprendizaje al cerrar y cerrar con el control de cierre. Achique ratificado en la poda de pendientes contra la plataforma (ítem 5 del plan de consumo de tokens).
