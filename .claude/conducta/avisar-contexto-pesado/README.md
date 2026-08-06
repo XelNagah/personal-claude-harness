@@ -1,6 +1,6 @@
 # avisar-contexto-pesado
 
-Control del momento `cada turno`: mide el transcript de la sesión como aproximación del contexto acumulado y, pasado un umbral, emite un aviso al modelo proponiendo un punto de corte — persistir lo pendiente, handoff si hace falta y `/clear`, con la terminal siempre abierta y en escucha. **Nunca frena nada**: es clase `Bloquear` porque esa es la clase del registro que ejecuta un programa y combina su `additionalContext` con las reglas del momento, no porque emita `deny`.
+Control del momento `cada turno`: mide la transcripción de la sesión como aproximación del contexto acumulado y, pasado un umbral, emite un aviso al modelo proponiendo un punto de corte — persistir lo pendiente, handoff si hace falta y `/clear`, con la terminal siempre abierta y en escucha. **Nunca frena nada**: es clase `Bloquear` porque esa es la clase del registro que ejecuta un programa y combina su `additionalContext` con las reglas del momento, no porque emita `deny`.
 
 **Por qué existe:** el problema medido nunca fue la sesión abierta sino la sesión abierta con contexto gordo — cada turno re-lee el contexto entero, y volver de una pausa larga lo re-escribe. El aviso empuja la disciplina de higiene de sesión en el momento en que hace falta, en vez de depender de que el usuario se acuerde.
 

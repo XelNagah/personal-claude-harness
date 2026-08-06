@@ -2,7 +2,7 @@
 
 **Estado: Nuevo · Creado 26-08-06.** Mudado desde el repo `como-uso-claude` (su Local-0003) el 26-08-06, con el contenido íntegro salvo ajustes de terminología vetada en este repo («gate de terminología» → «Control de terminología», «pieza» → «componente», «artefactos» → «archivos», «artefacto definido, no prosa suelta» → «resultado definido, no texto suelto»); las rutas relativas a `conocimiento/` referencian aquel repo.
 
-Definir subagentes propios y **distribuirlos por el harness** a los repos AMP, para armar el flujo de desarrollo por etapas: diseño → crítica → desarrollo → tests → code review → seguridad.
+Definir subagentes propios y **distribuirlos por el harness** a los repos AMP, para armar el flujo de desarrollo por etapas: diseño → crítica → desarrollo → tests → revisión de código → seguridad.
 
 Baja a ejecución el conocimiento [`subagentes-agentes-codigo.md`](../../conocimiento/subagentes-agentes-codigo.md), que tiene el diseño completo y sin ejecutar.
 
@@ -75,7 +75,7 @@ Los de dominio (`ingesta`, `protocolo-tester`, `verificador-de-alerta`, `auditor
 | Desarrollo del núcleo | Hilo principal | Lo que se dirige turno a turno no se delega. |
 | Módulo autocontenido | `implementador-modular`, worktree si van varios | Solo si está bien especificado y es independiente. |
 | Tests / lint / build | `test-runner` (haiku) | Volumen tonto, aísla logs enormes. |
-| Code review | `code-reviewer` (opus, read-only) | Lente fresca sin las racionalizaciones del que escribió. |
+| Revisión de código | `code-reviewer` (opus, read-only) | Lente fresca sin las racionalizaciones del que escribió. |
 | Seguridad | `/security-review` | Ya existe; no hace falta tipo propio. |
 | Crítica final | Verificación adversarial: N escépticos independientes prompteados para **refutar** | Filtra el hallazgo plausible pero falso. |
 
