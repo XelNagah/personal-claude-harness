@@ -37,7 +37,7 @@ Vacío se lee como `avisa`. **El bloqueo mira solo las apariciones fuera de comi
 | --- | --- | --- | --- | --- | --- |
 | Local-0001 | `artefacto` | un archivo o una carpeta del repo | Componente de Subsistema cuando pertenece a uno; si no, `archivo` o `carpeta` | avisa | — |
 | Local-0002 | `pieza` | un Componente de Subsistema (archivo o carpeta de un subsistema) | Componente de Subsistema | avisa | — |
-| Local-0003 | `gate` | un Control (chequeo que frena el avance) | Control | bloquea | — |
+| Local-0003 | `gate` | un Control que frena el avance | Control bloqueante | bloquea | — |
 | Local-0004 | `prosa` | el texto corriente de los `.md` | texto plano | avisa | — |
 | Local-0005 | `levelear` / `leveleo` / `leveling` | poner al día una instalación existente | nivelar | bloquea | — |
 | Local-0006 | `verbatim` / `byte-exact` / `byte-check` | copia idéntica carácter a carácter | Textual / carácter a carácter | bloquea | — |
