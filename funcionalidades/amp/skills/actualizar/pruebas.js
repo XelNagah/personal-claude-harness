@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Pruebas de `amp-actualizar.js`, el motor mecánico del nivelador.
+// Pruebas de `amp-actualizar.js`, el motor mecánico del actualizador.
 //
 // Este script decide si un Agente con Propósito está al día, y su falla cara no es un error: es
 // contestar «ya estaba» sobre algo que quedó viejo. Un repo informado al día no se vuelve a mirar,
@@ -17,9 +17,9 @@
 // Uso: node funcionalidades/amp/skills/actualizar/pruebas.js   (desde la raíz del repo)
 const fs = require('fs'), path = require('path'), cp = require('child_process');
 
-const NIVELADOR = path.resolve('funcionalidades/amp/skills/actualizar/amp-actualizar.js');
+const Actualizador = path.resolve('funcionalidades/amp/skills/actualizar/amp-actualizar.js');
 const BASE = path.resolve('funcionalidades/amp/skills/inicializar/base');
-const REPO_PRUEBA = path.resolve('.claude/tmp/repo-prueba-nivelador');
+const REPO_PRUEBA = path.resolve('.claude/tmp/repo-prueba-actualizador');
 
 let malos = 0, casos = 0;
 function chequear(nombre, condicion, detalle) {
@@ -31,12 +31,12 @@ function chequear(nombre, condicion, detalle) {
 function correr(rutaRepo, modo) {
   const args = [modo || '--vista-previa'];
   if (rutaRepo) args.push(rutaRepo);
-  const r = cp.spawnSync(process.execPath, [NIVELADOR, ...args], { encoding: 'utf8', timeout: 180000 });
+  const r = cp.spawnSync(process.execPath, [Actualizador, ...args], { encoding: 'utf8', timeout: 180000 });
   return { texto: (r.stdout || '') + (r.stderr || ''), codigo: r.status };
 }
 
 // Un Agente con Propósito recién instalado y al día: el árbol de `base/` colgado de `.claude/`, que
-// es contra lo que el propio nivelador compara. Es el punto de partida de casi todos los casos: se
+// es contra lo que el propio actualizador compara. Es el punto de partida de casi todos los casos: se
 // arma al día y se lo rompe de a una cosa por vez, para que lo que marque sea atribuible.
 function armarAlDia() {
   fs.rmSync(REPO_PRUEBA, { recursive: true, force: true });
@@ -47,7 +47,7 @@ function armarAlDia() {
   }
   // El Título y el Propósito se preguntan al instalar; sin este archivo todo repo marca uno.
   fs.writeFileSync(path.join(REPO_PRUEBA, '.claude', 'identidad.md'),
-    '# Repo de prueba\n\nPropósito: ejercitar el nivelador.\n');
+    '# Repo de prueba\n\nPropósito: ejercitar el actualizador.\n');
   cablearHooks();
   ignorarTemporales();
 }
@@ -94,8 +94,8 @@ armarAlDia();
   const { texto, codigo } = correr(REPO_PRUEBA);
   chequear('corre y emite el reporte', /amp-actualizar/.test(texto) && codigo === 0, `código ${codigo}`);
   // El cierre en verde tiene frase propia, distinta del total que imprime cuando hay algo que hacer.
-  chequear('un repo al día cierra sin nada para nivelar',
-    /Repo al d[ií]a: nada para nivelar/.test(texto),
+  chequear('un repo al día cierra sin nada para actualizar',
+    /Repo al d[ií]a: nada para actualizar/.test(texto),
     (texto.match(/Total de acciones propuestas: \d+/) || ['sin acciones propuestas'])[0]);
   chequear('informa los ocho subsistemas como ya estaban', /YA ESTABA[\s\S]*conducta/.test(texto));
 }
@@ -113,7 +113,7 @@ console.log('\n== CONTENIDO: LO VIEJO SE MARCA, LO PROPIO DEL REPO NO ==');
 }
 {
   // Caso bueno, y el que más importa: el repo agregó filas a un registro suyo. Si esto se marcara,
-  // el nivelador propondría pisar el Aprendizaje del repo.
+  // el actualizador propondría pisar el Aprendizaje del repo.
   armarAlDia();
   escribir('semantica/GLOSARIO.md', leer('semantica/GLOSARIO.md').trimEnd() +
     '\n| Local-0001 | Bulto | Cada unidad que se cotiza por separado | — | — |\n');
@@ -160,7 +160,7 @@ function conColumnaPropia() {
     !marca(texto, 'GLOSARIO.md'),
     (texto.split(/\r?\n/).find(l => l.includes('GLOSARIO.md')) || 'ninguna línea lo nombra').trim());
   chequear('y el repo sigue informándose al día',
-    /Repo al d[ií]a: nada para nivelar/.test(texto));
+    /Repo al d[ií]a: nada para actualizar/.test(texto));
 }
 {
   // Caso malo: la convención de arriba cambió Y el repo tiene una columna propia. Pisar el bloque le
@@ -187,21 +187,38 @@ function conColumnaPropia() {
   // la convención de arriba puede no haber cambiado, así que el único rastro es que las columnas de
   // la Base dejaron de estar donde estaban. Sin mirar el orden, esto se calla y el repo se queda con
   // la columna vieja para siempre, con su lint marcándole que no coincide con lo declarado.
+  // Con una fila: el registro tiene que tener entradas para que haya algo que pueda quedar mal
+  // descripto. Sin ellas el freno no aplica, que es el caso de abajo.
   armarAlDia();
   escribir('semantica/GLOSARIO.md',
-    leer('semantica/GLOSARIO.md').replace(/^(\|\s*Código\s*\|[^\n]*)Alias/m, '$1Sinónimos'));
+    leer('semantica/GLOSARIO.md').replace(/^(\|\s*Código\s*\|[^\n]*)Alias/m, '$1Sinónimos')
+      .replace(/^(\|\s*---[^\n]*\|)\s*$/m, '$1\n| Local-0001 | Bulto | Cada unidad que se cotiza por separado | — | — | — |'));
   const { texto } = correr(REPO_PRUEBA);
   chequear('una columna de la Base renombrada en el repo también se marca DIVERGENTE',
     marca(texto, 'GLOSARIO.md', 'fuera de la convencion') && marca(texto, 'GLOSARIO.md', 'Sinónimos'),
     (texto.split(/\r?\n/).find(l => l.includes('GLOSARIO.md')) || 'ninguna línea lo nombra').trim());
 }
 {
-  // Los bancos de pruebas viajan pero no se nivelan: se instalan y listo. Si se compararan, todo
+  // Mismo divergente, tabla vacía. El daño que el freno evita —filas bajo una cabecera que no las
+  // describe— no puede ocurrir sin filas, y el registro vacío de la Base guarda lo mismo que el
+  // vacío del repo. Pisar sin preguntar; frenar acá le cobra al usuario una confirmación que no
+  // cambia el resultado. Medido el 06/08/2026: cuatro de los trece divergentes de los consumidores
+  // eran de este tipo.
+  armarAlDia();
+  escribir('semantica/GLOSARIO.md',
+    leer('semantica/GLOSARIO.md').replace(/^(\|\s*Código\s*\|[^\n]*)Alias/m, '$1Sinónimos'));
+  const { texto } = correr(REPO_PRUEBA);
+  chequear('la misma columna divergente sobre una tabla SIN filas se pisa, no se pregunta',
+    marca(texto, 'GLOSARIO.md', 'no tiene filas') && !marca(texto, 'GLOSARIO.md', 'fuera de la convencion'),
+    (texto.split(/\r?\n/).find(l => l.includes('GLOSARIO.md')) || 'ninguna línea lo nombra').trim());
+}
+{
+  // Los bancos de pruebas viajan pero no se actualizan: se instalan y listo. Si se compararan, todo
   // repo que corriera sus pruebas quedaría marcado para siempre.
   armarAlDia();
   escribir('planes/lint-planes/pruebas.js', '// otra cosa\n');
   const { texto } = correr(REPO_PRUEBA);
-  chequear('un banco de pruebas distinto NO se marca (se instala, no se nivela)',
+  chequear('un banco de pruebas distinto NO se marca (se instala, no se actualiza)',
     !marca(texto, 'pruebas.js'));
 }
 
@@ -232,7 +249,7 @@ console.log('\n== ESTRUCTURA ==');
 }
 {
   // Un Componente que viaja y que ninguna lista escrita a mano nombra. `ESTADOS-LOCAL.md` es el que
-  // lo destapó —un Agente Desplegado lo reportó ausente y el nivelador lo informaba al día— y es el
+  // lo destapó —un Agente Desplegado lo reportó ausente y el actualizador lo informaba al día— y es el
   // par del Agente Desplegado de `ESTADOS.md`: sin él, un estado propio se escribe en el archivo del
   // Agente Multipropósito y la corrida siguiente se lo lleva puesto.
   armarAlDia();
@@ -335,7 +352,7 @@ console.log('\n== FORMAS ANTERIORES ==');
     marca(texto, 'PREFERENCIAS.md', 'renombrar'));
 }
 {
-  // El `origen` del frontmatter es lo que decide el trato del nivelador. Un Índice que no lo declara
+  // El `origen` del frontmatter es lo que decide el trato del actualizador. Un Índice que no lo declara
   // obliga a deducirlo del nombre del archivo, que es justo lo que este modelo vino a dejar de hacer.
   armarAlDia();
   escribir('decisiones/INDICE.md', leer('decisiones/INDICE.md').replace(/^---\r?\n[\s\S]*?\r?\n---\r?\n/, ''));
@@ -378,9 +395,9 @@ console.log('\n== FORMAS ANTERIORES ==');
 }
 {
   // Una Herramienta Base ausente tiene que proponerse SOLA, no de rebote por el índice. El índice
-  // Base se reemplaza entero y trae su fila, así que si la carpeta no se propone el nivelado deja
+  // Base se reemplaza entero y trae su fila, así que si la carpeta no se propone el actualizado deja
   // la Herramienta declarada y sin carpeta, y `lint-herramientas` sale con FILAS COLGADAS: el repo
-  // termina "al día" con un control que rompió el propio nivelado. Se prueba con
+  // termina "al día" con un control que rompió el propio actualizado. Se prueba con
   // `instalar-plugins-codex` porque es la que faltaba en la lista.
   armarAlDia();
   fs.rmSync(claude('herramientas/instalar-plugins-codex'), { recursive: true, force: true });
@@ -432,8 +449,8 @@ console.log('\n== RESPALDO: EL ÚNICO MODO QUE ESCRIBE ==');
 
 console.log('\n== NO SE ROMPE NI SE CALLA ANTE LO INESPERADO ==');
 {
-  // Un repo sin `.claude/` es caso de instalación, no de nivelado. Callarse acá mandaría al usuario
-  // a nivelar un repo que todavía no tiene nada.
+  // Un repo sin `.claude/` es caso de instalación, no de actualizado. Callarse acá mandaría al usuario
+  // a actualizar un repo que todavía no tiene nada.
   fs.rmSync(REPO_PRUEBA, { recursive: true, force: true });
   fs.mkdirSync(REPO_PRUEBA, { recursive: true });
   const { texto, codigo } = correr(REPO_PRUEBA);

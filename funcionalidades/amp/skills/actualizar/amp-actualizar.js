@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// amp-actualizar.js — motor mecanico del nivelador del harness (decision 0028).
+// amp-actualizar.js — motor mecanico del actualizador del harness (decision 0028).
 // Barre el .claude/ del repo actual (process.cwd()), clasifica cada archivo y carpeta contra la estructura
 // objetivo del harness y emite el plan/reporte. Ademas hace el respaldo. La parte de JUICIO
 // (confirmar el plan, migrar terminos, preguntar ante lo divergente, escribir el contenido Base
@@ -56,7 +56,7 @@ const ENCABEZADOS_RENOMBRADOS = [
 
 // Indices de Subsistema por subsistema Base: los archivos que listan sus entradas. Cada uno se
 // declara a si mismo en un frontmatter minimo (indice, origen, columnas), y ES ESE `origen` —no el
-// nombre del archivo— lo que decide el trato del nivelador: `agente-multiproposito` se reemplaza
+// nombre del archivo— lo que decide el trato del actualizador: `agente-multiproposito` se reemplaza
 // entero, `agente-desplegado` no se abre. Deducirlo de la posicion de una seccion obligaba a entrar
 // al archivo del repo para pisar media parte; con un archivo por origen se pisa uno y listo.
 const INDICES_BASE = {
@@ -97,7 +97,7 @@ const INDICES_PARTIDOS = [
 ];
 
 // El modulo comun de lectura de frontmatter. Se lo trae de la carpeta `base/` que este mismo plugin
-// lleva al lado —la que instala en el destino—, y NO del `.claude/` del repo que se esta nivelando:
+// lleva al lado —la que instala en el destino—, y NO del `.claude/` del repo que se esta actualizando:
 // ese es justo el que puede no tenerlo todavia, o tenerlo en la version vieja. Es la misma ruta
 // relativa con la que este script ya resuelve BASE, asi que existe siempre que exista el plugin.
 const { declaraIndice: declaraIndiceEn, cabeceraTabla, origenDe } = require('../inicializar/base/common/frontmatter.js');
@@ -127,10 +127,10 @@ const SUBSISTEMAS = ['subsistemas', 'preferencias', 'planes', 'conocimiento', 's
 
 // Herramientas que el harness manda (origen Base) y que todo repo al dia deberia tener bajo
 // .claude/herramientas/<nombre>/<nombre>.js. No confundir con las del Proposito, que las suma
-// cada repo y el nivelador nunca toca.
+// cada repo y el actualizador nunca toca.
 // Toda Herramienta que viaje en `base/herramientas/` va aca. Faltar en esta lista no es "no se
 // avisa": el INDICE.md Base se reemplaza entero y trae la fila, asi que la Herramienta queda
-// declarada y sin carpeta, y `lint-herramientas` sale con FILAS COLGADAS. El nivelado termina
+// declarada y sin carpeta, y `lint-herramientas` sale con FILAS COLGADAS. El actualizado termina
 // "aplicado" habiendo roto un control que estaba verde.
 const HERRAMIENTAS_BASE = ['actualizar-plugins', 'instalar-plugins-codex'];
 
@@ -186,7 +186,7 @@ function chequearContenido(add) {
     return;
   }
   for (const rel of listarBase('', [])) {
-    if (/(^|\/)pruebas\.js$/.test(rel)) continue;   // banco de pruebas: se instala, no se nivela
+    if (/(^|\/)pruebas\.js$/.test(rel)) continue;   // banco de pruebas: se instala, no se actualiza
     const destino = path.join(claude, rel);
     if (!existe(destino)) {
       // La ausencia NO siempre la reporta otro chequeo: los de arriba nombran a mano el MANIFIESTO,
@@ -220,7 +220,7 @@ function chequearContenido(add) {
         continue;
       }
       // El repo extendio la tabla. Si eso es lo UNICO que difiere —el texto de la convencion es el
-      // mismo y las columnas de la Base siguen estando, en su orden— no hay nada que nivelar y hay
+      // mismo y las columnas de la Base siguen estando, en su orden— no hay nada que actualizar y hay
       // que callarse: marcarlo dejaria a ese repo con un hallazgo bloqueante en cada corrida, para
       // siempre, sin nada que hacer al respecto.
       if (textoDeLaConvencion(a) === textoDeLaConvencion(b) && deLaBase.every((c, i) => delRepo[i] === c))
@@ -230,10 +230,22 @@ function chequearContenido(add) {
       // columnas de las que tienen —registro corrupto, y clasificado como un cambio de convencion
       // cualquiera—, y fusionar a ciegas duplicaria la columna si lo que paso fue un renombre.
       //
+      // Salvo que no haya filas. El daño que este freno evita es que las filas queden bajo una
+      // cabecera que no las describe, y una tabla vacia no tiene ninguna: la ambiguedad sobre que
+      // paso sigue existiendo, pero ya no decide nada, porque el registro vacio de la Base y el
+      // vacio del repo guardan lo mismo. Frenar igual le cobra al usuario una confirmacion que no
+      // cambia el resultado —de los trece divergentes medidos el 06/08/2026 en los consumidores,
+      // cuatro eran de este tipo—, y una confirmacion sin consecuencia entrena a decir que si a las
+      // que si la tienen.
+      const filas = contarFilasTabla(instalado);
+      if (filas === 0) {
+        add('base', '~', rel, 'encabezado viejo con columnas propias, pero la tabla no tiene filas: pisar no deja ninguna entrada mal descripta');
+        continue;
+      }
       // El mensaje no afirma cual de las dos cosas es, porque el detector no puede saberlo: que el
       // repo sume `Sinonimos` y que la Base renombre `Alias` a otra cosa dejan exactamente la misma
       // evidencia. Lo decide el usuario, que si conoce la historia de su repo.
-      add('divergente', '?', rel, `columna(s) fuera de la convencion de la Base (${propias.join(', ')}): las sumo el repo, o la Base renombro las suyas — pisar el encabezado dejaria sus ${contarFilasTabla(instalado)} fila(s) bajo una cabecera que no las describe`);
+      add('divergente', '?', rel, `columna(s) fuera de la convencion de la Base (${propias.join(', ')}): las sumo el repo, o la Base renombro las suyas — pisar el encabezado dejaria sus ${filas} fila(s) bajo una cabecera que no las describe`);
       continue;
     }
     if (normalizar(instalado) !== normalizar(queViaja))
@@ -266,7 +278,7 @@ const yaCubierto = rel => hallazgos.some(h =>
 
 function clasificar() {
   if (!esDir(claude)) {
-    add('divergente', '?', '.claude/', 'no existe: este repo no tiene el Agente Multiproposito instalado (usar amp:inicializar, no el nivelador)');
+    add('divergente', '?', '.claude/', 'no existe: este repo no tiene el Agente Multiproposito instalado (usar amp:inicializar, no el actualizador)');
     return;
   }
 
@@ -328,7 +340,7 @@ function clasificar() {
 
   // [1d] Indices que todavia no tienen el nucleo de columnas. Un Indice puede estar declarado y
   // partido por origen y aun asi conservar la forma vieja de su tabla (`| Plan | Estado | …`,
-  // `| Concepto | Definicion | …`). Sin esta deteccion el nivelador informa "al dia" un Agente
+  // `| Concepto | Definicion | …`). Sin esta deteccion el actualizador informa "al dia" un Agente
   // Desplegado cuyo registro no tiene Codigo ni Descripcion: el frontmatter esta, la tabla no.
   for (const [sub, archivos] of Object.entries(INDICES_BASE)) {
     const dir = path.join(claude, sub);
@@ -496,7 +508,7 @@ function revisarHook(settingsPath) {
 
 // Las rutas donde escribe el mecanismo y que por eso el repo destino tiene que ignorar. La lista
 // es la misma que el bloque §Gitignore de la PLANTILLA de amp:inicializar. El respaldo del
-// nivelador NO esta: se escribe fuera del repo, en el temporal del sistema.
+// actualizador NO esta: se escribe fuera del repo, en el temporal del sistema.
 const RUTAS_IGNORADAS = ['.claude/settings.local.json', '.claude/tmp/'];
 
 // lee .gitignore y devuelve cuales de esas rutas NO estan ignoradas. Normaliza cada linea sacando
@@ -578,7 +590,7 @@ function reportar() {
   console.log(yaEstaban.length ? '    ' + yaEstaban.map(s => `${s}/`).join('  ') : '    (ninguno)');
   console.log('');
 
-  if (totalAccion === 0) console.log('Repo al día: nada para nivelar.');
+  if (totalAccion === 0) console.log('Repo al día: nada para actualizar.');
   else console.log(`Total de acciones propuestas: ${totalAccion}. Revisá el plan antes de aplicar.`);
 }
 
