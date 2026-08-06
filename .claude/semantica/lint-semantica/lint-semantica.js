@@ -16,7 +16,7 @@ const maniPath = path.join(root, 'MANIFIESTO.md');
 const problemasIndices = problemasDeIndices(indices, fs.existsSync(maniPath) ? fs.readFileSync(maniPath, 'utf8') : null);
 const nombresIndice = new Set(indices.map(i => i.nombre));
 // Se prueban varias columnas testigo: la del nucleo primero y la vieja despues, que se acepta
-// mientras haya Agentes Desplegados sin nivelar. Con el nucleo las dos primeras columnas se
+// mientras haya Agentes Desplegados sin actualizar. Con el nucleo las dos primeras columnas se
 // llaman igual en los dos registros (`Nombre`, `Descripcion`), asi que lo que distingue es una
 // columna propia de cada uno: `Alias` en el glosario, `Control` en Terminologia Farlopa.
 const conColumna = (cols, nombreViejo) => {
@@ -80,7 +80,7 @@ function celdasDe(linea) {
     .split(/(?<!\\)\|/).map(c => c.replace(/\\\|/g, '|').trim());
 }
 // Devuelve las filas como objetos {<columna>: valor}. El nombre de la columna del termino cambio
-// a `Nombre` con el nucleo; se acepta la forma vieja mientras haya Agentes Desplegados sin nivelar.
+// a `Nombre` con el nucleo; se acepta la forma vieja mientras haya Agentes Desplegados sin actualizar.
 function filasDe(texto, testigo) {
   const lineas = texto.split('\n').map(l => l.trim()).filter(l => l.startsWith('|'));
   let cab = null;
@@ -174,7 +174,7 @@ for (const r of rows) for (const p of splitTerms(r.propuestos)) propuestos.push(
 
 // [5] apariciones de vetados en el repo (barrido recursivo desde la raiz)
 // Reusa walk()+EXCLUDE de lint-conocimiento. Dos grupos: prosa (accion inmediata) y codigo (informativo).
-// '.respaldo-amp' son copias congeladas de .claude/ que dejaron corridas viejas del nivelador:
+// '.respaldo-amp' son copias congeladas de .claude/ que dejaron corridas viejas del actualizador:
 // sus hallazgos ya no se pueden corregir y duplican el diagnostico real. No se barren.
 // 'tmp' es material de trabajo descartable (handoffs, notas, borradores) que el propio harness
 // gitignorea: sus hallazgos no se corrigen, se borra la carpeta. Excluye por NOMBRE, en

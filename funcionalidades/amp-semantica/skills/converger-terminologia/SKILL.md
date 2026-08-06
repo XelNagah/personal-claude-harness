@@ -48,6 +48,21 @@ Con un alcance acotado, las autoexclusiones del paso 3 siguen valiendo, pero lo 
    - **ratificar como alias** (forma válida alternativa, al glosario),
    - **vetar / reemplazar por el canónico** (el término no va más en ese significado: fila en Terminología Farlopa),
    - **asentar como concepto nuevo** (no competía: era un hueco del glosario).
+
+   **Una palabra corriente sola casi nunca es un concepto.** El glosario no es un diccionario: no se
+   agrega una palabra del español para definirla. Antes de proponer un concepto nuevo, probar si el
+   término se sostiene solo dentro de seis meses, leído en la tabla sin el mecanismo delante.
+   `divergente` no se sostiene: mañana puede ser cualquier cosa que difiera de otra. `Índice local
+   vacío al actualizar` sí, siempre. Cuando la palabra no alcanza, la propuesta correcta no es
+   asentarla igual con una definición larga que compense: es **componer el término que distingue al
+   concepto** de los otros significados con que se confunde — o no proponer nada y escribir la cosa
+   con palabras llanas.
+
+   Es el criterio del paso 3 dado vuelta. Allá se registra la expresión y no la palabra pelada porque
+   el registro enumera lo prohibido; acá se asienta el término compuesto y no la palabra pelada
+   porque una entrada del glosario tiene que seguir nombrando **una** cosa cuando ya nadie recuerda
+   de qué se hablaba al escribirla.
+
 6. **Aplicar solo lo ratificado:** actualizar los registros; reescribir el texto plano de los reemplazos aprobados; dejar el grupo de código como lista informativa para refactors deliberados. Las filas de los dos registros llevan `Código` adelante: `Local-NNNN`, **el mayor de ese Índice más uno** —nunca la cantidad de filas más uno, que repetiría un código ya usado si alguna vez se retiró una entrada—, y un código retirado deja un hueco que no se reusa. En el glosario, `Nombre` es el concepto y `Descripción` su definición; en Terminología Farlopa, `Nombre` es el término y `Descripción` es el **Significado Farlopa**, el significado que se veta.
 7. **Cerrar con el lint** desde la raíz del repo:
 
