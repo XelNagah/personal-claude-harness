@@ -53,6 +53,11 @@ function correrConsulta(consulta) {
       '--allowed-tools', ...HERRAMIENTAS,
     ];
 
+    // `shell: true` es obligatorio en Windows: `claude` es un .cmd y spawn sin
+    // intérprete falla con EINVAL. Node avisa que los argumentos van concatenados
+    // sin escapar; el riesgo queda acotado porque las consultas salen de banco.json,
+    // que es un archivo del repo, y no de entrada de afuera. Si alguna vez el banco
+    // se arma con texto que no controla el repo, esto hay que resolverlo antes.
     const proc = spawn('claude', args, { cwd: raizRepo, shell: true });
 
     let resto = '';
