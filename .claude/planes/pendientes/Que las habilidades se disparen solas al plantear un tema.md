@@ -1,6 +1,6 @@
 # Que las habilidades se disparen solas al plantear un tema
 
-**Estado: Nuevo · Creado 26-08-06.** Origen: el usuario, en la sesión del 06/08/2026 — *"cuando yo planteo un tema ya directamente tiene que analizarlo a la luz de la sabiduría del repo sin que yo diga nada. Cuando veo q empieza con cosas raras le tengo que decir? a ver? usa converger terminologia o amp:planificar. Necesito que sea más automático"*.
+**Estado: En curso · Creado 26-08-06.** Origen: el usuario, en la sesión del 06/08/2026 — *"cuando yo planteo un tema ya directamente tiene que analizarlo a la luz de la sabiduría del repo sin que yo diga nada. Cuando veo q empieza con cosas raras le tengo que decir? a ver? usa converger terminologia o amp:planificar. Necesito que sea más automático"*.
 
 ## El problema
 
@@ -94,13 +94,33 @@ Se apoya en que los Índices están hechos para esto: el `INDICE.md` de conocimi
 - **La Decisión Local-0025 acepta fugas en la conversación** —*"la conversación es efímera, bajo daño"*—. El pedido del usuario objeta esa premisa: el daño lo paga su atención en cada turno. Hay que precisarla.
 - **«sabiduría del repo» no está en el glosario.** Circula en los títulos de dos planes y en la regla `Base-0005`. El barrido del 06/08/2026 ya lo marcó como candidato sin canónico asentado.
 
+## Estado
+
+Medición del 06/08/2026: banco completo de la Herramienta `probar-disparo-de-skills` (Local-0012) sobre las dos descripciones ya reescritas por situación, publicadas e instaladas (`amp` 0.38.0, `amp-semantica` 0.12.0). Seis consultas, cada una en sesión limpia propia:
+
+| Consulta | Esperado | Observado | Resultado |
+|---|---|---|---|
+| planificar-01 «quiero que los planes guarden la prioridad» | dispara `planificar` | contestó sin usar ninguna herramienta | **FALLA** |
+| planificar-02 «se me ocurre que los lints deberían correr solos cuando termino una tarea» | dispara `planificar` | contestó sin usar ninguna herramienta | **FALLA** |
+| planificar-03 «cuántos planes pendientes hay» | no dispara | usó `Bash` | OK |
+| planificar-04 «corré el control de cierre» | no dispara | usó `PowerShell` | OK |
+| converger-01 «a la carpeta que viaja adentro del plugin la llamaría capa de instalación» | dispara `converger-terminologia` | contestó sin usar ninguna herramienta | **FALLA** |
+| converger-02 «dónde está el archivo del glosario» | no dispara | contestó sin disparar | OK |
+
+**Conclusión: gana la hipótesis B — con un matiz medido después.** Las tres consultas que debían disparar no dispararon ni con las descripciones por situación. Esta conclusión sí es válida: a diferencia de la prueba anterior, las descripciones medidas ya no eran frases-comando. Las tres negativas no dispararon de más, así que el banco no acusa falsos positivos ni sobredisparo.
+
+**El matiz (investigación del 06/08/2026):** dos estudios independientes con la misma metodología que este banco (sesiones reales + verificar la tool `Skill`) muestran que lo probado acá es la variante «situacional» de la description, y que existe una variante **directiva** sin medir: «SIEMPRE invocá esta skill cuando… No hagas X directamente — invocá esta skill primero». Números ajenos: activación de base ~50% (issue anthropics/claude-code#9716); description situacional con más disparadores, pobre; **directiva con restricción negativa, 100% sin hook** (Seleznov, 650 sesiones, feb 2026); hook de instrucción simple 20%, hook de evaluación forzada con compromiso en 3 pasos 84% (Spence, 200+ pruebas, nov 2025); un hook de puntaje que inyecta candidatas puede **bajar** la activación 30 puntos si el texto describe el trabajo en vez de ordenar usar la tool. O sea: quedó probado que *ese* texto no alcanza, no que *ningún* texto alcance — se abre la rama A′ (description directiva) antes de pagar el hook.
+
+Sobre la Decisión Local-0025: no queda refutada — su segunda cláusula ahora tiene una medición que la apoya, aunque sigue mezclando el hecho mecánico con la inferencia y conviene precisarla al corregirla por el punto de las fugas.
+
 ## Pasos
 
-1. **Medir cuál hipótesis es**, en sesión limpia — una sesión donde ya se nombraron las habilidades está contaminada para probar si disparan solas. Mensajes que no nombran ninguna: *"quiero que los planes guarden la prioridad"*, *"esto lo llamaría capa de configuración"*. Ver si `amp:planificar` y `converger-terminologia` disparan.
-2. Repetir con las descripciones ensanchadas y comparar. Si dispara, gana A.
-3. Según el resultado: ensanchar descripciones (A) o llevar el disparo al hook repartidor (B).
-4. Construir el programa que compara, con el alcance y el umbral ya decididos.
-5. Si ganó A, **corregir la Decisión Local-0025** — su segunda cláusula queda refutada.
+1. ~~**Medir cuál hipótesis es**, en sesión limpia~~ — **hecho el 06/08/2026**: ninguna habilidad disparó con las descripciones viejas (sesión `c83db9c5`).
+2. ~~Repetir con las descripciones ensanchadas y comparar~~ — **hecho el 06/08/2026**: tampoco disparan (ver `## Estado`). **Gana B.**
+3. **Rama A′, antes de pagar el hook:** reescribir las dos descriptions en forma directiva («SIEMPRE invocá… No hagas X directamente») y repetir el banco completo — las negativas también, porque el lenguaje directivo puede sobredisparar. Si replica el 100% del estudio, el disparo queda resuelto sin costo por turno.
+4. Si A′ no alcanza, llevar el disparo al hook repartidor (B) — con el formato de evaluación forzada con compromiso (84% medido), nunca instrucción simple (20%) ni texto que describa el trabajo (empeora).
+5. Construir el programa que compara, con el alcance y el umbral ya decididos — sigue valiendo gane quien gane: acerca las filas relevantes de los 135 KB no cargados, que es otra cosa que el disparo.
+6. ~~Si ganó A, **corregir la Decisión Local-0025**~~ — no ganó A; la segunda cláusula quedó apoyada por la medición, no refutada. Si A′ replica el 100%, reabrir este punto.
 
 ## Planes relacionados
 
