@@ -9,10 +9,57 @@
 
 const fs = require('fs');
 const path = require('path');
-const { leerFrontmatter, cabeceraTabla } = require('./frontmatter.js');
+const { leerFrontmatter, cabeceraTabla, celdasDe, esSeparadora } = require('./frontmatter.js');
 
 const ORIGENES = ['agente-multiproposito', 'agente-desplegado'];
 const ETIQUETA_ORIGEN = { 'agente-multiproposito': 'Agente Multipropósito', 'agente-desplegado': 'Agente Desplegado' };
+
+// CONTROL DE LONGITUD DE DESCRIPCION — avisa (reporta el hallazgo y deja seguir; no bloquea).
+//
+// Largo maximo de la celda `Descripcion`, en caracteres. La convencion de cada Indice ya la define
+// como "una linea"; esto es esa linea escrita como numero, para que deje de depender del criterio
+// del que edita. Importa porque cuatro de estos Indices se cargan en CADA arranque de sesion de
+// CADA repo instalado: una celda que crece deja de ser un puntero y pasa a ser contenido que se
+// paga siempre. Medido el 06/08/2026, el arranque de este repo estaba en 52.7 KB contra un tope de
+// 52.0 y el grueso recortable eran celdas de estos registros.
+//
+// El numero NO es uno solo, porque la celda no cumple la misma funcion en todos los registros, y
+// eso lo declara cada uno de si mismo:
+// - Donde la celda es un puntero —`conocimiento` dice "lo suficiente para decidir si vale abrirla;
+//   el desarrollo va en la pagina"— el agente abre la pagina antes de actuar y lo que sobra se baja
+//   sin costo.
+// - Donde la celda es OPERATIVA el agente actua desde ella sin abrir nada: el manifiesto de
+//   `herramientas` manda "consultar el indice para saber que existe y como se invoca". Ahi una
+//   condicion que sale de la celda no se muda, se pierde. El caso medido: `medir-contexto` lleva en
+//   su celda que el tope no es de un Agente Desplegado para mover, y su salida ofrece literalmente
+//   "decidir entre subirlo o recortar" — sin esa frase cargada, la salida barata es subir el tope.
+//
+// Lo que se recorta es la elaboracion, nunca la condicion operativa ni la enumeracion que hace la
+// fila encontrable: la celda es tambien el gancho de busqueda, y una pagina que existe y que nadie
+// encuentra buscando por su tema esta perdida igual que si no estuviera.
+const LARGO_MAX_DESCRIPCION = 200;
+const LARGO_MAX_DESCRIPCION_OPERATIVA = 350;
+
+// Las excepciones al largo por defecto: `0` es exento y cualquier otro numero es su propio maximo.
+// Es una lista de excepciones y no de incluidos a proposito, asi un subsistema que un Agente
+// Desplegado agregue con `agregar-subsistema` nace controlado en vez de nacer afuera. Un control
+// que solo alcanza lo que alguien se acordo de anotar valida sobre un conjunto vacio y contesta en
+// verde (conocimiento `controles-que-no-avisan`).
+//
+// Los exentos, con su motivo:
+// - `preferencias`: su convencion dice que la Descripcion lleva TODO lo que hace falta para
+//   obedecer, aunque sea larga — el corte es por funcion, no por largo. Lo que sale de la celda deja
+//   de estar cargado, y una regla que hay que ir a buscar es una regla que no se aplica.
+// - `decisiones/INDICE.md`: la celda es el que + por que de la decision, no un resumen de el.
+// - `semantica/GLOSARIO.md`: la celda es la definicion del termino.
+// Se anotan por `subsistema` o por `subsistema/archivo`: `semantica` tiene dos Indices y solo uno
+// esta exento, asi que la clave gruesa no alcanzaria.
+const LARGO_MAX_POR_INDICE = {
+  preferencias: 0,
+  'decisiones/INDICE.md': 0,
+  'semantica/GLOSARIO.md': 0,
+  herramientas: LARGO_MAX_DESCRIPCION_OPERATIVA,
+};
 
 // Indices de un subsistema: los .md de su carpeta con frontmatter `indice:`, mas los nombres
 // viejos que todavia no lo declaran. Da {archivo, nombre, texto, indice, origen, columnas, cabecera}.
@@ -38,13 +85,13 @@ function indicesDe(dirSub, nombresViejos) {
   return salida;
 }
 
-// Tres controles sobre lo declarado. [a] Las columnas, en los DOS sentidos: la declarada que la
+// Cuatro controles sobre lo declarado. [a] Las columnas, en los DOS sentidos: la declarada que la
 // tabla no tiene y la que la tabla tiene sin declarar. Con un solo sentido el frontmatter puede
 // mentir por omision, y el codigo que ubica una columna por nombre —el repartidor de conducta
 // ubica Momento y Clase— deja de encontrarla sin emitir ningun error. [b] El manifiesto contra el
 // frontmatter: el manifiesto lista los Indices como texto fijo y el frontmatter es la autoridad;
 // sin compararlos, el mismo dato queda escrito en dos lugares que nada sincroniza. [c] Las filas
-// pegadas, abajo.
+// pegadas y [d] el Control de Longitud de Descripcion, los dos abajo.
 // [c] Dos filas en una sola linea. Una edicion que pierde el salto fusiona la fila siguiente dentro
 // de la celda final de la anterior: el texto queda entero y se lee normal —abrir el archivo no lo
 // delata— pero la entrada deja de existir para todo el que lea el registro por filas. Una
@@ -74,6 +121,37 @@ function filasPegadas(idx) {
   return out;
 }
 
+// [d] CONTROL DE LONGITUD DE DESCRIPCION: celdas que se pasaron. El maximo de cada Indice sale de su ruta
+// —`.claude/<subsistema>/<Indice>.md` por el Patron—; si el llamador armo el objeto a mano y no la
+// trae, rige el maximo por defecto: la excepcion tiene que declararse, porque un dato ausente
+// apagando un control es justamente el modo de falla que este banco persigue.
+function maximoDe(idx) {
+  if (!idx.archivo) return LARGO_MAX_DESCRIPCION;
+  const sub = path.basename(path.dirname(path.resolve(idx.archivo)));
+  for (const clave of [`${sub}/${idx.nombre}`, sub]) {
+    if (Object.prototype.hasOwnProperty.call(LARGO_MAX_POR_INDICE, clave)) return LARGO_MAX_POR_INDICE[clave];
+  }
+  return LARGO_MAX_DESCRIPCION;
+}
+
+function descripcionesLargas(idx) {
+  const out = [];
+  const maximo = maximoDe(idx);
+  if (typeof idx.texto !== 'string' || maximo === 0) return out;
+  const col = (idx.cabecera || []).findIndex(c => /^descripci[oó]n$/i.test(c));
+  if (col < 0) return out;
+  for (const linea of idx.texto.split('\n')) {
+    const celdas = celdasDe(linea);
+    if (!celdas || esSeparadora(celdas)) continue;
+    if (!/^(?:Base|Local)-\d{4}$/.test(celdas[0] || '')) continue;
+    const desc = celdas[col] || '';
+    if (desc.length > maximo) {
+      out.push(`Control de Longitud de Descripción — ${idx.nombre}: ${celdas[0]} la tiene en ${desc.length} caracteres y el máximo es ${maximo}. Bajar a la página de detalle la elaboración, nunca una condición operativa ni lo que hace encontrable la fila`);
+    }
+  }
+  return out;
+}
+
 // Un Indice en la forma anterior —descubierto por su nombre de siempre, sin frontmatter— se tolera
 // a proposito: hay Agentes Desplegados sin actualizar y romperles el lint no los actualiza. Pero la
 // tolerancia se dice. Sin esta linea el archivo queda afuera de `declarados` y los controles de
@@ -90,6 +168,7 @@ function problemasDeIndices(idxs, manifiestoTxt) {
   for (const i of declarados) {
     if (!ORIGENES.includes(i.origen)) out.push(`${i.nombre}: origen "${i.origen}" invalido (validos: ${ORIGENES.join(' / ')})`);
     out.push(...filasPegadas(i));
+    out.push(...descripcionesLargas(i));
     if (!i.columnas) continue;
     if (!i.cabecera) { out.push(`${i.nombre}: declara columnas pero no se encontro la tabla`); continue; }
     for (const c of i.columnas) if (!i.cabecera.includes(c)) out.push(`${i.nombre}: columna declarada "${c}" que la tabla no tiene`);
@@ -113,4 +192,7 @@ function problemasDeIndices(idxs, manifiestoTxt) {
   return out;
 }
 
-module.exports = { ORIGENES, ETIQUETA_ORIGEN, indicesDe, problemasDeIndices };
+module.exports = {
+  ORIGENES, ETIQUETA_ORIGEN, LARGO_MAX_DESCRIPCION, LARGO_MAX_DESCRIPCION_OPERATIVA, LARGO_MAX_POR_INDICE,
+  indicesDe, problemasDeIndices,
+};

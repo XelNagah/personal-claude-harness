@@ -13,7 +13,7 @@ Los **estados** y su semántica (a qué carpeta mapea cada uno, cuáles son term
 
 - **Código** — `Local-NNNN`. Se asigna al crear la entrada y no se reusa.
 - **Nombre** — el título del plan. Único en el Índice.
-- **Descripción** — de qué se trata el plan, en una línea.
+- **Descripción** — de qué se trata el plan, en una línea; el **Control de Longitud de Descripción** avisa cuando una celda se pasa. Todo lo largo va en el archivo del plan, que se abre antes de trabajarlo.
 - **Estado** — uno de los definidos en `ESTADOS.md`: `Nuevo`, `Análisis`, `Listo`, `En curso`, `En pausa`, `Diferido` (vivos, en `pendientes/`), `Ejecutado`, `Descartado` (terminales).
 - **Fecha de creación / Fecha de cierre** — `AA-MM-DD`; la de cierre en `—` mientras el plan esté vivo.
 - **Origen** — plan del que se desprendió, si aplica.

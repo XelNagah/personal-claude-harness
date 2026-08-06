@@ -63,19 +63,31 @@ function declaraIndice(txt) {
   return !!(fm && fm.indice);
 }
 
-// Encabezado real de la primera tabla markdown del texto (null si no tiene tabla). Las celdas se
-// separan respetando las tuberias escapadas (`\|`), que de otro modo corren las columnas. La linea
-// separadora (`|---|---|`) se saltea: no es el encabezado, lo sigue.
+// Las celdas de una linea de tabla markdown, o null si la linea no es una fila. Se separan
+// respetando las tuberias escapadas (`\|`), que de otro modo corren las columnas: quien despues
+// ubica una columna por posicion se lleva el contenido de la de al lado. Devuelve el texto tal cual
+// —sin tocar el resaltado— porque los llamadores que miden la celda miden lo que hay escrito.
+function celdasDe(linea) {
+  const t = String(linea == null ? '' : linea).trim();
+  if (!t.startsWith('|')) return null;
+  return t.replace(/^\|/, '').replace(/\|$/, '')
+    .split(/(?<!\\)\|/).map(c => c.replace(/\\\|/g, '|').trim());
+}
+
+// Es la linea separadora de una tabla (`|---|---|`), la que sigue al encabezado y no es una fila.
+const esSeparadora = celdas => /^:?-{2,}:?$/.test((celdas[0] || '').replace(/\s/g, ''));
+
+// Encabezado real de la primera tabla markdown del texto (null si no tiene tabla). La linea
+// separadora se saltea: no es el encabezado, lo sigue. Al encabezado —y solo a el— se le saca el
+// resaltado, para que `**Código**` y `Código` sean la misma columna al cotejar con el frontmatter.
 function cabeceraTabla(txt) {
   for (const linea of sinMarcaDeOrden(txt).split(/\r?\n/)) {
-    const t = linea.trim();
-    if (!t.startsWith('|')) continue;
-    const celdas = t.replace(/^\|/, '').replace(/\|$/, '')
-      .split(/(?<!\\)\|/).map(c => c.replace(/\*/g, '').replace(/\\\|/g, '|').trim());
-    if (/^:?-{2,}:?$/.test((celdas[0] || '').replace(/\s/g, ''))) continue;
-    return celdas;
+    const celdas = celdasDe(linea);
+    if (!celdas) continue;
+    if (esSeparadora(celdas)) continue;
+    return celdas.map(c => c.replace(/\*/g, '').trim());
   }
   return null;
 }
 
-module.exports = { sinMarcaDeOrden, bloqueFrontmatter, leerFrontmatter, origenDe, declaraIndice, cabeceraTabla };
+module.exports = { sinMarcaDeOrden, bloqueFrontmatter, leerFrontmatter, origenDe, declaraIndice, cabeceraTabla, celdasDe, esSeparadora };

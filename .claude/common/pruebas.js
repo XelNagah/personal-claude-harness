@@ -89,6 +89,62 @@ caso('tres filas pegadas dan un hallazgo por linea',
   idx.problemasDeIndices(idxDe(['A'], ['A'], undefined,
     '| Código |\n|---|\n| Local-0001 | a | | Local-0002 | b | | Local-0003 | c |\n'), MANI).length, 1);
 
+// CONTROL DE LONGITUD DE DESCRIPCION — avisa. La convencion de cada Indice define esa celda como
+// "una linea"; el Control es esa linea escrita como numero. Los cuatro Indices que se cargan en
+// cada arranque de cada repo instalado pagan el ancho de esa celda siempre, y hasta ahora nada lo
+// miraba: se veia recien cuando `medir-contexto` pasaba el tope, y sin decir que celda fue.
+const conDesc = (desc, archivo) => [{
+  archivo, nombre: 'INDICE.md', indice: 'X', origen: 'agente-desplegado',
+  columnas: ['Código', 'Descripción'], cabecera: ['Código', 'Descripción'],
+  texto: `| Código | Descripción |\n|---|---|\n| Local-0001 | ${desc} |\n`,
+}];
+const LARGA = 'x'.repeat(idx.LARGO_MAX_DESCRIPCION + 1);
+const JUSTA = 'x'.repeat(idx.LARGO_MAX_DESCRIPCION);
+caso('la Descripcion pasada de largo se marca',
+  idx.problemasDeIndices(conDesc(LARGA, '.claude/conocimiento/INDICE.md'), MANI).length, 1);
+// El caso bueno en el limite exacto: sin el, un control con `>=` marcaria toda celda del repo y la
+// unica salida seria apagarlo. Se afirma el borde, no un valor comodo.
+caso('la Descripcion justo en el limite no se marca',
+  idx.problemasDeIndices(conDesc(JUSTA, '.claude/conocimiento/INDICE.md'), MANI), []);
+// La celda OPERATIVA tiene su propio maximo: en `herramientas` el agente invoca desde el Indice sin
+// abrir la ficha —lo manda su manifiesto— y una condicion que sale de la celda no se muda, se
+// pierde. Se prueba con el MISMO texto que se marca en un Indice puntero: lo que se afirma es el
+// maximo distinto y no el texto.
+const OPERATIVA = 'x'.repeat(idx.LARGO_MAX_DESCRIPCION_OPERATIVA);
+caso('herramientas admite mas que el maximo puntero',
+  idx.problemasDeIndices(conDesc(OPERATIVA, '.claude/herramientas/INDICE.md'), MANI), []);
+// El mismo texto en un Indice puntero SI se marca: sin este par, un maximo operativo puesto por
+// error en todos los registros pasaria igual.
+caso('ese mismo texto en un Indice puntero se marca',
+  idx.problemasDeIndices(conDesc(OPERATIVA, '.claude/conocimiento/INDICE.md'), MANI).length, 1);
+caso('herramientas tambien tiene techo, no es exento',
+  idx.problemasDeIndices(conDesc(OPERATIVA + 'x', '.claude/herramientas/INDICE.md'), MANI).length, 1);
+
+// Los exentos: registros donde la celda es el contenido y no un puntero a el. Se prueba con el
+// MISMO texto que se marca en un Indice medido, asi lo que se afirma es la exencion y no el texto.
+caso('preferencias esta exento por subsistema',
+  idx.problemasDeIndices(conDesc(LARGA, '.claude/preferencias/INDICE.md'), MANI), []);
+caso('el glosario esta exento y su par de semantica no',
+  idx.problemasDeIndices([...conDesc(LARGA, '.claude/semantica/GLOSARIO.md'),
+    ...conDesc(LARGA, '.claude/semantica/TERMINOLOGIA-FARLOPA.md')].map((i, n) =>
+    ({ ...i, nombre: n ? 'TERMINOLOGIA-FARLOPA.md' : 'GLOSARIO.md' })),
+  null).length, 1);
+// Sin ruta no se puede resolver el exento, y ahi se controla igual: la ausencia de un dato no puede
+// apagar un control, que es el modo de falla que persigue todo este banco.
+caso('sin ruta se controla igual, no se exime',
+  idx.problemasDeIndices(conDesc(LARGA, undefined), MANI).length, 1);
+// Un Indice sin columna Descripcion no tiene nada que medir y no debe inventar hallazgos.
+caso('un Indice sin columna Descripcion no se marca',
+  idx.problemasDeIndices(idxDe(['A'], ['A']), MANI), []);
+// La tuberia escapada adentro de la celda: sin respetarla, la Descripcion se corta donde no termina
+// y una celda pasada de largo se mide corta — el control da verde sobre el caso que persigue.
+caso('la tuberia escapada no corta la Descripcion medida',
+  idx.problemasDeIndices([{
+    archivo: '.claude/conocimiento/INDICE.md', nombre: 'INDICE.md', indice: 'X',
+    origen: 'agente-desplegado', columnas: ['Código', 'Descripción'], cabecera: ['Código', 'Descripción'],
+    texto: `| Código | Descripción |\n|---|---|\n| Local-0001 | ${'x'.repeat(150)} \\| ${'x'.repeat(60)} |\n`,
+  }], MANI).length, 1);
+
 // Forma anterior: el archivo se descubre por su nombre de siempre y no declara nada de si mismo.
 // Se tolera —hay Agentes Desplegados sin actualizar— pero se dice, porque los controles de origen y
 // columnas no corren sobre el y el silencio se lee como registro sano.
