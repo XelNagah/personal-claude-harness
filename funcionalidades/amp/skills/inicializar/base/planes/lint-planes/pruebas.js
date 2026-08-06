@@ -80,11 +80,18 @@ caso('En pausa sin estado_a_retomar', 'EN PAUSA SIN estado_a_retomar VALIDO',
 caso('estado_a_retomar en un estado que no es En pausa', 'estado_a_retomar EN UN ESTADO QUE NO ES EN PAUSA',
   () => fs.appendFileSync(path.join(BANCO, 'pendientes/Estructura del documento de Plan.md'),
                           '\n**estado_a_retomar:** En curso\n'));
+// "En pausa" sale ademas hacia Diferido y Descartado, pero de esos no se RETOMA. Mientras los
+// valores validos se derivaban de la fila "En pausa", este caso pasaba: el lint leia "Descartado"
+// entre los destinos declarados y lo daba por bueno, sin emitir nada. Se derivan de los origenes.
+caso('estado_a_retomar con una salida de cierre (no es un estado de retomada)', 'EN PAUSA SIN estado_a_retomar VALIDO',
+  () => { escribir(reg().replace(/(\| Local-0015 \| [^|]+\| [^|]+\| )Nuevo /, '$1En pausa '));
+          fs.appendFileSync(path.join(BANCO, 'pendientes/Estructura del documento de Plan.md'),
+                            '\n**estado_a_retomar:** Descartado\n'); });
 const romperEstados = f => { const p = path.join(BANCO, 'ESTADOS.md'); fs.writeFileSync(p, f(fs.readFileSync(p, 'utf8'))); };
 caso('grafo: un terminal declara salidas', 'GRAFO DE TRANSICIONES MAL FORMADO (ESTADOS.md)',
   () => romperEstados(t => t.replace('| Ejecutado | — |', '| Ejecutado | Nuevo |')));
 caso('grafo: transición a algo que no es estado', 'GRAFO DE TRANSICIONES MAL FORMADO (ESTADOS.md)',
-  () => romperEstados(t => t.replace('| Diferido | Análisis |', '| Diferido | Inventado |')));
+  () => romperEstados(t => t.replace('| Diferido | Análisis, Descartado |', '| Diferido | Inventado |')));
 caso('grafo: un estado de la Base sin fila de transiciones', 'GRAFO DE TRANSICIONES MAL FORMADO (ESTADOS.md)',
   () => romperEstados(t => t.replace('\n| Listo | Análisis, En curso, Diferido, Descartado |', '')));
 caso('En pausa envejecido (interrumpido hace demasiado)', 'ACTIVOS ENVEJECIDOS (> 30 dias activo o en pausa: ¿sigue/retomar/diferido/descartado?)',
@@ -112,9 +119,15 @@ console.log(`${total(limpio) === 0 ? 'OK  ' : 'FALLA'} banco sin tocar → ${tot
 if (total(limpio) !== 0) malos++;
 
 // Compatibilidad: la forma vieja (| Plan | Estado | Creado | Cerrado | Origen | Notas |) tiene que
-// seguir leyendose mientras haya Agentes Desplegados sin nivelar.
-console.log('\n== FORMA VIEJA: un Agente Desplegado sin nivelar sigue validandose ==');
+// seguir LEYENDOSE mientras haya Agentes Desplegados sin nivelar —el lint no se cae ni se queda sin
+// filas— y ademas tiene que AVISAR que el registro quedo en la forma anterior. Son dos cosas
+// distintas: esta prueba exigia cero hallazgos, y ese cero era justamente el silencio que hacia que
+// un Agente Desplegado sin nivelar diera verde. Medido el 05/08/2026: cinco repos en la forma
+// anterior contestaban "hallazgos: 0". Se controla el aviso, no su ausencia.
+console.log('\n== FORMA VIEJA: se sigue leyendo Y avisa que quedo en la forma anterior ==');
 armar();
+// El conteo se toma ANTES de reescribir: despues las filas ya no empiezan con "| Local-".
+const filasEsperadasVieja = filasDelBanco();
 {
   const t = reg();
   const filas = t.split('\n').filter(l => l.startsWith('| Local-'));
@@ -131,10 +144,17 @@ armar();
   const mani = path.join(BANCO, 'MANIFIESTO.md');
   fs.writeFileSync(mani, fs.readFileSync(mani, 'utf8').replace(/^\*\*[IÍ]ndices?:\*\*.*$/m, ''));
 }
-const vieja = hallazgos(correr());
-console.log(`${total(vieja) === 0 ? 'OK  ' : 'FALLA'} forma vieja sin frontmatter → ${total(vieja)} hallazgos` +
-            (total(vieja) ? '  ' + JSON.stringify(vieja) : ''));
-if (total(vieja) !== 0) malos++;
+const salidaVieja = correr();
+const vieja = hallazgos(salidaVieja);
+const filasViejas = /filas en registro: (\d+)/.exec(salidaVieja);
+const leidas = filasViejas ? parseInt(filasViejas[1], 10) : 0;
+const seccionAviso = 'INDICES DECLARADOS (frontmatter vs tabla vs manifiesto)';
+// Se sigue leyendo: entraron todas las filas. Y avisa: exactamente un hallazgo, el del aviso.
+const okVieja = leidas === filasEsperadasVieja && vieja[seccionAviso] === 1 && total(vieja) === 1;
+console.log(`${okVieja ? 'OK  ' : 'FALLA'} forma vieja → ${leidas} filas leídas (${filasEsperadasVieja} esperadas) ` +
+            `y ${total(vieja)} hallazgo(s), de los cuales ${vieja[seccionAviso] || 0} es el aviso de forma anterior` +
+            (okVieja ? '' : '  ' + JSON.stringify(vieja)));
+if (!okVieja) malos++;
 
 // Tuberias escapadas: una celda que nombra columnas no puede correr las siguientes.
 console.log('\n== TUBERIAS ESCAPADAS: una celda con \\| no corre las columnas ==');

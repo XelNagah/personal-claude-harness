@@ -36,10 +36,12 @@ Los seis estados vivos comparten carpeta (`pendientes/`): lo que los distingue e
     │          │  └────────┘          │
     │          ▼                      ▼
     │       En pausa ────────────► (vuelve a Análisis o En curso)
-    │
+    │          │
     ├──► Diferido ──► Análisis
     │
     └──► Descartado   (terminal, con motivo)
+         ▲
+         └── se llega desde CUALQUIER estado vivo, incluidos En pausa y Diferido
 ```
 
 El **grafo autoritativo** es esta tabla —la fuente única que lee el lint—: `Desde` es un estado y `Hacia` sus destinos válidos, separados por coma (`—` si es terminal). El diagrama de arriba la ilustra; si divergen, manda la tabla.
@@ -50,16 +52,18 @@ El **grafo autoritativo** es esta tabla —la fuente única que lee el lint—: 
 | Análisis | Listo, En pausa, Diferido, Descartado |
 | Listo | Análisis, En curso, Diferido, Descartado |
 | En curso | En pausa, Diferido, Ejecutado, Descartado |
-| En pausa | Análisis, En curso |
-| Diferido | Análisis |
+| En pausa | Análisis, En curso, Diferido, Descartado |
+| Diferido | Análisis, Descartado |
 | Ejecutado | — |
 | Descartado | — |
 
-`Diferido` vuelve siempre a `Análisis`, nunca directo a `Listo` ni a `En curso`. Los destinos de `En pausa` (`Análisis`, `En curso`) son además los valores válidos de `estado_a_retomar`: el lint los deriva de esta fila, no los tiene escritos aparte.
+**Un plan se puede abandonar desde cualquier estado vivo**: los seis no-terminales llegan a `Descartado`. Lo que sí queda restringido es volver al trabajo: `Diferido` vuelve siempre a `Análisis`, nunca directo a `Listo` ni a `En curso`, porque después de una postergación hay que revalidar que el plan siga vigente.
 
 ### El dato `estado_a_retomar`
 
 `En pausa` conserva obligatoriamente `estado_a_retomar`, cuyo único valor válido es `Análisis` o `En curso`. Al retomar, el plan vuelve exactamente a ese valor y el dato se elimina. Al pasar a `Diferido` se elimina cualquier `estado_a_retomar`; los estados terminales no lo llevan.
+
+Esos dos valores **no se declaran aparte: son los estados desde los que se llega a `En pausa`**, que la tabla de arriba ya declara (`Análisis` y `En curso` la nombran entre sus destinos). Retomar es deshacer la pausa, así que el destino de retomada es por definición el origen de la pausa, y el lint lo deriva de ahí. ⚠️ **No se deriva de la fila `En pausa`**: esa fila enumera todas sus salidas, y desde que incluye las de cierre, derivar de ahí haría pasar por válido un `estado_a_retomar: Descartado`.
 
 Ese dato vive en el **archivo del plan**, no en `PLANES.md`: es transitorio del plan pausado. El registro conserva estado, fechas, origen y notas.
 

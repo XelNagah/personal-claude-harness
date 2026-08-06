@@ -53,7 +53,8 @@ leerEstados(estLocalPath, true);
 // transicion ilegal ya hecha: cuando corre, el plan ya esta en su estado nuevo y no queda rastro
 // de por donde paso. Lo que SI controla es que el GRAFO este bien formado. La tabla es la fuente
 // unica que declara los destinos validos de cada estado —antes eso vivia como texto plano en tres
-// lugares que podian divergir—, y de la fila "En pausa" se DERIVAN los valores de estado_a_retomar.
+// lugares que podian divergir—, y de sus ENTRADAS a "En pausa" se derivan los valores validos de
+// estado_a_retomar (ver mas abajo por que de las entradas y no de la fila "En pausa").
 const sinAcento = s => s.normalize('NFD').replace(/[̀-ͯ]/g, '');
 function leerTransiciones(archivo) {
   const t = new Map();
@@ -251,8 +252,14 @@ const tieneNotasDeImplementacion = txt => /^#{1,6}\s+(?:Notas?\s+de\s+)?implemen
 // de ESTADOS.md sin nadie que lo controlara (conocimiento controles-que-no-avisan).
 const estadoDe = new Map(rows.map(r => [norm(r.ref), r.estado]));
 const reRetomar = /(?:^|\n)[ \t>*]*estado_a_retomar\**\s*[:：]\s*\**\s*([^\n*]+)/i;
-const enPausaHacia = transiciones.get('en pausa') || [];
-const VALIDOS_RETOMAR = new Set((enPausaHacia.length ? enPausaHacia : ['análisis', 'en curso']).map(sinAcento));
+// Los valores validos de estado_a_retomar son los ORIGENES de "En pausa" —los estados que la
+// declaran entre sus destinos—, no los destinos de su fila. Retomar es deshacer la pausa, asi que
+// el destino de retomada es por definicion el origen de la pausa. Derivarlo de la fila "En pausa"
+// era correcto solo mientras esa fila no tuviera salidas de cierre; desde que las tiene, ese camino
+// daba por valido un estado_a_retomar="Descartado" y NO lo avisaba, porque para el lint era un
+// valor declarado (conocimiento controles-que-no-avisan).
+const origenesDeEnPausa = [...transiciones].filter(([, hacia]) => hacia.includes('en pausa')).map(([desde]) => desde);
+const VALIDOS_RETOMAR = new Set((origenesDeEnPausa.length ? origenesDeEnPausa : ['análisis', 'en curso']).map(sinAcento));
 const resueltosSinMover = [], ejecSinNotas = [], retomarFaltante = [], retomarSobrante = [];
 for (const [rel, carpeta] of enDisco) {
   const txt = fs.readFileSync(path.join(root, rel), 'utf8');
