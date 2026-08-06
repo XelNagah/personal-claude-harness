@@ -10,10 +10,14 @@ La base de conocimiento (`.claude/conocimiento/`) solo sirve si captura lo que e
 ## Flujo
 
 1. **Cargar la base actual:** leer `.claude/conocimiento/MANIFIESTO.md`, todos los Índices que declare y sus páginas. Buscar en el Agente Multipropósito y en el Agente Desplegado para no proponer duplicados ni contradecir conocimiento ya asentado.
-2. **Recorrer el repo buscando saber no asentado.** Fuentes típicas:
-   - documentos `.md` sueltos fuera de la base (carpetas de docs, notas, análisis viejos);
-   - saber enterrado en código o configuración que costó descubrir (convenciones no obvias, gotchas, decisiones implícitas);
-   - lo aprendido en la sesión actual que habría que re-descubrir la próxima.
+2. **Recorrer el repo buscando saber no asentado — delegado en el subagente `buscador-de-conocimiento`.** El recorrido abre el repo entero para quedarse con un puñado de candidatos: hacerlo en el hilo principal deja ahí todo lo que leyó, cuando lo único que hace falta es la lista con su evidencia. Devuelve cada candidato con su archivo y su línea, ya clasificado por naturaleza y con lo descartado aparte. Es de solo lectura por construcción: trae candidatos, no páginas.
+
+   **Si el agente no puede delegar** (no tiene subagentes, o el tipo no está instalado), el recorrido se hace en el hilo principal con el mismo criterio y el mismo resultado — lo que cambia es el costo, no el flujo.
+
+   Fuentes típicas:
+   - documentos `.md` sueltos fuera de la base (carpetas de documentación, notas, análisis viejos);
+   - saber enterrado en código o configuración que costó descubrir (convenciones no obvias, trampas, decisiones implícitas);
+   - lo aprendido en la sesión actual que habría que volver a averiguar la próxima.
    La prueba de valor: **¿el agente lo necesitaría volver a averiguar?** Si sí, es conocimiento.
 3. **Filtrar por naturaleza** (no todo `.md` es conocimiento de agente):
    - **Documentación para personas** (README, registros, manuales) → se queda donde está; no se traslada completa a la base.

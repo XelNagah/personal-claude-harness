@@ -10,8 +10,8 @@ Catálogo de las funcionalidades que este repo instala para armar un agente de *
 | **amp-subsistemas** | Catálogo Base/Propósito y coordinación de la reubicación del Aprendizaje. Skills: `agregar-subsistema` y `reubicar-aprendizaje`. | — | [`amp-subsistemas/`](funcionalidades/amp-subsistemas/) |
 | **amp-preferencias** | Preferencias versionadas en `preferencias/`, un archivo por origen (`PREFERENCIAS.md` del Agente Multipropósito + `PREFERENCIAS-LOCAL.md` del Agente Desplegado), los dos importados siempre vía `@`, + lint estructural. `registrar-preferencia` da de alta o copia puntualmente una regla con vista previa e idempotencia; `adoptar-recomendadas` muestra el catálogo de Preferencias Recomendadas que trae el plugin y adopta las que el usuario elija, sin instalar ninguna sola. | — | [`amp-preferencias/`](funcionalidades/amp-preferencias/) |
 | **amp-planes** | Ciclo de planes `pendientes/ejecutados/descartados` + registro, README, lint y hook. Familia de skills por verbo: `crear-plan`, `analizar-plan`, `explicar-plan`, `priorizar-planes`, `sugerir-siguiente-plan`, `pausar-plan`, `retomar-plan`, `diferir-plan`, `cerrar-plan`, `descartar-plan`. | — | [`amp-planes/`](funcionalidades/amp-planes/) |
-| **amp-conocimiento** | Base única de lo que el agente sabe + README y lint. Skills `registrar-conocimiento` y `buscar-conocimiento`. | — | [`amp-conocimiento/`](funcionalidades/amp-conocimiento/) |
-| **amp-semantica** | Glosario + Terminología Farlopa + README y lint. Skill `converger-terminologia`. | — | [`amp-semantica/`](funcionalidades/amp-semantica/) |
+| **amp-conocimiento** | Base única de lo que el agente sabe + README y lint. Skills `registrar-conocimiento` y `buscar-conocimiento`; subagente `buscador-de-conocimiento`, en el que la segunda delega el recorrido. | — | [`amp-conocimiento/`](funcionalidades/amp-conocimiento/) |
+| **amp-semantica** | Glosario + Terminología Farlopa + README y lint. Skill `converger-terminologia`; subagente `buscador-de-terminologia`, en el que delega el recorrido. | — | [`amp-semantica/`](funcionalidades/amp-semantica/) |
 | **amp-decisiones** | Decisiones estructurales + README y lint. Skill `registrar-decision`. | — | [`amp-decisiones/`](funcionalidades/amp-decisiones/) |
 | **amp-herramientas** | Registro de Herramientas separadas por origen, fichas y lint. Skill `registrar-herramienta`. | — | [`amp-herramientas/`](funcionalidades/amp-herramientas/) |
 | **amp-conducta** | Momentos, reglas separadas por origen, repartidor y lint. Skill `registrar-regla`. | — | [`amp-conducta/`](funcionalidades/amp-conducta/) |
@@ -22,17 +22,19 @@ Todos los subsistemas Base tienen plugin y skill de operación. `commits` no es 
 
 El prefijo de skill **es** el nombre del plugin (`amp-planes:crear-plan` ≠ `amp-conocimiento:registrar-conocimiento`): agrupa al tipear "amp" y deja visible de qué subsistema es cada skill (Decisión Local-0029, empaquetado en un plugin por subsistema; modifica la Local-0013, segmentación de skills por prefijo de plugin).
 
-| Funcionalidad | Plugin | Skill |
-|---------------|--------|-------|
-| amp | `amp@xelnagah-harness` | `inicializar`, `planificar`, `actualizar` |
-| amp-subsistemas | `amp-subsistemas@xelnagah-harness` | `agregar-subsistema`, `reubicar-aprendizaje` |
-| amp-preferencias | `amp-preferencias@xelnagah-harness` | `registrar-preferencia`, `adoptar-recomendadas` |
-| amp-planes | `amp-planes@xelnagah-harness` | `crear-plan`, `analizar-plan`, `explicar-plan`, `priorizar-planes`, `sugerir-siguiente-plan`, `pausar-plan`, `retomar-plan`, `diferir-plan`, `cerrar-plan`, `descartar-plan` |
-| amp-conocimiento | `amp-conocimiento@xelnagah-harness` | `registrar-conocimiento`, `buscar-conocimiento` |
-| amp-semantica | `amp-semantica@xelnagah-harness` | `converger-terminologia` |
-| amp-decisiones | `amp-decisiones@xelnagah-harness` | `registrar-decision` |
-| amp-herramientas | `amp-herramientas@xelnagah-harness` | `registrar-herramienta` |
-| amp-conducta | `amp-conducta@xelnagah-harness` | `registrar-regla` |
+Un plugin transporta además **subagentes**, en su carpeta `agents/`. Se distinguen de las skills por la forma del nombre: una skill es una acción y se nombra verbo+objeto (`converger-terminologia`); un subagente es un rol y se nombra con un sustantivo (`buscador-de-terminologia`). No los invoca el usuario: los invoca la skill que delega en ellos el trabajo de volumen, para que lo que leen no quede en el contexto del hilo principal.
+
+| Funcionalidad | Plugin | Skill | Subagente |
+|---------------|--------|-------|-----------|
+| amp | `amp@xelnagah-harness` | `inicializar`, `planificar`, `actualizar` | — |
+| amp-subsistemas | `amp-subsistemas@xelnagah-harness` | `agregar-subsistema`, `reubicar-aprendizaje` | — |
+| amp-preferencias | `amp-preferencias@xelnagah-harness` | `registrar-preferencia`, `adoptar-recomendadas` | — |
+| amp-planes | `amp-planes@xelnagah-harness` | `crear-plan`, `analizar-plan`, `explicar-plan`, `priorizar-planes`, `sugerir-siguiente-plan`, `pausar-plan`, `retomar-plan`, `diferir-plan`, `cerrar-plan`, `descartar-plan` | — |
+| amp-conocimiento | `amp-conocimiento@xelnagah-harness` | `registrar-conocimiento`, `buscar-conocimiento` | `buscador-de-conocimiento` |
+| amp-semantica | `amp-semantica@xelnagah-harness` | `converger-terminologia` | `buscador-de-terminologia` |
+| amp-decisiones | `amp-decisiones@xelnagah-harness` | `registrar-decision` | — |
+| amp-herramientas | `amp-herramientas@xelnagah-harness` | `registrar-herramienta` | — |
+| amp-conducta | `amp-conducta@xelnagah-harness` | `registrar-regla` | — |
 
 > **Instalar en otra PC:** `/plugin marketplace add <owner>/<repo>` y después `/plugin install amp@xelnagah-harness` — trae los 8 `amp-<sub>` por dependencias.
 > **Codex CLI:** no resuelve `dependencies`; después de registrar el marketplace, desde el repo destino correr `node <checkout-harness>/.claude/herramientas/instalar-plugins-codex/instalar-plugins-codex.js --aplicar`.
@@ -44,8 +46,9 @@ El prefijo de skill **es** el nombre del plugin (`amp-planes:crear-plan` ≠ `am
    - `.claude-plugin/plugin.json` — manifiesto (`name`, `description`, `version`, `author`; `dependencies` si aplica).
    - `README.md` — qué hace, qué agrega al repo destino, dependencias.
    - `skills/<nombre-skill>/SKILL.md` (+ `PLANTILLA.md` si lleva pedazos que se fusionan o moldes con marcadores, y `base/` si instala Componentes de Subsistema, que viajan como **archivos** con el árbol de destino) — **fuente única** del flujo, en el estándar Agent Skills.
+   - `agents/<nombre-subagente>.md` si alguna de sus skills delega trabajo de volumen — frontmatter con `name`, `description`, `tools` y `model`, y el nombre en sustantivo de rol.
 2. Agregar el plugin a `.claude-plugin/marketplace.json` (`name` + `source: "./funcionalidades/<nombre>"`).
 3. Validar con `claude plugin validate .`.
 4. Registrarla en la tabla de arriba.
 
-> **Invariante:** `SKILL.md` es la fuente única de cada flujo. Un subsistema que gana una skill de operación se documenta en su `amp-<sub>`; su instalación la escribe `amp:inicializar` (que duplica los textos literales en su `SKILL.md`/`PLANTILLA.md`, porque la copia instalada del Plugin aísla la carpeta de la Habilidad) — usar la skill `propagar-harness`.
+> **Invariante:** `SKILL.md` es la fuente única de cada flujo. Un subsistema que gana una skill de operación se documenta en su `amp-<sub>`; su instalación la escribe `amp:inicializar` (que duplica los textos literales en su `SKILL.md`/`PLANTILLA.md`, porque la copia instalada del Plugin aísla la carpeta de la Habilidad) — los Componentes de Subsistema que viajan se ponen al día con la Herramienta `sincronizar-base`.

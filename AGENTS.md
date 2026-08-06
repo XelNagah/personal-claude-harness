@@ -44,7 +44,7 @@ El repo es a la vez un **marketplace de plugins de Claude Code** (estilo Matt Po
 
 Todos los subsistemas Base tienen plugin y al menos una skill de operación. `commits` no es un subsistema: su estilo vive en Preferencias y su entrega en Conducta.
 
-Cada **funcionalidad/plugin** = `funcionalidades/<nombre>/` con `.claude-plugin/plugin.json` + `README.md` + `skills/<nombre-skill>/SKILL.md` (formato estándar Agent Skills, **fuente única** del flujo, rutas `.claude/` literales) y `PLANTILLA.md` cuando lleva textos literales. Catálogo, dependencias, nombres de plugin/skill en `REGISTRO.md`.
+Cada **funcionalidad/plugin** = `funcionalidades/<nombre>/` con `.claude-plugin/plugin.json` + `README.md` + `skills/<nombre-skill>/SKILL.md` (formato estándar Agent Skills, **fuente única** del flujo, rutas `.claude/` literales) y `PLANTILLA.md` cuando lleva textos literales. Un plugin puede llevar además `agents/<nombre>.md`: **subagentes**, que no invoca el usuario sino la skill que les delega el trabajo de volumen para que lo que leen no quede en el hilo principal. Se nombran con sustantivo de rol, no con verbo+objeto como las skills. Catálogo, dependencias, nombres de plugin/skill en `REGISTRO.md`.
 
 ## Distribución: marketplace de plugins
 

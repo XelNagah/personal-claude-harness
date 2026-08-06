@@ -287,6 +287,22 @@ caso('una copia de un fragmento compartido diverge', 'FRAGMENTOS DE CODIGO DIVER
   },
   'raiz del repo');
 
+// Un subagente sin `model` anda igual: corre al modelo de la sesion, asi que el recorrido se paga
+// al mismo precio que en el hilo principal y nadie lo nota. La delegacion entera existe para eso,
+// de modo que el defecto vacia el mecanismo sin romperlo — el modo de falla que ningun control
+// posterior encuentra.
+const SUBAGENTE = 'funcionalidades/amp-semantica/agents/buscador-de-terminologia.md';
+caso('un subagente que no declara model', 'SUBAGENTES CON FRONTMATTER INVALIDO',
+  () => escribir(SUBAGENTE, leer(SUBAGENTE).replace(/^model: .*$/m, '')),
+  'falta model');
+
+// El otro defecto silencioso: el `name` manda, no el archivo. Con los dos distintos el subagente
+// existe con un nombre y la habilidad lo invoca por el otro, asi que la delegacion no ocurre y el
+// flujo sigue —en el hilo principal— sin decir que se cayo.
+caso('un subagente cuyo name no coincide con su archivo', 'SUBAGENTES CON FRONTMATTER INVALIDO',
+  () => escribir(SUBAGENTE, leer(SUBAGENTE).replace(/^name: .*$/m, 'name: buscador-de-terminologias')),
+  'no coincide con el archivo');
+
 console.log('\n== CASOS MALOS: cada control se enciende ante su defecto ==');
 for (const c of casos) {
   armar();

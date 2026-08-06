@@ -25,11 +25,15 @@ Con un alcance acotado, las autoexclusiones del paso 3 siguen valiendo, pero lo 
 ## Flujo
 
 1. **Cargar los dos registros** (`.claude/semantica/GLOSARIO.md` y `.claude/semantica/TERMINOLOGIA-FARLOPA.md`): canónicos, definiciones, alias registrados, propuestos, y las relaciones término→significado vetadas.
-2. **Barrido del alcance** elegido arriba (la parte bruta puede ser mecánica — grep por término; el juicio no):
+2. **Recorrer el alcance elegido arriba — delegado en el subagente `buscador-de-terminologia`.** El recorrido abre decenas de archivos para traer líneas sueltas: hacerlo en el hilo principal deja ahí todo lo que leyó, cuando lo único que hace falta son los hallazgos. Se le indica el alcance con palabras y devuelve las apariciones con archivo y línea, separadas en texto plano y código, con las autoexclusiones aplicadas y con el conteo por fila del registro. Es de solo lectura por construcción: trae evidencia, no veredictos.
+
+   **Si el agente no puede delegar** (no tiene subagentes, o el tipo no está instalado), el recorrido se hace en el hilo principal con el mismo criterio y el mismo resultado — lo que cambia es el costo, no el flujo.
+
+   Sea quien sea el que recorra, se buscan tres cosas:
    - Apariciones de términos que **compiten** con un canónico: sinónimos no registrados, anglicismos, traducciones a medias, variantes ("tool" donde el canónico es "Herramienta").
    - Términos de dominio **frecuentes que no están** en el glosario (candidatos a concepto nuevo).
-   - Vetados que sigan apareciendo **en su significado vetado** (el lint los marca por término; acá se juzga el significado — el mismo término en un sentido legítimo no cuenta).
-3. **Revisar si las filas del registro están bien puestas.** El barrido del paso 2 ya cuenta las apariciones término por término, así que esto sale de lo mismo: para cada fila, **cuántas veces marcó y en cuántas la palabra estaba de verdad mal usada**. Una fila que marca mucho y no acierta nunca no está protegiendo nada: está gastando la atención del lector, y un registro que marca todo entrena a ignorarlo.
+   - Vetados que sigan apareciendo **en su significado vetado** (el lint los marca por término; acá se juzga el significado — el mismo término en un sentido legítimo no cuenta). **El juicio del significado no se delega**: el subagente trae la línea, el hilo principal decide.
+3. **Revisar si las filas del registro están bien puestas.** El recorrido del paso 2 ya cuenta las apariciones término por término, así que esto sale de lo mismo: para cada fila, **cuántas veces marcó y en cuántas la palabra estaba de verdad mal usada**. Una fila que marca mucho y no acierta nunca no está protegiendo nada: está gastando la atención del lector, y un registro que marca todo entrena a ignorarlo.
 
    Cuando el uso válido domina, la causa es casi siempre la misma: el término ajeno se monta sobre una **palabra corriente del español** y la fila registró la palabra pelada. La corrección es registrar la **expresión** donde el sentido ajeno se realiza, no la palabra: `capa de plugins` en vez de `capa`, `Adaptaciones de este repo` en vez de `Adaptaciones`. Así el registro sigue enumerando lo prohibido —que es finito— y no lo permitido, que no lo es.
 

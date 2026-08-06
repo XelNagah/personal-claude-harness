@@ -44,6 +44,7 @@ const skillSinReconciliacion = [];
 const refsRotasSkill = [];
 const nombresRetiradosSkill = [];
 const skillSinCierre = [];
+const frontmatterSubagenteInvalido = [];
 const NOMBRES_RETIRADOS_SKILL = [
   'inicializar-subsistemas', 'inicializar-preferencias', 'inicializar-planes',
   'inicializar-conocimiento', 'inicializar-semantica', 'inicializar-decisiones',
@@ -107,6 +108,40 @@ for (const f of enDisco) {
       if (!fs.existsSync(path.resolve(path.dirname(skillMd), rutaLocal))) {
         refsRotasSkill.push(`${rel}  [${destino}]`);
       }
+    }
+  }
+
+  // Los subagentes que el plugin transporta. `model` y `tools` son obligatorios y son el punto
+  // entero de delegar: sin `model` el subagente corre al modelo de la sesion y el recorrido se
+  // paga igual que en el hilo principal, con la diferencia de que ahora nadie lo ve. Sin `tools`
+  // hereda todas, incluidas las de escritura, y deja de ser de solo lectura por construccion.
+  // Los dos defectos contestan en verde en la invocacion: el subagente anda, solo que no ahorra
+  // nada o puede escribir.
+  const agentsDir = path.join(base, 'agents');
+  if (fs.existsSync(agentsDir)) {
+    for (const a of fs.readdirSync(agentsDir).filter(x => x.endsWith('.md'))) {
+      const agenteMd = path.join(agentsDir, a);
+      const rel = path.relative(repo, agenteMd).replace(/\\/g, '/');
+      const txt = fs.readFileSync(agenteMd, 'utf8').replace(/\r\n/g, '\n');
+      const fm = /^---\n([\s\S]*?)\n---(?:\n|$)/.exec(txt);
+      if (!fm) { frontmatterSubagenteInvalido.push(`${rel}  [falta frontmatter YAML al inicio]`); continue; }
+      // Solo las claves de columna cero: `description: >` sigue en las lineas indentadas de abajo,
+      // que no son claves y no se cuentan.
+      const campos = new Map();
+      for (const linea of fm[1].split('\n')) {
+        const m = /^([a-z][\w-]*):\s*(.*)$/.exec(linea);
+        if (m) campos.set(m[1], m[2].trim());
+      }
+      const problemas = [];
+      const name = campos.get('name') || '';
+      const esperado = a.replace(/\.md$/, '');
+      if (!name) problemas.push('falta name');
+      else if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(name)) problemas.push('name invalido');
+      else if (name !== esperado) problemas.push(`name ${name} no coincide con el archivo ${esperado}`);
+      if (!campos.has('description')) problemas.push('falta description');
+      if (!campos.has('tools')) problemas.push('falta tools (sin declararlas hereda todas, incluidas las de escritura)');
+      if (!campos.has('model')) problemas.push('falta model (sin declararlo corre al modelo de la sesion y no ahorra nada)');
+      if (problemas.length) frontmatterSubagenteInvalido.push(`${rel}  [${problemas.join('; ')}]`);
     }
   }
 }
@@ -716,6 +751,7 @@ const secciones = [
   ['REFERENCIAS ROTAS EN SKILLS', refsRotasSkill],
   ['NOMBRES DE SKILLS RETIRADOS TODAVIA REFERENCIADOS', nombresRetiradosSkill],
   ['SKILLS SIN CIERRE VERIFICABLE', skillSinCierre],
+  ['SUBAGENTES CON FRONTMATTER INVALIDO', frontmatterSubagenteInvalido],
   ['VERSION EN DISCO DISTINTA DE LA INSTALADA', versionDesfasada],
   ['FRAGMENTOS DE CODIGO DIVERGENTES ENTRE LINTS', divergentes],
   [`FRAGMENTOS VIGILADOS CON MENOS DE ${MUESTRAS_MINIMAS} MUESTRAS (no controlan nada)`, fragmentosSinMuestras],
