@@ -182,6 +182,23 @@ const okPorciento = vivo && Number(vivo[1]) === esperadasPorciento;
 console.log(`${okPorciento ? 'OK  ' : 'FALLA'} ruta con % → filas leidas: ${vivo ? vivo[1] : 'el lint no corrio'} (${esperadasPorciento} esperadas)`);
 if (!okPorciento) malos++;
 
+// La forma <ruta> de CommonMark es la que usa el registro cuando el nombre lleva espacios o
+// parentesis. Sin pelar los angulos, el cruce fila↔archivo daba un 0/N uniforme: la misma fila
+// como colgada y su archivo como sin fila (reportado por un Agente Desplegado el 06/08/2026).
+console.log('\n== RUTA ENTRE ANGULOS: la forma <ruta con espacios y parentesis> se cruza bien ==');
+armar();
+{
+  const viejo = 'pendientes/Estructura del documento de Plan.md';
+  const nuevo = 'pendientes/Estructura del documento (forma B).md';
+  fs.renameSync(path.join(BANCO, viejo), path.join(BANCO, nuevo));
+  escribir(reg().replace(/\| Local-0015 \|([^\n]*\| )\[[^\]]*\]\([^\n|]*\)( \|)/,
+    (_, medio, fin) => `| Local-0015 |${medio}[Estructura del documento (forma B).md](<${nuevo}>)${fin}`));
+}
+const conAngulos = hallazgos(correr());
+console.log(`${total(conAngulos) === 0 ? 'OK  ' : 'FALLA'} link con <ruta> → ${total(conAngulos)} hallazgos` +
+            (total(conAngulos) ? '  ' + JSON.stringify(conAngulos) : ''));
+if (total(conAngulos) !== 0) malos++;
+
 // Dos Indices en el mismo subsistema: cada uno declara sus columnas, asi que el segundo no puede
 // leerse con el mapa del primero ni aportar su encabezado como si fuera un plan.
 console.log('\n== DOS INDICES: cada uno con su encabezado ==');

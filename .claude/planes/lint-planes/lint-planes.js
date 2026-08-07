@@ -122,7 +122,9 @@ function celdasDe(linea) {
 // el nombre real. Un `%` suelto en el nombre de un plan hace que decodificar TIRE, asi que el
 // fallo se contiene: sin esto, un solo plan con `%` en el nombre voltea el lint entero.
 function rutaDeLink(celda) {
-  const m = /\]\(([^)]+?)\)/.exec(celda);
+  // La forma <ruta> de CommonMark (rutas con espacios o parentesis) se prueba primero: el patron
+  // sin angulos la captura con los angulos adentro y ademas trunca en el primer `)` de la ruta.
+  const m = /\]\(<([^>]+)>\)/.exec(celda) || /\]\(([^)]+?)\)/.exec(celda);
   const cruda = (m ? m[1] : celda.replace(/[`\[\]]/g, '')).trim();
   try { return decodeURIComponent(cruda); } catch (e) { return cruda; }
 }
