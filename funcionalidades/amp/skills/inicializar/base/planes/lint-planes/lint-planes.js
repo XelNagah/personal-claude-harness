@@ -124,8 +124,10 @@ function celdasDe(linea) {
 function rutaDeLink(celda) {
   // La forma <ruta> de CommonMark (rutas con espacios o parentesis) se prueba primero: el patron
   // sin angulos la captura con los angulos adentro y ademas trunca en el primer `)` de la ruta.
-  const m = /\]\(<([^>]+)>\)/.exec(celda) || /\]\(([^)]+?)\)/.exec(celda);
-  const cruda = (m ? m[1] : celda.replace(/[`\[\]]/g, '')).trim();
+  // CommonMark permite espacios entre `(` y `<` (y antes del `)`): sin \s* esa forma caeria a la
+  // regex simple y devolveria la ruta con los angulos pegados, un ref que nunca matchea en silencio.
+  const m = /\]\(\s*<([^>]+)>\s*\)/.exec(celda) || /\]\(([^)]+?)\)/.exec(celda);
+  const cruda = (m ? m[1] : celda.replace(/[`\[\]<>]/g, '')).trim();
   try { return decodeURIComponent(cruda); } catch (e) { return cruda; }
 }
 // Se parsea CADA Indice por separado, no el texto de todos concatenado: cada uno declara sus
