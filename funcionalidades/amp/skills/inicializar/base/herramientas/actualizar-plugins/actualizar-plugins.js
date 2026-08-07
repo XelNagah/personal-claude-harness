@@ -260,8 +260,11 @@ if (!AGENTE) {
 }
 
 // git de una linea: devuelve la salida o null si el comando falla, no existe el repo o vence.
+// `windowsHide`: en `--avisar` esto corre en un proceso `detached` que quedo SIN consola, y en
+// Windows cada `git.exe` (app de consola) abriria una ventana nueva que parpadea. El flag agrega
+// CREATE_NO_WINDOW y la suprime. Sin costo fuera de Windows.
 function gitEn(dir, args, timeout = 5000) {
-  const r = spawnSync('git', args, { cwd: dir, encoding: 'utf8', timeout });
+  const r = spawnSync('git', args, { cwd: dir, encoding: 'utf8', timeout, windowsHide: true });
   if (!r || r.status !== 0) return null;
   return (r.stdout || '').trim() || null;
 }
@@ -297,8 +300,10 @@ function arranqueSesion() {
   try {
     let r;
     if (process.platform === 'win32') {
+      // `windowsHide`: en `--avisar` esto corre en un proceso `detached` sin consola, y sin el flag
+      // este `powershell` abriria una ventana que parpadea al arrancar y en cada /clear.
       r = spawnSync('powershell', ['-NoProfile', '-Command',
-        `(Get-Process -Id ${pid}).StartTime.ToUniversalTime().ToString("o")`], { encoding: 'utf8', timeout: 10000 });
+        `(Get-Process -Id ${pid}).StartTime.ToUniversalTime().ToString("o")`], { encoding: 'utf8', timeout: 10000, windowsHide: true });
     } else {
       r = spawnSync('ps', ['-o', 'lstart=', '-p', pid], { encoding: 'utf8', timeout: 10000 });
     }
