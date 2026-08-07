@@ -15,8 +15,8 @@ const fs = require('fs'), path = require('path'), cp = require('child_process');
 const PANTALLA = path.resolve('.claude/conducta/mostrar-pantalla-bienvenida/mostrar-pantalla-bienvenida.js');
 const REPO_PRUEBA = path.resolve('.claude/tmp/repo-prueba-pantalla');
 
-function correr(args = [], cwd = process.cwd()) {
-  const r = cp.spawnSync(process.execPath, [PANTALLA, ...args], { cwd, encoding: 'utf8', timeout: 180000 });
+function correr(args = [], cwd = process.cwd(), input = undefined) {
+  const r = cp.spawnSync(process.execPath, [PANTALLA, ...args], { cwd, encoding: 'utf8', timeout: 180000, input });
   return { texto: (r.stdout || '') + (r.stderr || ''), codigo: r.status };
 }
 // Los renglones de la caja, sin la cerca de código con que se envuelve la salida.
@@ -163,6 +163,33 @@ function acDe(texto) { try { return (JSON.parse(texto.trim()).hookSpecificOutput
     /Título:/.test(ac) && /identidad\.md/.test(ac), ac ? 'ambos' : 'no hay additionalContext');
 }
 
+console.log('\n== EL RÓTULO DEL RENGLÓN 1 MUESTRA EL MODELO ==');
+// El renglón 1 del systemMessage (el que absorbe "SessionStart:startup says: ") muestra el modelo
+// activo cuando el id llega por stdin, y cae al nombre del harness cuando no. El id se PARSEA, no se
+// tabula: un modelo nuevo de la familia sale solo.
+function primerRenglonHook(model) {
+  const input = model === undefined ? undefined : JSON.stringify({ hook_event_name: 'SessionStart', source: 'startup', model });
+  const { texto } = correr(['--hook', '--sin-lint'], process.cwd(), input);
+  let json = null; try { json = JSON.parse(texto.trim()); } catch { /* abajo */ }
+  return (json?.systemMessage || '').replace(/^\n+/, '').split('\n')[0] || '';
+}
+{
+  chequear('con model claude-opus-4-8 el rótulo dice «Opus 4.8»',
+    primerRenglonHook('claude-opus-4-8') === 'Opus 4.8', `«${primerRenglonHook('claude-opus-4-8')}»`);
+  chequear('el sufijo de fecha del id no ensucia la versión (Haiku 4.5)',
+    primerRenglonHook('claude-haiku-4-5-20251001') === 'Haiku 4.5', `«${primerRenglonHook('claude-haiku-4-5-20251001')}»`);
+  chequear('sin campo model degrada al rótulo fijo del harness',
+    primerRenglonHook(undefined) === 'Agente Multipropósito', `«${primerRenglonHook(undefined)}»`);
+  chequear('un id de otro agente (no claude-*) degrada, no inventa nombre',
+    primerRenglonHook('gpt-5-codex') === 'Agente Multipropósito', `«${primerRenglonHook('gpt-5-codex')}»`);
+  // La marca del harness sigue estando en la caja (su renglón 1), aunque el rótulo muestre el modelo.
+  const { texto } = correr(['--hook', '--sin-lint'], process.cwd(),
+    JSON.stringify({ hook_event_name: 'SessionStart', model: 'claude-opus-4-8' }));
+  let j = null; try { j = JSON.parse(texto.trim()); } catch {}
+  chequear('  …y la marca del harness sigue dentro de la caja',
+    /║ Agente Multipropósito/.test(j?.systemMessage || ''), /║ Agente Multipropósito/.test(j?.systemMessage || '') ? 'sí' : 'no está');
+}
+
 console.log('\n== EL CHEQUEO DE PLUGINS NO SE ESPERA ==');
 // Con --hook se lanza en segundo plano el chequeo de plugins, que tarda ~1,7 s y sin red se va al
 // vencimiento del plazo. Lo que se fija es que la Pantalla NO LO ESPERE: si algún día se lo llamara
@@ -176,6 +203,6 @@ console.log('\n== EL CHEQUEO DE PLUGINS NO SE ESPERA ==');
 }
 
 fs.rmSync(REPO_PRUEBA, { recursive: true, force: true });
-console.log(`\ncasos: 26`);
+console.log(`\ncasos: 31`);
 console.log(malos ? `${malos} FALLARON.` : 'TODO VERDE.');
 process.exit(malos ? 1 : 0);

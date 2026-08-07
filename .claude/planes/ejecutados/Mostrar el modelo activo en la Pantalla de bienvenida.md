@@ -1,4 +1,4 @@
-**Estado: Nuevo · Creado 26-08-07.**
+**Estado: Ejecutado · Creado 26-08-07 · Cerrado 26-08-07.**
 
 # Mostrar el modelo activo en la Pantalla de bienvenida
 
@@ -26,3 +26,13 @@ Verificado hoy (conocimiento `hooks-claude-code` §4.4):
 ## Riesgo de mantenimiento
 
 La tabla id → nombre hay que mantenerla al día cuando salen modelos nuevos: un id sin mapear cae al rótulo fijo (degradado seguro, pero deja de mostrar el modelo).
+
+## Notas de implementación
+
+- **Se PARSEA el id, no se tabula** (decisión al ejecutar, distinta de la «tabla de mapeo» que preveía el plan): `modeloLegible()` toma `claude-<familia>-<versión>` y arma `Opus 4.8`, `Haiku 4.5`, `Sonnet 5`. Así un modelo nuevo de la familia sale solo y **desaparece el riesgo de mantenimiento** que el plan señalaba. Los segmentos largos (fecha `20251001`) se descartan; la versión son los grupos de 1-2 dígitos.
+- **Degradado seguro:** solo ids `claude-*` con familia en letras. Sin `model`, id de otro agente (`gpt-5-codex`) o desconocido → queda el rótulo fijo `Agente Multipropósito`. Cubre Codex/Gemini sin romper.
+- **Lectura de stdin:** `leerStdin()` lee `fd 0` solo en `--hook` y solo si no es TTY (en una terminal, leer bloquearía). El repartidor `establecer-conducta` ya le pasa el JSON del hook —con `model`— por stdin, verificado end-to-end: `says: Opus 4.8`.
+- **`/model` a mitad de sesión (decisión al ejecutar):** se acepta la foto del arranque. `SessionStart` dispara solo al arrancar; el canal confiable para el modelo vigente sería `statusLine`, no un hook. Documentado como límite conocido.
+- **La marca del harness** sigue como renglón 1 dentro de la caja; solo cambia el rótulo del renglón 1 del `systemMessage` (el que absorbe la etiqueta `says:`).
+- **Base + pruebas + versión:** `sincronizar-base --aplicar` copió los 2 archivos; `pruebas.js` 26 → 31 casos (rótulo Opus 4.8, fecha que no ensucia, degradado sin model, degradado no-claude, marca en la caja); `amp` a `0.42.3`.
+- **Control de cierre:** verde salvo el desfase de instalación previo (`disco 0.42.3 vs instalado 0.40.0`), que se resuelve con `amp:actualizar` + reinicio de sesión, acción del usuario.

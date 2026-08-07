@@ -384,6 +384,37 @@ function lanzarChequeoDePlugins() {
   } catch (e) { /* que no salga el aviso no puede costar la Pantalla de bienvenida */ }
 }
 
+// -- rótulo del renglón 1: el modelo activo, si el dato llega ----------------------------------
+// El renglón 1 del systemMessage es el que absorbe la etiqueta `SessionStart:startup says:` del CLI.
+// Cuando el dato del modelo llega, ese rótulo lo muestra (`says: Opus 4.8`); si no, cae al nombre del
+// harness. De dónde sale: SessionStart trae `model` como id string, opcional y SIN nombre legible
+// (conocimiento hooks-claude-code §4.4). El repartidor `establecer-conducta` le pasa el JSON del hook
+// por stdin a esta Pantalla, así que se lee de ahí. Degradado seguro: sin dato, id de otro agente o
+// desconocido → queda el rótulo fijo. Límite conocido: SessionStart dispara SOLO al arrancar, así que
+// un `/model` a mitad de sesión no se refleja (el canal confiable para eso es statusLine, no un hook);
+// el rótulo es la foto del arranque.
+function leerStdin() {
+  if (process.stdin.isTTY) return '';   // en una terminal, leer fd 0 bloquearía; el hook lo pipea
+  try { return fs.readFileSync(0, 'utf8'); } catch { return ''; }
+}
+// `claude-opus-4-8` → `Opus 4.8`. Se PARSEA en vez de tabular para no mantener una lista al día: un
+// modelo nuevo de la familia sale bien solo. Solo ids `claude-*` con familia en letras; cualquier
+// otro degrada, así un id ajeno no produce un nombre inventado. Los segmentos largos (fecha
+// `20251001`) se descartan: la versión son los grupos de 1-2 dígitos.
+function modeloLegible(id) {
+  if (typeof id !== 'string') return null;
+  const m = /^claude-([a-z]+)-(\d+(?:-\d+)*)/i.exec(id.trim());
+  if (!m) return null;
+  const familia = m[1][0].toUpperCase() + m[1].slice(1).toLowerCase();
+  const version = m[2].split('-').filter(s => s.length <= 2).join('.');
+  return version ? `${familia} ${version}` : null;
+}
+function rotuloDeModelo() {
+  let data = {};
+  try { data = JSON.parse(leerStdin() || '{}'); } catch { data = {}; }
+  return modeloLegible(data && data.model);
+}
+
 if (HOOK) {
   lanzarChequeoDePlugins();
   // El CLI antepega la etiqueta "SessionStart:startup says: " al PRIMER renglón del systemMessage, y
@@ -393,7 +424,10 @@ if (HOOK) {
   // etiqueta— y la caja arranca en el renglón 2, donde la alineación ya es correcta. NO devolver la
   // caja al renglón 1. La ruta no-hook (skill amp:info) no tiene este problema: va con cerca ``` y sin
   // etiqueta, así que ahí la caja se muestra sola, sin rótulo.
-  const salida = { systemMessage: MARCA + '\n' + box };
+  // El rótulo muestra el MODELO activo cuando el dato llega (`says: Opus 4.8`) y cae a la marca del
+  // harness cuando no (ver rotuloDeModelo). La caja de abajo conserva la marca como su renglón 1.
+  const rotulo = rotuloDeModelo() || MARCA;
+  const salida = { systemMessage: rotulo + '\n' + box };
   // El modelo no ve el systemMessage: se le entrega el estado por additionalContext. Si además falta
   // la Identidad, el pedido se SUMA al estado (no lo pisa), en un solo campo.
   let contexto = estadoParaModelo();
