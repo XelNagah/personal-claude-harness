@@ -12,6 +12,15 @@ Eventos que realiza hoy:
 - **`UserPromptSubmit`** → momento `cada turno` (sin condición). El recordatorio en cada turno.
 - **`PreToolUse`** con `Write`/`Edit`/`apply_patch` cuando **alguna** ruta tocada es un `.md` fuera de `tmp/` → momento `al escribir`.
 
+## El Contraste automático (en `cada turno`)
+
+Además de despachar las reglas, en `cada turno` el repartidor corre el **Contraste automático** (glosario): **puntúa el mensaje del usuario** contra las celdas `Nombre` + `Descripción` de dos registros que no cargan siempre —semántica (glosario + Terminología Farlopa) y decisiones— e **inyecta al `additionalContext` las pocas filas que pegan fuerte**. Así el modelo tiene el material del contraste presente al responder, sin que tenga que invocar ninguna habilidad ni leer los 135 KB de esos registros.
+
+- **Precisión primero.** Cada palabra pesa por lo **rara** que es en los registros (una que está en muchas filas casi no suma) y el `Nombre` pesa más que la `Descripción`. Hay un umbral alto y un tope duro de 3 filas: la **mayoría de los turnos no inyecta nada** (un saludo, una consulta fáctica de un solo sustantivo → silencio). Un registro que marca todo entrena a ignorarlo.
+- **Normaliza sin acentos** para tolerar que el usuario los omita al escribir.
+- **No agrega una clase** al modelo de conducta: es mecánica interna que escribe en `additionalContext`, igual que el Buzón de Avisos Generales. Vive dentro del repartidor —que ya corre en `cada turno` y ya es Node— en vez de como programa aparte, que costaría ~48 ms en cada mensaje.
+- **Es determinista**, así que su calidad de selección se prueba en el banco `pruebas.js` (mensaje → filas esperadas), sin costo de sesión, y ahí se calibra el umbral. La Herramienta `probar-disparo-de-skills` no aplica: mide si una habilidad se dispara, y esto no dispara ninguna.
+
 ## Las tres clases
 
 | Clase | Qué hace | Se combina |

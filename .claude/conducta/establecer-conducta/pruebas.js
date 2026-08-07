@@ -39,8 +39,9 @@ function disparar(entrada, ms = 120000) {
   };
 }
 
-let malos = 0;
+let malos = 0, total = 0;
 const chequear = (nombre, condicion, detalle) => {
+  total++;
   console.log(`${condicion ? 'OK  ' : 'FALLA'} ${nombre}${detalle ? `  → ${detalle}` : ''}`);
   if (!condicion) malos++;
 };
@@ -179,6 +180,75 @@ console.log('\n== LAS CLASES CONVIVEN EN UN MOMENTO ==');
   chequear('«cada turno» entrega sus reglas Inyectar', r.contexto.includes('Recordatorio de conducta'));
 }
 
+console.log('\n== CONTRASTE CON LA SABIDURÍA DEL REPO (el comparador) ==');
+// El comparador vive dentro del repartidor, en `cada turno`: puntúa el mensaje del usuario contra las
+// celdas Nombre+Descripción de semántica (glosario + Terminología Farlopa) y decisiones, e inyecta las
+// pocas filas que pegan fuerte al `additionalContext`. Es determinista, así que su calidad de selección
+// se prueba acá SIN costo de sesión (mensaje → filas esperadas), y es donde se calibra el umbral. La
+// Herramienta `probar-disparo-de-skills` NO aplica: mide si una skill dispara, y esto no dispara ninguna.
+//
+// Corre contra los registros REALES del repo, igual que el resto de este banco: qué fila elige para un
+// mensaje depende del contenido vivo de los registros, y eso es lo que se quiere verificar. Si una edición
+// de los registros deja de surtir el caso, el banco lo dice — que es el punto de un control.
+const H = 'Contraste con la sabiduría del repo';
+const contrasteDe = msg => disparar({ hook_event_name: 'UserPromptSubmit', prompt: msg }).contexto;
+
+// Los tres casos positivos del plan del disparo automático, cada uno con la fila que debe encabezar.
+{
+  const c = contrasteDe('quiero que los planes guarden la prioridad');
+  chequear('«…los planes guarden la prioridad» trae el contraste', c.includes(H));
+  chequear('  …y encabeza la Decisión de estados de planes (Local-0005)', c.includes('Local-0005'),
+    c.includes('Local-0005') ? 'presente' : 'ausente');
+  // Preferencia Base-0016: el código de una Entrada va precedido por su tipo. El patrón se arma en
+  // runtime para no dejar en este archivo la adjacencia «Decisión»+número, que la Decisión de no
+  // citar decisiones del harness en lo que viaja marca como cita colgante en el repo destino.
+  const conTipo = new RegExp('Decisión' + '\\s+Local-0005');
+  chequear('  …con el tipo de entrada delante del código (Base-0016)', conTipo.test(c));
+}
+{
+  const c = contrasteDe('se me ocurre que los lints deberían correr solos cuando termino una tarea');
+  chequear('«…los lints deberían correr solos…» trae la Decisión de lints co-ubicados (Local-0008)',
+    c.includes(H) && c.includes('Local-0008'), c.includes('Local-0008') ? 'presente' : 'ausente');
+}
+{
+  const c = contrasteDe('a la carpeta que viaja adentro del plugin la llamaría capa de instalación');
+  chequear('«…la llamaría capa de instalación» trae la relación vetada capa=fase (Local-0034)',
+    c.includes(H) && c.includes('Local-0034'), c.includes('Local-0034') ? 'presente' : 'ausente');
+  chequear('  …nombrada como relación vetada (Terminología Farlopa)', c.includes('Terminología Farlopa'));
+  // Tope duro: nunca más de tres filas, aunque peguen muchas. Se cuentan los renglones de candidato,
+  // que empiezan con «- » dentro del bloque del contraste.
+  const bloque = c.slice(c.indexOf(H));
+  const candidatas = (bloque.match(/^- /gm) || []).length;
+  chequear('  …y respeta el tope duro de 3 filas', candidatas > 0 && candidatas <= 3, `${candidatas} filas`);
+}
+
+// Precisión primero: la mayoría de los turnos NO inyecta nada. Un saludo y una consulta fáctica que solo
+// menciona un sustantivo del dominio se quedan en silencio, sin pisar las reglas `Inyectar` del momento.
+{
+  const c = contrasteDe('hola, gracias por la ayuda');
+  chequear('un saludo no dispara el contraste', !c.includes(H), c.includes(H) ? 'disparó de más' : 'silencio');
+  chequear('  …y las reglas Inyectar del momento siguen ahí', c.includes('Recordatorio de conducta'));
+}
+{
+  const c = contrasteDe('cuántos planes pendientes hay');
+  chequear('una consulta fáctica de un solo sustantivo no dispara', !c.includes(H),
+    c.includes(H) ? 'disparó de más' : 'silencio');
+}
+
+// Determinista: el mismo mensaje da exactamente el mismo contraste (no hay azar ni estado).
+{
+  const msg = 'a la carpeta que viaja adentro del plugin la llamaría capa de instalación';
+  chequear('el mismo mensaje da el mismo contraste (determinista)', contrasteDe(msg) === contrasteDe(msg));
+}
+
+// Sin mensaje del usuario (UserPromptSubmit sin `prompt`) no hay nada que contrastar, pero el momento
+// sigue entregando sus reglas: el contraste no se come el resto del turno.
+{
+  const r = disparar({ hook_event_name: 'UserPromptSubmit' });
+  chequear('sin prompt no hay contraste pero sí las reglas del momento',
+    !r.contexto.includes(H) && r.contexto.includes('Recordatorio de conducta'));
+}
+
 console.log('\n== NUNCA ROMPE EL TURNO ==');
 // Un hook que revienta se lleva puesto el turno del usuario. Ante cualquier entrada, sale 0.
 for (const [nombre, entrada] of [
@@ -191,6 +261,6 @@ for (const [nombre, entrada] of [
   chequear(`${nombre} → sale 0 sin romper`, r.codigo === 0, `código ${r.codigo}`);
 }
 
-console.log(`\ncasos: 26`);
+console.log(`\ncasos: ${total}`);
 console.log(malos ? `${malos} FALLARON.` : 'TODO VERDE.');
 process.exit(malos ? 1 : 0);

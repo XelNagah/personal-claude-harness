@@ -44,7 +44,8 @@ const repoRoot = path.resolve(__dirname, '..', '..', '..');   // .../conducta/es
 // Son los .md del subsistema que se declaran Indice en su frontmatter (uno por origen), con
 // INDICE.md de respaldo para la forma vieja. El repartidor los lee a TODOS: quedarse con el del
 // Agente Multiproposito dejaria sin entregar las reglas que el repo sumo, y sin ninguna senal.
-const { leerFrontmatter } = require('../../common/frontmatter.js');
+const { leerFrontmatter, celdasDe, esSeparadora } = require('../../common/frontmatter.js');
+const { indicesDe } = require('../../common/indices.js');
 function indicesDeReglas() {
   let nombres = [];
   try { nombres = fs.readdirSync(dirSub).filter(n => n.endsWith('.md')).sort(); } catch (e) { return []; }
@@ -151,6 +152,123 @@ function construir(momento) {
   if (!reglas.length) return '';
   const bullets = reglas.map(r => `- ${r.contenido}`).join('\n');
   return `Recordatorio de conducta — momento «${momento}» (subsistema conducta):\n${bullets}`;
+}
+
+// -- Contraste automático: filas de los registros que el mensaje toca ---
+// (concepto del glosario: `Contraste automático`)
+// El repartidor ya corre en `cada turno`; en vez de arrancar un programa aparte (48 ms por mensaje,
+// medido y descartado) o esperar a que el modelo invoque una skill (los tres disparos automaticos
+// dieron 0/3, ver el plan del disparo automatico), aca mismo se puntua el mensaje contra las celdas
+// de semantica y decisiones y se inyectan las pocas filas que pegan fuerte. El contraste con la
+// sabiduria del repo ocurre porque el material esta en el contexto, sin que el modelo decida nada.
+// No agrega clase a CLASES.md: es mecanica interna que escribe en `additionalContext`, como el Buzon.
+//
+// Alcance: los dos registros que no cargan siempre y que las skills de contraste ya leen —el glosario,
+// la Terminologia Farlopa y las decisiones—. Planes y conocimiento quedan afuera (ver el plan).
+const REGISTROS_CONTRASTE = [
+  { dir: 'semantica', archivo: 'GLOSARIO.md', tipo: 'término del glosario' },
+  { dir: 'semantica', archivo: 'TERMINOLOGIA-FARLOPA.md', tipo: 'relación vetada (Terminología Farlopa)' },
+  { dir: 'decisiones', archivo: 'INDICE.md', tipo: 'Decisión' },
+];
+
+// Palabras vacias del castellano (gramaticales, no del dominio) mas los verbos de bajo peso que
+// aparecen al plantear un tema. Se descartan para que no sumen puntaje: el corte es por funcion, no
+// por dominio (un termino del dominio nunca se filtra aca).
+const VACIAS = new Set(('a al ante bajo con contra de desde en entre hacia hasta para por segun sin so ' +
+  'sobre tras el la los las lo un una unos unas y e o u ni que se su sus mi tu me te nos les le esto ' +
+  'esta este estos estas ese esa eso como cuando donde cual cuales quien hay son ser es estan estar ' +
+  'muy ya no si pero mas porque cada todo toda todos todas algo cuanto cuantos cuantas deberia ' +
+  'deberian quiero hacer tiene tienen tener va van ir solo sola solos solas ocurre').split(/\s+/));
+
+// Normaliza SIN acentos para tolerar que el usuario los omita —los omite seguido— al escribir su
+// mensaje. Ojo: fusiona homografos (`termino` verbo con `término` sustantivo), lo que a veces suma
+// una fila de baja relevancia detras de la correcta; el tope duro la contiene.
+const RANGO_ACENTOS = [0x300, 0x36f];
+const normalizar = s => Array.from(String(s == null ? '' : s).normalize('NFD'))
+  .filter(ch => { const c = ch.codePointAt(0); return c < RANGO_ACENTOS[0] || c > RANGO_ACENTOS[1]; })
+  .join('').toLowerCase();
+const palabrasDe = s => normalizar(s).split(/[^a-z0-9]+/).filter(Boolean);
+const esContenido = t => t.length >= 3 && !VACIAS.has(t);
+
+// Todas las filas de entrada de los registros del contraste, cada una con su tipo para nombrarla.
+// Reusa el descubrimiento de Indices de `common/indices.js` (misma copia que los ocho lints) en vez
+// de reparsear tablas a mano; ubica las columnas por nombre de encabezado, nunca por posicion, para
+// que renombrar o reordenar una columna no corra el contenido (conocimiento cambiar-la-forma-de-un-registro).
+function filasDeContraste() {
+  const filas = [];
+  const tipoDe = (dir, nombre) => {
+    const r = REGISTROS_CONTRASTE.find(x => x.dir === dir && x.archivo === nombre);
+    return r ? r.tipo : null;
+  };
+  const dirs = [...new Set(REGISTROS_CONTRASTE.map(r => r.dir))];
+  for (const dir of dirs) {
+    for (const idx of indicesDe(path.join(repoRoot, '.claude', dir))) {
+      const tipo = tipoDe(dir, idx.nombre);
+      if (!tipo) continue;
+      const cab = idx.cabecera || [];
+      const col = n => cab.findIndex(c => normalizar(c) === n);
+      const iCod = col('codigo'), iNom = col('nombre'), iDes = col('descripcion'), iDet = col('detalle');
+      if (iNom < 0 || iDes < 0) continue;
+      for (const linea of idx.texto.split('\n')) {
+        const celdas = celdasDe(linea);
+        if (!celdas || esSeparadora(celdas)) continue;
+        const codigo = iCod >= 0 ? (celdas[iCod] || '') : '';
+        if (!/^(?:Base|Local)-\d{4}$/.test(codigo)) continue;   // solo filas de entrada
+        const nombre = celdas[iNom] || '', descripcion = celdas[iDes] || '';
+        if (!nombre || !descripcion) continue;
+        filas.push({ tipo, codigo, nombre, descripcion, detalle: iDet >= 0 ? (celdas[iDet] || '') : '' });
+      }
+    }
+  }
+  return filas;
+}
+
+// Precision primero (acordado con el usuario, ver el plan): puntaje idf con el `Nombre` pesado mas
+// que la `Descripcion`, umbral alto y tope duro bajo. Una palabra que aparece en el Nombre de muchas
+// filas pesa poco (idf baja); una discriminante (`prioridad`, `capa`) pesa mucho. La mayoria de los
+// turnos no supera el umbral y no inyecta nada. El umbral se calibra con el banco `pruebas.js`, que
+// es gratis porque esto es determinista: no hace falta una sesion real para medir que fila elige.
+const PESO_NOMBRE = 3, PESO_DESCRIPCION = 1, UMBRAL = 7.0, TOPE = 3;
+
+function contrastar(data) {
+  const prompt = data && typeof data.prompt === 'string' ? data.prompt : '';
+  if (!prompt.trim()) return '';
+  const mensaje = new Set(palabrasDe(prompt).filter(esContenido));
+  if (!mensaje.size) return '';
+
+  const filas = filasDeContraste();
+  if (!filas.length) return '';
+
+  // idf sobre el corpus (Nombre + Descripcion de cada fila): cuantas filas contienen la palabra.
+  // Rara en el registro => mucho peso; comun => poco. El `+0.5` evita dividir por cero.
+  const N = filas.length, df = Object.create(null);
+  const conjuntos = filas.map(f => {
+    const nom = new Set(palabrasDe(f.nombre).filter(esContenido));
+    const des = new Set(palabrasDe(f.descripcion).filter(esContenido));
+    for (const t of new Set([...nom, ...des])) df[t] = (df[t] || 0) + 1;
+    return { nom, des };
+  });
+  const idf = t => Math.log(N / ((df[t] || 0) + 0.5));
+
+  const candidatos = [];
+  for (let i = 0; i < filas.length; i++) {
+    const { nom, des } = conjuntos[i];
+    let puntaje = 0;
+    for (const t of mensaje) {
+      if (nom.has(t)) puntaje += idf(t) * PESO_NOMBRE;
+      else if (des.has(t)) puntaje += idf(t) * PESO_DESCRIPCION;
+    }
+    if (puntaje >= UMBRAL) candidatos.push({ fila: filas[i], puntaje });
+  }
+  if (!candidatos.length) return '';
+  candidatos.sort((a, b) => b.puntaje - a.puntaje || a.fila.codigo.localeCompare(b.fila.codigo));
+
+  const lineas = candidatos.slice(0, TOPE).map(({ fila }) => {
+    const det = fila.detalle && fila.detalle !== '—' ? ` Detalle: ${fila.detalle}` : '';
+    return `- ${fila.tipo} ${fila.codigo} (${fila.nombre}): ${fila.descripcion}${det}`;
+  });
+  return 'Contraste con la sabiduría del repo — tu mensaje toca estos registros ' +
+    '(candidatos para contrastar tu respuesta, no veredictos):\n' + lineas.join('\n');
 }
 
 // -- ejecutar la Herramienta de una regla y devolver su stdout ----------
@@ -274,6 +392,12 @@ process.stdin.on('end', () => {
   let ctx = '';
   try { ctx = construir(momento); } catch (e) { ctx = ''; }   // ante error, no romper el turno
   if (medido.contexto) ctx = ctx ? ctx + '\n' + medido.contexto : medido.contexto;
+
+  // El contraste con la sabiduria del repo solo tiene sentido cuando hay un mensaje del usuario, o
+  // sea en `cada turno` (UserPromptSubmit trae `data.prompt`). Se combina con las reglas `Inyectar`.
+  let contraste = '';
+  if (momento === 'cada turno') { try { contraste = contrastar(data); } catch (e) { contraste = ''; } }
+  if (contraste) ctx = ctx ? ctx + '\n' + contraste : contraste;
 
   // El buzon se levanta solo en `cada turno`: al arrancar, el trabajo en segundo plano recien sale.
   let aviso = '';
