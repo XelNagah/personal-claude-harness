@@ -364,8 +364,48 @@ escribir('.claude/semantica/GLOSARIO.md',
   if (n !== 0) malos++;
 }
 
+// -- CONTROL de versión↔contenido: contenido de plugin cambiado sin subir su version ------
+// Este control mira la HISTORIA de git, no el árbol de archivos, así que el repo de prueba tiene que
+// ser un repo git: se le hace un commit inicial coherente —cada plugin con su version y su contenido
+// juntos— y de ahí se rompe. En un árbol sin git el control se saltea solo, como el de la versión
+// instalada, y por eso no aparece en los casos de arriba. Se prueba con caso malo y dos buenos: que
+// marque al cambiar contenido sin subir la version, que calle con el repo coherente, y que subir la
+// version en disco APAGUE el hallazgo (la version nueva no está en ningún commit: no hay colisión).
+const SECCION_VER = 'CONTENIDO DE PLUGIN CAMBIADO SIN SUBIR SU VERSION';
+let gitOk = true;
+try { cp.execSync('git --version', { stdio: 'ignore' }); } catch (e) { gitOk = false; }
+function commitInicial() {
+  const env = { ...process.env, GIT_AUTHOR_NAME: 'banco', GIT_AUTHOR_EMAIL: 'banco@x',
+                GIT_COMMITTER_NAME: 'banco', GIT_COMMITTER_EMAIL: 'banco@x' };
+  // core.autocrlf=false: sin él, git avisa por cada .md al normalizar fin de línea y ensucia la salida.
+  const opt = { cwd: REPO_PRUEBA, env, stdio: ['ignore', 'ignore', 'ignore'] };
+  cp.execSync('git -c core.autocrlf=false init -q', opt);
+  cp.execSync('git -c core.autocrlf=false add -A', opt);
+  cp.execSync('git -c core.autocrlf=false commit -q -m inicial', opt);
+}
+const contarVer = () => (hallazgos(correr())[SECCION_VER] || 0);
+console.log('\n== CONTROL versión↔contenido (repo git de banco) ==');
+if (!gitOk) {
+  console.log('OMITIDO  git no está disponible en esta máquina: el control no se puede ejercitar acá.');
+} else {
+  // caso bueno: cada plugin con su version y su contenido en el mismo commit → coherente
+  armar(); commitInicial();
+  { const n = contarVer(); console.log(`${n === 0 ? 'OK  ' : 'FALLA'} repo git coherente → ${n} hallazgos`); if (n !== 0) malos++; }
+  // caso malo: cambiar un archivo del plugin sin subir su version
+  armar(); commitInicial();
+  fs.appendFileSync(path.join(REPO_PRUEBA, 'funcionalidades/amp/README.md'), '\nun cambio posterior sin subir la version\n');
+  { const n = contarVer(); console.log(`${n > 0 ? 'OK  ' : 'FALLA'} contenido cambiado sin subir la version → ${n} hallazgos`); if (n === 0) malos++; }
+  // caso bueno fino: subir la version en disco apaga el hallazgo
+  armar(); commitInicial();
+  fs.appendFileSync(path.join(REPO_PRUEBA, 'funcionalidades/amp/README.md'), '\nun cambio posterior\n');
+  { const pj = path.join(REPO_PRUEBA, 'funcionalidades/amp/.claude-plugin/plugin.json');
+    const o = JSON.parse(fs.readFileSync(pj, 'utf8')); o.version = '99.0.0';
+    fs.writeFileSync(pj, JSON.stringify(o, null, 2) + '\n');
+    const n = contarVer(); console.log(`${n === 0 ? 'OK  ' : 'FALLA'} version nueva en disco → ${n} hallazgos`); if (n !== 0) malos++; }
+}
+
 fs.rmSync(REPO_PRUEBA, { recursive: true, force: true });
-console.log(`\ncasos: ${casos.length + 3}`);
+console.log(`\ncasos: ${casos.length + 3}${gitOk ? ' + 3 (versión↔contenido, repo git de banco)' : ''}`);
 console.log(`no cubierto a propósito: [${IGNORAR}] — compara contra los plugins instalados en la máquina, que un repo de prueba no tiene.`);
 console.log(malos ? `${malos} FALLARON.` : 'TODO VERDE.');
 process.exit(malos ? 1 : 0);

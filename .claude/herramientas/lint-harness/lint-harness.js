@@ -8,7 +8,7 @@
 // escribe en cada Agente con Propósito) y la marca de orden de bytes (U+FEFF) suelta en cualquier
 // archivo del repo. Sin LLM, sin red.
 // Uso: node lint-harness.js [--quiet]   (correr desde la raiz del repo del harness)
-const fs = require('fs'), path = require('path'), os = require('os'), crypto = require('crypto');
+const fs = require('fs'), path = require('path'), os = require('os'), crypto = require('crypto'), cp = require('child_process');
 const quiet = process.argv.includes('--quiet');
 const repo = process.cwd();
 const funcDir = path.join(repo, 'funcionalidades');
@@ -178,6 +178,58 @@ for (const f of enDisco) {
   try { enDiscoVer = JSON.parse(fs.readFileSync(path.join(funcDir, f, '.claude-plugin', 'plugin.json'), 'utf8')).version || ''; } catch (e) { continue; }
   if (!enDiscoVer) continue; // sin version fija: auto-versiona por commit, no hay resta que hacer
   if (enDiscoVer !== instalada) versionDesfasada.push(`${f}: disco ${enDiscoVer}, instalado ${instalada}  (publicar y actualizar, o se consume una version vieja)`);
+}
+
+// -- [3b] contenido de un plugin cambiado sin subir su version -----------
+// El desfase que paso en silencio el 07/08/2026: dos commits cambiaron archivos que viajan en el
+// plugin `amp` bajo la MISMA version 0.40.0. actualizar-plugins compara solo por numero de version
+// —dos contenidos distintos con el mismo numero le dan verde— y solo la vista previa de amp:actualizar
+// mira contenido. Nadie comparaba la version contra su contenido: la forma 3 del conocimiento
+// `controles-que-no-avisan` (mira una copia, no la que se usa). Un plugin que publica contenido nuevo
+// bajo una version ya publicada no llega a los Agentes Desplegados, porque Claude Code no reinstala si
+// el numero no sube.
+//
+// La comparacion mira el DISCO, no solo la historia: se busca el commit donde se fijo la version que
+// hoy declara el plugin.json, y se compara el arbol de ese commit contra el estado en disco.
+// Asi, subir la version en disco apaga el hallazgo al instante —la version nueva todavia no aparece en
+// ningun commit, no puede haber colision— y no hay ruido durante la edicion. Un plugin sin campo
+// `version` auto-versiona por commit (cada commit es una version): no hay numero que subir, queda exento.
+//
+// Es git puro y sin red. En un arbol que no es repo git —el banco de prueba se copia como archivos— el
+// control se saltea solo, igual que [3] cuando no hay plugins instalados; por eso su prueba arma su
+// propio repo git.
+const versionSinSubir = [];
+let esRepoGit = false;
+try { cp.execSync('git rev-parse --is-inside-work-tree', { cwd: repo, stdio: ['ignore', 'pipe', 'ignore'] }); esRepoGit = true; }
+catch (e) { /* no es repo git: el control no aplica */ }
+if (esRepoGit) {
+  const versionEnCommit = (commit, rutaPj) => {
+    try { return JSON.parse(cp.execSync(`git show ${commit}:"${rutaPj}"`, { cwd: repo, encoding: 'utf8' })).version || ''; }
+    catch (e) { return ''; }
+  };
+  for (const f of enDisco) {
+    const rutaPj = `funcionalidades/${f}/.claude-plugin/plugin.json`;
+    let vDisco = '';
+    try { vDisco = JSON.parse(fs.readFileSync(path.join(repo, rutaPj), 'utf8')).version || ''; } catch (e) { continue; }
+    if (!vDisco) continue; // sin version fija: auto-versiona por commit, no hay numero que subir
+    let commits = [];
+    try { commits = cp.execSync(`git log --format=%H -- "${rutaPj}"`, { cwd: repo, encoding: 'utf8' }).split('\n').map(s => s.trim()).filter(Boolean); }
+    catch (e) { continue; }
+    if (!commits.length) continue; // plugin sin historia: nada publicado con que colisionar
+    // commitFijado = el commit mas viejo de la racha contigua reciente donde version == la de disco.
+    // Si el commit mas nuevo ya no la tiene, la version de disco no se commiteo todavia: es nueva,
+    // nunca se publico con otro contenido, no marca.
+    let commitFijado = null;
+    for (const c of commits) { if (versionEnCommit(c, rutaPj) === vDisco) commitFijado = c; else break; }
+    if (!commitFijado) continue;
+    let cambios = '';
+    try { cambios = cp.execSync(`git diff --name-only ${commitFijado} -- "funcionalidades/${f}/"`, { cwd: repo, encoding: 'utf8' }).trim(); }
+    catch (e) { continue; }
+    if (cambios) {
+      const n = cambios.split('\n').filter(Boolean).length;
+      versionSinSubir.push(`${f}: version ${vDisco} (fijada en ${commitFijado.slice(0, 9)}) pero ${n} archivo(s) del plugin cambiaron despues  (subir la version, o el Agente Desplegado no recibe el cambio)`);
+    }
+  }
 }
 
 // -- [5] punto de entrada (AGENTS.md fuente + CLAUDE.md adaptador) -------
@@ -753,6 +805,7 @@ const secciones = [
   ['SKILLS SIN CIERRE VERIFICABLE', skillSinCierre],
   ['SUBAGENTES CON FRONTMATTER INVALIDO', frontmatterSubagenteInvalido],
   ['VERSION EN DISCO DISTINTA DE LA INSTALADA', versionDesfasada],
+  ['CONTENIDO DE PLUGIN CAMBIADO SIN SUBIR SU VERSION', versionSinSubir],
   ['FRAGMENTOS DE CODIGO DIVERGENTES ENTRE LINTS', divergentes],
   [`FRAGMENTOS VIGILADOS CON MENOS DE ${MUESTRAS_MINIMAS} MUESTRAS (no controlan nada)`, fragmentosSinMuestras],
   ['LO QUE VIAJA DIFIERE DE LO INSTALADO EN .claude/', viajaDistinto],
