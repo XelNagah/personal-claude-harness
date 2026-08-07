@@ -196,7 +196,9 @@ function contarHallazgos(salida) {
 function correrLint(lintPath) {
   // Sin --quiet: el flag da exit ≠ 0 en algunos lints artesanales (bug de divergencia).
   // Igual que ejecutar-control-cierre: leer los totales `(N)` de la salida, no confiar en el exit.
-  const r = spawnSync('node', [lintPath], { cwd: REPO, encoding: 'utf8', timeout: 15000 });
+  // process.execPath + windowsHide: en Windows, sin windowsHide cada lint abre una consola node
+  // que parpadea al arrancar y en cada /clear (igual que el chequeo de plugins, que ya lo tapa).
+  const r = spawnSync(process.execPath, [lintPath], { cwd: REPO, encoding: 'utf8', timeout: 15000, windowsHide: true });
   if (r.error || r.status === null) return { estado: 'n/d', hallazgos: null };
   const salida = (r.stdout || '') + (r.stderr || '');
   const h = contarHallazgos(salida);

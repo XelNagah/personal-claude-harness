@@ -36,7 +36,7 @@
 //
 // Uso a mano (probar): echo {"hook_event_name":"SessionStart"} | node establecer-conducta.js
 const fs = require('fs'), path = require('path');
-const { execSync } = require('child_process');
+const { spawnSync } = require('child_process');
 const dirSub = path.resolve(__dirname, '..');
 const repoRoot = path.resolve(__dirname, '..', '..', '..');   // .../conducta/establecer-conducta -> repo
 
@@ -275,8 +275,17 @@ function contrastar(data) {
 // El Contenido es la ruta del script relativa a .claude/ (con sus flags), ej.
 // `conducta/mostrar-pantalla-bienvenida/mostrar-pantalla-bienvenida.js --hook`.
 function ejecutar(regla, input) {
+  // spawnSync SIN shell —no `execSync`, que en Windows pasa por cmd.exe y abre una ventana que
+  // parpadea en cada turno— y con `windowsHide` por si el hijo abriera consola. El Contenido es
+  // `ruta/script.js --flags`: el primer token es la ruta del script bajo .claude/, el resto son
+  // argumentos. Las rutas del repo no llevan espacios, asi que partir por espacios es seguro.
+  const partes = regla.contenido.trim().split(/\s+/);
+  const script = path.join(repoRoot, '.claude', partes[0]);
   try {
-    return execSync('node .claude/' + regla.contenido, { cwd: repoRoot, input, encoding: 'utf8', timeout: 20000 });
+    const r = spawnSync(process.execPath, [script, ...partes.slice(1)],
+      { cwd: repoRoot, input, encoding: 'utf8', timeout: 20000, windowsHide: true });
+    if (r.error || r.status !== 0) return '';   // igual que el `catch` viejo: solo se usa el exito
+    return r.stdout || '';
   } catch (e) { return ''; }   // no romper el turno: el hijo fallo, se ignora
 }
 
