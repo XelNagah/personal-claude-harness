@@ -102,6 +102,14 @@ console.log('\n== SALIDA PARA EL HOOK ==');
     !!(json && typeof json.systemMessage === 'string' && json.systemMessage.length > 50),
     json ? `${(json.systemMessage || '').length} caracteres` : 'no es JSON');
   chequear('  …y sale 0', codigo === 0, `código ${codigo}`);
+  // Regresión: el CLI antepega "SessionStart:startup says: " al PRIMER renglón del systemMessage. Ese
+  // renglón NO puede ser el borde de la caja (╔): quedaría corrido a la derecha. Tiene que ser un
+  // rótulo de texto plano, con la caja arrancando en el renglón 2. Que la caja siga estando igual.
+  const primerRenglon = (json?.systemMessage || '').replace(/^\n+/, '').split('\n')[0] || '';
+  chequear('  …y el primer renglón es un rótulo, no el borde de la caja',
+    !/^[║╔╚╟]/.test(primerRenglon) && primerRenglon.trim().length > 0, `«${primerRenglon.slice(0, 40)}»`);
+  chequear('  …y la caja sigue presente debajo',
+    /^╔/m.test(json?.systemMessage || ''), /^╔/m.test(json?.systemMessage || '') ? 'sí' : 'no hay caja');
 }
 
 console.log('\n== EL CHEQUEO DE PLUGINS NO SE ESPERA ==');
@@ -117,6 +125,6 @@ console.log('\n== EL CHEQUEO DE PLUGINS NO SE ESPERA ==');
 }
 
 fs.rmSync(REPO_PRUEBA, { recursive: true, force: true });
-console.log(`\ncasos: 17`);
+console.log(`\ncasos: 19`);
 console.log(malos ? `${malos} FALLARON.` : 'TODO VERDE.');
 process.exit(malos ? 1 : 0);

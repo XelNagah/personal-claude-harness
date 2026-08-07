@@ -80,7 +80,7 @@ Lectura en texto plano:
 
 | Evento | Cuándo dispara | Bloqueante | Campos propios (stdin) | Qué puede hacer |
 |--------|----------------|:----------:|------------------------|-----------------|
-| **SessionStart** | Abre/reanuda/limpia sesión (una vez) | No | `source` (`startup`\|`resume`\|`clear`\|`compact`) | Inyectar `additionalContext` de arranque; efecto de lado |
+| **SessionStart** | Abre/reanuda/limpia sesión (una vez) | No | `source` (`startup`\|`resume`\|`clear`\|`compact`); `model` (id string, opcional — §4.4) | Inyectar `additionalContext` de arranque; escribir en la terminal con `systemMessage` (§4.3); efecto de lado |
 | **UserPromptSubmit** | Usuario manda prompt, antes del modelo | **Sí** | `prompt` | Inyectar `additionalContext`; **rechazar** el prompt |
 | **PreToolUse** | Modelo va a usar una herramienta | **Sí** | `tool_name`, `tool_input` | **allow / deny / ask**; inyectar contexto |
 | **PostToolUse** | Herramienta terminó con éxito | No | `tool_name`, `tool_input`, `tool_response` | Reaccionar; devolver feedback al modelo |
@@ -138,7 +138,7 @@ Con exit 0, el hook puede escribir un JSON en stdout para controlar el flujo con
   "continue": true,
   "stopReason": "texto si continue es false",
   "suppressOutput": false,
-  "systemMessage": "aviso opcional para el modelo"
+  "systemMessage": "aviso opcional; se muestra en la terminal del USUARIO, no al modelo (§4.3)"
 }
 ```
 
@@ -192,6 +192,19 @@ Y un bloque **específico por evento**, `hookSpecificOutput`:
 - **La diferencia entre los dos eventos:** `UserPromptSubmit` lo inyecta *después* del prompt del usuario, en esa vuelta; `SessionStart` lo inyecta como contexto de sistema *antes* del primer prompt.
 
 > Este es exactamente el mecanismo del caveman: su hook `UserPromptSubmit` emite `additionalContext` con las reglas del modo en cada mensaje (ver §6.2).
+
+### 4.3 `systemMessage` — el canal al usuario, y cómo lo renderiza el CLI
+
+`systemMessage` es el campo con que un `SessionStart` hook escribe en la **terminal del usuario**; el modelo **no** lo ve (para el modelo está `additionalContext`, §4.2). Son canales distintos y opuestos en destinatario — confundirlos hace que un aviso pensado para el usuario no le llegue, o al revés. Cómo lo renderiza el CLI (verificado, CLI 2.1.224):
+
+- El CLI **antepega la etiqueta del evento** —`SessionStart:startup says: `— al **primer renglón** del `systemMessage`, en la misma línea.
+- Un salto de línea inicial (`\n`) al principio del `systemMessage` **se recorta**: no sirve para empujar el contenido a su propio renglón.
+
+Consecuencia de diseño: si el primer renglón es un bloque dibujado (una caja `╔═╗`), su borde superior sale **corrido a la derecha** por el ancho de la etiqueta, mientras el resto alinea a la izquierda. El arreglo es que el **renglón 1 sea texto plano** (que absorbe la etiqueta) y que el contenido estructurado arranque en el **renglón 2**, donde la alineación ya es correcta. Es lo que hace la Pantalla de bienvenida de este repo, que antepone un rótulo antes de la caja.
+
+### 4.4 Saber el modelo activo desde un hook
+
+El stdin de `SessionStart` **puede** traer el modelo, pero como **id string** simple (`"claude-opus-4-8"`), no como objeto, y el campo es **opcional / no garantizado**. **No** trae un `display_name` legible (`"Opus 4.8"`, `"Fable 5"`): hay que mapear el id a mano. No hay variable de entorno equivalente ni otra vía soportada. (En cambio el comando `statusLine` sí recibe un objeto `model` con `id` y `display_name` — por eso, para mostrar el modelo de forma confiable, ese es el canal, no un `SessionStart` hook.) Codex CLI expone `model` como string también; Gemini CLI, sin documentar.
 
 ---
 
@@ -401,3 +414,4 @@ La doc de versiones recientes (`v2.1.200+`, reportada por el guide) lista **much
 - Doc oficial: `code.claude.com/docs/en/hooks`
 - Hooks reales de esta PC: `.claude/settings.json` (proyecto) y plugin caveman (`~/.claude/plugins/cache/caveman/...`)
 - Latencia y elección de mecanismo: [`latencia-hooks.md`](latencia-hooks.md)
+- §4.3 y §4.4 (rendering de `systemMessage` y disponibilidad del modelo): verificado el 2026-08-07 contra la referencia oficial de hooks y los issues #15344 (systemMessage en SessionStart) y #63205 (objeto `model` en statusLine), CLI 2.1.224.

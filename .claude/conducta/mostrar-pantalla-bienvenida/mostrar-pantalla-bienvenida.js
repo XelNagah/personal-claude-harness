@@ -273,10 +273,15 @@ function envolver(texto, ancho, cont) {
   return out;
 }
 
+// La marca del harness: constante en todo repo. Va una sola vez como dato y se reusa —dentro de la
+// caja y como rótulo del renglón 1 en modo --hook (ver abajo)— para no escribir el mismo texto dos
+// veces (conocimiento `evitar-el-mismo-dato-en-varios-lugares`).
+const MARCA = 'Agente Multipropósito';
+
 const cuerpo = [];
 // Renglón de marca: va sin etiqueta a propósito. Es la identidad del harness, constante
 // en todo repo; ponerle prefijo lo degradaría a un campo más entre los de abajo.
-cuerpo.push('Agente Multipropósito');
+cuerpo.push(MARCA);
 cuerpo.push('');  // aire: despega la identidad de los campos del repo
 cuerpo.push(...envolver('Título: ' + titulo, WRAP, '   '));
 cuerpo.push(...envolver('Propósito: ' + proposito, WRAP, '   '));
@@ -350,8 +355,14 @@ function lanzarChequeoDePlugins() {
 
 if (HOOK) {
   lanzarChequeoDePlugins();
-  // Salto inicial: separa la caja del prefijo "SessionStart:… says:" que antepone el CLI.
-  const salida = { systemMessage: '\n' + box };
+  // El CLI antepega la etiqueta "SessionStart:startup says: " al PRIMER renglón del systemMessage, y
+  // recorta el salto inicial \n (verificado en CLI 2.1.224). Sea cual sea ese renglón queda indentado
+  // por la etiqueta: con la caja como renglón 1, su borde superior salía corrido a la derecha mientras
+  // el resto alineaba. Por eso el renglón 1 es un rótulo de texto plano —la marca, que absorbe la
+  // etiqueta— y la caja arranca en el renglón 2, donde la alineación ya es correcta. NO devolver la
+  // caja al renglón 1. La ruta no-hook (skill amp:info) no tiene este problema: va con cerca ``` y sin
+  // etiqueta, así que ahí la caja se muestra sola, sin rótulo.
+  const salida = { systemMessage: MARCA + '\n' + box };
   const pedido = pedidoDeIdentidad();
   if (pedido) salida.hookSpecificOutput = { hookEventName: 'SessionStart', additionalContext: pedido };
   process.stdout.write(JSON.stringify(salida));
