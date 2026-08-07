@@ -115,13 +115,42 @@ Medición del 06/08/2026: banco completo de la Herramienta `probar-disparo-de-sk
 
 Sobre la Decisión Local-0025: no queda refutada — su segunda cláusula ahora tiene una medición que la apoya, aunque sigue mezclando el hecho mecánico con la inferencia y conviene precisarla al corregirla por el punto de las fugas.
 
+**Diseño acordado el 07/08/2026 (sin construir todavía).** Con B ganada, se aterrizó el disparo contra el repartidor `establecer-conducta.js`:
+
+- **Skills en la evaluación forzada: `amp:planificar` + `converger-terminologia`, solo esas dos.** Los otros seis subsistemas no entran: preferencias y conducta ya están en contexto / los entrega el hook (no hay skill que disparar); subsistemas y herramientas tienen su índice cargado y sus skills son operaciones estructurales; decisiones y conocimiento se consultan, y esa lectura ya la hace `amp:planificar` al entrar —lee semántica completa (glosario + Terminología Farlopa), decisiones y conocimiento, según su SKILL líneas 14-15 y 39— más el comparador del paso 5. **El patrón:** entra a la evaluación forzada solo el subsistema con una skill que dispara *al plantear un tema*; los demás disparan en otros momentos (al cerrar, al fabricar, al persistir).
+- **El disparo es una regla `Inyectar` nueva en `cada turno`, en `INDICE.md` (Agente Multipropósito):** texto fijo con el formato de evaluación forzada con compromiso, costo cero de proceso (el repartidor ya emite `additionalContext` en ese momento). Va en el Índice del Agente Multipropósito porque es mecánica del harness que viaja a todo Agente Desplegado, no Propósito de este repo.
+- **El comparador (paso 5) va dentro del repartidor, no como regla `Bloquear`:** una `Bloquear` es un programa aparte (`execSync`) = los 48 ms que la Decisión Local-0051 descartó. Es código del Agente Multipropósito.
+- **Secuencia: paso 4 solo primero, medirlo con `probar-disparo-de-skills`, y recién después el paso 5.** El estudio externo advierte que inyectar filas describiendo el trabajo puede bajar la activación 30 puntos; mezclarlo con el disparo impediría saber qué efecto ganó. Y el 84% del hook no está garantizado en este entorno —A′ dio 0/3 y el 100% externo no replicó—, así que hay que medirlo aislado.
+- **Queda abierto:** el formato exacto del texto de la regla, y cómo convive con las seis reglas `Inyectar` que ya se inyectan en `cada turno` (compiten por atención).
+
+**Paso 4 construido y medido el 07/08/2026 — B también refutada, 0/3.** Se redactó la regla `Inyectar` `Base-0012` (Disparar la skill de contraste al plantear un tema) en `conducta/INDICE.md`, con el formato de evaluación forzada con compromiso en 3 pasos (evaluá → comprometeté → invocá antes de responder), skills `amp:planificar` + `converger-terminologia`. Se sincronizó a la Base (`amp`). **No se publicó** —midió sobre este repo, donde el hook lee `INDICE.md` vivo—.
+
+Banco completo (6 consultas, sesión limpia por consulta):
+
+| Consulta | Esperado | Observado | Resultado |
+|---|---|---|---|
+| planificar-01 | dispara `planificar` | contestó sin herramienta | **FALLA** |
+| planificar-02 | dispara `planificar` | contestó sin herramienta | **FALLA** |
+| planificar-03 | no dispara | contestó sin herramienta | OK |
+| planificar-04 | no dispara | contestó sin herramienta | OK |
+| converger-01 | dispara `converger-terminologia` | contestó sin herramienta | **FALLA** |
+| converger-02 | no dispara | contestó sin herramienta | OK |
+
+**0/3 de las que deben disparar; 0/3 de sobredisparo.** Igual que A (0/3) y A′ (0/3).
+
+**El hook sí llegó — verificado, no supuesto.** Dos controles: (1) `establecer-conducta.js` alimentado con un `UserPromptSubmit` emite el texto de `Base-0012` (`REGLA-0012-PRESENTE`); (2) una sesión `claude --print` preguntada directamente contestó **SI** a que ve en su contexto el recordatorio de la «evaluación en 3 pasos». La regla se inyecta y el modelo la lee. **No la obedece.**
+
+**Conclusión: los tres mecanismos de disparo automático fallan igual (0/3), y el modo de falla ahora está aislado — no es que el texto no llegue, es que el modelo lo lee y no actúa.** Es el modo 1 «recita sin obedece» del conocimiento Local-0001, medido directamente sobre el hook. La Decisión Local-0025 —«un skill que el agente elige invocar recae en el modo 1»— queda con apoyo medido directo, no ya por analogía. El 84% de Spence (evaluación forzada) no replica acá, igual que el 100% de Seleznov (A′) no replicó. Diferencias candidatas sin aislar, las mismas de A′: skills de plugin con prefijo, ~40 skills instaladas, español, y el sesgo de `--print` a la respuesta directa de un solo turno.
+
+**Lo que queda vivo del plan, gane quien gane el disparo:** el comparador (paso 5) que inyecta las filas relevantes de los 135 KB no cargados. Reencuadre a decidir con el usuario: si ningún mecanismo hace que el modelo *invoque* la skill, el hook puede **saltear la skill** e inyectar directo el material del contraste (filas candidatas de semántica y decisiones) al contexto — el contraste ocurre sin que el modelo tenga que «decidir» invocar nada. Eso convierte el paso 5 de acelerador en el mecanismo mismo.
+
 ## Pasos
 
 1. ~~**Medir cuál hipótesis es**, en sesión limpia~~ — **hecho el 06/08/2026**: ninguna habilidad disparó con las descripciones viejas (sesión `c83db9c5`).
 2. ~~Repetir con las descripciones ensanchadas y comparar~~ — **hecho el 06/08/2026**: tampoco disparan (ver `## Estado`). **Gana B.**
 3. ~~**Rama A′, antes de pagar el hook:** reescribir las dos descriptions en forma directiva y repetir el banco~~ — **hecho el 06/08/2026: refutada, 0/3** (ver `## Estado`). Las descriptions directivas quedan publicadas igual: no empeoran nada y documentan la mejor forma conocida del texto.
-4. Llevar el disparo al hook repartidor (B) — con el formato de evaluación forzada con compromiso (84% medido afuera), nunca instrucción simple (20%) ni texto que describa el trabajo (empeora). Decidir antes: qué skills entran a la evaluación forzada, y cómo convive con el recordatorio de conducta que ya se inyecta en `cada turno`.
-5. Construir el programa que compara, con el alcance y el umbral ya decididos — sigue valiendo gane quien gane: acerca las filas relevantes de los 135 KB no cargados, que es otra cosa que el disparo.
+4. Llevar el disparo al hook repartidor (B) — regla `Inyectar` nueva en `cada turno`, en `INDICE.md`, con el formato de evaluación forzada con compromiso (84% medido afuera), nunca instrucción simple (20%) ni texto que describa el trabajo (empeora). **Decidido el 07/08/2026** (ver `## Estado`): las skills son `amp:planificar` + `converger-terminologia`; el disparo va como regla `Inyectar`. **Falta:** redactar el texto exacto, publicar, y medir con `probar-disparo-de-skills` **antes** de tocar el paso 5. Resolver al redactar: cómo convive con las seis reglas `Inyectar` que ya viven en `cada turno`.
+5. Construir el programa que compara, **dentro del repartidor** (no como regla `Bloquear`: 48 ms de la Decisión Local-0051), con el alcance y el umbral ya decididos — sigue valiendo gane quien gane: acerca las filas relevantes de los 135 KB no cargados, que es otra cosa que el disparo. Solo después de medir el paso 4 aislado.
 6. ~~Si ganó A, **corregir la Decisión Local-0025**~~ — no ganó A; la segunda cláusula quedó apoyada por la medición, no refutada. Si A′ replica el 100%, reabrir este punto.
 
 ## Planes relacionados
