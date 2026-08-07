@@ -1,6 +1,6 @@
 # Que las habilidades se disparen solas al plantear un tema
 
-**Estado: En curso · Creado 26-08-06.** Origen: el usuario, en la sesión del 06/08/2026 — *"cuando yo planteo un tema ya directamente tiene que analizarlo a la luz de la sabiduría del repo sin que yo diga nada. Cuando veo q empieza con cosas raras le tengo que decir? a ver? usa converger terminologia o amp:planificar. Necesito que sea más automático"*.
+**Estado: Ejecutado · Creado 26-08-06 · Cerrado 26-08-07.** Origen: el usuario, en la sesión del 06/08/2026 — *"cuando yo planteo un tema ya directamente tiene que analizarlo a la luz de la sabiduría del repo sin que yo diga nada. Cuando veo q empieza con cosas raras le tengo que decir? a ver? usa converger terminologia o amp:planificar. Necesito que sea más automático"*.
 
 ## El problema
 
@@ -170,6 +170,17 @@ Cómo quedó, decisión por decisión:
 **Nombrado el 07/08/2026 (ratificado por el usuario):** el mecanismo es el **Contraste automático** (glosario Local-0036). Se evaluó `el comparador` como alias y **se descartó**: el usuario objetó que no dice qué compara con qué; no quedó en Propuestos. La función en código sigue siendo `contrastar` (verbo llano, identificador). Con esto la Decisión Local-0016 queda satisfecha para este mecanismo.
 
 **Sigue pendiente (potestad del usuario):** **precisar la Decisión Local-0025** en el punto de las fugas de la conversación, que el pedido del usuario objeta. Apuesta blanda sin medir aún: que el modelo *use* las filas inyectadas (presencia = conducta) — necesita sesiones reales, no el banco.
+
+## Notas de implementación
+
+El desarrollo completo, medición por medición, está en `## Estado`. Cierre:
+
+- **Los tres mecanismos de disparo automático (A, A′, B) se refutaron, 0/3** — el modelo lee el recordatorio y no invoca la habilidad (modo «recita sin obedece», conocimiento Local-0001, medido directo sobre el hook).
+- **Reencuadre ratificado:** en vez de disparar una habilidad, el hook repartidor inyecta directo las filas candidatas de semántica y decisiones al contexto. Se construyó el **Contraste automático** (función `contrastar` en `establecer-conducta.js`, banco de 38 casos verde), nombrado en el glosario Local-0036.
+- **Precisada la Decisión Local-0025** por el punto de las fugas de la conversación → Decisión Local-0062 (control de terminología también en la conversación).
+- **Commit del mecanismo:** `941f50f`. La precisión de la Decisión Local-0025 y el cierre entran en esta sesión (07/08/2026).
+
+**Queda como seguimiento aparte, no como pendiente de este plan:** la apuesta blanda —que el modelo *use* las filas que el Contraste automático inyecta (presencia = conducta)— necesita sesiones reales, no el banco determinista.
 
 ## Pasos
 
