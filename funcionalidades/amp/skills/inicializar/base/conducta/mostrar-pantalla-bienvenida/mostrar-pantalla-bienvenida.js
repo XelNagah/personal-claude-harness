@@ -199,10 +199,12 @@ function correrLint(lintPath) {
   // process.execPath + windowsHide: en Windows, sin windowsHide cada lint abre una consola node
   // que parpadea al arrancar y en cada /clear (igual que el chequeo de plugins, que ya lo tapa).
   const r = spawnSync(process.execPath, [lintPath], { cwd: REPO, encoding: 'utf8', timeout: 15000, windowsHide: true });
-  if (r.error || r.status === null) return { estado: 'n/d', hallazgos: null };
+  if (r.error || r.status === null) return { estado: 'n/d', hallazgos: null, salida: '' };
   const salida = (r.stdout || '') + (r.stderr || '');
   const h = contarHallazgos(salida);
-  return { estado: r.status !== 0 ? 'error' : (h === 0 ? 'ok' : 'hallazgos'), hallazgos: h };
+  // Se conserva `salida`: el additionalContext arma el detalle de los hallazgos con el texto real del
+  // lint que ya se corrió acá, para que el agente responda sin re-correrlo (solo cuando hay hallazgos).
+  return { estado: r.status !== 0 ? 'error' : (h === 0 ? 'ok' : 'hallazgos'), hallazgos: h, salida };
 }
 
 // --- Identidad del Agente: Título + Propósito (tolerante a indefinido) ---
@@ -335,6 +337,35 @@ function pedidoDeIdentidad() {
     + 'que gobierna todo lo que el Agente acumula despues.';
 }
 
+// -- estado para el modelo: adicional al systemMessage (que solo ve el usuario) ---------------
+// La caja va por `systemMessage`, campo que el CLI muestra en la terminal pero que el modelo NO ve.
+// Preguntado por los hallazgos que la Pantalla mostró, el agente los negaba («no me llegó al
+// contexto») y corría el lint de nuevo a mano. Este `additionalContext` le entrega el mismo estado
+// en texto plano —sin la caja ASCII, que es ruido para el modelo—. Extiende el doble canal que el
+// script ya usa en `pedidoDeIdentidad` (systemMessage al usuario + additionalContext al modelo).
+// El detalle del lint va SOLO cuando hay hallazgos: en verde el peso extra es ~0; con hallazgos el
+// repo está en mal estado y conviene que el agente lo sepa entero, y el costo es una vez por sesión.
+function estadoParaModelo() {
+  const L = [];
+  L.push('Estado del Agente Multipropósito al arrancar esta sesión (Pantalla de bienvenida, también mostrada al usuario en la terminal):');
+  L.push(`Título: ${titulo}`);
+  L.push(`Propósito: ${proposito}`);
+  if (SIN_LINT) { L.push('Lint: sin correr.'); return L.join('\n'); }
+  L.push(`Lint: ${lintGlobal}.`);
+  const conDetalle = filas.filter(f => (typeof f.lint.hallazgos === 'number' && f.lint.hallazgos > 0) || f.lint.estado === 'error');
+  if (conDetalle.length) {
+    L.push('');
+    L.push('Detalle del lint (ya corrido en el arranque; no hace falta re-correrlo para responder):');
+    for (const f of conDetalle) {
+      const et = f.lint.estado === 'error' ? 'error' : `${f.lint.hallazgos} hallazgo${f.lint.hallazgos === 1 ? '' : 's'}`;
+      L.push('');
+      L.push(`── ${f.nombre} (${et}):`);
+      L.push((f.lint.salida || '').trim());
+    }
+  }
+  return L.join('\n');
+}
+
 // -- lanzar en segundo plano lo que tarda mas que el arranque -----------------
 // El estado de los plugins no se puede averiguar aca: cuesta ~1,7 s, y sin red se va al vencimiento
 // del plazo — contra un presupuesto de 100 ms para un evento bloqueante. Se lanza SIN ESPERARLO y
@@ -363,8 +394,12 @@ if (HOOK) {
   // caja al renglón 1. La ruta no-hook (skill amp:info) no tiene este problema: va con cerca ``` y sin
   // etiqueta, así que ahí la caja se muestra sola, sin rótulo.
   const salida = { systemMessage: MARCA + '\n' + box };
+  // El modelo no ve el systemMessage: se le entrega el estado por additionalContext. Si además falta
+  // la Identidad, el pedido se SUMA al estado (no lo pisa), en un solo campo.
+  let contexto = estadoParaModelo();
   const pedido = pedidoDeIdentidad();
-  if (pedido) salida.hookSpecificOutput = { hookEventName: 'SessionStart', additionalContext: pedido };
+  if (pedido) contexto += '\n\n' + pedido;
+  salida.hookSpecificOutput = { hookEventName: 'SessionStart', additionalContext: contexto };
   process.stdout.write(JSON.stringify(salida));
 } else {
   process.stdout.write('```\n' + box + '\n```\n');

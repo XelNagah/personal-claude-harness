@@ -110,6 +110,57 @@ console.log('\n== SALIDA PARA EL HOOK ==');
     !/^[║╔╚╟]/.test(primerRenglon) && primerRenglon.trim().length > 0, `«${primerRenglon.slice(0, 40)}»`);
   chequear('  …y la caja sigue presente debajo',
     /^╔/m.test(json?.systemMessage || ''), /^╔/m.test(json?.systemMessage || '') ? 'sí' : 'no hay caja');
+  // El modelo NO ve el systemMessage: el estado le tiene que llegar por additionalContext, en texto
+  // plano (sin la caja ASCII). Regresión de la negación de hallazgos: la Pantalla los mostraba al
+  // usuario y el agente los desconocía.
+  const ac = json?.hookSpecificOutput?.additionalContext || '';
+  chequear('  …y emite additionalContext para el modelo con Título y Propósito',
+    /Título:/.test(ac) && /Propósito:/.test(ac), ac ? `${ac.length} caracteres` : 'no hay');
+  chequear('  …sin la caja ASCII (ruido para el modelo)',
+    !/[║╔╚╟]/.test(ac), /[║╔╚╟]/.test(ac) ? 'trae bordes' : 'texto plano');
+  chequear('  …y con --sin-lint dice que no corrió y no arma detalle',
+    /Lint: sin correr/.test(ac) && !/Detalle del lint/.test(ac), ac.split('\n').find(l => /Lint/.test(l))?.trim() || '(sin línea de lint)');
+}
+
+console.log('\n== ESTADO AL MODELO: VERDE VS. CON HALLAZGOS ==');
+// El detalle del lint va SOLO cuando hay hallazgos. Se arman dos repos mínimos con un subsistema y
+// su lint co-ubicado: uno cuyo lint sale limpio (verde) y otro cuyo lint reporta hallazgos. La
+// Pantalla los descubre por el lint co-ubicado, igual que en el repo real.
+function repoConLint(cuerpoLint) {
+  fs.rmSync(REPO_PRUEBA, { recursive: true, force: true });
+  const dirLint = path.join(REPO_PRUEBA, '.claude', 'demo', 'lint-demo');
+  fs.mkdirSync(dirLint, { recursive: true });
+  fs.writeFileSync(path.join(REPO_PRUEBA, '.claude', 'identidad.md'),
+    '# Repo de prueba\n\nPropósito: Probar el estado al modelo\n');
+  fs.writeFileSync(path.join(dirLint, 'lint-demo.js'), cuerpoLint);
+}
+function acDe(texto) { try { return (JSON.parse(texto.trim()).hookSpecificOutput || {}).additionalContext || ''; } catch { return ''; } }
+{
+  // verde: el lint no reporta ningún total `(N)`
+  repoConLint('console.log("demo: TODO VERDE");\n');
+  const { texto } = correr(['--hook'], REPO_PRUEBA);
+  const ac = acDe(texto);
+  chequear('en verde el additionalContext no trae detalle del lint',
+    /Lint: ✔ 0 hallazgos/.test(ac) && !/Detalle del lint/.test(ac), ac.split('\n').find(l => /Lint/.test(l))?.trim() || '(sin línea de lint)');
+}
+{
+  // con hallazgos: el lint reporta un total `(3)` al final de una línea
+  repoConLint('console.log("problema detectado en demo (3)");\n');
+  const { texto } = correr(['--hook'], REPO_PRUEBA);
+  const ac = acDe(texto);
+  chequear('con hallazgos suma el detalle del subsistema',
+    /Detalle del lint/.test(ac) && /── demo \(3 hallazgos\)/.test(ac), ac.includes('── demo') ? 'lista demo' : 'no lista el detalle');
+  chequear('  …con el texto real del lint (no re-corrido, ya del arranque)',
+    /problema detectado en demo/.test(ac), /problema detectado en demo/.test(ac) ? 'sí' : 'no trae el texto del lint');
+}
+{
+  // Identidad faltante: el pedido se SUMA al estado, no lo pisa.
+  fs.rmSync(REPO_PRUEBA, { recursive: true, force: true });
+  fs.mkdirSync(path.join(REPO_PRUEBA, '.claude'), { recursive: true });
+  const { texto } = correr(['--hook', '--sin-lint'], REPO_PRUEBA);
+  const ac = acDe(texto);
+  chequear('sin Identidad el additionalContext trae el estado Y el pedido',
+    /Título:/.test(ac) && /identidad\.md/.test(ac), ac ? 'ambos' : 'no hay additionalContext');
 }
 
 console.log('\n== EL CHEQUEO DE PLUGINS NO SE ESPERA ==');
@@ -125,6 +176,6 @@ console.log('\n== EL CHEQUEO DE PLUGINS NO SE ESPERA ==');
 }
 
 fs.rmSync(REPO_PRUEBA, { recursive: true, force: true });
-console.log(`\ncasos: 19`);
+console.log(`\ncasos: 26`);
 console.log(malos ? `${malos} FALLARON.` : 'TODO VERDE.');
 process.exit(malos ? 1 : 0);
