@@ -2,11 +2,11 @@
 
 Catálogo de las funcionalidades que este repo instala para armar un agente de **propósito general** — el usuario define el propósito del repo y los subsistemas se llenan con lo aprendido para lograrlo. Cada funcionalidad vive en `funcionalidades/<nombre>/`, **es un plugin de Claude Code** (listado en `.claude-plugin/marketplace.json`) y sus skills usan el **estándar abierto Agent Skills** (`SKILL.md`), legible también por Codex CLI, Cursor, Gemini CLI y Copilot (decisión 0010). Ver el README de cada una para el detalle.
 
-**Empaquetado:** un plugin transversal **`amp`** (skills `inicializar` · `planificar` · `info` · `actualizar`) + un plugin **`amp-<sub>`** por cada uno de los ocho subsistemas. Se instala `amp` y el paquete completo entra por dependencias.
+**Empaquetado:** un plugin transversal **`amp`** (skills `inicializar` · `planificar` · `info` · `actualizar`) + un plugin **`amp-<sub>`** por cada uno de los nueve subsistemas. Se instala `amp` y el paquete completo entra por dependencias.
 
 | Funcionalidad | Qué hace | Depende de | Carpeta |
 |---------------|----------|-----------|---------|
-| **amp** | Plugin transversal. Skills: `inicializar`, `planificar`, `info` y `actualizar`. El actualizador también conduce las migraciones de formas retiradas y no informa “al día” mientras quede `memoria/`. | los 8 `amp-<sub>` | [`amp/`](funcionalidades/amp/) |
+| **amp** | Plugin transversal. Skills: `inicializar`, `planificar`, `info` y `actualizar`. El actualizador también conduce las migraciones de formas retiradas y no informa “al día” mientras quede `memoria/`. | los 9 `amp-<sub>` | [`amp/`](funcionalidades/amp/) |
 | **amp-subsistemas** | Catálogo Base/Propósito y coordinación de la reubicación del Aprendizaje. Skills: `agregar-subsistema` y `reubicar-aprendizaje`. | — | [`amp-subsistemas/`](funcionalidades/amp-subsistemas/) |
 | **amp-preferencias** | Preferencias versionadas en `preferencias/`, un archivo por origen (`PREFERENCIAS.md` del Agente Multipropósito + `PREFERENCIAS-LOCAL.md` del Agente Desplegado), los dos importados siempre vía `@`, + lint estructural. `registrar-preferencia` da de alta o copia puntualmente una regla con vista previa e idempotencia; `adoptar-recomendadas` muestra el catálogo de Preferencias Recomendadas que trae el plugin y adopta las que el usuario elija, sin instalar ninguna sola. | — | [`amp-preferencias/`](funcionalidades/amp-preferencias/) |
 | **amp-planes** | Ciclo de planes `pendientes/ejecutados/descartados` + registro, README, lint y hook. Familia de skills por verbo: `crear-plan`, `analizar-plan`, `explicar-plan`, `priorizar-planes`, `sugerir-siguiente-plan`, `pausar-plan`, `retomar-plan`, `diferir-plan`, `cerrar-plan`, `descartar-plan`. | — | [`amp-planes/`](funcionalidades/amp-planes/) |
@@ -15,6 +15,7 @@ Catálogo de las funcionalidades que este repo instala para armar un agente de *
 | **amp-decisiones** | Decisiones estructurales + README y lint. Skill `registrar-decision`. | — | [`amp-decisiones/`](funcionalidades/amp-decisiones/) |
 | **amp-herramientas** | Registro de Herramientas separadas por origen, fichas y lint. Skill `registrar-herramienta`. | — | [`amp-herramientas/`](funcionalidades/amp-herramientas/) |
 | **amp-conducta** | Momentos, reglas separadas por origen, repartidor y lint. Skill `registrar-regla`. | — | [`amp-conducta/`](funcionalidades/amp-conducta/) |
+| **amp-comunicacion** | Consulta síncrona de solo lectura entre instalaciones del Agente Multipropósito de la misma máquina: registro (Aprendizaje local, no se commitea), mecanismo de consulta y lint. Skills `registrar-agente` y `consultar-agente`. | — | [`amp-comunicacion/`](funcionalidades/amp-comunicacion/) |
 
 Todos los subsistemas Base tienen plugin y skill de operación. `commits` no es un subsistema: su texto vive en Preferencias y Conducta lo entrega antes de confirmar.
 
@@ -35,8 +36,9 @@ Un plugin transporta además **subagentes**, en su carpeta `agents/`. Se disting
 | amp-decisiones | `amp-decisiones@xelnagah-harness` | `registrar-decision` | — |
 | amp-herramientas | `amp-herramientas@xelnagah-harness` | `registrar-herramienta` | — |
 | amp-conducta | `amp-conducta@xelnagah-harness` | `registrar-regla` | — |
+| amp-comunicacion | `amp-comunicacion@xelnagah-harness` | `registrar-agente`, `consultar-agente` | — |
 
-> **Instalar en otra PC:** `/plugin marketplace add <owner>/<repo>` y después `/plugin install amp@xelnagah-harness` — trae los 8 `amp-<sub>` por dependencias.
+> **Instalar en otra PC:** `/plugin marketplace add <owner>/<repo>` y después `/plugin install amp@xelnagah-harness` — trae los 9 `amp-<sub>` por dependencias.
 > **Codex CLI:** no resuelve `dependencies`; después de registrar el marketplace, desde el repo destino correr `node <checkout-harness>/.claude/herramientas/instalar-plugins-codex/instalar-plugins-codex.js --aplicar`.
 > **Nota:** dentro de `amp`, `planificar` y `actualizar` son **operacionales** (no instalan estructura propia): `planificar` analiza sin escribir; `actualizar` es el actualizador, contraparte de `inicializar`. `inicializar` es el instalador consolidado — absorbe los ex `inicializar-<sub>` individuales, es la fuente única de todo el setup.
 

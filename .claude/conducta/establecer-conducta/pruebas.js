@@ -93,11 +93,14 @@ console.log('== ENTREGA: cada evento despacha las reglas de su momento ==');
     r.crudo.trim().startsWith('{') && r.crudo.trim().endsWith('}') && !/\}\s*\{/.test(r.crudo),
     `${r.crudo.length} caracteres, un objeto`);
   // El orden lo decide el origen, no el nombre del archivo. `INDICE-LOCAL.md` ordena antes que
-  // `INDICE.md`, así que sin ordenar por origen lo que sumó el repo sale DELANTE de la Pantalla de
-  // bienvenida. Se afirma que no hay texto antes de la caja, que es lo que se rompe al invertirlo.
+  // `INDICE.md`, así que sin ordenar por origen lo que sumó el repo saldría DELANTE de la Pantalla de
+  // bienvenida. Lo único que precede a la caja, por diseño, es el rótulo de la propia Pantalla —la
+  // marca `Agente Multipropósito`, o el modelo activo cuando el dato llega—, que absorbe la etiqueta
+  // del hook para no correr la caja. Se afirma que ese rótulo es lo que hay antes de la caja y que no
+  // se le coló texto de una regla del repo, que es lo que se rompe al invertir el orden por origen.
   const antesDeLaCaja = r.mensaje.slice(0, r.mensaje.indexOf('╔')).trim();
   chequear('  …con las del Agente Multipropósito antes que las del repo',
-    r.mensaje.includes('╔') && antesDeLaCaja === '',
+    r.mensaje.includes('╔') && antesDeLaCaja === 'Agente Multipropósito',
     antesDeLaCaja ? `"${antesDeLaCaja.slice(0, 50)}" quedó delante` : 'la caja primero');
 }
 

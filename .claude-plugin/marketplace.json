@@ -4,12 +4,12 @@
     "name": "jllarens",
     "email": "jllarens@gmail.com"
   },
-  "description": "Agente Multipropósito: un plugin transversal y ocho plugins de subsistema. Instalás amp y el paquete completo entra por dependencias.",
+  "description": "Agente Multipropósito: un plugin transversal y nueve plugins de subsistema. Instalás amp y el paquete completo entra por dependencias.",
   "plugins": [
     {
       "name": "amp",
       "source": "./funcionalidades/amp",
-      "description": "Plugin transversal: inicializar, planificar, info y actualizar. Trae los ocho subsistemas por dependencias."
+      "description": "Plugin transversal: inicializar, planificar, info y actualizar. Trae los nueve subsistemas por dependencias."
     },
     {
       "name": "amp-subsistemas",
@@ -50,6 +50,11 @@
       "name": "amp-conducta",
       "source": "./funcionalidades/amp-conducta",
       "description": "Reglas entregadas en el momento de actuar. Skill registrar-regla."
+    },
+    {
+      "name": "amp-comunicacion",
+      "source": "./funcionalidades/amp-comunicacion",
+      "description": "Consulta síncrona de solo lectura entre instalaciones del Agente Multipropósito de la misma máquina + lint. Skills registrar-agente y consultar-agente."
     }
   ]
 }

@@ -1,11 +1,11 @@
 ---
 name: inicializar
-description: Inicializa en el repo actual el setup estándar completo del Agente Multipropósito — arma el .claude completo con el catálogo de subsistemas y las casas Base (preferencias, planes, conocimiento, semántica, decisiones, herramientas y conducta). Use when el usuario dice "amp:inicializar", "inicializá el repo", "armá el .claude", "setup completo" o quiere arrancar un proyecto nuevo con su setup estándar.
+description: Inicializa en el repo actual el setup estándar completo del Agente Multipropósito — arma el .claude completo con el catálogo de subsistemas y las casas Base (preferencias, planes, conocimiento, semántica, decisiones, herramientas, conducta y comunicacion). Use when el usuario dice "amp:inicializar", "inicializá el repo", "armá el .claude", "setup completo" o quiere arrancar un proyecto nuevo con su setup estándar.
 ---
 
 # Inicializar setup completo (orquestador)
 
-Instala el setup estándar completo del Agente Multipropósito: el catálogo de subsistemas y las ocho casas Base. (La skill de análisis `planificar` no se instala por-repo: es global.)
+Instala el setup estándar completo del Agente Multipropósito: el catálogo de subsistemas y las nueve casas Base. (La skill de análisis `planificar` no se instala por-repo: es global.)
 
 **Los Componentes de Subsistema son archivos reales**, en [`base/`](base/), con el mismo árbol que ocupan en el destino: `base/planes/lint-planes/lint-planes.js` va a `.claude/planes/lint-planes/lint-planes.js`. Instalar es **copiar ese árbol**, no transcribir texto. La estructura dice a dónde va cada archivo, así que no hay ninguna lista de Componentes de Subsistema que mantener al día — y no puede quedar afuera uno que nadie agregó a la lista.
 
@@ -50,9 +50,9 @@ Es exactamente el árbol de [`base/`](base/) colgado de `.claude/`, más lo que 
 - `.claude/planes/pendientes/`, `ejecutados/` y `descartados/`, cada una con su `.gitkeep`.
 - `AGENTS.md`, `CLAUDE.md`, `.claude/settings.json`, `.codex/hooks.json` y `.gitignore`, que se fusionan.
 
-`.claude/common/` no es un subsistema y no tiene manifiesto: son los módulos que usan varios y no son de ninguno —hoy la lectura de frontmatter, que requieren los ocho lints y los dos hooks—. **Se copia antes que el resto**: lo que lo requiere no corre sin él.
+`.claude/common/` no es un subsistema y no tiene manifiesto: son los módulos que usan varios y no son de ninguno —hoy la lectura de frontmatter, que requieren los nueve lints y los dos hooks—. **Se copia antes que el resto**: lo que lo requiere no corre sin él.
 
-Cargan su índice **subsistemas, preferencias, conocimiento y herramientas**; NO lo cargan **planes, semántica, decisiones y conducta** — cada manifiesto lo declara incluyendo o no su línea de importación.
+Cargan su índice **subsistemas, preferencias, conocimiento y herramientas**; NO lo cargan **planes, semántica, decisiones, conducta y comunicacion** — cada manifiesto lo declara incluyendo o no su línea de importación.
 
 ## Flujo de trabajo
 

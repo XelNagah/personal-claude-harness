@@ -42,6 +42,7 @@ const SUSTANTIVO = {
   memoria: 'memorias', semantica: 'términos', decisiones: 'decisiones',
   herramientas: 'herramientas', planes: 'planes', conocimiento: 'páginas',
   preferencias: 'preferencias', conducta: 'reglas', subsistemas: 'subsistemas',
+  comunicacion: 'agentes conocidos',
 };
 // Nombres de índice de la forma vieja, para el subsistema que todavía no declara frontmatter.
 // Van todos los que existan, no el primero: `semantica` tiene dos y quedarse con uno la subcontaba.

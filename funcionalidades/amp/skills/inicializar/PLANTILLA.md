@@ -27,9 +27,10 @@ Si tu agente no expande imports, **leé estos manifiestos al inicio de la sesió
 @.claude/decisiones/MANIFIESTO.md
 @.claude/herramientas/MANIFIESTO.md
 @.claude/conducta/MANIFIESTO.md
+@.claude/comunicacion/MANIFIESTO.md
 ```
 
-(La ruta del `@import` es relativa al archivo que importa — `AGENTS.md` está en la raíz, por eso el prefijo `.claude/`. `preferencias` **no tiene sección propia**: entra por esta lista como los otros siete, y su manifiesto importa sus dos Índices, que sí se cargan siempre. Las reglas del subsistema `conducta` las reparte su hook en cada momento —no se recitan desde el índice—, por eso su manifiesto va en esta lista pero su registro no se carga.)
+(La ruta del `@import` es relativa al archivo que importa — `AGENTS.md` está en la raíz, por eso el prefijo `.claude/`. `preferencias` **no tiene sección propia**: entra por esta lista como los otros ocho, y su manifiesto importa sus dos Índices, que sí se cargan siempre. Las reglas del subsistema `conducta` las reparte su hook en cada momento —no se recitan desde el índice—, por eso su manifiesto va en esta lista pero su registro no se carga.)
 
 ---
 
@@ -144,9 +145,12 @@ Con `--quiet` el lint de planes solo imprime cuando hay hallazgos: sesión limpi
 
 # Temporales del agente: borradores, traspasos y el buzón de avisos
 .claude/tmp/
+
+# Registro de comunicacion: guarda rutas absolutas de máquina (Aprendizaje local)
+.claude/comunicacion/INDICE.md
 ```
 
-No son preferencias de nadie: son las dos rutas donde **el mecanismo mismo escribe**. `.claude/tmp/` es el buzón donde un trabajo en segundo plano deja lo que averiguó para que el repartidor lo entregue en el turno siguiente —la Pantalla de bienvenida lo usa para el diagnóstico de plugins—, y además es el directorio de borradores que los lints excluyen de su barrido por ser material descartable. Sin estas líneas, la primera sesión del repo deja esos archivos listos para entrar en el primer commit, y los cuatro mecanismos que dan por sentado que el directorio se ignora trabajan sobre una premisa que nadie estableció.
+No son preferencias de nadie: son las rutas donde **el mecanismo mismo escribe**. `.claude/tmp/` es el buzón donde un trabajo en segundo plano deja lo que averiguó para que el repartidor lo entregue en el turno siguiente —la Pantalla de bienvenida lo usa para el diagnóstico de plugins—, y además es el directorio de borradores que los lints excluyen de su barrido por ser material descartable. Sin estas líneas, la primera sesión del repo deja esos archivos listos para entrar en el primer commit, y los cuatro mecanismos que dan por sentado que el directorio se ignora trabajan sobre una premisa que nadie estableció.
 
 El respaldo del actualizador **no va acá**: se escribe fuera del repo, en el temporal del sistema. Un `.claude/.respaldo-amp/` en un repo es de corridas viejas y lo levanta `amp:actualizar`, que ofrece borrarlo.
 

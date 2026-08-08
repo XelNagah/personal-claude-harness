@@ -27,3 +27,4 @@ Catálogo de casas persistentes del Agente Multipropósito, separado por origen 
 | Base-0006 | decisiones | Decisiones estructurales | `registrar-decision` | [decisiones/](../decisiones/) |
 | Base-0007 | herramientas | Herramientas repetibles y su registro | `registrar-herramienta` | [herramientas/](../herramientas/) |
 | Base-0008 | conducta | Reglas entregadas en el momento de actuar | `registrar-regla` | [conducta/](../conducta/) |
+| Base-0009 | comunicacion | Consulta síncrona de solo lectura a otras instalaciones del Agente Multipropósito | `registrar-agente`, `consultar-agente` | [comunicacion/](../comunicacion/) |

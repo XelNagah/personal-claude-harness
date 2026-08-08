@@ -1,0 +1,6 @@
+{
+  "name": "amp-comunicacion",
+  "description": "Consulta síncrona de solo lectura entre instalaciones del Agente Multipropósito de la misma máquina, en .claude/comunicacion/ + lint. Incluye registrar-agente y consultar-agente.",
+  "version": "0.1.0",
+  "author": { "name": "jllarens", "email": "jllarens@gmail.com" }
+}
