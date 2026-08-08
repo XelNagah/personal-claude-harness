@@ -59,6 +59,14 @@ const ENCABEZADOS_RENOMBRADOS = [
 // nombre del archivo— lo que decide el trato del actualizador: `agente-multiproposito` se reemplaza
 // entero, `agente-desplegado` no se abre. Deducirlo de la posicion de una seccion obligaba a entrar
 // al archivo del repo para pisar media parte; con un archivo por origen se pisa uno y listo.
+//
+// No estan todos los Indices que existen: esta lista alimenta dos chequeos de migracion —el
+// frontmatter [1c] y el nucleo de columnas [1d]— y un Indice que nacio ya declarado no tiene nada
+// que migrar. Sumarlo igual tiene ademas un efecto no buscado: [1d] le exigiria el nucleo
+// `Codigo | Nombre | Descripcion | Detalle`, que un Indice con columnas propias no tiene ni debe
+// tener, y ese hallazgo saldria en cada corrida de cada Agente Desplegado sin nada que hacer al
+// respecto. Es el caso de `comunicacion/INDICE.md`, cuyas columnas son las que describen a un
+// Agente Multiproposito Conocido (`Proposito`, `Directorio`, `CLI`).
 const INDICES_BASE = {
   subsistemas: ['SUBSISTEMAS.md'],
   preferencias: ['PREFERENCIAS.md'],
@@ -123,7 +131,11 @@ const MEMORIAS_BASE_RETIRADAS = new Set([
 ]);
 
 // Subsistemas del Agente Multiproposito esperados por el harness al dia (carpetas bajo .claude/).
-const SUBSISTEMAS = ['subsistemas', 'preferencias', 'planes', 'conocimiento', 'semantica', 'decisiones', 'herramientas', 'conducta'];
+// Todo subsistema que viaje en `base/` va aca. Faltar en esta lista no deja al consumidor sin el
+// subsistema —el barrido del arbol de `base/` le instala los archivos igual—, pero se los reporta
+// sueltos, uno por linea, en vez de una sola linea por la casa ausente; y lo deja fuera del grupo
+// «ya estaba», que se arma filtrando esta misma lista. `comunicacion` estuvo asi una version.
+const SUBSISTEMAS = ['subsistemas', 'preferencias', 'planes', 'conocimiento', 'semantica', 'decisiones', 'herramientas', 'conducta', 'comunicacion'];
 
 // Herramientas que el harness manda (origen Base) y que todo repo al dia deberia tener bajo
 // .claude/herramientas/<nombre>/<nombre>.js. No confundir con las del Proposito, que las suma

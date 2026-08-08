@@ -97,7 +97,17 @@ armarAlDia();
   chequear('un repo al día cierra sin nada para actualizar',
     /Repo al d[ií]a: nada para actualizar/.test(texto),
     (texto.match(/Total de acciones propuestas: \d+/) || ['sin acciones propuestas'])[0]);
-  chequear('informa los ocho subsistemas como ya estaban', /YA ESTABA[\s\S]*conducta/.test(texto));
+  // La lista esperada NO se escribe acá: sale de las carpetas que viajan en `base/`, que es
+  // exactamente lo que el repo de prueba tiene instalado. Con la lista a mano, el próximo
+  // subsistema que se sume queda fuera del control sin que nadie lo note — que es lo que pasó con
+  // `comunicacion`: ausente de la lista del detector, imposible de informar «ya estaba», y este
+  // banco en verde igual porque le alcanzaba con encontrar la palabra `conducta`.
+  const subsistemasQueViajan = fs.readdirSync(BASE, { withFileTypes: true })
+    .filter(e => e.isDirectory() && e.name !== 'common').map(e => e.name);
+  const bloqueYaEstaba = texto.split('YA ESTABA')[1] || '';
+  const sinInformar = subsistemasQueViajan.filter(s => !bloqueYaEstaba.includes(s));
+  chequear(`informa los ${subsistemasQueViajan.length} subsistemas que viajan como ya estaban`,
+    sinInformar.length === 0, sinInformar.length ? `sin informar: ${sinInformar.join(', ')}` : '');
 }
 
 console.log('\n== CONTENIDO: LO VIEJO SE MARCA, LO PROPIO DEL REPO NO ==');
