@@ -64,6 +64,18 @@ Por gobernanza (Preferencia Base-0003, Decisión Local-0016) los nombres los rat
 - **Formato de la respuesta** capturada y cómo se le presenta al agente consultante.
 - **La lista guarda rutas absolutas de máquina** ⇒ no se commitea; confirmar dónde vive dentro de `.claude/` sin que el control de versiones la arrastre.
 
+## Verificación de punta a punta (08/08/2026)
+
+El ida y vuelta real se probó contra una segunda instalación de esta máquina — el Agente Desplegado de contabilidad personal—, que se registró con una fila temporal y se retiró al terminar, para no arrastrar rutas absolutas al control de versiones. Los cinco resultados:
+
+- **El ida y vuelta funciona.** El consultado respondió su Propósito, sus ocho carpetas de subsistema y su servidor MCP. La respuesta se contrastó contra lo comprobado por separado antes de preguntar —ocho subsistemas y ninguna carpeta `comunicacion/`— y coincidió: leyó su propio disco, no la contestó el agente consultante de memoria.
+- **Solo lectura confirmada.** El árbol del repo consultado quedó idéntico (mismo `git status`, mismo commit de punta) antes y después de la consulta.
+- **La respuesta vuelve rotulada** como contexto y no como orden, y el rótulo lo escribe el mecanismo, no la habilidad.
+- **Degradación por CLI no soportado**, verificada en el mecanismo y no solo en la función pura que ya cubría el banco: informa que no lo sabe invocar en solo lectura y sale con código 1 sin invocar nada.
+- **Nombre no registrado**: informa y lista los registrados, código 1.
+
+Queda anotado un matiz que un lector puede leer al revés: el Índice **no** está gitignoreado en este repo, que publica el mecanismo y lo mantiene declarado y sin filas. El gitignoreo lo aplica `amp:inicializar` en el repo consumidor, donde las filas sí son Aprendizaje local. La verificación que corresponde acá es que el archivo vuelva a quedar sin filas.
+
 ## Se cruza con
 
 - Plan Local-0060 (Buzones de comunicación entre Agentes) — el corte asíncrono del mismo problema; este plan toma el corte síncrono y lo deja aparte.
