@@ -29,6 +29,18 @@ const TOPE_POR_CONSULTA_MS = 180000;
 const raizRepo = process.cwd();
 const dirHerramienta = __dirname;
 
+/**
+ * El agente invoca las Skills de un plugin con el nombre calificado
+ * (`amp-comunicacion:preguntar`) y el banco las declara por su nombre a secas.
+ * Comparar los dos tal cual cuenta como falla un disparo correcto, así que la
+ * comparación se hace sobre el nombre sin el prefijo del plugin.
+ */
+function nombreDeSkill(invocada) {
+  if (!invocada) return null;
+  const corte = invocada.lastIndexOf(':');
+  return corte === -1 ? invocada : invocada.slice(corte + 1);
+}
+
 function parseArgs(argv) {
   const opciones = { skill: null, id: null, listar: false };
   for (const a of argv.slice(2)) {
@@ -47,18 +59,22 @@ function parseArgs(argv) {
 function correrConsulta(consulta) {
   return new Promise((resolve) => {
     const args = [
-      '--print', consulta,
+      '--print',
       '--output-format', 'stream-json',
       '--verbose',
       '--allowed-tools', ...HERRAMIENTAS,
     ];
 
     // `shell: true` es obligatorio en Windows: `claude` es un .cmd y spawn sin
-    // intérprete falla con EINVAL. Node avisa que los argumentos van concatenados
-    // sin escapar; el riesgo queda acotado porque las consultas salen de banco.json,
-    // que es un archivo del repo, y no de entrada de afuera. Si alguna vez el banco
-    // se arma con texto que no controla el repo, esto hay que resolverlo antes.
+    // intérprete falla con EINVAL. Con el intérprete de por medio los argumentos
+    // van concatenados sin escapar, así que **la consulta no puede ir como
+    // argumento**: se parte en palabras sueltas y el CLI toma solo la primera —
+    // el banco quedaba midiendo "preguntale" en vez de la consulta entera, y
+    // contestaba sin avisar. Va por STDIN, igual que el mensaje del subsistema
+    // comunicacion, que no tiene ni el problema de escapado ni el de inyección.
     const proc = spawn('claude', args, { cwd: raizRepo, shell: true });
+    proc.stdin.write(consulta);
+    proc.stdin.end();
 
     let resto = '';
     let resuelto = false;
@@ -149,7 +165,7 @@ async function main() {
   for (const c of consultas) {
     process.stdout.write(`  ${c.id.padEnd(16)} corriendo… `);
     const r = await correrConsulta(c.consulta);
-    const disparo = r.primeraHerramienta === 'Skill' && r.skillInvocada === c.skill;
+    const disparo = r.primeraHerramienta === 'Skill' && nombreDeSkill(r.skillInvocada) === c.skill;
     const acierta = disparo === c.debe_disparar;
 
     let observado;

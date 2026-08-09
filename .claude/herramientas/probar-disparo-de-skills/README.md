@@ -28,6 +28,12 @@ Sale con código 1 si alguna consulta no se comportó como el banco declara. Dej
 - **Mide lo instalado, no lo editado.** Las Skills que una sesión ve vienen de los plugins instalados, no de `funcionalidades/`. Editar una `description` y correr esto sin publicar mide la versión vieja y **contesta en verde sobre lo que no cambió**. La secuencia obligatoria es: subir la versión del plugin, publicar, `actualizar-plugins --aplicar`, y recién ahí medir.
 - **No escribe en el repo:** las herramientas se limitan a lectura más `Skill`. Si el agente intenta escribir, el intento igual aparece en el flujo y se cuenta como primera herramienta, pero no llega a tocar nada.
 
+## La consulta va por STDIN
+
+En Windows hay que correr `claude` con el intérprete de por medio —es un `.cmd`, y `spawn` sin él falla con `EINVAL`—, y eso concatena los argumentos sin escapar. Una consulta pasada como argumento **se parte en palabras sueltas y el CLI toma solo la primera**: hasta el 09/08/2026 el banco medía `preguntale`, `que`, `quiero`, no la consulta. No fallaba: contestaba, con un veredicto sobre un texto que nadie escribió. Va por STDIN, igual que el mensaje del subsistema `comunicacion`.
+
+Al cambiar cómo se invoca el CLI, verificar que la consulta llegue entera antes de creerle a un veredicto: una corrida con la consulta a mano y comillas, comparada contra la del banco, alcanza.
+
 ## El banco
 
 `banco.json`. Cada consulta declara qué Skill espera, si `debe_disparar`, y por qué.

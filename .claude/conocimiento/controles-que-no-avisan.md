@@ -4,7 +4,7 @@ Un control roto no se comporta como un control roto: se comporta como un control
 
 Medido en este repo el 30/07/2026, con todos los lints en verde y el actualizador informando el `.claude/` al día.
 
-## Las ocho formas en que un control se apaga solo
+## Las nueve formas en que un control se apaga solo
 
 ### 1. Valida sobre un conjunto vacío
 
@@ -75,6 +75,20 @@ Cuatro archivos que viajan declaran por escrito que `.claude/tmp/` está gitigno
 
 **Regla general:** una condición que el código que viaja da por sentada, la instalación la tiene que establecer — o el código tiene que dejar de darla por sentada. Escribirla en un comentario no la establece. Acá lo que la establecía era un archivo que se quedó del lado del autor, y el comentario que la enunciaba viajó solo. Vale para cualquier condición del entorno, no solo para lo que git ignora: un directorio que tiene que existir, una herramienta que tiene que estar disponible, un ajuste que tiene que estar puesto.
 
+### 9. Mide una entrada que no es la que dice medir
+
+Las ocho anteriores terminan en un verde que no vale. Esta también apaga el control, pero se ve al revés: **contestó en rojo**, y el rojo tampoco valía. El control estaba bien escrito y bien probado; lo que nunca llegó a la cosa medida fue **la entrada**, mutilada en el camino por el mecanismo que la entrega.
+
+Medido el 09/08/2026 sobre `probar-disparo-de-skills`. En Windows hay que correr `claude` con el intérprete de por medio —es un `.cmd`—, y eso concatena los argumentos sin escapar: la consulta pasada como argumento se partía en palabras sueltas y el CLI tomaba **solo la primera**. El banco venía midiendo si `preguntale` disparaba una habilidad, y `que`, y `quiero`. Las **once consultas del banco** estaban en esa condición desde que la Herramienta existe. Corregido —la consulta va por STDIN—, las cinco que motivaron la corrida pasaron de 0/5 a 5/5 sin tocar una sola `description`.
+
+**Cómo se distingue de las anteriores.** No valida sobre un conjunto vacío (forma 1): hay entrada, y llega. No mira una copia (forma 3): mira lo que corresponde. Su población está entera (forma 6) y su premisa sigue en pie (forma 7). Lo que cambió es **qué se le entregó**, y el control no tiene cómo saber que recibió menos: un texto truncado sigue siendo un texto válido.
+
+**Por qué el rojo no protege.** Un rojo se lee como «el objeto medido está mal» y manda a arreglarlo. Acá lo primero que estuvo por tocarse fue la `description` de las habilidades, que no tenían nada. Un control en rojo autoriza a cambiar lo medido, igual que uno en verde autoriza a seguir: los dos veredictos valen lo que valga la entrada.
+
+**Cómo se detecta:** ejerciendo el control una vez a mano, por fuera de su mecanismo de entrega, y comparando. Acá alcanzó con correr la misma consulta escrita entre comillas: disparó. Dos resultados distintos para la misma consulta señalan el mecanismo de entrega, no el objeto medido.
+
+**Regla general:** un control que arma la entrada de lo que mide tiene que poder mostrar la entrada tal como llegó. Mientras eso no se vea, un rojo es una hipótesis, no un hallazgo.
+
 ## El remedio de una forma produce la otra
 
 Las formas 1 y 2 tiran para lados opuestos, y ahí está la trampa: **lo que se agrega para que un control deje de marcar de más es lo que lo convierte en mudo.**
@@ -100,6 +114,7 @@ Los hallazgos de un control tienen que ser **resolubles**: cada uno nombra algo 
 - **Nada de números absolutos adentro de la prueba.** Un número absoluto envejece igual adentro de una prueba que adentro de un registro, y lo hace por dos caminos opuestos. El **ruidoso**: dos casos de la prueba de planes comparaban contra un `81` escrito a mano y empezaron a fallar solos el día que el repo abrió el plan 82, avisando de un defecto que no existía. El **mudo**, que es el que nadie ve: el caso deja de reproducir el defecto y pasa a no poder fallar (forma 7 de esta lista). Se arregla igual en los dos casos — derivar el número de lo que se prueba, no escribirlo.
 - **Banco aparte, nunca el repo real.** Y si el control mira el repo entero, el banco tiene que ser un repo, no una carpeta: si no, el barrido cae sobre el repo real y los casos no quedan aislados.
 - **Lo que viaja se prueba además en un destino limpio.** Todo control que corre en el repo autor comparte el entorno del autor, así que ninguno puede contestar qué recibe el que instala (forma 8 de esta lista). Instalar contra un repo vacío y ejercer el mecanismo ahí es una corrida distinta, no una repetición: verifica lo que llega, no lo que hay.
+- **La entrada que el control arma se verifica una vez a mano.** Si el control invoca algo externo —un CLI, un proceso, un servicio— y le pasa texto, ese texto puede llegar cambiado sin que nada avise (forma 9 de esta lista). Una corrida a mano con la misma entrada, comparada contra la del control, es la única que lo muestra.
 - **Lo que no se cubre, se dice.** Un control que la prueba no puede ejercitar (porque depende del estado de la máquina, por ejemplo) se declara en la salida. Callarlo hace que la prueba en verde se lea como cobertura completa.
 - **Una prueba terminada no se deja en la carpeta temporal.** Una prueba completa de `lint-planes` —169 líneas, funcionando, con el criterio correcto escrito en su encabezado— quedó en `.claude/tmp/`, que el repo gitignorea. No era un borrador: era el trabajo hecho, esperando que alguien lo borrara. Un archivo de `tmp/` que dejó de ser descartable se mueve el mismo día.
 
