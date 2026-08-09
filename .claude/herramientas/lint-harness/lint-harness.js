@@ -50,6 +50,7 @@ const NOMBRES_RETIRADOS_SKILL = [
   'inicializar-conocimiento', 'inicializar-semantica', 'inicializar-decisiones',
   'inicializar-herramientas', 'inicializar-conducta',
   'ciclo-de-plan',
+  'consultar-agente',   // partida en `preguntar` y `resolver`: el modo lo elige el usuario, no el modelo
 ];
 for (const f of enDisco) {
   const base = path.join(funcDir, f);

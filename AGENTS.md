@@ -30,7 +30,7 @@ El repo es a la vez un **marketplace de plugins de Claude Code** (estilo Matt Po
 │   │   ├── lint-herramientas/                 # lint del registro de Herramientas
 │   │   └── lint-harness/                      # lint de coherencia del harness (disco↔marketplace↔REGISTRO, textual, tamaño de manifiestos)
 │   ├── conducta/                              # momentos + reglas (2 registros) + repartidor establecer-conducta + Pantalla de bienvenida + lint-conducta/
-│   └── comunicacion/                          # registro de Agentes Multipropósito Conocidos (Aprendizaje local, no se commitea) + consultar/ + lint-comunicacion/
+│   └── comunicacion/                          # registro de Agentes Multipropósito Conocidos (Aprendizaje local, no se commitea) + comunicar/ + buscar/ + lint-comunicacion/
 ├── .claude-plugin/marketplace.json            # catálogo del marketplace (10 plugins)
 └── funcionalidades/                           # cada subcarpeta = un plugin
     ├── amp/                                   # plugin transversal: inicializar · planificar · actualizar · info; dep: los 9 amp-<sub>
@@ -42,7 +42,7 @@ El repo es a la vez un **marketplace de plugins de Claude Code** (estilo Matt Po
     ├── amp-decisiones/                        # decisiones estructurales: tabla + detalle + lint
     ├── amp-herramientas/                      # registro de Herramientas; skill registrar-herramienta
     ├── amp-conducta/                          # momentos y reglas; skill registrar-regla
-    └── amp-comunicacion/                      # consulta síncrona de solo lectura entre instalaciones; skills registrar-agente y consultar-agente
+    └── amp-comunicacion/                      # comunicación en el momento entre instalaciones; skills buscar-agentes, registrar-agente, preguntar y resolver
 ```
 
 Todos los subsistemas Base tienen plugin y al menos una skill de operación. `commits` no es un subsistema: su estilo vive en Preferencias y su entrega en Conducta.

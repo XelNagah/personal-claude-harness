@@ -163,7 +163,7 @@ El plan arrancó ordenado al revés de como se ejecutó: los pasos originales da
 
 - Los subagentes de dominio por repo (§6 del conocimiento).
 - La herramienta Workflow y cualquier orquestación automática de punta a punta.
-- Delegar escritura en repos sensibles (contable, salud, sucesión, impresion3d): ahí rige el Control de Escritura — el subagente propone, el usuario ratifica.
+- Delegar escritura en repos sensibles (contable, salud, sucesión, impresion3d): ahí rige el protocolo de confirmación de escrituras del Agente-Coordinador — el subagente propone, el usuario ratifica.
 
 ## Verificación
 

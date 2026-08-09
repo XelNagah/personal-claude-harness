@@ -15,7 +15,7 @@ Catálogo de las funcionalidades que este repo instala para armar un agente de *
 | **amp-decisiones** | Decisiones estructurales + README y lint. Skill `registrar-decision`. | — | [`amp-decisiones/`](funcionalidades/amp-decisiones/) |
 | **amp-herramientas** | Registro de Herramientas separadas por origen, fichas y lint. Skill `registrar-herramienta`. | — | [`amp-herramientas/`](funcionalidades/amp-herramientas/) |
 | **amp-conducta** | Momentos, reglas separadas por origen, repartidor y lint. Skill `registrar-regla`. | — | [`amp-conducta/`](funcionalidades/amp-conducta/) |
-| **amp-comunicacion** | Consulta síncrona de solo lectura entre instalaciones del Agente Multipropósito de la misma máquina: registro (Aprendizaje local, no se commitea), mecanismo de consulta y lint. Skills `registrar-agente` y `consultar-agente`. | — | [`amp-comunicacion/`](funcionalidades/amp-comunicacion/) |
+| **amp-comunicacion** | Comunicación en el momento entre instalaciones del Agente Multipropósito de la misma máquina: registro (Aprendizaje local, no se commitea), mecanismo de comunicación, buscador de instalaciones y lint. Skills `buscar-agentes`, `registrar-agente`, `preguntar` y `resolver`. | — | [`amp-comunicacion/`](funcionalidades/amp-comunicacion/) |
 
 Todos los subsistemas Base tienen plugin y skill de operación. `commits` no es un subsistema: su texto vive en Preferencias y Conducta lo entrega antes de confirmar.
 
@@ -36,7 +36,7 @@ Un plugin transporta además **subagentes**, en su carpeta `agents/`. Se disting
 | amp-decisiones | `amp-decisiones@xelnagah-harness` | `registrar-decision` | — |
 | amp-herramientas | `amp-herramientas@xelnagah-harness` | `registrar-herramienta` | — |
 | amp-conducta | `amp-conducta@xelnagah-harness` | `registrar-regla` | — |
-| amp-comunicacion | `amp-comunicacion@xelnagah-harness` | `registrar-agente`, `consultar-agente` | — |
+| amp-comunicacion | `amp-comunicacion@xelnagah-harness` | `buscar-agentes`, `registrar-agente`, `preguntar`, `resolver` | — |
 
 > **Instalar en otra PC:** `/plugin marketplace add <owner>/<repo>` y después `/plugin install amp@xelnagah-harness` — trae los 9 `amp-<sub>` por dependencias.
 > **Codex CLI:** no resuelve `dependencies`; después de registrar el marketplace, desde el repo destino correr `node <checkout-harness>/.claude/herramientas/instalar-plugins-codex/instalar-plugins-codex.js --aplicar`.

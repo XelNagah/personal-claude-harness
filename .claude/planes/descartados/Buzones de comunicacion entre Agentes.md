@@ -1,6 +1,21 @@
 # Buzones de comunicación entre Agentes
 
-**Estado: Nuevo · Creado 26-07-25.** Idea de Javier, disparada al necesitar que una sesión que se reinicia vuelva sabiendo dónde quedó. La necesidad puntual se resolvió por otro lado; queda la general: **los Agentes no tienen forma de dejarse mensajes**.
+**Estado: Descartado · Creado 26-07-25 · Cerrado 26-08-09.** Idea de Javier, disparada al necesitar que una sesión que se reinicia vuelva sabiendo dónde quedó. La necesidad puntual se resolvió por otro lado; queda la general: **los Agentes no tienen forma de dejarse mensajes**.
+
+## Notas de cierre — motivo del descarte (26-08-09)
+
+Las dos distancias que le quedaban vivas después del achique del 26-08-06 quedaron cubiertas, y ninguna por un buzón:
+
+- **Entre sesiones no simultáneas del mismo repo** — ya lo cubrían el handoff (Preferencia Base-0014) y el Buzón de Avisos Generales (término del glosario Local-0034), que existe y funciona.
+- **Entre repos** — lo cubre el subsistema `comunicacion` (Decisión Local-0065), pero **por la vía contraria a la que este plan imaginaba**: en vez de dejarle un sobre al otro repo, el que tiene algo que entregar lo entrega **corriéndolo**. Concreto: un repo que descubre algo que le sirve a otro le pide con `resolver` que corra su propia `amp-planes:crear-plan`, y el plan queda creado del otro lado.
+
+Lo único que no queda cubierto es dejarle un **aviso** a un repo cerrado sin escribirle nada — con `resolver` se le escribe, que es más invasivo. Se descarta igual: no apareció la necesidad real, y construir el buzón para ese caso es el mecanismo entero por su borde.
+
+**Sus cinco condiciones no se pierden, tienen dueño:** las cuatro primeras —destinatario explícito, un solo uso, procedencia y fecha, visible para el usuario— las cumple el Buzón de Avisos Generales, que es el que entrega al arrancar. La quinta —**es contexto, no orden**— la hereda `comunicacion` y está asentada en su decisión.
+
+El choque que este plan marcaba contra la quinta no aplica: la condición rechaza un archivo que aparece y se ejecuta al arrancar **sin que nadie lo haya pedido**; en `resolver` el usuario está delante y lo pidió explícitamente. Son cosas distintas.
+
+Si el caso del aviso a un repo cerrado aparece de verdad, se abre un plan nuevo con ese alcance, que es chico. Lo de abajo es el texto original, sin tocar.
 
 ## El problema
 

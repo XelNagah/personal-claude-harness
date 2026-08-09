@@ -209,18 +209,15 @@ function correrLint(lintPath) {
 }
 
 // --- Identidad del Agente: Título + Propósito (tolerante a indefinido) ---
-// Sin Propósito definido el repo todavia NO es un Agente con Proposito: es el Agente
-// Multiproposito a secas, esperando el Proposito que lo hace nacer. Por eso la falta no se
-// informa como un dato mas: se pide (ver pedidoDeIdentidad).
-const SIN = '<sin definir>';
-function leerIdentidad() {
-  const p = path.join(CLAUDE_DIR, 'identidad.md');
-  const txt = leer(p);
-  if (!txt.trim()) return { titulo: SIN, proposito: SIN };
-  const titulo = (txt.match(/^#\s+(.+)$/m) || [])[1] || SIN;
-  const proposito = (txt.match(/^[*\s>]*Prop[óo]sito[*\s]*:\s*(.+)$/mi) || [])[1] || SIN;
-  return { titulo: titulo.trim(), proposito: proposito.trim() };
-}
+// El parseo vive en `common/identidad.js`, unica copia del repo: lo lee tambien el buscador de
+// Agentes Multiproposito Conocidos, que abre el `identidad.md` de OTROS repos. Sin Proposito
+// definido el repo todavia NO es un Agente con Proposito: es el Agente Multiproposito a secas,
+// esperando el Proposito que lo hace nacer. Por eso la falta no se informa como un dato mas: se
+// pide (ver pedidoDeIdentidad).
+// El modulo se toma de __dirname —es codigo, y viaja con este script—, pero se le pasa REPO, que
+// sale del directorio de trabajo: apuntada a otro repo, la Pantalla tiene que leer la Identidad de
+// ESE repo con el parseo de ESTA copia (conocimiento Local-0008).
+const { SIN, leerIdentidad } = require(path.resolve(__dirname, '..', '..', 'common', 'identidad.js'));
 
 // --- construir métricas ---
 const subs = descubrirSubsistemas();
@@ -249,7 +246,7 @@ for (const s of subs) {
 }
 
 // --- render ---
-const { titulo, proposito } = leerIdentidad();
+const { titulo, proposito } = leerIdentidad(REPO);
 const lintGlobal = SIN_LINT ? '(sin correr)'
   : lintPeor === 'error' ? '✖ error en algún lint'
   : hallazgosTotal === 0 ? '✔ 0 hallazgos'

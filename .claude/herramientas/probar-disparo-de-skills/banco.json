@@ -42,6 +42,41 @@
       "skill": "converger-terminologia",
       "debe_disparar": false,
       "por_que": "Comparte la palabra glosario, pero es una pregunta de ubicación: no hay ningún término que juzgar."
+    },
+    {
+      "id": "preguntar-01",
+      "consulta": "preguntale al contable cuanto gaste en supermercado en julio",
+      "skill": "preguntar",
+      "debe_disparar": true,
+      "por_que": "Pide averiguar algo que solo sabe otro repo. Es el caso central de preguntar."
+    },
+    {
+      "id": "preguntar-02",
+      "consulta": "que efecto tendria en el repo de contabilidad si le cambio el formato de fecha",
+      "skill": "preguntar",
+      "debe_disparar": true,
+      "por_que": "La trampa que separa los dos Modos de Comunicacion: la frase dice hacer, pero no escribe nada. Si dispara resolver, este caso falla, asi que cubre las dos direcciones con una sola sesion."
+    },
+    {
+      "id": "resolver-01",
+      "consulta": "pedile al contable que registre el pago del alquiler de agosto",
+      "skill": "resolver",
+      "debe_disparar": true,
+      "por_que": "El usuario pide que el otro repo quede modificado. Es el unico caso en que resolver es lo correcto."
+    },
+    {
+      "id": "resolver-02",
+      "consulta": "resumime que hace el subsistema comunicacion",
+      "skill": "resolver",
+      "debe_disparar": false,
+      "por_que": "Comparte el verbo resolver del dominio pero es trabajo de esta sesion, no un pedido a otra instalacion. Ninguna habilidad de comunicacion tiene que dispararse."
+    },
+    {
+      "id": "buscar-agentes-01",
+      "consulta": "que otras instalaciones del harness hay en esta maquina",
+      "skill": "buscar-agentes",
+      "debe_disparar": true,
+      "por_que": "Pregunta por el inventario de instalaciones de la maquina, que es exactamente lo que resuelve el buscador."
     }
   ]
 }

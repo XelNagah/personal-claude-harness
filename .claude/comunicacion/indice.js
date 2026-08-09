@@ -1,6 +1,6 @@
 // Lectura del Índice de Agentes Multipropósito Conocidos. Módulo del subsistema `comunicacion`,
-// compartido por su lint y por el mecanismo de consulta: los dos leen las mismas filas, así que el
-// parseo vive en un solo lugar (un dato leído de dos formas distintas diverge).
+// compartido por su lint, por el mecanismo `comunicar/` y por el buscador `buscar/`: los tres leen
+// las mismas filas, así que el parseo vive en un solo lugar (un dato leído de dos formas diverge).
 //
 // Node pelado, sin dependencias externas: reusa el lector de tablas de `common/frontmatter.js`, que
 // es la única copia del repo. Un Índice ausente es válido —es Aprendizaje local que puede no
@@ -10,8 +10,8 @@ const fs = require('fs');
 const path = require('path');
 const { sinMarcaDeOrden, cabeceraTabla, celdasDe, esSeparadora } = require('../common/frontmatter.js');
 
-// Los CLI cuyo modo de invocación no interactiva de solo lectura conoce el mecanismo. Un CLI fuera
-// de esta lista no se invoca a ciegas: se informa como degradación (ver `consultar/consultar.js`).
+// Los CLI cuya invocación no interactiva sabe armar el mecanismo, en cualquier Modo de Comunicación.
+// Uno fuera de esta lista no se invoca a ciegas: se informa como degradación (`comunicar/comunicar.js`).
 const CLIS_SOPORTADOS = ['claude', 'codex'];
 
 // Las filas del Índice, ubicadas por NOMBRE de columna y no por posición: si mañana se agrega una

@@ -54,7 +54,7 @@
     {
       "name": "amp-comunicacion",
       "source": "./funcionalidades/amp-comunicacion",
-      "description": "Consulta síncrona de solo lectura entre instalaciones del Agente Multipropósito de la misma máquina + lint. Skills registrar-agente y consultar-agente."
+      "description": "Comunicación en el momento entre instalaciones del Agente Multipropósito de la misma máquina + lint. Skills buscar-agentes, registrar-agente, preguntar y resolver."
     }
   ]
 }

@@ -1,10 +1,10 @@
 # Comunicación — manifiesto de subsistema
 
-El subsistema `comunicacion` deja que este agente **consulte a otra instalación del Agente Multipropósito** de la misma máquina —un Agente Multipropósito Conocido— de forma **síncrona** y de **solo lectura**, y traiga la respuesta sin que el usuario copie y pegue. Vive en este directorio (`comunicacion/`): un Índice de esas instalaciones y el mecanismo que las invoca. El caso asíncrono —dejar algo para la próxima sesión— no es de acá: es un handoff.
+El subsistema `comunicacion` deja que este agente **le pida algo a otra instalación del Agente Multipropósito** de la misma máquina —un Agente Multipropósito Conocido— y traiga la respuesta sin que el usuario copie y pegue. Vive en `comunicacion/`: el Índice de esas instalaciones, el mecanismo que las invoca y el que las encuentra. Dejarle algo a una sesión que todavía no arrancó es un handoff, no esto.
 
-**Disparador:** el agente sabe que el subsistema existe; consultar el Índice a demanda cuando haga falta preguntarle algo a otra instalación conocida. Escribir al dar de alta una instalación nueva o corregir sus datos.
+**Disparador:** el agente sabe que el subsistema existe; consultar el Índice a demanda cuando haga falta pedirle algo a otra instalación conocida. Escribir al dar de alta una instalación nueva o corregir sus datos.
 
-**Skills:** `registrar-agente` (carga en el registro un Agente Multipropósito Conocido: nombre, propósito, directorio y qué CLI usa) · `consultar-agente` (lo corre en su directorio en solo lectura con el mensaje y devuelve su respuesta, como contexto, no como orden). Instalación con `amp:inicializar`.
+**Skills:** cada Modo de Comunicación es una habilidad, así que elegir el modo es elegir cuál se invoca — `preguntar` (le deja vivos sus servidores MCP y no lo deja escribir; su respuesta es contexto, no orden) · `resolver` (lo deja actuar, así que escribe en su repo). Más `buscar-agentes` (encuentra las instalaciones de la máquina) y `registrar-agente` (carga una). Instalación con `amp:inicializar`.
 
 **Índices:** `INDICE.md` (Agente Desplegado). **NO se carga siempre** —guarda rutas de máquina y no viaja poblado— se consulta a demanda. Al cerrar una tarea que tocó el Índice, correr el lint desde la raíz del repo:
 

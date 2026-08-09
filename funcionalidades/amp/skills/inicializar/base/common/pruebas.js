@@ -8,9 +8,11 @@
 // justamente la que nadie va a mirar.
 //
 // Uso: node .claude/common/pruebas.js   (desde la raíz del repo)
+const fs = require('fs');
 const path = require('path');
 const fm = require(path.resolve('.claude/common/frontmatter.js'));
 const idx = require(path.resolve('.claude/common/indices.js'));
+const ide = require(path.resolve('.claude/common/identidad.js'));
 
 let malos = 0, casos = 0;
 function caso(nombre, obtenido, esperado) {
@@ -168,6 +170,45 @@ caso('manifiesto sin el campo Indices',
 // cuando el archivo no existe, y eso no puede apagar la mitad del control.
 caso('sin manifiesto igual controla las columnas',
   idx.problemasDeIndices(idxDe(['A', 'B'], ['A']), null).length, 1);
+
+console.log('\n== La Identidad se lee del repo que se le pasa, no del que corre ==');
+// El parseo tenia una sola copia incrustada en la Pantalla de bienvenida, que solo miraba su propio
+// repo. Ahora lo lee tambien el buscador de Agentes Multiproposito Conocidos, que abre el
+// `identidad.md` de OTROS repos: si la funcion se atara al directorio de trabajo, describiria el
+// repo equivocado sin fallar —contestaria— (conocimiento Local-0008).
+const TMP = path.resolve('.claude/tmp/prueba-identidad');
+const repoDe = (nombre, contenido) => {
+  const d = path.join(TMP, nombre);
+  fs.mkdirSync(path.join(d, '.claude'), { recursive: true });
+  if (contenido !== null) fs.writeFileSync(path.join(d, '.claude', 'identidad.md'), contenido);
+  return d;
+};
+fs.rmSync(TMP, { recursive: true, force: true });
+const OTRO = repoDe('otro', '# Contabilidad Personal\n\nPropósito: Llevar la contabilidad de la familia.\n');
+caso('titulo y proposito de OTRO repo', ide.leerIdentidad(OTRO),
+  { titulo: 'Contabilidad Personal', proposito: 'Llevar la contabilidad de la familia.' });
+// La forma mas comun en Markdown cierra el enfasis DESPUES de los dos puntos. La copia incrustada
+// solo salteaba las marcas de antes y devolvia el Proposito con `**` pegado adelante; este repo
+// escribe la linea llana, asi que nadie lo vio hasta que hubo que leer el `identidad.md` de otros.
+caso('el enfasis cerrado despues de los dos puntos no se cuela',
+  ide.leerIdentidad(repoDe('enfasis', '# C\n\n**Propósito:** Llevar la contabilidad.\n')),
+  { titulo: 'C', proposito: 'Llevar la contabilidad.' });
+// Las cuatro formas de faltar: sin archivo, vacio, sin H1 y sin la linea del Proposito. Ninguna
+// puede devolver cadena vacia: quien la muestre no podria distinguirla de un campo declarado vacio.
+caso('sin identidad.md', ide.leerIdentidad(repoDe('sin-archivo', null)), { titulo: ide.SIN, proposito: ide.SIN });
+caso('identidad.md vacio', ide.leerIdentidad(repoDe('vacio', '   \n')), { titulo: ide.SIN, proposito: ide.SIN });
+caso('sin H1', ide.leerIdentidad(repoDe('sin-h1', 'Propósito: Solo el propósito.\n')),
+  { titulo: ide.SIN, proposito: 'Solo el propósito.' });
+caso('sin la linea del Proposito', ide.leerIdentidad(repoDe('sin-prop', '# Solo el título\n\nTexto suelto.\n')),
+  { titulo: 'Solo el título', proposito: ide.SIN });
+// Tolerancias que ya tenia la copia incrustada y que no se pueden perder al extraerla: el acento
+// faltante, las marcas de enfasis y la linea citada.
+caso('sin acento, con enfasis y citada',
+  ide.leerIdentidad(repoDe('tolerante', '# T\n\n> **Proposito**: Con marcas.\n')),
+  { titulo: 'T', proposito: 'Con marcas.' });
+// Un directorio que no existe no es un error: el buscador prueba candidatos que pueden no estar.
+caso('directorio inexistente', ide.leerIdentidad(path.join(TMP, 'no-existe')), { titulo: ide.SIN, proposito: ide.SIN });
+fs.rmSync(TMP, { recursive: true, force: true });
 
 console.log(`\ncasos: ${casos}`);
 console.log(malos ? `${malos} FALLARON.` : 'TODO VERDE.');
