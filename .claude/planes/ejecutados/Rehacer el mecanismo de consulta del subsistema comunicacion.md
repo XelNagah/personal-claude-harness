@@ -183,7 +183,7 @@ El plan cierra con el control de cierre en verde y **un solo hallazgo pendiente*
 - **El veto de `Control de Escritura` no se hizo.** Quedaba una sola aparición viva, y el conocimiento Base-0005 dice que vetar rinde antes del barrido, no después: la fila habría marcado para siempre cada cita sin nada que corregir. Se reescribió esa línea.
 - **Los datos de la medición no viajan.** El importe errado y el nombre de cuenta que ilustraban la falla estaban en un README que **viaja adentro del plugin**, en el conocimiento y en este plan. Se reemplazaron por lo que el dato probaba —que el Agente contestó desde lo que tenía anotado en vez de leer sus datos, y nada avisó—, que es además lo que se entiende sin conocer el caso.
 
-**Lo que queda para después de publicar:** correr `probar-disparo-de-skills` sobre las cinco entradas nuevas. Ese banco **mide lo instalado**: corrido antes de publicar, daría verde sobre las `description` viejas.
+**Publicado y medido (09/08/2026).** Las cinco entradas nuevas dan **5/5**, incluida la trampa que separa los dos Modos de Comunicación. La primera corrida daba 0/5, y no por las `description`: `probar-disparo-de-skills` le pasaba la consulta a `claude` como argumento, y en Windows el intérprete la partía en palabras sueltas, así que el CLI tomaba solo la primera —el banco medía `preguntale`, no la consulta—. Corregido (la consulta va por STDIN), las once consultas del banco pasan sin tocar ninguna `description`. Quedó asentado como la novena forma del conocimiento Local-0013, la que contesta **en rojo**: el veredicto vale lo que valga la entrada.
 
 ## Leer antes de diseñar
 
