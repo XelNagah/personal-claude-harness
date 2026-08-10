@@ -11,12 +11,20 @@
 // y sigue las lineas `@ruta`, que son imports. Los registros que se consultan a demanda no cuentan,
 // justamente porque no se cargan.
 //
+// QUE MIDE EL TOPE: solo lo que aporta el Agente Multiproposito. Lo que el repo aprendio
+// persiguiendo su Proposito se informa como dato, sin veredicto. Son dos cosas que se mueven
+// distinto: la primera la acota el diseño de aca, la segunda crece con el Proposito y su umbral es
+// indeterminado desde el rol de quien publica. Con el tope sobre el total, el aviso se encendia por
+// lo que este repo aprendio y mandaba a recortarlo, que es justo lo que no hay que recortar por un
+// tope de diseño.
+//
 // De donde sale el tope: se fijo el 30/07/2026 midiendo lo que habia ese dia —43,9 KB en 17
-// archivos— y dejando unos 4 KB de margen. Subio a 52 KB el 01/08/2026, con el mismo criterio:
-// lo que habia mas ~4 KB, despues de recortar la celda que mas habia crecido.
+// archivos— y dejando unos 4 KB de margen. Subio a 52 KB el 01/08/2026, con el mismo criterio.
+// Bajo a 35 KB el 10/08/2026 al pasar a medir solo el Agente Multiproposito: 31,0 medidos mas ~4 KB
+// de margen, que alcanza para un subsistema nuevo completo —su manifiesto mas su Indice, del orden
+// de 3 a 4 KB— y avisa al segundo.
 // No sale de un limite del modelo ni de ningun calculo: es
-// una disciplina auto-impuesta. Como referencia, ese texto son unos 13 a 16 mil tokens, del orden
-// del 7% de las ventanas de contexto actuales. Lo que aporta el control es QUE HAYA UN NUMERO, no
+// una disciplina auto-impuesta. Lo que aporta el control es QUE HAYA UN NUMERO, no
 // cual sea: el contexto siempre cargado no lo vigila nadie y crece de a poco —cada Indice liviano
 // que se suma no pesa nada por si solo—, y el modelo de carga por manifiesto se adopto para bajarlo.
 // Sin un numero a la vista ese ahorro se vuelve a consumir sin que se note.
@@ -36,7 +44,12 @@
 const fs = require('fs'), path = require('path');
 const { basesDeInstalacion } = require('../../common/bases-de-instalacion.js');
 
-const TOPE = 52 * 1024;
+const TOPE = 35 * 1024;
+// El encabezado del bloque que `amp:inicializar` escribe en el punto de entrada. Es lo unico del
+// Agente Multiproposito que no viaja como archivo —se fusiona adentro del que el repo ya tenia—,
+// asi que sin esto quedaria fuera del numero controlado, y es la parte que crece cada vez que se
+// suma un subsistema.
+const CABLEADO = '## Subsistemas';
 
 const args = process.argv.slice(2);
 const modoHook = args.includes('--hook');
@@ -53,7 +66,7 @@ function cargados(raiz) {
     if (vistos.has(abs) || !fs.existsSync(abs)) return;
     vistos.add(abs);
     let txt; try { txt = fs.readFileSync(abs, 'utf8'); } catch { return; }
-    out.push({ rel: path.relative(raiz, abs).replace(/\\/g, '/'), bytes: Buffer.byteLength(txt) });
+    out.push({ rel: path.relative(raiz, abs).replace(/\\/g, '/'), bytes: Buffer.byteLength(txt), txt });
     for (const m of txt.matchAll(/^@(\S+)\s*$/gm)) {
       const hit = [path.join(raiz, m[1]), path.join(path.dirname(abs), m[1])].find(c => fs.existsSync(c));
       if (hit) sumar(hit);
@@ -63,16 +76,18 @@ function cargados(raiz) {
   return out;
 }
 
-// -- el piso del Agente Desplegado ---------------------------------------
-// El total de arriba mezcla dos cosas que se mueven distinto: lo que este repo MANDA —viaja en
-// `base/` y lo carga todo Agente Desplegado— y lo que este repo APRENDIO, que son sus propias filas
-// y no las hereda nadie. Con un solo numero, recortar una fila propia se ve igual que recortar una
-// que viaja, y solo la segunda le devuelve contexto a los repos instalados.
+// -- las tres categorias -------------------------------------------------
+// Lo cargado se reparte en tres, y solo la primera tiene tope:
 //
-// El piso se mide contra los archivos de `base/`, no se deduce: un registro `origen:
+//   Agente Multiproposito — lo que este repo MANDA y carga todo Agente Desplegado el dia uno.
+//   este repo             — las filas que le agrego a esos Indices persiguiendo su Proposito.
+//   afuera                — el punto de entrada menos su bloque de cableado: es la descripcion del
+//                           proyecto de cada repo, no se reparte y no entra en ningun veredicto.
+//
+// Lo que manda se mide contra los archivos de `base/`, no se deduce: un registro `origen:
 // agente-desplegado` viaja declarado y SIN filas, asi que su contraparte ya pesa lo que va a pesar
-// el dia uno de un repo nuevo. Es una COTA INFERIOR: `AGENTS.md` y `CLAUDE.md` no estan en `base/`
-// —se fusionan desde la PLANTILLA de `amp:inicializar`— y no se pueden medir desde aca.
+// el dia uno de un repo nuevo. Lo unico que no viaja como archivo es el bloque de cableado, que se
+// mide aparte por su encabezado.
 // Bytes con que viaja un archivo cargado, o null si no viaja por archivo.
 function bytesQueViajan(rel, bases) {
   // Defensa explicita, NO probada por si sola: hoy es redundante —un archivo de la raiz tampoco
@@ -88,11 +103,32 @@ function bytesQueViajan(rel, bases) {
   return null;
 }
 
+// Bytes del bloque de cableado dentro de un archivo que no viaja: desde su encabezado hasta el
+// proximo `## `, o hasta el final. Devuelve 0 si el archivo no lo tiene.
+function bytesDelCableado(txt) {
+  const lineas = txt.split(/\r?\n/);
+  const i = lineas.findIndex(l => l.startsWith(CABLEADO));
+  if (i === -1) return 0;
+  let fin = lineas.length;
+  for (let j = i + 1; j < lineas.length; j++) if (/^## /.test(lineas[j])) { fin = j; break; }
+  return Buffer.byteLength(lineas.slice(i, fin).join('\n'));
+}
+
 const bases = basesDeInstalacion(repo);
-const archivos = cargados(repo).map(f => ({ ...f, viajan: bytesQueViajan(f.rel, bases) }));
+// «afuera» es el punto de entrada, no cualquier archivo sin contraparte: un Indice que el repo se
+// invento bajo `.claude/` tampoco viaja, y es suyo entero — cuenta como este repo, no como afuera.
+const archivos = cargados(repo).map(f => ({
+  ...f,
+  viajan: bytesQueViajan(f.rel, bases),
+  puntoDeEntrada: !f.rel.startsWith('.claude/'),
+  cableado: f.rel.startsWith('.claude/') ? 0 : bytesDelCableado(f.txt),
+}));
 const total = archivos.reduce((a, f) => a + f.bytes, 0);
-const piso = archivos.reduce((a, f) => a + (f.viajan || 0), 0);
-const sinMedir = archivos.filter(f => f.viajan === null).reduce((a, f) => a + f.bytes, 0);
+const cableado = archivos.reduce((a, f) => a + f.cableado, 0);
+const amp = archivos.reduce((a, f) => a + (f.viajan || 0), 0) + cableado;
+// Lo que el punto de entrada aporta fuera del cableado: descripcion del proyecto de cada repo.
+const afuera = archivos.filter(f => f.puntoDeEntrada).reduce((a, f) => a + f.bytes - f.cableado, 0);
+const propio = total - amp - afuera;
 const kb = n => (n / 1024).toFixed(1);
 
 // En modo hook: una linea sola. Se emite SIEMPRE, tambien dentro del tope — un aviso que solo
@@ -100,8 +136,10 @@ const kb = n => (n / 1024).toFixed(1);
 if (modoHook) {
   const linea = !archivos.length
     ? 'contexto: no se encontro el punto de entrada del repo'
-    : `contexto ${kb(total)} KB de ${kb(TOPE)} en ${archivos.length} archivos` +
-      (total > TOPE ? ` — PASA EL TOPE por ${kb(total - TOPE)} KB` : ` (libre ${kb(TOPE - total)} KB)`);
+    : `contexto: Agente Multipropósito ${kb(amp)} KB de ${kb(TOPE)}` +
+      (amp > TOPE ? ` — PASA EL TOPE por ${kb(amp - TOPE)} KB` : ` (libre ${kb(TOPE - amp)} KB)`) +
+      `  ·  este repo ${kb(propio)} KB` +
+      (cableado ? '' : '  ·  ⚠ sin hallar el bloque de cableado en el punto de entrada');
   process.stdout.write(JSON.stringify({ systemMessage: linea }));
   process.exit(0);
 }
@@ -113,19 +151,26 @@ if (!archivos.length) {
   console.log('\nno se encontro CLAUDE.md ni AGENTS.md en la raiz: no hay contexto que medir.');
   process.exit(0);
 }
-console.log(`archivos: ${archivos.length} | total: ${kb(total)} KB | tope: ${kb(TOPE)} KB`);
-// El piso NO tiene tope propio: es un dato, no un control. Sube solo cuando este repo le agrega
-// algo a la Base, y el unico que puede bajarlo es este repo.
-console.log(`piso del Agente Desplegado: ${kb(piso)} KB  ·  propio de este repo: ${kb(total - piso - sinMedir)} KB`
-  + `  ·  sin medir: ${kb(sinMedir)} KB (se fusiona desde la PLANTILLA)\n`);
+console.log(`archivos: ${archivos.length} | total cargado: ${kb(total)} KB\n`);
+// Solo la primera linea tiene tope. Las otras dos son datos: la segunda solo la puede bajar el repo
+// que la escribio, y la tercera ni siquiera se reparte.
+console.log(`  Agente Multipropósito  ${kb(amp).padStart(6)} KB   de ${kb(TOPE)} KB   (cableado: ${kb(cableado)} KB)`);
+console.log(`  este repo              ${kb(propio).padStart(6)} KB   dato, sin tope`);
+console.log(`  afuera                 ${kb(afuera).padStart(6)} KB   punto de entrada, no se reparte\n`);
+if (!cableado) {
+  // Cero cableado no es un repo sin cableado: es que no se hallo el encabezado. Decirlo, o el
+  // silencio deja al numero controlado corto sin que nadie se entere.
+  console.log(`  ⚠ no se hallo el bloque «${CABLEADO}» en el punto de entrada: falta esa parte del número controlado.\n`);
+}
 
 console.log('       acá     viaja');
 for (const f of [...archivos].sort((a, b) => b.bytes - a.bytes)) {
-  const v = f.viajan === null ? '   —  ' : kb(f.viajan).padStart(6);
+  const v = f.viajan === null ? (f.cableado ? `${kb(f.cableado).padStart(6)}*` : '   —  ') : kb(f.viajan).padStart(6);
   console.log(`    ${kb(f.bytes).padStart(6)} KB  ${v}    ${f.rel}`);
 }
+if (cableado) console.log('    (* el bloque de cableado, que no viaja como archivo)');
 
-const libre = TOPE - total;
+const libre = TOPE - amp;
 console.log(libre >= 0
   ? `\nDENTRO DEL TOPE por ${kb(libre)} KB.`
-  : `\nPASA EL TOPE por ${kb(-libre)} KB: decidir entre subirlo o recortar (arriba, los archivos mas pesados).`);
+  : `\nPASA EL TOPE por ${kb(-libre)} KB: decidir entre subirlo o recortar lo que este repo manda (arriba, columna «viaja»).`);

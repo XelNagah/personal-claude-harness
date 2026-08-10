@@ -11,4 +11,4 @@ Las que este repo suma para su Propósito. El actualizador no toca este archivo;
 
 | Código | Nombre | Descripción | Momento | Clase | Contenido | Estado | Detalle |
 |--------|--------|-------------|---------|-------|-----------|--------|---------|
-| Local-0001 | Informar el peso del contexto al arrancar | Pone a la vista lo que este repo carga en cada sesión contra su tope, porque decidir cuánto contexto puede mandar el Agente Multipropósito es vigilancia de acá y no de quien lo instala | al arrancar la sesión | Ejecutar | herramientas/medir-contexto/medir-contexto.js --hook | vigente | — |
+| Local-0001 | Informar el peso del contexto al arrancar | Pone a la vista cuánto agrega el Agente Multipropósito contra su tope, y aparte lo que carga este repo; decidir cuánto se puede mandar es vigilancia de acá, no de quien lo instala | al arrancar la sesión | Ejecutar | herramientas/medir-contexto/medir-contexto.js --hook | vigente | — |
