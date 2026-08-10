@@ -7,7 +7,7 @@ descripcion: cada otra instalación del Agente Multipropósito que se registró 
 
 # Agentes Multipropósito Conocidos
 
-Cada fila es un **Agente Multipropósito Conocido**: otra instalación del Agente Multipropósito, corriendo en otra carpeta de esta máquina, que se registró para consultarla de forma síncrona y de solo lectura con la skill `consultar-agente`.
+Cada fila es un **Agente Multipropósito Conocido**: otra instalación del Agente Multipropósito, corriendo en otra carpeta de esta máquina, que se registró para pedirle algo en el momento con las habilidades `preguntar` o `resolver`.
 
 > **Este Índice guarda rutas absolutas de máquina, así que no se commitea.** En un Agente Desplegado, `amp:inicializar` lo deja gitignoreado; sus filas son Aprendizaje local de esa máquina. Este repo, que publica el mecanismo, lo mantiene **sin filas**: no se le agregan entradas propias que arrastren rutas al control de versiones.
 

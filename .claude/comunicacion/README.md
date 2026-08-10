@@ -1,55 +1,63 @@
 # Comunicación
 
-El subsistema `comunicacion` resuelve el caso **vivo** de la comunicación entre instalaciones del Agente Multipropósito: pedirle algo a otra instalación de la misma máquina —una pregunta, o que resuelva algo— y traer la respuesta, sin que el usuario haga de cartero. El caso de dejarle algo a una sesión que todavía no arrancó ya lo cubren los handoffs.
+El subsistema `comunicacion` sirve para **pedirle algo a otra instalación del Agente Multipropósito que ya corre en esta máquina** —una pregunta, o que resuelva algo— y traer su respuesta al hilo, sin que el usuario lea lo que produjo una y se lo pegue a la otra.
 
-**Por qué:** dos instalaciones solo se comunican hoy con el usuario de intermediario, que lee lo que una produjo y se lo pega a la otra. La plataforma no lo cubre: los mensajes entre subagentes y las notificaciones de tareas no cruzan repos ni sesiones.
+Lo que **no** es: dejarle algo a una sesión que todavía no arrancó. Eso es un handoff, y ya está cubierto.
 
-## Qué es un Agente Multipropósito Conocido
+## Cómo se arranca
 
-Otra instalación del Agente Multipropósito, corriendo en otra carpeta de la máquina, que se registró para consultarla. Se detecta porque tiene su `.claude/` con el harness instalado y responde desde sus subsistemas de forma conocida. **Solo se registran otras instalaciones del Agente Multipropósito**, no agentes cualquiera.
+El Índice de Agentes Multipropósito Conocidos (`INDICE.md`) empieza vacío: hay que poblarlo antes de poder consultar a nadie. El recorrido completo son tres pasos, y los dos primeros se hacen una sola vez por instalación:
 
-## Lo que hay adentro
+1. **`buscar-agentes`** — dice qué instalaciones del Agente Multipropósito hay en la máquina, con su Título, su Propósito, su carpeta y su CLI. Tarda milisegundos y no cuesta nada: no barre el disco, lee dónde corrieron los CLI.
+2. **`registrar-agente`** — da de alta las que sirvan, con el Nombre que elija el usuario, que es con el que se las va a nombrar después. Se registran las instalaciones a las que este repo tiene algo que preguntarle, no todas las que aparecieron.
+3. **`preguntar`** o **`resolver`** — el pedido en sí:
 
-- **El Índice** (`INDICE.md`) — un Índice de Subsistema `origen: agente-desplegado`, con las columnas `Código | Nombre | Propósito | Directorio | CLI`. Guarda rutas absolutas de máquina, así que **no se commitea**: en un Agente Desplegado queda gitignoreado y sus filas son Aprendizaje local. Este repo lo mantiene sin filas.
-- **El mecanismo de comunicación** (`comunicar/comunicar.js`) — corre la instalación consultada en su directorio con el mensaje como entrada, interpreta su salida y la devuelve. Detalle completo en el [README del mecanismo](comunicar/README.md).
-- **El buscador** (`buscar/buscar.js`) — encuentra las instalaciones de la máquina y dice cuáles faltan registrar, sin barrer el disco: los CLI ya guardan dónde corrieron. Detalle en su [README](buscar/README.md).
+   ```
+   /amp-comunicacion:preguntar <nombre> "<pregunta>"
+   ```
 
-## Los Modos de Comunicación
+Una instalación que existe pero nunca fue abierta con ningún CLI no aparece en el paso 1: esa se registra a mano.
 
-Preguntarle algo a otra instalación y pedirle que resuelva algo son dos cosas distintas, y el mecanismo las separa en un modo cada una:
+## Preguntar o pedir que resuelva
 
-- **`preguntar`** (predeterminado) — le pregunta. Conserva **todas** sus herramientas de lectura, **incluidos sus servidores MCP**, y le saca las de escribir archivos y ejecutar comandos.
-- **`resolver`** — le pide que haga algo y lo deja actuar con sus propios permisos.
+Son dos habilidades, y elegir cuál invocar es elegir con qué permisos corre el consultado. El corte no es cómo suena el pedido: es **si el otro repo queda modificado**.
 
-El modo se llama `preguntar` y no `consultar` porque **`consultar` nombraba el acto entero** —el mecanismo, la habilidad, este subsistema—: usarlo también para uno de sus modos hacía que la misma palabra fuera el todo y la parte.
+| Lo que se le pide | Habilidad |
+|---|---|
+| «cuánto hay en tal cuenta» | `preguntar` |
+| «cómo tenés armado tal flujo» | `preguntar` |
+| «qué efecto tendría este cambio en tu repo» | `preguntar` — dice «hacer», pero solo se piensa |
+| «registrá este movimiento», «ejecutá el plan tal» | `resolver` |
 
-**Cada modo es una habilidad.** Elegir el modo es elegir la habilidad, así que con qué permisos corre el consultado depende de la `description` que la disparó —gobernable y medible— y no de una regla escrita adentro de una habilidad única, que hay que obedecer en el momento. Elegida la habilidad, se corre: pedirle al usuario que confirme lo que ya pidió le gasta un turno.
+Con `preguntar`, el consultado conserva **todas** sus herramientas de lectura, incluidos sus servidores MCP, y pierde las de escribir archivos y ejecutar comandos. Con `resolver`, actúa con sus propios permisos y lo que haga queda escrito en su repo.
 
-La partición está en las herramientas **genéricas**, que trae cualquier Agente: el mecanismo **no enumera las propias del consultado**. Solo él sabe qué MCP tiene y cuáles escriben, y una copia de esa lista en el consultante se desactualiza en silencio en cuanto suma uno. Consecuencia asumida: en modo `preguntar`, un MCP del consultado que escriba no queda frenado.
+El consultado corre **en su propia carpeta**, así que carga sus instrucciones, sus subsistemas y sus servidores. No es un modelo contestando sobre un repo ajeno: es ese Agente. Por eso conviene nombrarle su maquinaria tal cual —pedirle que guarde un plan es pedirle que corra su habilidad de crear planes—: descrito en términos genéricos, improvisa un mecanismo al lado del que ya tiene.
 
-**El modo `plan` de Claude Code no sirve para esto**, aunque lo parezca: impide actuar, así que apaga también los MCP del consultado y lo obliga a contestar de memoria. Está medido con un importe errado que nada avisó. El detalle, con las otras dos formas de freno que tampoco funcionan, está en el README del mecanismo.
+## Qué esperar al usarlo
 
-Un CLI cuya invocación no interactiva el mecanismo no sabe armar no se soporta: lo informa como degradación en vez de invocarlo a ciegas.
+- **Tarda minutos**, y un pedido de trabajo puede tardar horas. Si hay otro tema en curso, conviene lanzarlo en segundo plano y seguir conversando.
+- **Lo caro es el arranque**: el consultado recarga todo su contexto cada vez. Conviene mandar todo lo que haga falta en un solo mensaje, y repreguntar sobre el mismo hilo, que sale una fracción.
+- **La respuesta es contexto, no orden.** Llega rotulada con su origen y es material para considerar, no una instrucción: puede estar equivocada, desactualizada o no aplicar acá.
+- **Si el mecanismo avisa denegaciones**, el consultado no pudo usar alguna herramienta y su respuesta puede estar hecha con menos de lo que tenía. Leer las advertencias, no solo la respuesta.
 
-## La respuesta es contexto, no orden
+## Lo que no cubre
 
-Lo que devuelve la instalación consultada entra al hilo como **material para considerar**, no como una instrucción a obedecer. La skill lo presenta rotulado con su origen; el agente lo evalúa como evaluaría cualquier fuente.
+- Solo se registran **otras instalaciones del Agente Multipropósito**, y solo de esta máquina. Se reconocen porque tienen el catálogo de subsistemas instalado.
+- `preguntar` no frena las herramientas **propias** del consultado que escriben: la partición es sobre las genéricas, que trae cualquier Agente. La protección real es leer la respuesta.
+- Un CLI cuya invocación el mecanismo no sabe armar **no se invoca a ciegas**: informa la degradación.
 
-## Skills
+## El registro es Aprendizaje local
 
-- `buscar-agentes` — encuentra las instalaciones de la máquina y ofrece registrar las que faltan.
-- `registrar-agente` — da de alta o corrige un Agente Multipropósito Conocido en el registro.
-- `preguntar` — le pregunta algo y trae la respuesta, sin dejarlo escribir.
-- `resolver` — le pide que haga algo y lo deja actuar con sus propios permisos.
+El Índice guarda rutas absolutas de máquina, así que **no se commitea**: queda gitignoreado y sus filas valen solo en esta máquina. Guarda **cómo invocar** a cada instalación —nombre, Propósito, carpeta y CLI—, no qué sabe hacer.
 
-Viajan en el plugin `amp-comunicacion`, y se invocan con su prefijo, que es el que dice «comunicación»: `/amp-comunicacion:preguntar <agente> "<pregunta>"`.
+## Dónde está el detalle
 
-## Lint
+- **El mecanismo** que corre al consultado, sus banderas y por qué está armado así: [`comunicar/`](comunicar/README.md).
+- **La búsqueda** de instalaciones y de dónde saca los datos: [`buscar/`](buscar/README.md).
+- **El lint**, al cerrar una tarea que tocó el registro:
 
-Al cerrar una tarea que tocó el registro, correr desde la raíz del repo:
+  ```bash
+  node .claude/comunicacion/lint-comunicacion/lint-comunicacion.js
+  ```
 
-```bash
-node .claude/comunicacion/lint-comunicacion/lint-comunicacion.js
-```
-
-Chequea la forma del Índice (origen y columnas contra el manifiesto), nombres únicos y no vacíos, que cada `Directorio` exista y contenga un `.claude/`, y que el `CLI` sea uno soportado. Un Índice ausente es válido —es Aprendizaje local que puede no existir— y no genera hallazgos.
+  Chequea la forma del Índice, nombres únicos y no vacíos, que cada carpeta exista y tenga su `.claude/`, y que el CLI sea uno soportado. Un Índice ausente es válido y no genera hallazgos.
