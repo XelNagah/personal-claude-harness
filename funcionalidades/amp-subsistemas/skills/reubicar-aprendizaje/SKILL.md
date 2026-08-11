@@ -7,7 +7,9 @@ description: Recorre el Aprendizaje y coordina a los subsistemas dueños para pr
 
 Coordina una revisión transversal, sin registro persistente de propuestas. No es `amp:actualizar`: abre Aprendizaje y por eso requiere confirmación por cada Componente de Subsistema.
 
-1. Leer el catálogo de subsistemas, índices y planes pertinentes. Inventariar los Componentes de Subsistema candidatos, empezando por `.claude/memoria/` y luego por documentos fuera de su subsistema.
+1. **Relevar el Aprendizaje — delegado en el subagente `relevador-de-aprendizaje`.** Inventariar exige recorrer el Aprendizaje entero —`.claude/memoria/` si existe y los documentos fuera de su casa— para quedarse con un puñado de datos de cada Componente de Subsistema: hecho en el hilo principal, todo lo que leyó queda ahí y se paga al modelo de la sesión. El subagente devuelve el inventario —fuente con archivo y línea, qué es, naturaleza aparente y las señales para filtrar—, más lo que parece Base o infraestructura. Es de solo lectura por construcción: trae la evidencia, no la reubicación.
+
+   **Si el agente no puede delegar** (no tiene subagentes, o el tipo no está instalado), el relevamiento se hace en el hilo principal con el mismo criterio y el mismo resultado — lo que cambia es el costo, no el flujo.
 2. **Filtrar antes de preguntar.** Excluir infraestructura Base y contenido Base ya cubierto por su destino actual. Cuando la invoca `amp:actualizar`, respetar su tabla de ocho memorias Base retiradas: esos Componentes de Subsistema se reconcilian automáticamente y no se presentan para confirmación. Si uno del Agente Multipropósito contiene una adición propia del repo, separar la adición y tratar solo esa parte como Aprendizaje.
 3. Consultar al subsistema dueño de cada destino:
    - conocimiento: `amp-conocimiento:buscar-conocimiento`;
