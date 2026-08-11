@@ -33,7 +33,7 @@ Mecanismo verificado el 2026-07-31: el plugin `caveman` instalado en esta PC tra
 
 Verificado el 2026-07-31:
 
-- **Cero subagentes propios.** Todo lo que aparece en `~/.claude/agents/` viene de plugins de terceros. ⚠️ **Caducó el 26-08-06**: ya son dos, los de la familia 1.
+- **Cero subagentes propios.** Todo lo que aparece en `~/.claude/agents/` viene de plugins de terceros. ⚠️ **Caducó el 26-08-06**: ya son cuatro, los de la familia 1 (`buscador-de-terminologia`, `buscador-de-conocimiento`, `relevador-de-planes`, `relevador-de-aprendizaje`).
 - El catálogo de roles del conocimiento (`investigador`, `test-runner`, `code-reviewer`, `depurador`, `implementador-modular`, `planificador`) está diseñado con `tools` y `model`, sin materializar.
 - Todo corre al modelo de la sesión: leer 25k de logs de test se paga a precio Opus.
 
@@ -74,14 +74,42 @@ El corte quedó fijado en la Decisión Local-0060 (el Agente Multipropósito tra
 
 Los caracteres son exactos; convertirlos a tokens (≈29.900 evitados contra ≈4.860 recibidos) es aproximado, a cuatro caracteres por token.
 
+**Verificado en ejecución el 26-08-10**, en esta sesión arrancada después de instalar `amp-planes` 0.11.0, invocando `priorizar-planes` con el alcance por omisión (los 49 planes vivos). Las mismas tres cosas:
+
+1. **El recorrido corrió en el subagente**, no en el hilo principal: 51 llamadas a herramientas dentro de `relevador-de-planes`, contra una sola lectura de `PLANES.md` en el hilo principal.
+2. **Corrió al modelo declarado.** Leído de la transcripción del subagente: 61 respuestas a `claude-sonnet-5`, mientras el hilo principal seguía en `claude-opus-4-8`.
+3. **El efecto medido:**
+
+| | Caracteres |
+|---|---|
+| Resultados de herramienta que el subagente leyó — lo que el hilo principal **no** recibió | 390.458 |
+| Reporte que volvió al hilo principal | 22.708 |
+| **Ahorro de contexto principal** | **~94%** |
+
+En tokens aproximados, a cuatro caracteres por token: ≈97.600 evitados contra ≈5.680 recibidos. El ahorro sube de ~84% a ~94% respecto del barrido de terminología porque el subagente lee más por cada dato que devuelve: 49 planes contra 43 archivos, y un documento de plan pesa más que las apariciones de un término. Cuanto más lee por unidad de resultado, más comprime.
+
+**Verificado en ejecución el 26-08-11**, en esta sesión arrancada después de instalar `amp-subsistemas` 0.6.0, invocando `reubicar-aprendizaje` con alcance «todo el Aprendizaje». Las mismas tres cosas:
+
+1. **El recorrido corrió en el subagente**, no en el hilo principal: 20 llamadas a herramientas dentro de `relevador-de-aprendizaje`, contra ninguna lectura del Aprendizaje en el hilo principal.
+2. **Corrió al modelo declarado.** Leído de la transcripción del subagente: 32 respuestas a `claude-sonnet-5`, mientras el hilo principal seguía en `claude-opus-4-8`.
+3. **El efecto medido:**
+
+| | Caracteres |
+|---|---|
+| Resultados de herramienta que el subagente leyó — lo que el hilo principal **no** recibió | 48.511 |
+| Reporte que volvió al hilo principal | 5.291 |
+| **Ahorro de contexto principal** | **~89%** |
+
+En tokens aproximados, a cuatro caracteres por token: ≈12.128 evitados contra ≈1.323 recibidos. El ahorro (~89%) queda entre el de terminología (~84%) y el de planes (~94%): el relevamiento del Aprendizaje **muestrea** —lista los directorios y lee encabezados y los Índices ya cargados, sin abrir cada plan, cada página ni cada detalle— en vez de abrir todo, así que lee menos por dato que el barrido de los 49 planes. Confirma que la compresión no depende del subsistema sino de cuánto lee cada recorrido.
+
 Cómo se reproduce la medición: la transcripción de cada subagente queda en `~/.claude/projects/<repo>/<sesión>/subagents/agent-<id>.jsonl`. El modelo sale del campo `model` de cada respuesta; el volumen, de sumar los bloques `tool_result`.
 
-**Los que siguen en esta familia.** Salieron de buscar en las habilidades del repo los verbos de recorrido (`recorr`, `barr`, `inventar`, «el repo entero», «decenas de»). Descontadas las dos ya hechas y `amp:actualizar`, quedan cuatro, en orden de conveniencia:
+**Los que siguen en esta familia.** Salieron de buscar en las habilidades del repo los verbos de recorrido (`recorr`, `barr`, `inventar`, «el repo entero», «decenas de»). Descontadas las tres ya hechas y `amp:actualizar`, quedan dos, en orden de conveniencia:
 
 | Habilidad | Por qué | Reparo |
 |---|---|---|
 | ~~`priorizar-planes`~~ | Abre los 48 planes vivos; más volumen que el de terminología. `sugerir-siguiente-plan` la reutiliza, así que un subagente sirve a dos habilidades | **Hecho 26-08-10**: `relevador-de-planes` |
-| `reubicar-aprendizaje` | Recorre el Aprendizaje entero antes de conversar | — |
+| ~~`reubicar-aprendizaje`~~ | Recorre el Aprendizaje entero antes de conversar | **Hecho 26-08-11**: `relevador-de-aprendizaje` |
 | `amp:planificar` | Busca qué dicen semántica, decisiones y conocimiento sobre el tema | **No se delega entera**: el diseño necesita la conversación con el usuario, y delegarlo lo ciega. Solo la búsqueda |
 | `registrar-conocimiento` | Recorre para no duplicar una página ya asentada | Recorrido más liviano; el que menos gana |
 
@@ -149,11 +177,14 @@ El plan arrancó ordenado al revés de como se ejecutó: los pasos originales da
 
   **El nombre costó cinco vueltas**, y el descarte de cada una es criterio reutilizable: `analizador-de-planes` y `analizador-de-fichas-de-planes` nombran lo que el subagente tiene prohibido hacer —analizar es el juicio que la Decisión Local-0060 deja en el hilo principal— y además pisan la habilidad `analizar-plan`; `fichador` y `resumidor` no significan en el español de Argentina lo que el diseño necesita; `tipificador` prometía una clasificación por tipo que el subagente no hace. Quedó `relevador-de-planes`: relevar es recorrer y registrar lo que hay.
 
+- ✅ **Medir `relevador-de-planes`** — 26-08-10. Los números están arriba, en la familia 1: ahorro de contexto principal ~94% sobre los 49 planes vivos, y `claude-sonnet-5` confirmado en la transcripción mientras el hilo principal seguía en `claude-opus-4-8`. Corrió en una sesión arrancada después de instalar `amp-planes` 0.11.0 — la anterior corría 0.10.0, sin subagente, y no podía medirlo.
+- ✅ **Escribir el cuarto, `relevador-de-aprendizaje`** (`amp-subsistemas` 0.6.0) — 26-08-11, commit `d0ef734`. Mismo corte de solo lectura (`tools: [Read, Grep, Glob]`, `model: sonnet`). Lo invoca `reubicar-aprendizaje` en su paso 1: devuelve el inventario de Componentes de Subsistema candidatos a reubicación —los de `.claude/memoria/` si existe y los que quedaron fuera de su casa— con evidencia en archivo y línea, más lo que parece Base o infraestructura, sin decidir la reubicación (Decisión Local-0060).
+- ✅ **Medir `relevador-de-aprendizaje`** — 26-08-11. Los números están arriba, en la familia 1: ahorro de contexto principal ~89% relevando todo el Aprendizaje, y `claude-sonnet-5` confirmado en la transcripción mientras el hilo principal seguía en `claude-opus-4-8`. Corrió en una sesión arrancada después de instalar `amp-subsistemas` 0.6.0 — la anterior corría 0.5.0, sin subagente, y no podía medirlo.
+
 ### Familia 1 — se puede seguir sin desbloquear nada
 
-1. **Medir `relevador-de-planes`** con el método del 26-08-06 (transcripción del subagente en `~/.claude/projects/<repo>/<sesión>/subagents/`). ⚠️ Requiere **publicar primero**: la medición corre sobre el plugin instalado, no sobre el archivo editado, así que sin publicar mediría la versión 0.10.0, que no tiene subagente.
-2. Seguir con `reubicar-aprendizaje`.
-3. Bajar al conocimiento [`subagentes-agentes-codigo.md`](../../conocimiento/subagentes-agentes-codigo.md) lo aprendido de la familia 1: la medición, cómo se lee la transcripción del subagente para verificar modelo y volumen, y el corte evidencia/decisión. Cierra el hueco «diseñado y sin ejecutar» para esta mitad.
+1. ✅ ~~Seguir con `reubicar-aprendizaje`.~~ Hecho 26-08-11: escrito, instalado en 0.6.0 y medido (~89%).
+2. ✅ ~~Bajar al conocimiento lo aprendido de la familia 1: la medición, cómo se lee la transcripción del subagente para verificar modelo y volumen, y el corte evidencia/decisión.~~ Hecho 26-08-11: quedó en una página **de este repo**, [`medir-subagentes-de-subsistema.md`](../../conocimiento/medir-subagentes-de-subsistema.md) (conocimiento Local-0018), no en la de `como-uso-claude` que nombraba el plan original — ese saber es lo que este repo aprendió construyendo su harness, así que va a su Índice del Agente Desplegado; la página de diseño `subagentes-agentes-codigo.md` de aquel repo queda para actualizarse aparte vía `resolver` si se decide. Cierra el hueco «diseñado y sin ejecutar» para esta mitad.
 
 ### Familia 2 — bloqueada, necesita al usuario
 
