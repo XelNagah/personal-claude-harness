@@ -80,7 +80,7 @@ Cómo se reproduce la medición: la transcripción de cada subagente queda en `~
 
 | Habilidad | Por qué | Reparo |
 |---|---|---|
-| `priorizar-planes` | Abre los 43 planes vivos; más volumen que el de terminología. `sugerir-siguiente-plan` la reutiliza, así que un subagente sirve a dos habilidades | — |
+| ~~`priorizar-planes`~~ | Abre los 48 planes vivos; más volumen que el de terminología. `sugerir-siguiente-plan` la reutiliza, así que un subagente sirve a dos habilidades | **Hecho 26-08-10**: `relevador-de-planes` |
 | `reubicar-aprendizaje` | Recorre el Aprendizaje entero antes de conversar | — |
 | `amp:planificar` | Busca qué dicen semántica, decisiones y conocimiento sobre el tema | **No se delega entera**: el diseño necesita la conversación con el usuario, y delegarlo lo ciega. Solo la búsqueda |
 | `registrar-conocimiento` | Recorre para no duplicar una página ya asentada | Recorrido más liviano; el que menos gana |
@@ -145,11 +145,14 @@ El plan arrancó ordenado al revés de como se ejecutó: los pasos originales da
 
 - ✅ **Escribir los dos primeros subagentes de la familia 1** (`buscador-de-terminologia`, `buscador-de-conocimiento`), con el corte de solo lectura y el `model` declarado — 26-08-06, commit `f31495c`.
 - ✅ **Medir el efecto**, que era lo único que validaba la premisa — 26-08-06. Los números están arriba, en la familia 1. Con esto los del conocimiento dejan de ser ilustrativos.
+- ✅ **Escribir el tercero, `relevador-de-planes`** (`amp-planes` 0.11.0) — 26-08-10. Mismo corte de solo lectura (`tools: [Read, Grep, Glob]`, `model: sonnet`). Devuelve una ficha por plan con los cinco datos que los criterios de orden necesitan —de qué depende, fecha o urgencia, qué resuelve, cuán definido está y **qué dato falta**— más los planes cuyo propio documento declara terminado el trabajo, que salen del orden y van a `cerrar-plan`. `priorizar-planes` declara la delegación y la degradación en Codex; `sugerir-siguiente-plan` lo aprovecha sin tocarse, porque la reutiliza. Control de cierre 11/12, con el único hallazgo esperado: la versión de disco por delante de la instalada hasta publicar.
+
+  **El nombre costó cinco vueltas**, y el descarte de cada una es criterio reutilizable: `analizador-de-planes` y `analizador-de-fichas-de-planes` nombran lo que el subagente tiene prohibido hacer —analizar es el juicio que la Decisión Local-0060 deja en el hilo principal— y además pisan la habilidad `analizar-plan`; `fichador` y `resumidor` no significan en el español de Argentina lo que el diseño necesita; `tipificador` prometía una clasificación por tipo que el subagente no hace. Quedó `relevador-de-planes`: relevar es recorrer y registrar lo que hay.
 
 ### Familia 1 — se puede seguir sin desbloquear nada
 
-1. **Escribir el subagente de `priorizar-planes`**, el próximo de la tabla de arriba. Mismo corte de solo lectura, mismo `model: sonnet`, sustantivo de rol por la Decisión Local-0061. Sirve además a `sugerir-siguiente-plan`, que la reutiliza.
-2. Medirlo igual que a los dos primeros, y seguir con `reubicar-aprendizaje`.
+1. **Medir `relevador-de-planes`** con el método del 26-08-06 (transcripción del subagente en `~/.claude/projects/<repo>/<sesión>/subagents/`). ⚠️ Requiere **publicar primero**: la medición corre sobre el plugin instalado, no sobre el archivo editado, así que sin publicar mediría la versión 0.10.0, que no tiene subagente.
+2. Seguir con `reubicar-aprendizaje`.
 3. Bajar al conocimiento [`subagentes-agentes-codigo.md`](../../conocimiento/subagentes-agentes-codigo.md) lo aprendido de la familia 1: la medición, cómo se lee la transcripción del subagente para verificar modelo y volumen, y el corte evidencia/decisión. Cierra el hueco «diseñado y sin ejecutar» para esta mitad.
 
 ### Familia 2 — bloqueada, necesita al usuario
