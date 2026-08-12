@@ -64,6 +64,32 @@ for (const js of findLints(CLAUDE_DIR, []).sort()) {
   }
 }
 
+// -- las pruebas de los controles del repo --
+// El corredor `ejecutar-pruebas` descubre los `pruebas.js` co-ubicados con lo que prueban y los
+// corre. Sin este chequeo, este control declaraba el repo verde mirando SOLO los lints: un banco en
+// rojo —el del actualizador, con un control suyo roto— no aparecia por ningun lado, y el verde de
+// acá significaba menos de lo que parecia. Se descubrio corriendo el corredor a mano el 11/08/2026,
+// despues de que este control diera «TODO VERDE» sobre ese banco fallando.
+//
+// No se pisa con el bloque de abajo: el corredor excluye su propio banco (correrlo desde adentro es
+// el manual de su propio modo de falla), asi que cada uno corre lo que el otro no puede.
+//
+// Esto es una PRUEBA, no un lint, y el contrato es distinto: falla con codigo 1 —tambien si no
+// encuentra ningun banco— y este control lo REPORTA como un chequeo mas, sin fallar el.
+{
+  const corredor = path.join(CLAUDE_DIR, 'herramientas', 'ejecutar-pruebas', 'ejecutar-pruebas.js');
+  const name = 'pruebas de los controles';
+  if (!fs.existsSync(corredor)) {
+    results.push({ name, status: 'AUSENTE', findings: null, output: 'no existe ' + corredor });
+  } else {
+    const r = spawnSync('node', [corredor], { cwd: REPO, encoding: 'utf8', timeout: 300000 });
+    const output = (r.stdout || '') + (r.stderr || '');
+    if (r.error || r.status === null) results.push({ name, status: 'NO CORRIO', findings: null, output });
+    else if (r.status !== 0) results.push({ name, status: 'FALLA', findings: null, output });
+    else results.push({ name, status: 'OK', findings: 0, output });
+  }
+}
+
 // -- el banco de `ejecutar-pruebas`, que su propio corredor no puede correr --
 // `ejecutar-pruebas` declara verdes a todos los demas controles, asi que su modo de falla es
 // informar «TODO VERDE» sobre cero bancos si el descubrimiento se rompe. Su banco no puede correrlo

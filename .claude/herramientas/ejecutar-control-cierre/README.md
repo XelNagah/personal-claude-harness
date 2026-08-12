@@ -9,8 +9,15 @@ node .claude/herramientas/ejecutar-control-cierre/ejecutar-control-cierre.js
 ## Qué corre
 
 1. **Todos los lints de subsistema**, descubiertos dinámicamente: cualquier `.claude/**/lint-*/lint-*.js`, excepto las copias de prueba bajo `.claude/tmp/`. Un subsistema nuevo con su lint co-ubicado entra solo.
-2. **El banco de `ejecutar-pruebas`** — ver abajo.
-3. **`claude plugin validate .`** — validación del marketplace. Si el CLI no está disponible, lo reporta como `NO DISPONIBLE` (no como error).
+2. **Las pruebas de los controles**, corriendo `ejecutar-pruebas`, que descubre los `pruebas.js` co-ubicados con lo que prueban — ver abajo.
+3. **El banco de `ejecutar-pruebas`** — ver abajo.
+4. **`claude plugin validate .`** — validación del marketplace. Si el CLI no está disponible, lo reporta como `NO DISPONIBLE` (no como error).
+
+## Por qué los lints no alcanzan
+
+Un lint dice si los registros del repo están bien formados. No dice si el control que los revisa sigue funcionando: eso lo dicen las pruebas. Correr solo los lints dejaba pasar un banco en rojo sin mencionarlo, y esta Herramienta cerraba con `TODO VERDE` — el verde valía menos de lo que decía. Se descubrió el 11/08/2026, corriendo el corredor a mano después de que este control diera verde sobre un banco que fallaba.
+
+Los puntos 2 y 3 no se pisan: el corredor **excluye su propio banco**, porque correrlo desde adentro es el manual de su modo de falla. Cada uno corre lo que el otro no puede.
 
 ## El banco que su hermana no puede correr
 

@@ -161,6 +161,44 @@ function ponerBancoHermano(cuerpo) {
     fila(texto, 'banco de ejecutar-pruebas') || 'no aparece');
 }
 
+console.log('\n== CORRE TAMBIÉN LAS PRUEBAS DE LOS CONTROLES DEL REPO ==');
+// El banco de arriba prueba al corredor; esto corre al corredor, que es otra cosa. Durante un
+// tiempo se corrió solo el primero, y esta Herramienta declaró «TODO VERDE» con un banco del repo
+// en rojo: el verde de acá no incluía las pruebas. Lo que sigue es ese agujero, cerrado.
+const CORREDOR = ['herramientas', 'ejecutar-pruebas', 'ejecutar-pruebas.js'];
+function ponerCorredor(cuerpo) {
+  const destino = path.join(REPO_PRUEBA, '.claude', ...CORREDOR);
+  fs.mkdirSync(path.dirname(destino), { recursive: true });
+  fs.writeFileSync(destino, cuerpo);
+}
+{
+  armar();
+  ponerCorredor('console.log("TODO VERDE.");\nprocess.exit(0);\n');
+  const { texto } = correr();
+  chequear('el corredor de pruebas se corre como un chequeo más',
+    /\bOK$/.test(fila(texto, 'pruebas de los controles')),
+    fila(texto, 'pruebas de los controles') || 'no aparece');
+}
+{
+  // El caso que motivó todo: un banco del repo en rojo tiene que teñir de rojo el control de
+  // cierre. Si esto pasara a fallar, el verde volvería a significar menos de lo que dice.
+  armar();
+  ponerCorredor('console.log("1 prueba(s) fallaron: hay un control que dejó de controlar.");\nprocess.exit(1);\n');
+  const { texto, codigo } = correr();
+  chequear('un banco del repo en rojo se marca FALLA y se muestra su salida',
+    /\bFALLA$/.test(fila(texto, 'pruebas de los controles')) && texto.includes('dejó de controlar'),
+    fila(texto, 'pruebas de los controles') || 'no aparece');
+  chequear('y esta Herramienta sigue sin fallar ella misma', codigo === 0, `código ${codigo}`);
+}
+{
+  // Sin corredor no hay quién corra los bancos del repo, que es el mismo agujero con otra forma.
+  armar();
+  const { texto } = correr();
+  chequear('y si el corredor no está se reporta AUSENTE, no se saltea',
+    /\bAUSENTE$/.test(fila(texto, 'pruebas de los controles')),
+    fila(texto, 'pruebas de los controles') || 'no aparece');
+}
+
 fs.rmSync(REPO_PRUEBA, { recursive: true, force: true });
 console.log(`\ncasos: ${casos}`);
 console.log('no cubierto a propósito: el resultado de `claude plugin validate`, que depende del CLI');
