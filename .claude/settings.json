@@ -36,6 +36,7 @@
       }
     ]
   },
+  "outputStyle": "Español corriente",
   "enabledPlugins": {
     "amp@xelnagah-harness": true,
     "amp-preferencias@xelnagah-harness": true,
