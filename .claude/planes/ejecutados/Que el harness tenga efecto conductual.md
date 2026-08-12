@@ -1,6 +1,6 @@
 # Que el harness tenga efecto conductual
 
-**Estado: En curso · Creado 26-07-21.** Origen: el usuario, sobre por qué los agentes no usan los subsistemas — *"que los agentes me discutan dónde va cada cosa, que inventen mecanismos por fuera, que no guarden conocimientos, que usen y registren terminología farlopa. Que el harness del repo empiece a tener efecto en el comportamiento. Si no, es todo al divino botón."*
+**Estado: Ejecutado · Creado 26-07-21 · Cerrado 26-08-12.** Origen: el usuario, sobre por qué los agentes no usan los subsistemas — *"que los agentes me discutan dónde va cada cosa, que inventen mecanismos por fuera, que no guarden conocimientos, que usen y registren terminología farlopa. Que el harness del repo empiece a tener efecto en el comportamiento. Si no, es todo al divino botón."*
 
 ## El problema
 
@@ -117,8 +117,23 @@ Las cuatro preguntas abiertas quedaron contestadas:
 - **Producto del Propósito (glosario nuevo).** Lo que el repo produce vive en la raíz, fuera de `.claude/`, y es correcto que quede afuera — criterio que destraba el barrido de la raíz del frente B.
 - **Secuencia y espera del piloto.** A ahora (necesita al usuario presente, y ya arrancó: veto de `tripa`, 2 conceptos, `sessions.json`). B es mecánico, va después. **El piloto NO frena nada**: baja a telemetría de fondo (páginas de `conocimiento` en `/amp-info`); *solucionar* C se hace ahora, *verificar* se mide o se testea activo (`Banco de pruebas conductual`). Sin fecha fija.
 
-## Falta
+## Notas de implementación
 
-- **A:** sumar a la página 0020 los criterios finos que aún no se enumeraron (arqueología: ~24 rescatados, varios sin escribir), cada uno con ratificación.
-- **B:** (1) barrido de la **raíz** — ya destrabado por *Producto del Propósito*; (2) actualizador que **liste de verdad**; (3) `SKILL.md` al alcance del lint de terminología (un vetado sobrevivió ahí — el lint del 22/07 confirmó backlog de vetados en PLANTILLAs distribuibles); (4) **distribuir** el inventario a los consumidores.
-- **C:** construir el mapa de hooks (arriba). **Avance 26-07-23:** para la clase **terminología**, el mecanismo del punto de acción quedó decidido (decisión 0025: control de Terminología Farlopa en dos niveles según persistencia, dentro de `conducta`) — falta construirlo (vive en *Chequear el plan escrito*). *Control de ratificación* reusará el mismo molde sobre su propio momento.
+Cerrado el 12/08/2026 tras verificar los seis pendientes que declaraba la sección `## Falta`. **Tres ya estaban resueltos por planes y decisiones posteriores, y nadie había vuelto a tocar este documento**: mientras figurara `En curso`, cada sesión que preguntara «qué quedó pendiente» iba a repetir esa verificación entera para descubrir de nuevo que no había nada que hacer acá.
+
+El plan cumplió su función: era el diagnóstico que ordenó una falla difusa —el harness verde que no gobernaba la conducta— en tres frentes con nombre, y desde ahí cada frente encontró su mecanismo. Lo que cierra no es el problema, que es permanente, sino **este** plan como coordinador.
+
+### Destino de cada frente
+
+| Frente | Qué pedía | Cómo terminó |
+|---|---|---|
+| **A** | Ratificar los 5 ejes y los ~24 criterios de demarcación | **Materializado** en la Decisión Local-0020 (Test de demarcación), con los 5 ejes, 3 casos resueltos y 3 criterios finos. Los criterios restantes **no son accionables**: la arqueología los rescató de transcripciones del `Agente-Coordinador` y nunca se enumeraron por escrito, así que no hay lista que retomar. La página 0020 queda declarada viva para sumarlos a medida que se ratifiquen. |
+| **B-1** | Extender el barrido a la raíz del repo | **Descartado por la Decisión Local-0020**, que resolvió en sentido contrario con el mismo criterio que este plan creía habilitante: la raíz es donde vive el Producto del Propósito, y barrerla marcaría el trabajo real de cada repo como sospechoso. |
+| **B-2** | Que el actualizador liste de verdad | **Resuelto por la Decisión Local-0045** (los Componentes de Subsistema viajan como archivos): *«la estructura reemplaza a toda lista»*. El actualizador pasó de cubrir 11 de 74 Componentes a comparar archivo contra archivo en los dos sentidos. Lo que queda de listas escritas a mano en el detector vive en el plan Local-0068. |
+| **B-3** | `SKILL.md` al alcance del lint de terminología | **Resuelto.** `lint-semantica` barre recursivamente desde la raíz del repo, así que alcanza a los `SKILL.md` de `funcionalidades/`. Lo refuerza la Decisión Local-0037, que hace fallar la validación sobre lo que se publica. |
+| **B-4** | Distribuir el inventario a los consumidores | **Desprendido** al plan Local-0106, único trabajo propio que le quedaba a este plan. |
+| **C** | El mecanismo en el punto de acción | **Construido** como subsistema `conducta` (Decisión Local-0021, plan Local-0045 ejecutado): el hook repartidor entrega reglas cada turno y el control de terminología corre al escribir. Lo que resta es *Control de ratificación*, que ya es el plan Local-0024. |
+
+### El juez final sigue abierto
+
+El *Banco de pruebas conductual* —instanciar decenas o cientos de Agentes con Propósitos distintos y estudiar su comportamiento— sigue siendo el criterio de aceptación de todo lo anterior, y sigue sin ejecutarse. Vive en su plan propio, que este cierre no toca.
