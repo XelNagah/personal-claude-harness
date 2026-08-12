@@ -4,7 +4,7 @@ Un control roto no se comporta como un control roto: se comporta como un control
 
 Medido en este repo el 30/07/2026, con todos los lints en verde y el actualizador informando el `.claude/` al día.
 
-## Las nueve formas en que un control se apaga solo
+## Las diez formas en que un control se apaga solo
 
 ### 1. Valida sobre un conjunto vacío
 
@@ -88,6 +88,20 @@ Medido el 09/08/2026 sobre `probar-disparo-de-skills`. En Windows hay que correr
 **Cómo se detecta:** ejerciendo el control una vez a mano, por fuera de su mecanismo de entrega, y comparando. Acá alcanzó con correr la misma consulta escrita entre comillas: disparó. Dos resultados distintos para la misma consulta señalan el mecanismo de entrega, no el objeto medido.
 
 **Regla general:** un control que arma la entrada de lo que mide tiene que poder mostrar la entrada tal como llegó. Mientras eso no se vea, un rojo es una hipótesis, no un hallazgo.
+
+### 10. El control que agrupa a los otros cubre menos de lo que promete
+
+Las nueve anteriores son de un control que se apaga. Esta es de un control que **funciona perfecto** y aun así deja pasar todo lo que no mira: el que corre a los demás y presenta un veredicto único. Su verde no dice «el repo está bien», dice «lo que corro está bien» — y nadie vuelve a leer qué corre.
+
+Medido el 11/08/2026 sobre `ejecutar-control-cierre`, el control que se pasa antes de publicar. Corría los diez lints de subsistema, el banco propio de `ejecutar-pruebas` y `claude plugin validate`, y cerraba con `TODO VERDE`. Nunca corría el **corredor** `ejecutar-pruebas`, que ejecuta los veinte bancos del repo. Un banco en rojo —el del actualizador, con un control suyo roto por un cambio publicado ese mismo día— no aparecía por ningún lado. El agujero se descubrió corriendo el corredor a mano, por otro motivo.
+
+**La confusión que lo produjo:** el control sí nombraba a `ejecutar-pruebas`, pero corría **su banco**, no la Herramienta. Probar al corredor y correr al corredor son cosas distintas, y el nombre las tapa: leyendo la lista de chequeos, «banco de ejecutar-pruebas» se lee como «las pruebas están cubiertas».
+
+**Cómo se distingue de las anteriores.** No valida sobre un conjunto vacío (forma 1): encuentra sus diez lints y los corre bien. No se quedó sin población (forma 6): la población que mira está entera. No mide una entrada mutilada (forma 9): mide exactamente lo que recibe. Lo que falla es el **alcance declarado**: la Herramienta se llama «control de cierre» y su verde se usa como permiso para publicar, pero cubría una sola clase de control — los lints, que dicen si los registros están bien formados, y nunca las pruebas, que dicen si los controles siguen funcionando.
+
+**Cómo se detecta:** contar. Correr a mano cada clase de control del repo y verificar que el agregador la nombre en su reporte. El reporte del agregador es una lista visible; que una clase entera falte ahí se ve leyendo, pero solo si alguien va a leerla con la lista de clases en la otra mano.
+
+**Regla general:** un control que agrupa a otros tiene que enumerar lo que corre, y esa lista tiene que ser auditable contra las clases de control que el repo tiene. El riesgo crece con la comodidad: cuanto más reemplaza el agregador a correr los comandos a mano, menos gente conoce la lista, y más vale su verde de lo que cubre.
 
 ## El remedio de una forma produce la otra
 
