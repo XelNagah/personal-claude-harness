@@ -4,7 +4,7 @@ Un control roto no se comporta como un control roto: se comporta como un control
 
 Medido en este repo el 30/07/2026, con todos los lints en verde y el actualizador informando el `.claude/` al día.
 
-## Las diez formas en que un control se apaga solo
+## Las once formas en que un control se apaga solo
 
 ### 1. Valida sobre un conjunto vacío
 
@@ -103,6 +103,20 @@ Medido el 11/08/2026 sobre `ejecutar-control-cierre`, el control que se pasa ant
 
 **Regla general:** un control que agrupa a otros tiene que enumerar lo que corre, y esa lista tiene que ser auditable contra las clases de control que el repo tiene. El riesgo crece con la comodidad: cuanto más reemplaza el agregador a correr los comandos a mano, menos gente conoce la lista, y más vale su verde de lo que cubre.
 
+### 11. La lista contra la que reconcilia crece, y los que ya cumplían quedan afuera
+
+Las diez anteriores son de un control que se apaga para todos, o que cubre menos de lo que promete. Esta se apaga **solo para una parte de su población** — y justo para la que estaba más al día.
+
+Medido el 11/08/2026 al repartir una versión a los siete Agentes Desplegados de la máquina. El actualizador reconciliaba el `.gitignore` del repo destino contra una lista propia de dos rutas, mientras que el bloque que aplica cuando marca el archivo —el `§Gitignore` de la PLANTILLA de `amp:inicializar`— traía tres: la tercera es el Índice de `comunicacion`, que guarda rutas absolutas de máquina. Cuatro repos recibieron la línea **de rebote**: les faltaba alguna de las dos viejas, el control los marcó, y el bloque se aplica entero. Los otros tres ya ignoraban las dos viejas, así que nunca se los marcó y la línea no les llegó jamás. Iban a versionar rutas de máquina en cuanto registraran su primer Agente Multipropósito Conocido.
+
+**Por qué la prueba no lo veía.** Había dos casos y los dos pasaban: sin `.gitignore` se marcan las rutas, y con una sola puesta se reclama únicamente la que falta. El caso que faltaba —**todas las viejas puestas, la nueva no**— no existía hasta el día en que la lista creció, y agregar una ruta no obliga a escribirlo.
+
+**Cómo se distingue de las anteriores.** No valida sobre un conjunto vacío (forma 1): la lista tiene entradas y las compara bien. No mira una copia (forma 3): lee el `.gitignore` real. Su prueba no envejeció (forma 7): seguía reproduciendo lo que decía reproducir. No mide una entrada mutilada (forma 9): recibe el archivo entero. Lo que falla es **a quién alcanza**: funciona para el repo nuevo y para el atrasado, y es ciego exactamente con el que estaba al día.
+
+**Cómo se detecta:** correr el control contra un destino que ya cumple la versión **anterior** del requisito, no solo contra uno vacío y uno roto. Acá se detectó por el resultado y no por el control: tres de siete repos quedaron sin la línea, y la correlación con cuáles ya tenían las otras dos señaló la causa.
+
+**Regla general:** cuando una lista de reconciliación crece, el caso que hay que escribir no es el de la entrada nueva sola — es el del destino que **ya cumplía todo lo anterior**. Y si la misma lista vive en dos lados, un comentario que afirme que coinciden no es un control: el control es la prueba que las compara. Acá el comentario lo afirmaba, y llevaban meses divergiendo.
+
 ## El remedio de una forma produce la otra
 
 Las formas 1 y 2 tiran para lados opuestos, y ahí está la trampa: **lo que se agrega para que un control deje de marcar de más es lo que lo convierte en mudo.**
@@ -129,6 +143,7 @@ Los hallazgos de un control tienen que ser **resolubles**: cada uno nombra algo 
 - **Banco aparte, nunca el repo real.** Y si el control mira el repo entero, el banco tiene que ser un repo, no una carpeta: si no, el barrido cae sobre el repo real y los casos no quedan aislados.
 - **Lo que viaja se prueba además en un destino limpio.** Todo control que corre en el repo autor comparte el entorno del autor, así que ninguno puede contestar qué recibe el que instala (forma 8 de esta lista). Instalar contra un repo vacío y ejercer el mecanismo ahí es una corrida distinta, no una repetición: verifica lo que llega, no lo que hay.
 - **La entrada que el control arma se verifica una vez a mano.** Si el control invoca algo externo —un CLI, un proceso, un servicio— y le pasa texto, ese texto puede llegar cambiado sin que nada avise (forma 9 de esta lista). Una corrida a mano con la misma entrada, comparada contra la del control, es la única que lo muestra.
+- **Una lista que crece se prueba contra quien ya cumplía la anterior.** Sumarle una entrada a una lista de reconciliación no obliga a escribir ningún caso, y los que hay siguen pasando. El que falta es el del destino que ya cumplía todo lo viejo (forma 11 de esta lista): es el único que distingue un control que reconcilia la lista entera de uno que solo despierta cuando falta algo de antes. Si además la lista vive en dos lados, se compara con una prueba, no con un comentario.
 - **Lo que no se cubre, se dice.** Un control que la prueba no puede ejercitar (porque depende del estado de la máquina, por ejemplo) se declara en la salida. Callarlo hace que la prueba en verde se lea como cobertura completa.
 - **Una prueba terminada no se deja en la carpeta temporal.** Una prueba completa de `lint-planes` —169 líneas, funcionando, con el criterio correcto escrito en su encabezado— quedó en `.claude/tmp/`, que el repo gitignorea. No era un borrador: era el trabajo hecho, esperando que alguien lo borrara. Un archivo de `tmp/` que dejó de ser descartable se mueve el mismo día.
 
