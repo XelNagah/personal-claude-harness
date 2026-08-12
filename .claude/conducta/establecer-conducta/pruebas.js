@@ -196,6 +196,22 @@ console.log('\n== CONTRASTE CON LA SABIDURÍA DEL REPO (el comparador) ==');
 const H = 'Contraste con la sabiduría del repo';
 const contrasteDe = msg => disparar({ hook_event_name: 'UserPromptSubmit', prompt: msg }).contexto;
 
+// El `additionalContext` de `cada turno` trae tres cosas: las reglas `Inyectar`, este contraste y, si
+// hay algo pendiente, el Buzón de Avisos Generales — que se entrega UNA vez y se borra. Lo que mide
+// este apartado es el comparador, así que se le recorta su bloque: el encabezado y las viñetas de
+// candidatas que lo siguen. Sin recortar, un aviso pendiente hace que la misma entrada dé dos salidas
+// distintas y se lea como falta de determinismo del comparador — y el aviso se lo deposita este mismo
+// banco, porque su caso de `SessionStart` lanza la Pantalla, que corre el chequeo de plugins en
+// segundo plano y escribe en el Buzón un segundo y medio después, ya corriendo esta sección.
+const bloqueDelContraste = (ctx) => {
+  const lineas = ctx.split('\n');
+  const desde = lineas.findIndex(l => l.startsWith(H));
+  if (desde < 0) return '';
+  let hasta = desde + 1;
+  while (hasta < lineas.length && lineas[hasta].startsWith('- ')) hasta++;
+  return lineas.slice(desde, hasta).join('\n');
+};
+
 // Los tres casos positivos del plan del disparo automático, cada uno con la fila que debe encabezar.
 {
   const c = contrasteDe('quiero que los planes guarden la prioridad');
@@ -220,8 +236,7 @@ const contrasteDe = msg => disparar({ hook_event_name: 'UserPromptSubmit', promp
   chequear('  …nombrada como relación vetada (Terminología Farlopa)', c.includes('Terminología Farlopa'));
   // Tope duro: nunca más de tres filas, aunque peguen muchas. Se cuentan los renglones de candidato,
   // que empiezan con «- » dentro del bloque del contraste.
-  const bloque = c.slice(c.indexOf(H));
-  const candidatas = (bloque.match(/^- /gm) || []).length;
+  const candidatas = (bloqueDelContraste(c).match(/^- /gm) || []).length;
   chequear('  …y respeta el tope duro de 3 filas', candidatas > 0 && candidatas <= 3, `${candidatas} filas`);
 }
 
@@ -238,10 +253,15 @@ const contrasteDe = msg => disparar({ hook_event_name: 'UserPromptSubmit', promp
     c.includes(H) ? 'disparó de más' : 'silencio');
 }
 
-// Determinista: el mismo mensaje da exactamente el mismo contraste (no hay azar ni estado).
+// Determinista: el mismo mensaje da exactamente las mismas candidatas (el comparador no tiene azar ni
+// estado). Se comparan los bloques, no los contextos: el Buzón que viaja al lado sí tiene estado, y es
+// de un solo uso por diseño.
 {
   const msg = 'a la carpeta que viaja adentro del plugin la llamaría capa de instalación';
-  chequear('el mismo mensaje da el mismo contraste (determinista)', contrasteDe(msg) === contrasteDe(msg));
+  const primera = bloqueDelContraste(contrasteDe(msg));
+  const segunda = bloqueDelContraste(contrasteDe(msg));
+  chequear('el mismo mensaje da el mismo contraste (determinista)',
+    !!primera && primera === segunda, primera === segunda ? undefined : 'dos salidas distintas');
 }
 
 // Sin mensaje del usuario (UserPromptSubmit sin `prompt`) no hay nada que contrastar, pero el momento
