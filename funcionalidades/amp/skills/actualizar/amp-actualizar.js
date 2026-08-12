@@ -108,7 +108,7 @@ const INDICES_PARTIDOS = [
 // lleva al lado —la que instala en el destino—, y NO del `.claude/` del repo que se esta actualizando:
 // ese es justo el que puede no tenerlo todavia, o tenerlo en la version vieja. Es la misma ruta
 // relativa con la que este script ya resuelve BASE, asi que existe siempre que exista el plugin.
-const { declaraIndice: declaraIndiceEn, cabeceraTabla, origenDe } = require('../inicializar/base/common/frontmatter.js');
+const { declaraIndice: declaraIndiceEn, cabeceraTabla, origenDe, leerFrontmatter } = require('../inicializar/base/common/frontmatter.js');
 const declaraIndice = archivo => declaraIndiceEn(leer(archivo));
 
 // Nucleo de columnas que comparten todos los Indices de Subsistema. Cada uno suma ademas las
@@ -487,6 +487,18 @@ function clasificar() {
   if (faltanIgnore.length)
     add('base', '~', '.gitignore', `sin las rutas donde escribe el mecanismo (${faltanIgnore.join(' + ')}): agregar por merge`);
 
+  // [4c] encendido del Estilo de Respuesta. El archivo del estilo llega con los Componentes Base
+  // como cualquier otro, pero un `.md` en `output-styles/` no hace NADA hasta que la clave
+  // `outputStyle` lo nombra: sin este chequeo el Componente llega apagado y el repo no se entera.
+  // Es la contraparte del cableado del SessionStart, que deja funcionando la Pantalla de bienvenida
+  // — un Componente Base no se instala apagado. Vale solo para Claude Code: Codex CLI no tiene
+  // equivalente y por eso su hooks.json no la lleva.
+  const estilo = revisarEstiloDeRespuesta(settings);
+  if (estilo.estado === 'falta')
+    add('base', '~', 'settings.json', `sin la clave outputStyle que enciende el Estilo de Respuesta ("${estilo.esperado}"): agregar por merge`);
+  else if (estilo.estado === 'otro')
+    add('divergente', '?', 'settings.json', `outputStyle dice "${estilo.actual}" y la Base trae "${estilo.esperado}": es una eleccion viva del repo, no se pisa sin tu ok`);
+
   // [5] contenido de los scripts Base ya instalados: existir no es estar al dia.
   chequearContenido(add);
 }
@@ -516,6 +528,29 @@ function revisarHook(settingsPath) {
   out.pre = tiene('PreToolUse');
   out.ses = tiene('SessionStart');
   return out;
+}
+
+// Compara la clave `outputStyle` del settings del destino contra el Estilo de Respuesta que viaja
+// en la Base. El nombre esperado sale del `name` del frontmatter del estilo, no de una constante
+// escrita acá: el mismo dato en dos lugares diverge el dia que el estilo se renombre o se traduzca,
+// y ahi este chequeo pediria encender un estilo que no existe.
+// `outputStyle` es una clave escalar, no una lista de la que se mergea lo que falte: o trae el valor
+// de la Base, o trae otro —eleccion viva del repo, que no se pisa—, o no esta.
+// Se calla sin fallar cuando la Base no trae exactamente un estilo: con ninguno no hay nada que
+// encender (plugin viejo), y con varios cual encender es una decision que nadie tomo — adivinarla
+// escribiria una preferencia que el repo no eligio.
+function revisarEstiloDeRespuesta(settingsPath) {
+  const dir = path.join(BASE, 'output-styles');
+  let candidatos = [];
+  try { candidatos = fs.readdirSync(dir).filter(n => n.endsWith('.md')); } catch { return { estado: 'sin-base' }; }
+  if (candidatos.length !== 1) return { estado: 'sin-base' };
+  const esperado = (leerFrontmatter(leer(path.join(dir, candidatos[0]))) || {}).name;
+  if (!esperado) return { estado: 'sin-base' };
+
+  let cfg; try { cfg = JSON.parse(leer(settingsPath)); } catch { return { estado: 'falta', esperado }; }
+  const actual = cfg && cfg.outputStyle;
+  if (!actual) return { estado: 'falta', esperado };
+  return actual === esperado ? { estado: 'ok', esperado } : { estado: 'otro', esperado, actual };
 }
 
 // Las rutas donde escribe el mecanismo y que por eso el repo destino tiene que ignorar. La lista

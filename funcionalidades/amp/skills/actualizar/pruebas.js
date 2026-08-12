@@ -63,18 +63,29 @@ function ignorarTemporales() {
 // Los hooks no se copian de `base/`: se fusionan con los que el repo ya tenga, así que un repo al
 // día los tiene cableados aunque su árbol de archivos esté completo. Registro doble —Claude Code y
 // Codex— y los tres eventos, que es lo que el detector mira.
+//
+// El `settings.json` de Claude Code lleva además la clave que enciende el Estilo de Respuesta, que
+// no es un hook y no se fusiona igual: es escalar. Su valor sale del frontmatter del estilo que
+// viaja, no escrito acá — si se escribiera a mano, el día que el estilo se renombre este banco
+// seguiría verde contra un nombre que ya no existe, que es el defecto que el chequeo cierra.
+// Codex no la lleva: allá el estilo no tiene equivalente.
+function nombreDelEstilo() {
+  const dir = path.join(BASE, 'output-styles');
+  const archivo = fs.readdirSync(dir).find(n => n.endsWith('.md'));
+  return /^name:\s*(.+)$/m.exec(fs.readFileSync(path.join(dir, archivo), 'utf8'))[1].trim();
+}
+
 function cablearHooks() {
   const entrada = { type: 'command', command: 'node .claude/conducta/establecer-conducta/establecer-conducta.js' };
-  const cfg = {
-    hooks: {
-      SessionStart: [{ hooks: [entrada] }],
-      UserPromptSubmit: [{ hooks: [entrada] }],
-      PreToolUse: [{ matcher: 'Write|Edit', hooks: [entrada] }],
-    },
+  const hooks = {
+    SessionStart: [{ hooks: [entrada] }],
+    UserPromptSubmit: [{ hooks: [entrada] }],
+    PreToolUse: [{ matcher: 'Write|Edit', hooks: [entrada] }],
   };
-  fs.writeFileSync(path.join(REPO_PRUEBA, '.claude', 'settings.json'), JSON.stringify(cfg, null, 2));
+  fs.writeFileSync(path.join(REPO_PRUEBA, '.claude', 'settings.json'),
+    JSON.stringify({ outputStyle: nombreDelEstilo(), hooks }, null, 2));
   fs.mkdirSync(path.join(REPO_PRUEBA, '.codex'), { recursive: true });
-  fs.writeFileSync(path.join(REPO_PRUEBA, '.codex', 'hooks.json'), JSON.stringify(cfg, null, 2));
+  fs.writeFileSync(path.join(REPO_PRUEBA, '.codex', 'hooks.json'), JSON.stringify({ hooks }, null, 2));
 }
 
 const claude = f => path.join(REPO_PRUEBA, '.claude', f);
@@ -102,8 +113,16 @@ armarAlDia();
   // subsistema que se sume queda fuera del control sin que nadie lo note — que es lo que pasó con
   // `comunicacion`: ausente de la lista del detector, imposible de informar «ya estaba», y este
   // banco en verde igual porque le alcanzaba con encontrar la palabra `conducta`.
+  //
+  // Un subsistema se reconoce por su MANIFIESTO, no por ser una carpeta: en `base/` también viajan
+  // carpetas que no son subsistemas y que por eso nadie informa por nombre —`common/`, los módulos
+  // compartidos, y `output-styles/`, el Estilo de Respuesta—. Su llegada la controla igual
+  // `chequearContenido`, que barre el árbol entero y marca lo ausente y lo viejo archivo por
+  // archivo. Derivar la exclusión del manifiesto y no de una lista de nombres deja que la próxima
+  // carpeta que no sea subsistema entre sola, sin volver a tocar este banco.
   const subsistemasQueViajan = fs.readdirSync(BASE, { withFileTypes: true })
-    .filter(e => e.isDirectory() && e.name !== 'common').map(e => e.name);
+    .filter(e => e.isDirectory() && fs.existsSync(path.join(BASE, e.name, 'MANIFIESTO.md')))
+    .map(e => e.name);
   const bloqueYaEstaba = texto.split('YA ESTABA')[1] || '';
   const sinInformar = subsistemasQueViajan.filter(s => !bloqueYaEstaba.includes(s));
   chequear(`informa los ${subsistemasQueViajan.length} subsistemas que viajan como ya estaban`,
@@ -341,6 +360,33 @@ console.log('\n== ESTRUCTURA ==');
   const { texto } = correr(REPO_PRUEBA);
   chequear('con una sola de las dos rutas se reclama únicamente la que falta',
     marca(texto, '.gitignore', 'settings.local.json') && !marca(texto, '.gitignore', '.claude/tmp'));
+}
+{
+  // El Estilo de Respuesta llega como archivo con el resto de la Base, pero un `.md` en
+  // `output-styles/` no hace nada hasta que la clave `outputStyle` lo nombra. Es el caso de todo
+  // repo instalado antes de que el estilo existiera: recibe el archivo con este mismo actualizador
+  // y se queda con el estilo apagado sin enterarse, porque nada en el reporte lo menciona.
+  armarAlDia();
+  const cfg = JSON.parse(leer('settings.json'));
+  delete cfg.outputStyle;
+  escribir('settings.json', JSON.stringify(cfg, null, 2));
+  const { texto } = correr(REPO_PRUEBA);
+  chequear('sin la clave outputStyle se marca el Estilo de Respuesta apagado',
+    marca(texto, 'settings.json', 'outputStyle'));
+}
+{
+  // Un `outputStyle` distinto es una elección viva del repo destino, no un desfase: se reporta
+  // para que el usuario decida y NO se pisa. Es la misma regla que gobierna todo lo divergente, y
+  // la única forma de distinguirla del caso de arriba es que caiga en otro grupo del reporte.
+  armarAlDia();
+  const cfg = JSON.parse(leer('settings.json'));
+  cfg.outputStyle = 'Estilo propio del repo';
+  escribir('settings.json', JSON.stringify(cfg, null, 2));
+  const { texto } = correr(REPO_PRUEBA);
+  const bloqueDivergente = texto.split('DIVERGENTE')[1] || '';
+  chequear('un outputStyle propio del repo se reporta divergente, no para pisar',
+    bloqueDivergente.includes('outputStyle') && bloqueDivergente.includes('Estilo propio del repo'),
+    bloqueDivergente.includes('outputStyle') ? '' : 'no cayó en el grupo divergente');
 }
 
 console.log('\n== FORMAS ANTERIORES ==');
