@@ -483,9 +483,14 @@ function clasificar() {
   // un trabajo en segundo plano deja lo que averiguo para el turno siguiente, y el directorio de
   // borradores que los lints excluyen de su barrido POR SER descartable. Un repo que no lo ignora
   // versiona el buzon en cada commit y contradice la premisa sobre la que trabajan esos lints.
+  // El Indice de `comunicacion` esta por otro motivo: guarda rutas absolutas de maquina, que en un
+  // repo publico no van al control de versiones. Se revisan las tres SIEMPRE, no solo al instalar
+  // el subsistema que las trae: un repo que recibio `comunicacion` en una version anterior a que
+  // su ruta entrara en esta lista ya tenia ignoradas las otras dos, asi que el chequeo no lo
+  // marcaba y la linea no llegaba nunca.
   const faltanIgnore = revisarGitignore(path.join(repo, '.gitignore'));
   if (faltanIgnore.length)
-    add('base', '~', '.gitignore', `sin las rutas donde escribe el mecanismo (${faltanIgnore.join(' + ')}): agregar por merge`);
+    add('base', '~', '.gitignore', `sin las rutas que el repo tiene que ignorar (${faltanIgnore.join(' + ')}): agregar por merge`);
 
   // [4c] encendido del Estilo de Respuesta. El archivo del estilo llega con los Componentes Base
   // como cualquier otro, pero un `.md` en `output-styles/` no hace NADA hasta que la clave
@@ -553,10 +558,16 @@ function revisarEstiloDeRespuesta(settingsPath) {
   return actual === esperado ? { estado: 'ok', esperado } : { estado: 'otro', esperado, actual };
 }
 
-// Las rutas donde escribe el mecanismo y que por eso el repo destino tiene que ignorar. La lista
-// es la misma que el bloque §Gitignore de la PLANTILLA de amp:inicializar. El respaldo del
-// actualizador NO esta: se escribe fuera del repo, en el temporal del sistema.
-const RUTAS_IGNORADAS = ['.claude/settings.local.json', '.claude/tmp/'];
+// Las rutas que el repo destino tiene que ignorar: donde escribe el mecanismo, mas el Indice de
+// `comunicacion`, que guarda rutas absolutas de maquina. El respaldo del actualizador NO esta: se
+// escribe fuera del repo, en el temporal del sistema.
+//
+// El mismo dato vive en dos lados —aca y en el bloque §Gitignore de la PLANTILLA de
+// `amp:inicializar`— porque el que instala escribe el bloque entero y el que actualiza compara ruta
+// por ruta. Ya divergieron una vez: la linea de `comunicacion` estuvo meses en la PLANTILLA y no
+// aca, asi que ningun repo ya instalado la recibio. Un comentario que afirma que coinciden no es
+// un control; el control es la prueba que compara las dos listas (`pruebas.js`).
+const RUTAS_IGNORADAS = ['.claude/settings.local.json', '.claude/tmp/', '.claude/comunicacion/INDICE.md'];
 
 // lee .gitignore y devuelve cuales de esas rutas NO estan ignoradas. Normaliza cada linea sacando
 // el './' inicial y la barra final, que son la misma regla escrita distinto; alcanza para decidir

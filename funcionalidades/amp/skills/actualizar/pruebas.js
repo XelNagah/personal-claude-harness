@@ -53,11 +53,12 @@ function armarAlDia() {
 }
 
 // Tampoco se copia de `base/`: se fusiona con el `.gitignore` que el repo ya tenga. Un repo al día
-// ignora las dos rutas donde escribe el mecanismo — si no, versiona el buzón de avisos en cada
-// commit y contradice la premisa de los lints que excluyen `.claude/tmp/` de su barrido.
+// ignora las tres rutas — las dos donde escribe el mecanismo, o versiona el buzón de avisos en cada
+// commit y contradice la premisa de los lints que excluyen `.claude/tmp/` de su barrido, y el Índice
+// de `comunicacion`, que guarda rutas absolutas de máquina.
 function ignorarTemporales() {
   fs.writeFileSync(path.join(REPO_PRUEBA, '.gitignore'),
-    '.claude/settings.local.json\n.claude/tmp/\n');
+    '.claude/settings.local.json\n.claude/tmp/\n.claude/comunicacion/INDICE.md\n');
 }
 
 // Los hooks no se copian de `base/`: se fusionan con los que el repo ya tenga, así que un repo al
@@ -349,17 +350,48 @@ console.log('\n== ESTRUCTURA ==');
   armarAlDia();
   fs.rmSync(path.join(REPO_PRUEBA, '.gitignore'), { force: true });
   const { texto } = correr(REPO_PRUEBA);
-  chequear('sin .gitignore se marcan las dos rutas donde escribe el mecanismo',
-    marca(texto, '.gitignore', 'settings.local.json') && marca(texto, '.gitignore', 'tmp'));
+  chequear('sin .gitignore se marcan las tres rutas que el repo destino tiene que ignorar',
+    marca(texto, '.gitignore', 'settings.local.json') && marca(texto, '.gitignore', 'tmp')
+    && marca(texto, '.gitignore', 'comunicacion/INDICE.md'));
 }
 {
-  // Se marca lo que falta, no el archivo entero: un repo que ya ignora una de las dos rutas no
-  // tiene que ver reclamada la que sí puso.
+  // Se marca lo que falta, no el archivo entero: un repo que ya ignora una de las rutas no tiene
+  // que ver reclamada la que sí puso.
   armarAlDia();
   fs.writeFileSync(path.join(REPO_PRUEBA, '.gitignore'), '# lo suyo\nnode_modules/\n.claude/tmp\n');
   const { texto } = correr(REPO_PRUEBA);
-  chequear('con una sola de las dos rutas se reclama únicamente la que falta',
+  chequear('con una sola de las rutas puesta se reclama únicamente lo que falta',
     marca(texto, '.gitignore', 'settings.local.json') && !marca(texto, '.gitignore', '.claude/tmp'));
+}
+{
+  // El caso que falló en producción el 11/08/2026, en tres Agentes Desplegados a la vez: un repo
+  // que recibió `comunicacion` en una versión anterior YA ignoraba las dos rutas viejas, así que el
+  // chequeo no lo marcaba y la línea del Índice no le llegaba nunca. Un detector que revisa la
+  // lista entera solo cuando falta alguna de las dos primeras deja pasar exactamente esto.
+  armarAlDia();
+  fs.writeFileSync(path.join(REPO_PRUEBA, '.gitignore'),
+    '# lo suyo\nnode_modules/\n.claude/settings.local.json\n.claude/tmp/\n');
+  const { texto } = correr(REPO_PRUEBA);
+  chequear('con las dos rutas viejas puestas se sigue reclamando el Índice de comunicacion',
+    marca(texto, '.gitignore', 'comunicacion/INDICE.md'));
+}
+{
+  // El mismo dato en dos lados: el que instala escribe el bloque §Gitignore de la PLANTILLA entero,
+  // el que actualiza compara ruta por ruta contra su propia lista. Ya divergieron una vez —de ahí
+  // el caso de arriba—, y un comentario que afirma que coinciden no lo habría evitado. Esto sí: la
+  // prueba lee las dos fuentes y falla si una suma una ruta que la otra no tiene.
+  const plantilla = fs.readFileSync(
+    path.resolve('funcionalidades/amp/skills/inicializar/PLANTILLA.md'), 'utf8');
+  const bloque = (plantilla.match(/## §Gitignore[\s\S]*?```gitignore\n([\s\S]*?)```/) || [])[1] || '';
+  const dePlantilla = bloque.split('\n').map(l => l.trim())
+    .filter(l => l && !l.startsWith('#')).sort();
+  const delDetector = (fs.readFileSync(Actualizador, 'utf8')
+    .match(/const RUTAS_IGNORADAS = \[([^\]]*)\]/) || [])[1] || '';
+  const deCodigo = delDetector.split(',').map(s => s.trim().replace(/^['"]|['"]$/g, ''))
+    .filter(Boolean).sort();
+  chequear('la lista del detector y el bloque §Gitignore de la PLANTILLA coinciden',
+    deCodigo.length > 0 && JSON.stringify(deCodigo) === JSON.stringify(dePlantilla),
+    `detector: ${deCodigo.join(' ')} · plantilla: ${dePlantilla.join(' ')}`);
 }
 {
   // El Estilo de Respuesta llega como archivo con el resto de la Base, pero un `.md` en
