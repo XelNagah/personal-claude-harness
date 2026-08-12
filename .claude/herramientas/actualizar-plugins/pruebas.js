@@ -111,9 +111,13 @@ console.log('\n== CACHE HUÉRFANO Y SU LIMPIEZA ==');
   const CACHE = path.join(os.homedir(), '.claude', 'plugins', 'cache');
   const registro = path.join(os.homedir(), '.claude', 'plugins', 'installed_plugins.json');
   const reg = fs.existsSync(registro) ? JSON.parse(fs.readFileSync(registro, 'utf8')) : { plugins: {} };
+  // La Herramienta ahora solo informa el cache del marketplace del Agente Multipropósito, así que el
+  // sobrante hay que fabricarlo bajo ESE marketplace o la rama no se ejercita (queda fuera del barrido).
+  const MK_AMP = 'xelnagah-harness';
   const conCache = Object.entries(reg.plugins || {})
     .map(([id, ent]) => ({ id, v: (ent || [])[0] && (ent || [])[0].version }))
-    .filter(x => x.v && fs.existsSync(path.join(CACHE, x.id.split('@')[1] || '', x.id.split('@')[0], x.v)));
+    .filter(x => x.v && x.id.endsWith('@' + MK_AMP)
+      && fs.existsSync(path.join(CACHE, x.id.split('@')[1] || '', x.id.split('@')[0], x.v)));
   // La rama «ya no ofrece» compara contra el catálogo del marketplace bajado, así que el sobrante fabricado tiene
   // que colgar de uno cuyo catálogo se pueda leer: sin catálogo la Herramienta no marca nada retirado,
   // y con razón (no puede saber qué se ofrece). Se prefiere un anfitrión que lo tenga.

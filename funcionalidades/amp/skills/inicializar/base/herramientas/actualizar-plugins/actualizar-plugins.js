@@ -18,7 +18,12 @@
 //     aparte porque escribe AFUERA del repo y borra; `--aplicar` no lo enciende.)
 //
 // Sin argumentos NO toca nada: sirve como control de desfase disco<->cargado.
-// Generico: no hardcodea nombres de plugin ni de marketplace — sale de `enabledPlugins` del repo.
+// Acotada al marketplace del Agente Multiproposito: mira solo los plugins que ese marketplace sirve
+// (amp y sus amp-<sub>), no todo `enabledPlugins`. Los plugins de otros marketplaces los administra el
+// usuario por su cuenta — esta Herramienta no es un gestor general de plugins de la maquina. Reportar
+// un plugin de tercero bajo el encabezado del Agente Multiproposito, y mandar a `amp:actualizar` para
+// arreglarlo, seria mandar a la skill equivocada: esa skill actualiza el Agente Multiproposito, no
+// cualquier marketplace. La determinacion de cache en uso sigue leyendo TODA la maquina por seguridad.
 // Sin process.exit(1): reporta, no frena — es capa mecanica, el juicio queda del lado del agente.
 
 const fs = require('fs');
@@ -314,9 +319,12 @@ function arranqueSesion() {
   } catch (e) { return null; }
 }
 
-// -- que plugins DECLARA este repo: enabledPlugins del settings del repo + el del usuario --
+// -- que plugins DEL AGENTE MULTIPROPOSITO declara este repo: enabledPlugins del settings, acotado al
+//    marketplace del Agente Multiproposito --
 // Ojo: lo declarado no es lo que el repo necesita. `enabledPlugins` es la foto del momento en que se
 // instalo, y no se mueve cuando un plugin ya instalado suma dependencias en una version posterior.
+// Solo cuentan los `<plugin>@<marketplace del Agente Multiproposito>`: un plugin de otro marketplace no
+// es parte del Agente Multiproposito y esta Herramienta no lo diagnostica (ver la cabecera del archivo).
 function pluginsHabilitados() {
   const ids = new Set();
   const fuentes = [
@@ -327,7 +335,9 @@ function pluginsHabilitados() {
   for (const f of fuentes) {
     const j = leerJson(f);
     if (!j || !j.enabledPlugins) continue;
-    for (const [id, on] of Object.entries(j.enabledPlugins)) if (on) ids.add(id);
+    for (const [id, on] of Object.entries(j.enabledPlugins)) {
+      if (on && id.endsWith(`@${MARKETPLACE_AMP}`)) ids.add(id);
+    }
   }
   return [...ids];
 }
@@ -377,6 +387,10 @@ function cacheHuerfano() {
   try { marketplaces = fs.readdirSync(cacheDir, { withFileTypes: true }).filter(e => e.isDirectory()); }
   catch { return sobran; }
   for (const mk of marketplaces) {
+    // Solo el cache del marketplace del Agente Multiproposito: las carpetas de otros marketplaces las
+    // administra el usuario por su cuenta. `enUso` de arriba sigue mirando TODAS las instalaciones de la
+    // maquina, asi que la guarda de seguridad no se afloja — solo se acota lo que se informa y se borra.
+    if (mk.name !== MARKETPLACE_AMP) continue;
     const raizMk = path.join(cacheDir, mk.name);
     let nombres = [];
     try { nombres = fs.readdirSync(raizMk, { withFileTypes: true }).filter(e => e.isDirectory()); } catch { continue; }
@@ -855,7 +869,7 @@ console.log(`== ACTUALIZAR PLUGINS: ${REPO} ==`);
 ARRANQUE = arranqueSesion();
 let filas = diagnosticar();
 if (!filas.length) {
-  console.log('\nNingun plugin habilitado para este repo (enabledPlugins vacio o ausente).');
+  console.log('\nNingun plugin del Agente Multiproposito habilitado para este repo.');
 } else {
   console.log('');
   imprimir(filas);
