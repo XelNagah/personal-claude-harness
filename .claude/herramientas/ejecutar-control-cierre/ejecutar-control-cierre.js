@@ -2,11 +2,31 @@
 // ejecutar-control-cierre.js — corre de una pasada todos los chequeos del repo:
 // cada lint-*.js de los subsistemas (descubiertos, no hardcodeados) + `claude plugin validate .`.
 // Reporta por chequeo (OK / N hallazgos / ERROR) y muestra la salida completa solo de lo que no está verde.
-// Sin process.exit(1): reporta, no falla (decision 0003, capa mecanica).
+//
+// DOS MODOS, y el predeterminado es el informativo: reporta y sale con 0 aunque haya rojos, porque
+// describe el estado del repo y no un error de la corrida. De eso depende la Pantalla de bienvenida,
+// que lo invoca en cada arranque de sesion y lee los totales `(N)` de la salida, no el codigo.
+// Con `--estricto` sale con 1 si algun chequeo no esta verde, para el guion que tiene que frenar.
+// ⚠️ El «nunca falla» NO sale de la decision Local-0003, aunque este comentario lo afirmo hasta el
+// 13/08/2026: esa decision fija que la capa mecanica es obligatoria para todo subsistema que
+// persiste estado, y no dice nada de codigos de salida. Sale del rol de esta Herramienta, arriba.
 
 const fs = require('fs');
 const path = require('path');
 const { spawnSync } = require('child_process');
+
+// -- argumentos: banderas primero, y despues la ruta opcional del repo --
+// Una bandera mal escrita corta acá en vez de ignorarse: `--estrico` corriendo silenciosamente en
+// modo informativo le daria verde a un guion que cree estar en estricto, que es exactamente un
+// control que deja de controlar sin avisar (conocimiento `controles-que-no-avisan`).
+const ARGS = process.argv.slice(2);
+const DESCONOCIDAS = ARGS.filter(a => a.startsWith('-') && a !== '--estricto');
+if (DESCONOCIDAS.length) {
+  console.error('bandera desconocida: ' + DESCONOCIDAS.join(', '));
+  console.error('uso: node ejecutar-control-cierre.js [--estricto] [rutaRepo]');
+  process.exit(2);
+}
+const ESTRICTO = ARGS.includes('--estricto');
 
 // El repo sale del directorio de trabajo (o del argumento), NUNCA de la ubicacion de este script:
 // en cuanto hay una segunda copia deducirlo desde __dirname corre los chequeos del repo equivocado,
@@ -19,7 +39,7 @@ const REPO = (desde => {
     if (padre === d) return path.resolve(desde);
     d = padre;
   }
-})(process.argv[2] || process.cwd());
+})(ARGS.find(a => !a.startsWith('-')) || process.cwd());
 const CLAUDE_DIR = path.join(REPO, '.claude');
 const EXCLUDE = new Set(['.git', 'node_modules', 'tmp']);
 
@@ -148,4 +168,13 @@ if (rojos.length === 0) {
     console.log(r.output.trim());
   }
   console.log('\n' + rojos.length + ' chequeo(s) requieren atencion.');
+}
+
+// -- salida --
+// El modo estricto es lo unico que cambia el codigo: el reporte de arriba es identico en los dos, y
+// sin la bandera se sale con 0 pase lo que pase. Se anuncia el modo para que la corrida diga con
+// que criterio esta contestando, y no haya que deducirlo del codigo de salida.
+if (ESTRICTO) {
+  console.log('modo estricto: ' + (rojos.length ? 'sale con codigo 1.' : 'sale con codigo 0.'));
+  if (rojos.length) process.exit(1);
 }

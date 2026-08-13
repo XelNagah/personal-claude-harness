@@ -134,7 +134,7 @@ Las tools que el Propósito de este repo necesita. Las dos primeras son del prod
 | `instalar-plugins-codex` | Instala el paquete en Codex CLI resolviendo las dependencias en orden, que Codex no resuelve solo | Al configurar Codex |
 | `sincronizar-base` | **Decide qué viaja.** Copia de `.claude/` a `base/` aplicando el corte por frontmatter de la sección 3. Sin `--aplicar` solo informa | Después de editar cualquier componente |
 | `lint-harness` | El control de coherencia del producto: disco contra marketplace contra `REGISTRO.md`, los dos lados de la sección 3 en ambos sentidos, tamaño y estructura de los manifiestos, versión en disco contra la instalada, y terminología vetada en lo que viaja | Al cerrar cualquier tarea |
-| `ejecutar-control-cierre` | **Decide si el repo está verde.** Corre los ocho lints —descubiertos, no escritos adentro— más `claude plugin validate` | Al cerrar; y la invoca la Pantalla de bienvenida |
+| `ejecutar-control-cierre` | **Decide si el repo está verde.** Corre los ocho lints —descubiertos, no escritos adentro—, las pruebas de los controles, el banco de `ejecutar-pruebas` y `claude plugin validate`. Reporta y sale con 0; con `--estricto` sale con 1 si algo no está verde, para el guion que tiene que frenar | Al cerrar; y la invoca la Pantalla de bienvenida |
 | `ejecutar-pruebas` | Corre los dieciséis bancos de pruebas. Contesta lo que el control de cierre no puede: si los controles que lo declaran verde **siguen funcionando** | Al cerrar |
 | `inventariar-componentes-sueltos` | Barre `.claude/` y lista lo que no es subsistema ni infraestructura conocida. **Hoy no lo invoca nada**: nació para un plan que sigue pendiente | A mano |
 

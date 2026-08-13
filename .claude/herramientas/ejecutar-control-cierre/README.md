@@ -35,4 +35,19 @@ Tabla chequeo → `OK` / `N HALLAZGO(S)` / `ERROR`. La salida completa se muestr
 
 Heurística sobre el formato común de la familia de lints: suma los `(N)` finales de las líneas de categoría (`[1] LINKS ROTOS (2):` → 2). Un lint nuevo que respete ese formato se cuenta bien sin tocar este script.
 
-Sin `process.exit(1)`: reporta, no frena (decisión 0003, capa mecánica).
+## Los dos modos, y por qué el informativo es el predeterminado
+
+| | Reporte | Código de salida |
+|---|---|---|
+| **Informativo** (predeterminado) | igual | `0`, haya rojos o no |
+| **`--estricto`** | igual | `1` si algún chequeo no está verde |
+
+El reporte es **idéntico** en los dos: lo único que cambia es el código de salida, y el banco lo controla — si la bandera cambiara además lo que se corre o lo que se informa, el guion estaría frenando por un criterio distinto del que ve el que corre a mano.
+
+El predeterminado no falla porque esta Herramienta **describe el estado del repo, no el resultado de la corrida**. De eso depende la Pantalla de bienvenida, que la invoca en cada arranque de sesión: si saliera con 1 por su cuenta, un hallazgo del repo se leería como un error de sesión. Por lo mismo lee los totales `(N)` de la salida y no el código.
+
+`--estricto` existe para el otro consumidor: el guion que tiene que frenar, y que no puede parsear prosa para saber si seguir. Es exactamente aditiva.
+
+Una bandera desconocida **corta con código 2** —error de uso, distinto del `1` de hallazgos— en vez de ignorarse: un `--estrico` mal escrito corriendo en informativo le daría verde a un guion que cree estar en estricto, que es un control que deja de controlar sin avisar (conocimiento Local-0013).
+
+> ⚠️ El «nunca falla» del comentario viejo se atribuía a la Decisión Local-0003 (*Integridad en dos capas: mecánica y semántica*), que **no lo enuncia**: fija que la capa mecánica es obligatoria para todo subsistema que persiste estado, y no habla de códigos de salida. Corregido el 13/08/2026 al ratificar la bandera.

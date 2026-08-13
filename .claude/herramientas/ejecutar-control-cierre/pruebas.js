@@ -27,8 +27,10 @@ function chequear(nombre, condicion, detalle) {
   if (!condicion) malos++;
 }
 
-function correr() {
-  const r = cp.spawnSync(process.execPath, [TOOL, REPO_PRUEBA], { encoding: 'utf8', timeout: 180000 });
+// `banderas` va ANTES de la ruta a propósito: el orden en que se pasan no debe cambiar cuál de los
+// dos argumentos se toma como repo (el modo de falla sería que `--estricto` se lea como ruta).
+function correr(...banderas) {
+  const r = cp.spawnSync(process.execPath, [TOOL, ...banderas, REPO_PRUEBA], { encoding: 'utf8', timeout: 180000 });
   return { texto: (r.stdout || '') + (r.stderr || ''), codigo: r.status };
 }
 
@@ -74,8 +76,11 @@ ponerLint('tres', 'lint-tres', 'console.error("explotó");\nprocess.exit(1);\n')
   chequear('cierra diciendo cuántos chequeos requieren atención',
     /\d+ chequeo\(s\) requieren atencion/.test(texto),
     (texto.match(/\d+ chequeo\(s\) requieren atencion/) || ['no lo dice'])[0]);
-  // Decisión Local-0003: la capa mecánica REPORTA, no falla. Si esta Herramienta saliera con 1, el
+  // El modo predeterminado REPORTA, no falla: si esta Herramienta saliera con 1 por su cuenta, el
   // hook que la invoca al arrancar la sesión trataría un hallazgo del repo como un error de sesión.
+  // (No sale de la Decisión Local-0003, como decía este comentario hasta el 13/08/2026: esa fija que
+  // la capa mecánica es obligatoria y no habla de códigos de salida. Fallar bajo pedido explícito es
+  // otra cosa, y está más abajo.)
   chequear('reporta pero NO falla: sale con código 0 aunque haya rojos', codigo === 0, `código ${codigo}`);
 }
 
@@ -126,7 +131,7 @@ console.log('\n== CORRE EL BANCO QUE SU HERMANA NO PUEDE CORRER ==');
 // `ejecutar-pruebas` declara verdes a todos los controles del repo, así que su banco no puede
 // correrlo él: un descubrimiento roto tampoco encontraría ese archivo. Lo corre esta Herramienta.
 // Es una PRUEBA, no un lint, así que el contrato cambia — la prueba falla con código 1 y acá se
-// reporta como un chequeo más, sin que esta Herramienta falle (decisión Local-0003).
+// reporta como un chequeo más, sin que esta Herramienta falle por su cuenta.
 const BANCO_HERMANO = ['herramientas', 'ejecutar-pruebas'];
 function ponerBancoHermano(cuerpo) {
   const dir = path.join(REPO_PRUEBA, '.claude', ...BANCO_HERMANO);
@@ -199,9 +204,51 @@ function ponerCorredor(cuerpo) {
     fila(texto, 'pruebas de los controles') || 'no aparece');
 }
 
+console.log('\n== MODO ESTRICTO ==');
+// La bandera existe para el guion que tiene que frenar: mismo reporte, otro código de salida. Lo
+// que se controla acá es que sea EXACTAMENTE aditiva — sin ella, el comportamiento de siempre.
+{
+  armar();
+  ponerLint('ocho', 'lint-ocho', 'console.log("== LINT OCHO ==\\n[ROTAS] (1)\\n    a");\n');
+  const informativo = correr();
+  const estricto = correr('--estricto');
+  chequear('sin la bandera, un repo con hallazgos sigue saliendo con 0',
+    informativo.codigo === 0, `código ${informativo.codigo}`);
+  chequear('con --estricto, un repo con hallazgos sale con 1',
+    estricto.codigo === 1, `código ${estricto.codigo}`);
+  // Si la bandera cambiara además lo que se corre o lo que se informa, dejarían de ser el mismo
+  // control: el guion estaría frenando por un criterio distinto del que ve el que corre a mano.
+  const sinModo = t => t.split(/\r?\n/).filter(l => !/^modo estricto:/.test(l)).join('\n');
+  chequear('y el reporte es idéntico en los dos modos',
+    sinModo(informativo.texto) === sinModo(estricto.texto));
+  chequear('el modo estricto se anuncia en la salida',
+    /^modo estricto: sale con codigo 1\.$/m.test(estricto.texto));
+}
+{
+  // El argumento posicional es la ruta del repo. Si la bandera se colara ahí, el control correría
+  // sobre un directorio inexistente y contestaría igual — el modo de falla del conocimiento
+  // `el-repo-que-un-script-describe`, con otra puerta de entrada.
+  const { texto } = correr('--estricto');
+  chequear('la bandera no se toma como la ruta del repo',
+    texto.includes('CONTROL DE CIERRE: ' + REPO_PRUEBA),
+    (texto.split(/\r?\n/)[0] || '').trim());
+}
+{
+  // Una bandera mal escrita tiene que cortar, no ignorarse: `--estrico` corriendo en informativo le
+  // daría verde a un guion que cree estar en estricto. Código 2 —error de uso— para no confundirlo
+  // con el 1, que significa «el repo tiene rojos».
+  const r = cp.spawnSync(process.execPath, [TOOL, '--estrico', REPO_PRUEBA], { encoding: 'utf8', timeout: 30000 });
+  const texto = (r.stdout || '') + (r.stderr || '');
+  chequear('una bandera desconocida corta con código 2, distinto del 1 de hallazgos',
+    r.status === 2, `código ${r.status}`);
+  chequear('y no corre ningún chequeo antes de cortar', !/CONTROL DE CIERRE/.test(texto));
+}
+
 fs.rmSync(REPO_PRUEBA, { recursive: true, force: true });
 console.log(`\ncasos: ${casos}`);
 console.log('no cubierto a propósito: el resultado de `claude plugin validate`, que depende del CLI');
 console.log('                         instalado en la máquina y no del repo que se está mirando.');
+console.log('                         Por eso tampoco se controla `--estricto` sobre un repo TODO');
+console.log('                         VERDE: en el repo de prueba ese estado no es alcanzable.');
 console.log(malos ? `${malos} FALLARON.` : 'TODO VERDE.');
 process.exit(malos ? 1 : 0);

@@ -349,6 +349,17 @@ Abierto lo que cada pendiente cita, no solo releído el plan. Es el primer punto
 
 **Una contradicción, que necesita al usuario.** El §6 pide *«dar al control de cierre un modo estricto que salga con error ante hallazgos»*, y es criterio de cierre de este plan. La Herramienta dice lo contrario en su segunda línea: `ejecutar-control-cierre.js:5` — *«Sin process.exit(1): reporta, no falla (decision 0003, capa mecanica)»*. Abierta la Decisión Local-0003 (Integridad en dos capas: mecánica y semántica), **no dice eso**: fija que la capa mecánica es obligatoria para todo subsistema que persiste estado y no menciona el código de salida del control agregado. O sea que el plan no contradice ninguna decisión asentada: contradice una atribución que la decisión no respalda. Antes de implementar el modo estricto hay que decidir cuál de las dos manda.
 
+### 13/08/2026 — resuelta la contradicción: manda el plan, con la bandera implementada
+
+Ratificado por el usuario: **`--estricto` como bandera, informativo por defecto**, que es como el propio §6 lo pedía —*«sin sacar el modo informativo actual»*—. Nadie consumía el código de salida: la Pantalla de bienvenida, que es quien más la corre, lee los totales `(N)` de la salida y no el código, así que la bandera es puramente aditiva.
+
+Hecho en la misma sesión, y con esto el tercer punto del §6 queda cumplido salvo la **salida estructurada para automatización**, que sigue abierta:
+
+- **La bandera.** Con `--estricto` sale con 1 si algún chequeo no está verde; sin ella, con 0 siempre, como antes. El reporte es idéntico en los dos modos, y el banco lo controla: si la bandera cambiara además lo que se corre o lo que se informa, el guion estaría frenando por un criterio distinto del que ve el que corre a mano.
+- **La bandera desconocida corta con código 2**, distinto del 1 de hallazgos. Un `--estrico` mal escrito que corriera en informativo le daría verde a un guion que se cree en estricto: el modo de falla del conocimiento Local-0013 (Controles que dejan de controlar sin avisar), con otra puerta de entrada. También se controla que la bandera no se lea como la ruta del repo, que es el argumento posicional.
+- **Corregida la atribución falsa** en el código, en su banco y en el `README.md` de la Herramienta, donde se repetía. Lo que queda escrito ahora es el motivo real: describe el estado del repo y no el resultado de la corrida, y de eso depende el hook que la invoca al arrancar la sesión.
+- **Banco: de 20 casos a 27.** Verde.
+
 ## Criterios de cierre
 
 - Una instalación pública limpia contiene solo mecanismo neutral y pasa todos los controles.
