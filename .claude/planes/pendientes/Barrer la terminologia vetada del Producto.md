@@ -160,6 +160,16 @@ Pendiente de ratificación: el **texto exacto** de las dos reglas, antes de asen
 
 Se cruza con `Crecer el subsistema conducta` (dueño de las clases de acción) y con `Excluir tmp del barrido de los lints de subsistema` (misma exclusión, otro alcance).
 
+## Verificado el 12/08/2026 — dos pendientes ya resueltos y la medición vieja
+
+Auditado abriendo lo que cada pendiente cita.
+
+- **La ratificación del Frente C ya ocurrió.** El plan dejaba abierto *«dónde vive la marca de qué término bloquea y cuál avisa»*, con la columna `Control` como propuesta contra una lista adentro del script. Ganó la columna: el frontmatter de `TERMINOLOGIA-FARLOPA.md` declara hoy `columnas: [Código, Nombre, Descripción, Cómo decirlo, Control, Detalle]`.
+- **El barrido ya no hay que hacerlo dos veces.** La dependencia declarada al final con *Sacar la duplicación entre el Producto y el Agente instalado* (plan Local-0071) está **Ejecutada**: los Componentes que viajan son archivos copiados desde `.claude/` por `sincronizar-base`, no texto transcripto. Se barre una vez, en el original.
+- **La medición del Frente B quedó vieja y el trabajo se movió de lugar.** Contadas el 12/08/2026, las líneas con `harness`: `PLANTILLA.md` pasó de 29 apariciones a **1 línea**, y `decisiones/INDICE.md` de 18 a **27**. Lo que viajaba está casi barrido —que era la prioridad declarada— y lo que creció es el registro de decisiones, que el plan lista como texto vivo. Hoy el resto vivo son `REGISTRO.md` (12), `docs/` (12), `README.md` (7) y el glosario (5).
+
+**Lo que queda, entonces:** la cobertura del resto de los lints sobre la raíz (Frente A) y el barrido por juicio del texto vivo (Frente B), con el registro de decisiones al frente en vez de la Plantilla.
+
 ## Cruces
 
 - `Nombres y distribucion de las skills del harness` — dueño del renombre del marketplace, que es la población 2.

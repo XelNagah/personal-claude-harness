@@ -48,7 +48,7 @@ Al ensanchar la fila `En pausa` con salidas de cierre, el lint habría dado por 
 
 La prueba «forma vieja» exigía **cero hallazgos** sobre un registro de la generación anterior, y ese cero era justamente el silencio que hacía que los cinco repos de arriba dieran verde. El commit `aa50037` agregó el aviso pero dejó la prueba afirmando lo contrario, así que el banco fallaba desde entonces. Ahora controla las dos cosas por separado: que las filas se sigan leyendo, y que el aviso se emita.
 
-⚠️ Esa falla sobrevivió una sesión entera porque **`ejecutar-control-cierre` no corre `ejecutar-pruebas` completo** —corre los lints, `plugin validate` y el banco de la propia `ejecutar-pruebas`—, y el cierre de la sesión anterior solo usó el control de cierre. Pendiente de decidir aparte si el control de cierre debe correrlo entero.
+⚠️ Esa falla sobrevivió una sesión entera porque **`ejecutar-control-cierre` no corre `ejecutar-pruebas` completo** —corre los lints, `plugin validate` y el banco de la propia `ejecutar-pruebas`—, y el cierre de la sesión anterior solo usó el control de cierre. Pendiente de decidir aparte si el control de cierre debe correrlo entero. **Resuelto, verificado el 12/08/2026:** la ficha de la Herramienta Local-0001 declara que `ejecutar-control-cierre` corre hoy *«las pruebas de los controles vía `ejecutar-pruebas`»*, más el banco de la propia `ejecutar-pruebas`, que su corredor no puede correr. El silencio que dejó pasar esta falla una sesión entera ya no existe.
 
 ### El actualizador quedó probado contra las cuatro poblaciones — hecho el 06/08/2026
 
@@ -70,7 +70,7 @@ En los cuatro de la forma actual, lo único que toca de `planes/` es el encabeza
 1. ~~**Publicar** `amp` 0.34.0~~ — hecho: `2590c70` publicado, marketplace bajado al día, la sesión corre 0.34.0.
 2. ~~**Probar el actualizador contra las tres formas**~~ — hecho el 06/08/2026 contra las doce, arriba.
 3. **Resolver el divergente de columnas**, único bloqueante conocido del actualizador — **resuelto en parte el 06/08/2026**, ver abajo. Lo que queda se documenta para quien migre: las dos historias posibles —el repo sumó la columna, o la Base renombró la suya— dejan la misma evidencia, y solo el usuario conoce la de su repo (Decisión Local-0046).
-4. **Entregar el censo al Agente Coordinador** como insumo, con la advertencia de que los repos de generación anterior dan verde con su lint viejo hasta que se los actualiza.
+4. **Entregar el censo al Agente Coordinador** como insumo, con la advertencia de que los repos de generación anterior dan verde con su lint viejo hasta que se los actualiza. **Verificado el 12/08/2026: ya hay canal.** Cuando se escribió este punto no existía el subsistema `comunicacion` —nació el 08/08/2026, dos días después—, así que «entregar» significaba que el usuario copiara el censo a mano. Hoy la habilidad `resolver` le pide al Agente Coordinador que lo asiente en su propio repo, y `preguntar` sirve para confirmar antes qué tiene registrado. Falta darlo de alta en el Índice de Agentes Multipropósito Conocidos, que no viaja poblado.
 
 ### El divergente de columnas, medido (06/08/2026)
 

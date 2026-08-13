@@ -193,6 +193,14 @@ El plan arrancó ordenado al revés de como se ejecutó: los pasos originales da
 6. Instalar en un Agente con Propósito de código real y probar: `test-runner` sobre la suite, `code-reviewer` sobre un cambio chico. Candidato: `beatsaber-overlay` — **no** este repo.
 7. Medir el efecto con el mismo método del paso 2 y registrar el resultado en el conocimiento.
 
+## Verificado el 12/08/2026 — el plan está al día
+
+Auditado junto con los otros tres planes vivos, buscando pendientes ya resueltos en otro lado. **Este no tiene ninguno.** El documento registra el trabajo del 11/08 y los dos pasos de la Familia 1 quedaron cerrados con su fecha.
+
+Lo abierto es la Familia 2, y sigue bloqueada en sus dos puntos: ninguna decisión posterior los resolvió —buscados `subagente`, `selectiva`, `condicional`, `tipo de repo` y `familia` en el Índice de decisiones, aparecen solo las Decisiones Local-0060 y Local-0061, que el plan ya cita—.
+
+Envejeció un dato: el párrafo *«Por qué va por el harness y no a nivel usuario»* dice que el prompt de estos subagentes referencia `memoria/`, subsistema **retirado**. El argumento no cambia —siguen dependiendo de subsistemas concretos—, pero el ejemplo hay que reemplazarlo al tocar la sección.
+
 ## Fuera de alcance
 
 - Los subagentes de dominio por repo (§6 del conocimiento).

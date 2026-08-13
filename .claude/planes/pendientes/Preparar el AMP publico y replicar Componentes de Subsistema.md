@@ -336,6 +336,19 @@ Análisis sin implementación. Queda abierta una sola decisión: **qué Reglas p
 
 **Terminología.** *Comportamiento* no es término del glosario; el canónico es **Regla de conducta**. Y el catálogo hoy se llama *Preferencias Recomendadas*: si le entran Reglas, su nombre deja de describir lo que contiene, y renombrarlo es potestad del usuario por la Decisión Local-0016 (los nombres de skills y Herramientas se ratifican).
 
+### 12/08/2026 — auditoría del propio plan contra lo que sus pendientes citan
+
+Abierto lo que cada pendiente cita, no solo releído el plan. Es el primer punto del §5 aplicado a este mismo documento.
+
+**Resueltos afuera, sin que nadie volviera acá:**
+
+- §3 absorbía el plan Local-0020 (Separar mecánica del harness de criterio del autor) y obligaba a revisar el Local-0080 (Subir dos preferencias del Agente Desplegado al Agente Multipropósito). Los dos están **Descartados desde el 06/08/2026**.
+- §5 mandaba revisar primero cinco planes «que ya contienen evidencia de implementación». Tres se cerraron: Local-0042, Local-0054 y Local-0078, **Ejecutados el 06/08/2026**. Quedan dos: Local-0034 (Identidad del Agente) y Local-0068 (Que la lista de Componentes de Subsistema salga de la plantilla), los dos todavía `Nuevo`.
+
+**Siguen abiertos, verificado uno por uno:** §7 depende de los planes Local-0027 y Local-0089, los dos `Nuevo`; §8 depende del Local-0031, `Nuevo`; y extender el catálogo de Recomendadas a Reglas de Conducta no tiene plan propio ni Código —su decisión de alcance sigue abierta desde el 05/08, con las tres opciones ya escritas más arriba—.
+
+**Una contradicción, que necesita al usuario.** El §6 pide *«dar al control de cierre un modo estricto que salga con error ante hallazgos»*, y es criterio de cierre de este plan. La Herramienta dice lo contrario en su segunda línea: `ejecutar-control-cierre.js:5` — *«Sin process.exit(1): reporta, no falla (decision 0003, capa mecanica)»*. Abierta la Decisión Local-0003 (Integridad en dos capas: mecánica y semántica), **no dice eso**: fija que la capa mecánica es obligatoria para todo subsistema que persiste estado y no menciona el código de salida del control agregado. O sea que el plan no contradice ninguna decisión asentada: contradice una atribución que la decisión no respalda. Antes de implementar el modo estricto hay que decidir cuál de las dos manda.
+
 ## Criterios de cierre
 
 - Una instalación pública limpia contiene solo mecanismo neutral y pasa todos los controles.
