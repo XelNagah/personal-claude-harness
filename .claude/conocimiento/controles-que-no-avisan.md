@@ -4,7 +4,7 @@ Un control roto no se comporta como un control roto: se comporta como un control
 
 Medido en este repo el 30/07/2026, con todos los lints en verde y el actualizador informando el `.claude/` al día.
 
-## Las once formas en que un control se apaga solo
+## Las doce formas en que un control se apaga solo
 
 ### 1. Valida sobre un conjunto vacío
 
@@ -117,6 +117,20 @@ Medido el 11/08/2026 al repartir una versión a los siete Agentes Desplegados de
 
 **Regla general:** cuando una lista de reconciliación crece, el caso que hay que escribir no es el de la entrada nueva sola — es el del destino que **ya cumplía todo lo anterior**. Y si la misma lista vive en dos lados, un comentario que afirme que coinciden no es un control: el control es la prueba que las compara. Acá el comentario lo afirmaba, y llevaban meses divergiendo.
 
+### 12. La prueba monta su escenario sobre la configuración de la máquina
+
+Las once anteriores son del control, de su alcance o de la premisa de su caso. Esta es de **cuánto del escenario fabrica el caso**. El caso arma su mitad, el entorno de la máquina pone la otra sin que nadie lo escriba, y el día que alguien cambia una preferencia suya el escenario deja de ser el que el caso describe. Termina en rojo, como la forma 9, y el rojo tampoco vale.
+
+Medido el 14/08/2026 sobre `actualizar-plugins`. Su detección de dependencias sin declarar existe porque un plugin al que le falta una dependencia **no carga** y la Herramienta antes informaba todo al día. El caso que la fija fabricaba un repo que declaraba solo `amp` y esperaba nueve filas `SIN DECLARAR`. Pero lo que un repo declara no sale de un archivo: la Herramienta une **tres**, y una es `~/.claude/settings.json`, que vale para todos los repos de la máquina. Cuando esa casa pasó a declarar los nueve `amp-<sub>` a nivel usuario, la Herramienta se calló **con razón** —ahí están declarados, y ese repo cargaría bien— y el banco lo leyó como falla. En la Herramienta no había cambiado nada.
+
+**Cómo se distingue de las anteriores.** No es la 7: la premisa del caso no comparte ningún número con lo que prueba, y el caso no dejó de poder fallar — falló. No es la 8: ahí la premisa del entorno se cumple en el repo autor y no en el destino, y el resultado es un verde que no vale; acá dejó de cumplirse **en el propio autor**, y el resultado es un rojo que tampoco vale. No es la 9: la entrada llega entera y el caso mide lo que dice medir; lo que no controla es la mitad del escenario que pone la máquina.
+
+**Por qué el rojo tampoco protege.** Un rojo permanente por un motivo falso deja de distinguir: la próxima vez que ese banco se rompa de verdad, la línea va a decir lo mismo que venía diciendo. Y manda a arreglar lo que no está roto — lo primero que estuvo por tocarse fue la detección, que funcionaba perfecto.
+
+**Cómo se detecta:** preguntándole al caso de dónde sale **cada** parte de su escenario. La que no ponga el caso la pone la máquina. Acá alcanzó con correr la Herramienta a mano contra el mismo repo fabricado, pero con una casa de usuario fabricada también: las nueve filas aparecieron.
+
+**Regla general:** un caso tiene que fabricar **todas** las fuentes que lo que prueba va a leer, no solo la que tiene más a mano. Lo que se fabrica a medias lo completa el entorno, y el entorno es de otro. Fabricar una casa de usuario sale barato: un archivo de configuración propio y los registros que hagan falta copiados de la real, con la variable de entorno que la ubica apuntada ahí.
+
 ## El remedio de una forma produce la otra
 
 Las formas 1 y 2 tiran para lados opuestos, y ahí está la trampa: **lo que se agrega para que un control deje de marcar de más es lo que lo convierte en mudo.**
@@ -144,7 +158,8 @@ Los hallazgos de un control tienen que ser **resolubles**: cada uno nombra algo 
 - **Lo que viaja se prueba además en un destino limpio.** Todo control que corre en el repo autor comparte el entorno del autor, así que ninguno puede contestar qué recibe el que instala (forma 8 de esta lista). Instalar contra un repo vacío y ejercer el mecanismo ahí es una corrida distinta, no una repetición: verifica lo que llega, no lo que hay.
 - **La entrada que el control arma se verifica una vez a mano.** Si el control invoca algo externo —un CLI, un proceso, un servicio— y le pasa texto, ese texto puede llegar cambiado sin que nada avise (forma 9 de esta lista). Una corrida a mano con la misma entrada, comparada contra la del control, es la única que lo muestra.
 - **Una lista que crece se prueba contra quien ya cumplía la anterior.** Sumarle una entrada a una lista de reconciliación no obliga a escribir ningún caso, y los que hay siguen pasando. El que falta es el del destino que ya cumplía todo lo viejo (forma 11 de esta lista): es el único que distingue un control que reconcilia la lista entera de uno que solo despierta cuando falta algo de antes. Si además la lista vive en dos lados, se compara con una prueba, no con un comentario.
-- **Lo que no se cubre, se dice.** Un control que la prueba no puede ejercitar (porque depende del estado de la máquina, por ejemplo) se declara en la salida. Callarlo hace que la prueba en verde se lea como cobertura completa.
+- **El caso fabrica todas las fuentes, no la más a mano.** Si lo que se prueba junta su entrada de varios lados —tres archivos de configuración, un registro, una carpeta—, un caso que fabrica uno solo le deja el resto a la máquina (forma 12 de esta lista), y cambia de escenario el día que alguien cambia una preferencia suya sin tocar el repo.
+- **Lo que no se cubre, se dice.** Un control que la prueba no puede ejercitar (porque depende del estado de la máquina, por ejemplo) se declara en la salida. Callarlo hace que la prueba en verde se lea como cobertura completa. Y lo declarado se revisa cuando se agrega cobertura: un límite que quedó escrito después de dejar de ser cierto desalienta el caso que sí se podía escribir.
 - **Una prueba terminada no se deja en la carpeta temporal.** Una prueba completa de `lint-planes` —169 líneas, funcionando, con el criterio correcto escrito en su encabezado— quedó en `.claude/tmp/`, que el repo gitignorea. No era un borrador: era el trabajo hecho, esperando que alguien lo borrara. Un archivo de `tmp/` que dejó de ser descartable se mueve el mismo día.
 
 ## Contrato: reportar y fallar son cosas distintas

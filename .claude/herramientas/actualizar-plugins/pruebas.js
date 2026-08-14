@@ -7,23 +7,56 @@
 // antes de que existiera la deteccion de dependencias sin declarar — el plugin que las pide no carga
 // y la Herramienta informaba todo bien.
 //
-// LIMITE DECLARADO: el estado de instalacion sale de la carpeta del usuario (`os.homedir()`) y no es
-// parametrizable, asi que las pruebas NO pueden simular una maquina distinta. Lo que si se controla
-// es el repo: se le apunta a un repo de prueba con su `enabledPlugins` fabricado, y se verifica la
-// clasificacion que depende de eso. Lo que la prueba no cubre queda dicho en la salida.
+// LIMITE DECLARADO: el cache y las entradas de instalacion se miran sobre la carpeta REAL del
+// usuario — fabricarlas exigiria copiar el arbol de plugins bajado entero—, asi que esos casos no
+// pueden simular otra maquina. Lo que si se fabrica es el repo (su `enabledPlugins`) y la casa de
+// usuario de donde sale la OTRA mitad de lo declarado. Lo que no se cubre queda dicho en la salida.
 //
 // Uso: node .claude/herramientas/actualizar-plugins/pruebas.js   (desde la raíz del repo)
-const fs = require('fs'), path = require('path'), cp = require('child_process');
+const fs = require('fs'), os = require('os'), path = require('path'), cp = require('child_process');
 const TOOL = path.resolve('.claude/herramientas/actualizar-plugins/actualizar-plugins.js');
 const REPO_PRUEBA = path.resolve('.claude/tmp/repo-prueba-plugins');
+const CASA_PRUEBA = path.resolve('.claude/tmp/casa-usuario-prueba');
+const CASA_REAL = path.join(os.homedir(), '.claude', 'plugins');
 
 // `--agente claude` se pasa siempre: sin eso la Herramienta deduce el agente del entorno, y la
 // prueba pasaría o fallaría según desde dónde se la corra.
-function correr(rutaRepo, flags = []) {
+// `casa` reemplaza la carpeta del usuario del subproceso: ver la nota de `fabricarCasa`.
+function correr(rutaRepo, flags = [], casa = null) {
   const args = ['--agente', 'claude', ...flags];
   if (rutaRepo) args.push(rutaRepo);
-  const r = cp.spawnSync(process.execPath, [TOOL, ...args], { encoding: 'utf8', timeout: 180000 });
+  // `os.homedir()` sale de USERPROFILE en Windows y de HOME en POSIX: se fijan los dos.
+  const env = casa ? { ...process.env, USERPROFILE: casa, HOME: casa } : process.env;
+  const r = cp.spawnSync(process.execPath, [TOOL, ...args], { encoding: 'utf8', timeout: 180000, env });
   return { texto: (r.stdout || '') + (r.stderr || ''), codigo: r.status };
+}
+
+// -- la casa de usuario fabricada --------------------------------------------
+// Lo que un repo declara NO sale de un solo archivo: la Herramienta une tres, y una es
+// `~/.claude/settings.json`, que vale para todos los repos de la maquina. Asi que fabricar el
+// `enabledPlugins` del repo no alcanza para fijar la clasificacion — el 14/08/2026 esta maquina paso
+// a declarar los nueve `amp-<sub>` a nivel usuario, la Herramienta dejo de marcarlos SIN DECLARAR
+// (con razon: ahi estan declarados) y el caso se puso rojo sin que la Herramienta hubiera cambiado.
+// Un caso que depende de como este configurada la maquina no prueba a la Herramienta, prueba la
+// maquina. Se le fabrica entonces una casa de usuario propia, con el `enabledPlugins` que el caso
+// pida y los registros de plugins copiados de la real, para que siga habiendo un marketplace bajado
+// del cual leer las dependencias que `amp` declara.
+const REGISTROS_DE_CASA = ['known_marketplaces.json', 'installed_plugins.json',
+  'plugin-catalog-cache.json', 'blocklist.json'];
+// Los `installLocation` de los marketplaces son rutas absolutas a la casa real, asi que el catalogo
+// se sigue leyendo de donde esta y no hay que copiar el arbol bajado.
+const HAY_CATALOGO = fs.existsSync(path.join(CASA_REAL, 'known_marketplaces.json'));
+
+function fabricarCasa(enabledPlugins = {}) {
+  fs.rmSync(CASA_PRUEBA, { recursive: true, force: true });
+  fs.mkdirSync(path.join(CASA_PRUEBA, '.claude', 'plugins'), { recursive: true });
+  fs.writeFileSync(path.join(CASA_PRUEBA, '.claude', 'settings.json'),
+    JSON.stringify({ enabledPlugins }, null, 2));
+  for (const f of REGISTROS_DE_CASA) {
+    const src = path.join(CASA_REAL, f);
+    if (fs.existsSync(src)) fs.copyFileSync(src, path.join(CASA_PRUEBA, '.claude', 'plugins', f));
+  }
+  return CASA_PRUEBA;
 }
 
 // Arma un repo con el `enabledPlugins` que se le pida, en `settings.local.json` (alcance `local`,
@@ -35,9 +68,12 @@ function armar(plugins) {
     JSON.stringify({ enabledPlugins: plugins }, null, 2));
 }
 
-let malos = 0;
+// El total sale de contar, no de un numero escrito aparte: hay casos que corren o no segun lo que la
+// maquina tenga, y un total a mano queda mintiendo el dia que uno se saltea.
+let malos = 0, casos = 0;
 const chequear = (nombre, condicion, detalle) => {
   console.log(`${condicion ? 'OK  ' : 'FALLA'} ${nombre}${detalle ? `  → ${detalle}` : ''}`);
+  casos++;
   if (!condicion) malos++;
 };
 
@@ -56,23 +92,46 @@ chequear('sin --aplicar no modifica la configuración del repo',
   fs.readFileSync('.claude/settings.local.json', 'utf8') === antes, 'settings.local.json intacto');
 
 console.log('\n== CLASIFICACIÓN SEGÚN LO QUE EL REPO DECLARA ==');
+// Estos casos corren contra una casa de usuario fabricada, para que lo declarado sea SOLO lo que
+// cada uno pone: ver la nota de `fabricarCasa`.
 {
   // Un nombre que el marketplace no ofrece: tiene que salir marcado, no callado.
   armar({ 'amp-inexistente@xelnagah-harness': true });
-  const { texto } = correr(REPO_PRUEBA);
+  const { texto } = correr(REPO_PRUEBA, [], fabricarCasa());
   chequear('un plugin declarado que no existe se marca',
     /amp-inexistente/.test(texto) && /RETIRADO|NO INSTALADO|SIN DATO/.test(texto),
     (texto.match(/amp-inexistente\S*\s+\S+/) || ['(no aparece)'])[0]);
 }
+// Las dependencias que el primer caso vio faltar alimentan al segundo, que las declara a nivel
+// usuario. Se leen de la salida en vez de escribirlas a mano: así el par queda atado al catálogo que
+// la Herramienta miró de verdad, y no a una lista que envejece cuando `amp` suma una dependencia.
+let faltantes = [];
 {
   // El caso que motivó la detección: se declara `amp` sin sus dependencias. El plugin que las pide
   // no carga, y antes de esto la Herramienta informaba todo al día.
   armar({ 'amp@xelnagah-harness': true });
-  const { texto } = correr(REPO_PRUEBA);
+  const { texto } = correr(REPO_PRUEBA, [], fabricarCasa());
+  faltantes = [...texto.matchAll(/^\s*(\S+@\S+)\s+SIN DECLARAR/gm)].map(m => m[1]);
   chequear('una dependencia que el repo no declara se marca SIN DECLARAR',
     /SIN DECLARAR/.test(texto), (texto.match(/\S+\s+SIN DECLARAR/) || ['(no la marca)'])[0]);
   chequear('  …y no informa que está todo al día',
     !/^TODO ACTUALIZADO/m.test(texto), /^TODO ACTUALIZADO/m.test(texto) ? 'dice TODO ACTUALIZADO' : 'no lo dice');
+}
+{
+  // El otro lado, que faltaba: una dependencia declarada a nivel USUARIO vale para todos los repos de
+  // la máquina, así que no falta y no se marca. Callarse ahí es la respuesta correcta — es la que
+  // esta máquina empezó a dar el 14/08/2026 y el banco leyó como falla por no tener este caso.
+  if (!faltantes.length || !HAY_CATALOGO) {
+    chequear('una dependencia declarada a nivel usuario no se marca', true,
+      'NO CUBIERTO: sin dependencias que el caso anterior viera faltar, no hay qué declarar');
+  } else {
+    armar({ 'amp@xelnagah-harness': true });
+    const casa = fabricarCasa(Object.fromEntries(faltantes.map(id => [id, true])));
+    const { texto } = correr(REPO_PRUEBA, [], casa);
+    chequear('una dependencia declarada a nivel usuario no se marca',
+      !/SIN DECLARAR/.test(texto),
+      /SIN DECLARAR/.test(texto) ? 'las marca igual' : `${faltantes.length} declaradas a nivel usuario, ninguna marcada`);
+  }
 }
 
 console.log('\n== LAS DOS PARTES ENTRE SÍ ==');
@@ -91,7 +150,7 @@ console.log('\n== LAS DOS PARTES ENTRE SÍ ==');
   // Es lo correcto y conviene fijarlo: inventar una comparación con la versión de otro repo sería
   // exactamente el modo de falla que esta Herramienta existe para no cometer.
   armar({ 'amp@xelnagah-harness': true });
-  const { texto } = correr(REPO_PRUEBA);
+  const { texto } = correr(REPO_PRUEBA, [], fabricarCasa());
   chequear('sin el plugin instalado para ese repo, no compara nada',
     !/DE OTRA GENERACION|Las dos partes coinciden/.test(texto), 'se calla, como debe');
 }
@@ -107,9 +166,8 @@ console.log('\n== CACHE HUÉRFANO Y SU LIMPIEZA ==');
 //   · un nombre que el marketplace SÍ ofrece, en una versión inventada  → rama «ya no corren»
 //   · un nombre que el marketplace NO ofrece                            → rama «ya no ofrece»
 {
-  const os = require('os');
-  const CACHE = path.join(os.homedir(), '.claude', 'plugins', 'cache');
-  const registro = path.join(os.homedir(), '.claude', 'plugins', 'installed_plugins.json');
+  const CACHE = path.join(CASA_REAL, 'cache');
+  const registro = path.join(CASA_REAL, 'installed_plugins.json');
   const reg = fs.existsSync(registro) ? JSON.parse(fs.readFileSync(registro, 'utf8')) : { plugins: {} };
   // La Herramienta ahora solo informa el cache del marketplace del Agente Multipropósito, así que el
   // sobrante hay que fabricarlo bajo ESE marketplace o la rama no se ejercita (queda fuera del barrido).
@@ -202,7 +260,7 @@ console.log('\n== MODO DE SEGUNDO PLANO (--avisar) ==');
     fs.writeFileSync(path.join(repoAviso, '.claude', 'settings.local.json'),
       JSON.stringify({ enabledPlugins: { 'amp@xelnagah-harness': true } }, null, 2));
 
-    const { texto, codigo } = correr(repoAviso, ['--avisar']);
+    const { texto, codigo } = correr(repoAviso, ['--avisar'], fabricarCasa());
     chequear('no imprime nada: su salida no la mira nadie', !texto.trim(), texto.slice(0, 50) || '(silencio)');
     chequear('  …y sale 0', codigo === 0, `código ${codigo}`);
     chequear('deja el aviso en el buzón', fs.existsSync(buzon), buzon);
@@ -216,7 +274,7 @@ console.log('\n== MODO DE SEGUNDO PLANO (--avisar) ==');
     // Ahora el mismo repo, sano: el aviso viejo tiene que desaparecer, no quedar repitiéndose.
     fs.writeFileSync(path.join(repoAviso, '.claude', 'settings.local.json'),
       JSON.stringify({ enabledPlugins: {} }, null, 2));
-    correr(repoAviso, ['--avisar']);
+    correr(repoAviso, ['--avisar'], fabricarCasa());
     chequear('un repo sin desfases no deja aviso', !fs.existsSync(buzon),
       fs.existsSync(buzon) ? 'QUEDÓ UN AVISO VIEJO' : 'buzón limpio');
   } finally {
@@ -225,11 +283,13 @@ console.log('\n== MODO DE SEGUNDO PLANO (--avisar) ==');
 }
 
 console.log('\n== TOLERA LO QUE FALTA ==');
+// También con casa fabricada: «sin plugins declarados» tiene que ser de verdad ninguno, y con la casa
+// real el repo hereda los que la persona haya habilitado a nivel usuario.
 {
   // repo sin ninguna configuración: no hay nada que diagnosticar, pero no puede reventar
   fs.rmSync(REPO_PRUEBA, { recursive: true, force: true });
   fs.mkdirSync(path.join(REPO_PRUEBA, '.claude'), { recursive: true });
-  const { codigo } = correr(REPO_PRUEBA);
+  const { codigo } = correr(REPO_PRUEBA, [], fabricarCasa());
   chequear('un repo sin plugins declarados no rompe', codigo === 0, `código ${codigo}`);
 }
 {
@@ -237,13 +297,14 @@ console.log('\n== TOLERA LO QUE FALTA ==');
   fs.rmSync(REPO_PRUEBA, { recursive: true, force: true });
   fs.mkdirSync(path.join(REPO_PRUEBA, '.claude'), { recursive: true });
   fs.writeFileSync(path.join(REPO_PRUEBA, '.claude', 'settings.local.json'), '{"enabledPlugins": "no soy un objeto"}');
-  const { codigo } = correr(REPO_PRUEBA);
+  const { codigo } = correr(REPO_PRUEBA, [], fabricarCasa());
   chequear('una configuración mal formada no rompe', codigo === 0, `código ${codigo}`);
 }
 
 fs.rmSync(REPO_PRUEBA, { recursive: true, force: true });
-console.log(`\ncasos: 22`);
-console.log('no cubierto a propósito: el estado de instalación de la máquina sale de la carpeta del usuario');
-console.log('                         y no es parametrizable, así que no se puede simular otra máquina.');
+fs.rmSync(CASA_PRUEBA, { recursive: true, force: true });
+console.log(`\ncasos: ${casos}`);
+console.log('no cubierto a propósito: el cache y las entradas de instalación se miran sobre la carpeta real');
+console.log('                         del usuario; fabricarlas exigiría copiar el árbol de plugins bajado.');
 console.log(malos ? `${malos} FALLARON.` : 'TODO VERDE.');
 process.exit(malos ? 1 : 0);
