@@ -267,7 +267,15 @@ if (total(sinLocal) !== 0) { malos++; console.log(JSON.stringify(sinLocal)); }
 // marca siempre (marcar el caso legitimo lo volveria ruido que se aprende a ignorar).
 console.log('\n== estado_a_retomar EN PAUSA (caso bueno) ==');
 armar();
-escribir(reg().replace(/(\| Local-0015 \| [^|]+\| [^|]+\| )Nuevo /, '$1En pausa '));
+// El banco es copia del repo real, con sus fechas reales de apertura: al poner este plan En pausa
+// heredaba la suya y cruzaba solo el umbral de 30 dias. El 19/08/2026 el caso se puso rojo sin que
+// el repo hubiera cambiado — Local-0015 se abrio el 19/07 y ese dia cumplio 31. El caso malo de
+// envejecidos ya fijaba su fecha (20-01-01); este la heredaba de la maquina. Ahora la declara
+// tambien: un plan abierto hoy no esta envejecido ningun dia que se corra la prueba.
+const d = new Date();
+const abiertoHoy = [String(d.getFullYear()).slice(2), String(d.getMonth() + 1).padStart(2, '0'),
+                    String(d.getDate()).padStart(2, '0')].join('-');
+escribir(reg().replace(/(\| Local-0015 \| [^|]+\| [^|]+\| )Nuevo \| [0-9]{2}-[0-9]{2}-[0-9]{2}/, `$1En pausa | ${abiertoHoy}`));
 fs.appendFileSync(path.join(BANCO, 'pendientes/Estructura del documento de Plan.md'),
                   '\n**estado_a_retomar:** En curso\n');
 const pausaOk = hallazgos(correr());
