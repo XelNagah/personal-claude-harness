@@ -76,3 +76,14 @@ en el único caso que exige un proceso nuevo: reiniciar para recargar plugins ac
 primero si un solo disparador justifica la mecánica completa de terminar y lanzar, o si alcanza
 con algo más chico. Achique ratificado en la poda de pendientes contra la plataforma (ítem 5 del
 plan de consumo de tokens).
+
+## El formato del handoff ya fija un ítem (26-08-20)
+
+La Decisión Local-0073 le agregó al handoff un primer ítem obligatorio: **el texto ya redactado
+con que el Agente receptor pone al usuario en tema** antes de trabajar, preguntar o nombrar un
+código. Toca la pregunta abierta *"Relación con la skill de handoff"* de este plan, pero no la
+cierra: la Preferencia Base-0014 sigue siendo la única fuente del formato y no hay habilidad.
+Al analizar este plan, si se decide que el harness sume su propia habilidad de handoff, esa
+habilidad tiene que producir el reencuadre para el usuario —no dejarlo como una instrucción
+abstracta al receptor, que es la falla que la decisión arregla— y el piloto que acepta cualquier
+archivo de texto sigue sin bloquearse por esto.
