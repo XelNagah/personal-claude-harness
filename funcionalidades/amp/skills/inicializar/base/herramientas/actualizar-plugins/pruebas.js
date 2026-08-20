@@ -77,19 +77,29 @@ const chequear = (nombre, condicion, detalle) => {
   if (!condicion) malos++;
 };
 
-console.log('== SOBRE EL REPO REAL ==');
-const antes = fs.readFileSync('.claude/settings.local.json', 'utf8');
+console.log('== EL DIAGNÓSTICO ==');
+// Se corre contra un repo FABRICADO que declara el bundle, no contra el repo que ejecuta el banco.
+// Antes leía `.claude/settings.local.json` del repo real sin guarda —un Agente Desplegado que no lo
+// tenga reventaba con ENOENT y se llevaba puesta la corrida entera— y exigía encontrar
+// `amp@xelnagah-harness` en la salida, que depende de que ESE repo lo declare y en ese alcance. El
+// nombre del bundle y el del marketplace sí son del mecanismo, no del repo: se pueden afirmar.
+// Es la forma «escenario prestado» del conocimiento `controles-que-no-avisan` (Decisión `Local-0075`).
+const BUNDLE = 'amp@xelnagah-harness';
 {
-  const { texto, codigo } = correr();
+  armar({ [BUNDLE]: true });
+  const casa = fabricarCasa({ [BUNDLE]: true });
+  const antes = fs.readFileSync(path.join(REPO_PRUEBA, '.claude', 'settings.local.json'), 'utf8');
+  const { texto, codigo } = correr(REPO_PRUEBA, [], casa);
   chequear('corre y emite el diagnóstico', /ACTUALIZAR PLUGINS/.test(texto) && codigo === 0, `código ${codigo}`);
   chequear('informa el estado de cada plugin declarado',
-    /amp@xelnagah-harness\s+\w/.test(texto), (texto.match(/amp@xelnagah-harness\s+\S+/) || [''])[0]);
+    new RegExp(BUNDLE + '\\s+\\w').test(texto), (texto.match(new RegExp(BUNDLE + '\\s+\\S+')) || [''])[0]);
   chequear('informa el estado del marketplace bajado', /MARKETPLACES BAJADOS/.test(texto));
+  // Sin `--aplicar` no toca nada: es diagnóstico. Si esto se rompiera, un simple chequeo cambiaría
+  // la configuración del repo que se le pasó.
+  chequear('sin --aplicar no modifica la configuración del repo',
+    fs.readFileSync(path.join(REPO_PRUEBA, '.claude', 'settings.local.json'), 'utf8') === antes,
+    'settings.local.json intacto');
 }
-// Sin `--aplicar` no toca nada: es diagnóstico. Si esto se rompiera, un simple chequeo cambiaría la
-// configuración de la máquina.
-chequear('sin --aplicar no modifica la configuración del repo',
-  fs.readFileSync('.claude/settings.local.json', 'utf8') === antes, 'settings.local.json intacto');
 
 console.log('\n== CLASIFICACIÓN SEGÚN LO QUE EL REPO DECLARA ==');
 // Estos casos corren contra una casa de usuario fabricada, para que lo declarado sea SOLO lo que

@@ -22,6 +22,10 @@ function correr(args = [], cwd = process.cwd(), input = undefined) {
 // Los renglones de la caja, sin la cerca de código con que se envuelve la salida.
 const renglones = texto => texto.split(/\r?\n/).filter(l => /^[║╔╚╟]/.test(l));
 
+// Cuantas decisiones fabrica el caso que verifica que la pantalla mira el repo que se le pasa. Es un
+// numero cualquiera, elegido para no coincidir con el de ningun repo real por casualidad.
+const DECISIONES_FABRICADAS = 7;
+
 let malos = 0;
 const chequear = (nombre, condicion, detalle) => {
   console.log(`${condicion ? 'OK  ' : 'FALLA'} ${nombre}${detalle ? `  → ${detalle}` : ''}`);
@@ -79,14 +83,35 @@ console.log('\n== MIRA EL REPO QUE SE LE PASA ==');
 // del repo real en vez de las del pedido.
 {
   fs.rmSync(REPO_PRUEBA, { recursive: true, force: true });
-  fs.mkdirSync(path.join(REPO_PRUEBA, '.claude'), { recursive: true });
+  const dirDec = path.join(REPO_PRUEBA, '.claude', 'decisiones');
+  fs.mkdirSync(dirDec, { recursive: true });
   fs.writeFileSync(path.join(REPO_PRUEBA, '.claude', 'identidad.md'),
     '# Titulo del repo apuntado\n\nPropósito: Verificar que la pantalla mira el repo pedido\n');
+  // Una casa con una cantidad FABRICADA de entradas: es lo que vuelve observable la falla. Antes el
+  // chequeo buscaba que no aparecieran tres números escritos a mano del repo autor —«43 decisiones»,
+  // «48 pendientes»—, así que en cualquier otra instalación esos números no salían nunca y el caso
+  // pasaba en verde sin distinguir nada; y en el repo autor envejecían solos. Ahora el banco fija la
+  // cantidad y la exige: si la pantalla mirara el repo que la corre, diría otra.
+  fs.writeFileSync(path.join(dirDec, 'MANIFIESTO.md'), '# Decisiones — manifiesto de subsistema\n\nDatos sintéticos.\n');
+  // La señal con que la pantalla descubre un subsistema es su lint co-ubicado. No hace falta que
+  // corra —el caso pasa `--sin-lint`—, sí que esté.
+  fs.mkdirSync(path.join(dirDec, 'lint-decisiones'), { recursive: true });
+  fs.writeFileSync(path.join(dirDec, 'lint-decisiones', 'lint-decisiones.js'), '// dato sintético\n');
+  const filas = [];
+  for (let n = 1; n <= DECISIONES_FABRICADAS; n++) {
+    filas.push(`| Local-${String(n).padStart(4, '0')} | Decisión de prueba ${n} | Dato sintético. | 2026-01-01 | vigente | — |`);
+  }
+  fs.writeFileSync(path.join(dirDec, 'INDICE.md'),
+    '---\nindice: Decisiones del proyecto\norigen: agente-desplegado\n'
+    + 'columnas: [Código, Nombre, Descripción, Fecha, Estado, Detalle]\ndescripcion: qué se decidió y por qué\n---\n\n'
+    + '# Decisiones del proyecto\n\n| Código | Nombre | Descripción | Fecha | Estado | Detalle |\n|---|---|---|---|---|---|\n'
+    + filas.join('\n') + '\n');
   const { texto } = correr([REPO_PRUEBA, '--sin-lint']);
   chequear('apuntada a otro repo muestra la identidad de ese repo',
     texto.includes('Titulo del repo apuntado'), texto.includes('Titulo del repo apuntado') ? 'sí' : 'muestra otra cosa');
-  chequear('  …y no las métricas del repo real',
-    !/43 decisiones|81 |48 pendientes/.test(texto), 'sin métricas del repo autor');
+  const cuenta = (/(\d+) decisiones/.exec(texto) || [])[1];
+  chequear('  …y cuenta las entradas de ESE repo, no las del que corre las pruebas',
+    cuenta === String(DECISIONES_FABRICADAS), `dice ${cuenta || '(nada)'}, se fabricaron ${DECISIONES_FABRICADAS}`);
 }
 
 // El peso del contexto siempre cargado NO se mide acá: es una vigilancia del repo que publica el

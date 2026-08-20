@@ -12,29 +12,72 @@
 // lo mostraba como ERROR en vez de listar los hallazgos, y su formato no era contable, asi que sus
 // hallazgos no entraban en ningun total.
 //
+// EL BANCO FABRICA SU CATALOGO Y SUS CASAS. Antes copiaba el `.claude/` del repo que lo corre y
+// rompia filas REALES por su codigo —`Base-0005`, `Base-0006`— y una casa por su nombre. Eso ataba
+// el banco a que la Base siguiera trayendo esas filas exactas, y hacia que el caso bueno —«el banco
+// intacto da cero»— midiera si el repo destino tiene su catalogo en orden, que este banco no tiene
+// por que juzgar: para eso esta el lint corriendo sobre el repo. Es la forma «escenario prestado»
+// del conocimiento `controles-que-no-avisan`, y la Decision `Local-0075` es la que la prohibe para
+// todos los bancos que viajan.
+//
+// Lo unico que se toma del subsistema instalado es el `MANIFIESTO.md`, Componente del Agente
+// Multiproposito e igual en todas las instalaciones, que es lo que el control de Indices declarados
+// contrasta y que ademas hace de la casa `subsistemas/` una casa valida. Las casas del catalogo son
+// datos sinteticos: dos casas de un Proposito inventado.
+//
 // Uso: node .claude/subsistemas/lint-subsistemas/pruebas.js   (desde la raíz del repo)
 const fs = require('fs'), path = require('path'), cp = require('child_process');
+const ORIGEN = '.claude/subsistemas';
 const REPO_PRUEBA = '.claude/tmp/repo-prueba-subsistemas';
 const CLAUDE = path.join(REPO_PRUEBA, '.claude');
 const BANCO = path.join(CLAUDE, 'subsistemas');
 const LINT = '.claude/subsistemas/lint-subsistemas/lint-subsistemas.js';
 
+const DEL_SUBSISTEMA = ['MANIFIESTO.md'];
+const IDX = 'SUBSISTEMAS.md', LOCAL = 'SUBSISTEMAS-LOCAL.md';
+// Las dos casas sinteticas que el catalogo lista ademas de la propia, nombradas una sola vez.
+const CASA_BASE = 'remitos';     // catalogada en el Indice del Agente Multiproposito
+const CASA_LOCAL = 'facturas';   // catalogada en el del Agente Desplegado
+
+const frontmatter = (nombre, origen) => '---\nindice: ' + nombre + '\norigen: ' + origen + '\n'
+  + 'columnas: [Código, Nombre, Descripción, Operación, Detalle]\ndescripcion: qué guarda el subsistema\n---\n\n';
+const CABECERA = '| Código | Nombre | Descripción | Operación | Detalle |\n|---|---|---|---|---|\n';
+const fila = (cod, nombre, desc, op, detalle) => `| ${cod} | ${nombre} | ${desc} | ${op} | ${detalle} |`;
+
+function catalogoBase() {
+  return frontmatter('Subsistemas', 'agente-multiproposito')
+    + '# Subsistemas\n\nDatos sintéticos: este catálogo existe solo para romperlo.\n\n' + CABECERA
+    + [
+      fila('Base-0001', 'subsistemas', 'Catálogo y coordinación entre casas', '`agregar-subsistema`', '[subsistemas/](./)'),
+      fila('Base-0002', CASA_BASE, 'Los remitos del período y su estado', '`registrar-remito`', `[${CASA_BASE}/](../${CASA_BASE}/)`),
+    ].join('\n') + '\n';
+}
+function catalogoLocal() {
+  return frontmatter('Subsistemas del Agente Desplegado', 'agente-desplegado')
+    + '# Subsistemas del Agente Desplegado\n\nDatos sintéticos: este catálogo existe solo para romperlo.\n\n' + CABECERA
+    + fila('Local-0001', CASA_LOCAL, 'Las facturas recibidas y su archivo', '`registrar-factura`', `[${CASA_LOCAL}/](../${CASA_LOCAL}/)`) + '\n';
+}
+const casa = nombre => {
+  const d = path.join(CLAUDE, nombre);
+  fs.mkdirSync(d, { recursive: true });
+  fs.writeFileSync(path.join(d, 'MANIFIESTO.md'), `# ${nombre} — manifiesto de subsistema\n\nDatos sintéticos.\n`);
+  return d;
+};
+
 function armar() {
   fs.rmSync(REPO_PRUEBA, { recursive: true, force: true });
-  const salteados = new Set(['tmp', 'pendientes', 'ejecutados', 'descartados']);
-  fs.mkdirSync(CLAUDE, { recursive: true });
-  for (const e of fs.readdirSync('.claude', { withFileTypes: true })) {
-    if (salteados.has(e.name)) continue;
-    fs.cpSync(path.join('.claude', e.name), path.join(CLAUDE, e.name), {
-      recursive: true,
-      filter: src => !salteados.has(path.basename(src)),
-    });
+  fs.mkdirSync(BANCO, { recursive: true });
+  for (const f of DEL_SUBSISTEMA) {
+    const src = path.join(ORIGEN, f);
+    if (fs.existsSync(src)) fs.copyFileSync(src, path.join(BANCO, f));
   }
-  fs.rmSync(path.join(BANCO, 'lint-subsistemas'), { recursive: true, force: true });
+  escribir(IDX, catalogoBase());
+  escribir(LOCAL, catalogoLocal());
+  casa(CASA_BASE);
+  casa(CASA_LOCAL);
 }
 const leer = f => fs.readFileSync(path.join(BANCO, f), 'utf8');
 const escribir = (f, t) => fs.writeFileSync(path.join(BANCO, f), t);
-const IDX = 'SUBSISTEMAS.md', LOCAL = 'SUBSISTEMAS-LOCAL.md';
 
 function correr() {
   const r = cp.spawnSync('node', [LINT, CLAUDE], { encoding: 'utf8' });
@@ -56,41 +99,37 @@ armar();
   const n = cuantos(texto);
   const ok = n === 0 && codigo === 0;
   console.log(`${ok ? 'OK  ' : 'FALLA'} banco sin tocar → ${n} hallazgos, código de salida ${codigo}`);
-  if (!ok) { malos++; console.log(texto.split('\n').filter(l => l.includes('[!]')).join('\n')); }
+  if (!ok) { malos++; console.log(texto.split('\n').filter(l => l.trim() && !l.startsWith('subsistemas:')).join('\n')); }
 }
 
 const casos = [];
 const caso = (nombre, fragmento, romper) => casos.push({ nombre, fragmento, romper });
 
 caso('código con prefijo que no corresponde al origen', 'no tiene la forma',
-  () => escribir(IDX, leer(IDX).replace('| Base-0005 |', '| Local-0005 |')));
+  () => escribir(IDX, leer(IDX).replace('| Base-0002 |', '| Local-0002 |')));
 
 caso('código duplicado', 'codigo duplicado',
-  () => escribir(IDX, leer(IDX).replace('| Base-0006 |', '| Base-0005 |')));
+  () => escribir(IDX, leer(IDX).replace('| Base-0002 |', '| Base-0001 |')));
 
 caso('fila sin Descripción', 'no tiene Descripción',
-  () => escribir(IDX, leer(IDX).replace(/(\| Base-0006 \| [^|]+\| )[^|]+(\|)/, '$1 $2')));
+  () => escribir(IDX, leer(IDX).replace(/(\| Base-0002 \| [^|]+\| )[^|]+(\|)/, '$1 $2')));
 
 caso('subsistema catalogado dos veces', 'fila duplicada',
-  () => escribir(IDX, leer(IDX).replace(/(\| Base-0006 \| )[^|]+(\|)/, '$1semantica $2')));
+  () => escribir(IDX, leer(IDX).replace(/(\| Base-0002 \| )[^|]+(\|)/, '$1subsistemas $2')));
 
 caso('fila sin casa en la columna Detalle', 'sin casa en Detalle',
-  () => escribir(IDX, leer(IDX).replace(/(\| Base-0006 \|[^\n]*\| )\[[^\]]+\]\([^)]+\)( \|)/, '$1—$2')));
+  () => escribir(IDX, leer(IDX).replace(/(\| Base-0002 \|[^\n]*\| )\[[^\]]+\]\([^)]+\)( \|)/, '$1—$2')));
 
 caso('casa catalogada que no existe en disco', 'casa inexistente',
-  () => escribir(IDX, leer(IDX).replace('[decisiones/](../decisiones/)', '[carpeta-que-no-existe/](../carpeta-que-no-existe/)')));
+  () => escribir(IDX, leer(IDX).replace(`[${CASA_BASE}/](../${CASA_BASE}/)`, '[carpeta-que-no-existe/](../carpeta-que-no-existe/)')));
 
 caso('casa sin manifiesto', 'sin MANIFIESTO.md',
-  () => fs.rmSync(path.join(CLAUDE, 'decisiones', 'MANIFIESTO.md')));
+  () => fs.rmSync(path.join(CLAUDE, CASA_BASE, 'MANIFIESTO.md')));
 
 // El defecto que deja un subsistema invisible: la carpeta está, nadie la cataloga, y las habilidades
 // que descubren subsistemas por el catálogo no la ven nunca.
 caso('casa en disco que el catálogo no lista', 'casa no catalogada',
-  () => {
-    const nueva = path.join(CLAUDE, 'inventario');
-    fs.mkdirSync(nueva, { recursive: true });
-    fs.writeFileSync(path.join(nueva, 'MANIFIESTO.md'), '# Inventario\n\nUna casa que nadie catalogó.\n');
-  });
+  () => casa('inventario'));
 
 caso('columna declarada que la tabla no tiene', 'columna declarada',
   () => escribir(IDX, leer(IDX).replace(/^columnas: \[(.+)\]$/m, 'columnas: [$1, Inventada]')));
@@ -112,15 +151,18 @@ for (const c of casos) {
 }
 
 // -- CASO BUENO fino: el catálogo del Agente Desplegado sin filas es válido --
+// Es el estado de un repo recién instalado, que todavía no sumó ningún subsistema propio: el Índice
+// existe, declarado y con su tabla, y no tiene ninguna fila.
 console.log('\n== CASO BUENO: el catálogo del Agente Desplegado sin filas es válido ==');
 armar();
 {
-  // Es el estado normal: este repo no sumó ningún subsistema propio.
+  escribir(LOCAL, leer(LOCAL).split('\n').filter(l => !/^\| Local-/.test(l)).join('\n'));
+  fs.rmSync(path.join(CLAUDE, CASA_LOCAL), { recursive: true, force: true });
   const { texto, codigo } = correr();
   const n = cuantos(texto);
   const ok = n === 0 && codigo === 0;
-  console.log(`${ok ? 'OK  ' : 'FALLA'} SUBSISTEMAS-LOCAL.md declarado y sin filas → ${n} hallazgos`);
-  if (!ok) malos++;
+  console.log(`${ok ? 'OK  ' : 'FALLA'} ${LOCAL} declarado y sin filas → ${n} hallazgos`);
+  if (!ok) { malos++; console.log(texto); }
 }
 
 // -- CASO BUENO fino: un Índice guardado con marca de orden de bytes se sigue leyendo --
@@ -138,7 +180,7 @@ armar();
   // y un total distinto de cero no diría CUÁL se encendió.
   const tapado = texto.includes('no declara frontmatter');
   const ok = n === 0 && codigo === 0 && !tapado;
-  console.log(`${ok ? 'OK  ' : 'FALLA'} SUBSISTEMAS.md con la marca → ${n} hallazgos${tapado ? ' (el frontmatter quedó tapado)' : ''}`);
+  console.log(`${ok ? 'OK  ' : 'FALLA'} ${IDX} con la marca → ${n} hallazgos${tapado ? ' (el frontmatter quedó tapado)' : ''}`);
   if (!ok) malos++;
 }
 

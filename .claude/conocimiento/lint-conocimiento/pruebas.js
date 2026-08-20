@@ -2,13 +2,26 @@
 // contesta en verde sobre un conjunto vacio, asi que verde no prueba nada por si solo: cada control
 // tiene que ENCENDERSE ante su defecto, y solo ante el suyo.
 //
-// El banco es un REPO DE PRUEBA con su propio `.claude/`, no una copia suelta de la carpeta: el lint
-// resuelve las referencias contra la raiz del repo, asi que sin eso una ref rota podria resolver
-// contra el repo real y el caso no seria aislado.
+// El banco es un REPO DE PRUEBA con su propio `.claude/`, no una carpeta suelta: el lint resuelve las
+// referencias contra la raiz del repo, asi que sin eso una ref rota podria resolver contra el repo
+// real y el caso no seria aislado.
+//
+// EL BANCO FABRICA SU BASE DE CONOCIMIENTO. Antes copiaba el `.claude/` del repo que lo corre y
+// rompia paginas REALES por su nombre de archivo. Las paginas y el Indice del Agente Desplegado son
+// Aprendizaje de cada repo: en el destino esos nombres no existen, y ademas el caso bueno —«el banco
+// intacto da cero»— pasaba a medir la salud de la base de conocimiento del repo destino, que este
+// banco no tiene por que juzgar (para eso esta el lint corriendo sobre el repo). Es la forma
+// «escenario prestado» del conocimiento `controles-que-no-avisan`, y la Decision `Local-0075` es la
+// que la prohibe para todos los bancos que viajan.
 //
 // Cada prueba es autonoma a proposito, sin andamiaje compartido con las otras: un modulo comun roto
 // apagaria todas las pruebas a la vez, que es justo el modo de falla que estas pruebas existen para
-// evitar.
+// evitar. Por eso el escenario se fabrica aca adentro y no en un ayudante compartido entre bancos.
+//
+// Lo unico que se toma del subsistema instalado es el `MANIFIESTO.md`, Componente del Agente
+// Multiproposito e igual en todas las instalaciones, y que es ademas lo que el control de Indices
+// declarados contrasta. El `README.md` NO se copia: el lint le revisa las referencias como a
+// cualquier pagina, y el real apunta a otros subsistemas que el banco no fabrica.
 //
 // Uso: node .claude/conocimiento/lint-conocimiento/pruebas.js   (desde la raíz del repo)
 const fs = require('fs'), path = require('path'), cp = require('child_process');
@@ -17,23 +30,41 @@ const REPO_PRUEBA = '.claude/tmp/repo-prueba-conocimiento';
 const BANCO = path.join(REPO_PRUEBA, '.claude', 'conocimiento');
 const LINT = '.claude/conocimiento/lint-conocimiento/lint-conocimiento.js';
 
-// Se copia `.claude/` ENTERA, no solo `conocimiento/`: las páginas del subsistema referencian otros
-// —`../semantica/README.md`, `../herramientas/README.md`— y con el banco recortado esas referencias
-// aparecían rotas de arranque, así que el caso bueno nunca podía dar cero. Medido: 3 de base.
-// Se saltea `tmp` porque el banco vive ahí adentro (copiarla sería copiarla dentro de sí misma) y
-// las carpetas de planes, que pesan más que todo el resto y este lint no las mira.
+const DEL_SUBSISTEMA = ['MANIFIESTO.md'];
+const IDX = 'INDICE.md', LOCAL = 'INDICE-LOCAL.md';
+// Las paginas sinteticas, nombradas una sola vez: ningun caso vuelve a escribir un nombre de archivo.
+const PAGINA_BASE = 'como-se-cuentan-los-remitos.md';
+const PAGINA_LOCAL = 'el-cierre-del-mes.md';
+
+const frontmatter = (nombre, origen) => '---\nindice: ' + nombre + '\norigen: ' + origen + '\n'
+  + 'columnas: [Código, Nombre, Descripción, Detalle]\ndescripcion: de qué trata la página\n---\n\n';
+const CABECERA = '| Código | Nombre | Descripción | Detalle |\n|---|---|---|---|\n';
+
+function indiceBase() {
+  return frontmatter('Índice de la base de conocimiento', 'agente-multiproposito')
+    + '# Índice de la base de conocimiento\n\nDatos sintéticos: este índice existe solo para romperlo.\n\n'
+    + CABECERA
+    + `| Base-0001 | Cómo se cuentan los remitos | El recorrido con que se cuentan los remitos del período. | [${PAGINA_BASE}](${PAGINA_BASE}) |\n`;
+}
+function indiceLocal() {
+  return frontmatter('Páginas del Agente Desplegado', 'agente-desplegado')
+    + '# Páginas del Agente Desplegado\n\nDatos sintéticos: este índice existe solo para romperlo.\n\n'
+    + CABECERA
+    + `| Local-0001 | El cierre del mes | Qué se congela al cerrar el mes y qué queda abierto. | [${PAGINA_LOCAL}](${PAGINA_LOCAL}) |\n`;
+}
+const pagina = titulo => `# ${titulo}\n\nDatos sintéticos: esta página existe solo para romperla.\n`;
+
 function armar() {
   fs.rmSync(REPO_PRUEBA, { recursive: true, force: true });
-  const salteados = new Set(['tmp', 'pendientes', 'ejecutados', 'descartados']);
-  fs.mkdirSync(path.join(REPO_PRUEBA, '.claude'), { recursive: true });
-  for (const e of fs.readdirSync('.claude', { withFileTypes: true })) {
-    if (salteados.has(e.name)) continue;
-    fs.cpSync(path.join('.claude', e.name), path.join(REPO_PRUEBA, '.claude', e.name), {
-      recursive: true,
-      filter: src => !salteados.has(path.basename(src)),
-    });
+  fs.mkdirSync(BANCO, { recursive: true });
+  for (const f of DEL_SUBSISTEMA) {
+    const src = path.join(ORIGEN, f);
+    if (fs.existsSync(src)) fs.copyFileSync(src, path.join(BANCO, f));
   }
-  fs.rmSync(path.join(BANCO, 'lint-conocimiento'), { recursive: true, force: true });
+  escribir(IDX, indiceBase());
+  escribir(LOCAL, indiceLocal());
+  escribir(PAGINA_BASE, pagina('Cómo se cuentan los remitos'));
+  escribir(PAGINA_LOCAL, pagina('El cierre del mes'));
 }
 const leer = f => fs.readFileSync(path.join(BANCO, f), 'utf8');
 const escribir = (f, t) => fs.writeFileSync(path.join(BANCO, f), t);
@@ -65,17 +96,15 @@ const casos = [];
 const caso = (nombre, seccion, romper) => casos.push({ nombre, seccion, romper });
 
 caso('página con un link a un archivo que no existe', 'REFS ROTAS',
-  () => escribir('buscar-con-acentos-en-windows.md',
-    leer('buscar-con-acentos-en-windows.md') + '\nVer [la página que no está](pagina-que-no-existe.md).\n'));
+  () => escribir(PAGINA_BASE, leer(PAGINA_BASE) + '\nVer [la página que no está](pagina-que-no-existe.md).\n'));
 
 // El índice tiene que reclamar una página nueva, y la página tiene que quedar marcada como no
 // referenciada: son dos controles distintos y el mismo defecto los enciende a los dos.
 caso('página nueva que el índice no lista', 'INDICE INCOMPLETO',
-  () => fs.writeFileSync(path.join(BANCO, 'pagina-sin-indexar.md'), '# Sin indexar\n\nNadie la lista.\n'));
+  () => escribir('pagina-sin-indexar.md', pagina('Sin indexar')));
 
 caso('columna declarada que la tabla no tiene', 'INDICES DECLARADOS',
-  () => escribir('INDICE.md', leer('INDICE.md').replace(
-    /^columnas: \[(.+)\]$/m, 'columnas: [$1, Inventada]')));
+  () => escribir(IDX, leer(IDX).replace(/^columnas: \[(.+)\]$/m, 'columnas: [$1, Inventada]')));
 
 console.log('\n== CASOS MALOS: cada control se enciende ante su defecto ==');
 for (const c of casos) {
@@ -94,13 +123,16 @@ for (const c of casos) {
 // -- CASO BUENO fino: el repo que se mira es el que se le pasa ---------------
 // Regresion del 30/07/2026: el lint deducia el repo de su propia ubicacion, asi que una referencia
 // podia resolver contra el repo real y darse por buena sin que el archivo existiera en el banco.
+// El testigo es `AGENTS.md`, el punto de entrada que `amp:inicializar` escribe en la raiz de todo
+// Agente Desplegado: existe en el repo real y NO en el banco. Si el repo que corre las pruebas no lo
+// tuviera, el caso pasaria en verde sin distinguir nada, asi que se saltea diciendolo en vez de
+// afirmar lo que no midio.
 console.log('\n== CASO BUENO: resuelve contra el repo que se le pasa ==');
-armar();
-{
-  // `AGENTS.md` existe en el repo real pero NO en el banco: si el lint mirara el repo real, esta
-  // referencia resolveria y el control no diria nada.
-  escribir('buscar-con-acentos-en-windows.md',
-    leer('buscar-con-acentos-en-windows.md') + '\nVer [el punto de entrada](../../AGENTS.md).\n');
+if (!fs.existsSync('AGENTS.md')) {
+  console.log('SALTEADO  este repo no tiene AGENTS.md en la raíz: sin testigo, el caso no distinguiría nada');
+} else {
+  armar();
+  escribir(PAGINA_BASE, leer(PAGINA_BASE) + '\nVer [el punto de entrada](../../AGENTS.md).\n');
   const h = hallazgos(correr());
   const n = h['REFS ROTAS'] || 0;
   console.log(`${n === 1 ? 'OK  ' : 'FALLA'} ref a un archivo que solo existe en el repo real → ${n} rota(s) (1 esperada)`);
@@ -115,9 +147,10 @@ armar();
 console.log('\n== CASO BUENO: una pagina listada en el segundo Indice no se reclama ==');
 armar();
 {
-  fs.writeFileSync(path.join(BANCO, 'pagina-del-segundo-indice.md'), '# Pagina del segundo Indice\n\nSolo la lista uno de los dos.\n');
-  escribir('INDICE-LOCAL.md', leer('INDICE-LOCAL.md').trimEnd() +
-    '\n| Local-9999 | Pagina del segundo Indice | Solo la lista uno de los dos. | [pagina-del-segundo-indice.md](pagina-del-segundo-indice.md) |\n');
+  const nueva = 'pagina-del-segundo-indice.md';
+  escribir(nueva, pagina('Página del segundo Índice'));
+  escribir(LOCAL, leer(LOCAL).trimEnd() +
+    `\n| Local-0002 | Página del segundo Índice | Solo la lista uno de los dos. | [${nueva}](${nueva}) |\n`);
   const h = hallazgos(correr());
   const n = (h['INDICE INCOMPLETO'] || 0) + (h['HUERFANOS'] || 0);
   console.log(`${n === 0 ? 'OK  ' : 'FALLA'} pagina listada solo en INDICE-LOCAL.md → ${n} reclamo(s) de indice (0 esperados)`);

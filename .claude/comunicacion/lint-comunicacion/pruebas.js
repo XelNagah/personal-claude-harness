@@ -4,40 +4,64 @@
 // Un lint que lee mal contesta en verde sobre un conjunto vacío, así que verde no prueba nada por sí
 // solo: cada control tiene que ENCENDERSE ante su defecto, y solo ante el suyo.
 //
-// El banco es un REPO DE PRUEBA con `.claude/` entera (los controles de forma del Índice usan el
-// manifiesto y el módulo común). El Índice de este repo viaja sin filas, así que los casos con fila
-// las AGREGAN sobre una fila válida que apunta al propio repo de prueba (que tiene su `.claude/`).
+// EL BANCO FABRICA SU ÍNDICE. Antes copiaba el `.claude/` del repo que lo corre y agregaba sus filas
+// de prueba sobre el Índice REAL ya copiado, y después exigía contarlas: `filas.length === 1`. El
+// Índice de este subsistema es Aprendizaje local —guarda rutas de máquina y viaja sin filas—, así que
+// en el repo autor la cuenta daba 1 y en cualquier repo que hubiera registrado un Agente
+// Multipropósito Conocido daba una más por cada uno. Medido el 20/08/2026 en un Agente Desplegado al
+// día con `amp` 0.50.0, con tres instalaciones registradas: el caso daba 4 y el banco se encendía en
+// rojo sin que hubiera nada roto. Es la forma «escenario prestado» del conocimiento
+// `controles-que-no-avisan`, y la Decisión `Local-0075` es la que la prohíbe para todo banco que viaja.
+//
+// Lo único que se toma del subsistema instalado es el `MANIFIESTO.md` —Componente del Agente
+// Multipropósito e igual en todas las instalaciones, y lo que el control de forma del Índice
+// contrasta— y el CÓDIGO de los tres mecanismos, que es justamente lo que el banco viene a probar.
+// El Índice y sus filas son datos sintéticos.
 //
 // Uso: node .claude/comunicacion/lint-comunicacion/pruebas.js   (desde la raíz del repo)
 const fs = require('fs'), path = require('path'), cp = require('child_process');
+const ORIGEN = '.claude/comunicacion';
 const REPO_PRUEBA = '.claude/tmp/repo-prueba-comunicacion';
 const BANCO = path.join(REPO_PRUEBA, '.claude', 'comunicacion');
 const LINT = '.claude/comunicacion/lint-comunicacion/lint-comunicacion.js';
+
+const DEL_SUBSISTEMA = ['MANIFIESTO.md'];
 
 const ABS = path.resolve(REPO_PRUEBA);                 // tiene .claude/  → Directorio válido
 const DIR_SIN_CLAUDE = path.join(ABS, '.claude');      // existe, pero sin .claude/ adentro
 const DIR_INEXISTENTE = path.join(ABS, 'no-existe-xyz');
 
+// El Índice se fabrica SIN filas, que es como viaja y como nace en toda instalación: las filas las
+// pone cada caso, así que la cuenta que un caso afirma no depende de lo que el repo haya registrado.
+function indiceSintetico() {
+  return '---\nindice: Agentes Multipropósito Conocidos\norigen: agente-desplegado\n'
+    + 'columnas: [Código, Nombre, Propósito, Directorio, CLI]\n'
+    + 'descripcion: cada otra instalación del Agente Multipropósito que se registró para consultarla\n---\n\n'
+    + '# Agentes Multipropósito Conocidos\n\nDatos sintéticos: este registro existe solo para romperlo.\n\n'
+    + '| Código | Nombre | Propósito | Directorio | CLI |\n'
+    + '|--------|--------|-----------|------------|-----|\n';
+}
+
 function armar() {
   fs.rmSync(REPO_PRUEBA, { recursive: true, force: true });
-  const salteados = new Set(['tmp', 'pendientes', 'ejecutados', 'descartados']);
-  fs.mkdirSync(path.join(REPO_PRUEBA, '.claude'), { recursive: true });
-  for (const e of fs.readdirSync('.claude', { withFileTypes: true })) {
-    if (salteados.has(e.name)) continue;
-    fs.cpSync(path.join('.claude', e.name), path.join(REPO_PRUEBA, '.claude', e.name), {
-      recursive: true,
-      filter: src => !salteados.has(path.basename(src)),
-    });
+  fs.mkdirSync(BANCO, { recursive: true });
+  for (const f of DEL_SUBSISTEMA) {
+    const src = path.join(ORIGEN, f);
+    if (fs.existsSync(src)) fs.copyFileSync(src, path.join(BANCO, f));
   }
-  fs.rmSync(path.join(BANCO, 'lint-comunicacion'), { recursive: true, force: true });
+  escribir(indiceSintetico());
+  // El catálogo de subsistemas del propio repo de prueba: es la señal con que el buscador reconoce
+  // una instalación del Agente Multipropósito, y sin ella el repo de prueba no se reconocería a sí
+  // mismo (el candidato que tiene que salir marcado como `esEsteRepo`).
+  fs.mkdirSync(path.join(REPO_PRUEBA, '.claude', 'subsistemas'), { recursive: true });
+  fs.writeFileSync(path.join(REPO_PRUEBA, '.claude', 'subsistemas', 'SUBSISTEMAS.md'), '# Subsistemas\n');
 }
 const reg = () => fs.readFileSync(path.join(BANCO, 'INDICE.md'), 'utf8');
 const escribir = t => fs.writeFileSync(path.join(BANCO, 'INDICE.md'), t);
-// Agrega filas al Índice (que viaja sin ninguna): se pegan después del renglón separador `|---|`.
+// Agrega filas al Índice (que se fabrica sin ninguna): se pegan después del renglón separador `|---|`.
 const fila = (cod, nom, prop, dir, cli) => `| ${cod} | ${nom} | ${prop} | ${dir} | ${cli} |`;
 function conFilas(...filas) {
-  const t = reg();
-  const lineas = t.split(/\r?\n/);
+  const lineas = reg().split(/\r?\n/);
   const iSep = lineas.findIndex(l => /^\|[\s:|-]+\|\s*$/.test(l));
   lineas.splice(iSep + 1, 0, ...filas);
   escribir(lineas.join('\n'));
@@ -112,12 +136,13 @@ for (const c of casos) {
 }
 
 // -- funciones puras: leerIndice y construirComando --------------------------
+// Los módulos se toman del subsistema INSTALADO, que es el código que se está probando, y se los
+// apunta al banco por parámetro: `leerIndice` recibe la carpeta, así que no hace falta copiarlo.
 console.log('\n== FUNCIONES PURAS ==');
 armar();
 conFilas(fila('Local-0001', 'Contable', 'Lleva la contabilidad', ABS, 'Claude'));
 {
-  // Se requiere desde el BANCO para no cachear el módulo del repo real y leer el Índice del banco.
-  const { leerIndice, CLIS_SOPORTADOS } = require(path.resolve(BANCO, 'indice.js'));
+  const { leerIndice, CLIS_SOPORTADOS } = require(path.resolve(ORIGEN, 'indice.js'));
   const filas = leerIndice(BANCO);
   const f = filas[0] || {};
   const ok = filas.length === 1 && f.nombre === 'Contable' && f.directorio === ABS
@@ -130,7 +155,7 @@ conFilas(fila('Local-0001', 'Contable', 'Lleva la contabilidad', ABS, 'Claude'))
   if (!vacio) malos++;
 
   const { construirComando, interpretarSalida, leerOpciones, ESCRITURA_GENERICA } =
-    require(path.resolve(BANCO, 'comunicar', 'comunicar.js'));
+    require(path.resolve(ORIGEN, 'comunicar', 'comunicar.js'));
 
   // El modo `preguntar` tiene que dejar VIVOS los MCP del consultado y sacarle solo la escritura
   // genérica. Es el control que faltaba: el mecanismo anterior apagaba los MCP y el Agente contestaba
@@ -219,7 +244,7 @@ armar();
   const sinIdentidad = instalacion('mudo', null);
   conFilas(fila('Local-0001', 'contable', 'Llevar las cuentas', conHarness, 'claude'));
 
-  const { buscarAgentes, clave } = require(path.resolve(BANCO, 'buscar', 'buscar.js'));
+  const { buscarAgentes, clave } = require(path.resolve(ORIGEN, 'buscar', 'buscar.js'));
   const hallados = buscarAgentes(ABS, {
     claude: [conHarness, soloClaudeDir, path.join(ABS, 'no-existe-xyz')],
     codex: [conHarness, sinIdentidad, ABS],

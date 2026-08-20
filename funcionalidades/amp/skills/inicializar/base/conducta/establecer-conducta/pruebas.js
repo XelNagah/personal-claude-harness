@@ -67,6 +67,24 @@ escribirRegistro('semantica/TERMINOLOGIA-FARLOPA.md',
   + '# Terminología Farlopa\n\n| Código | Nombre | Descripción | Cómo decirlo | Control | Detalle |\n|---|---|---|---|---|---|\n'
   + '| Local-0021 | `berenjena` | dato de prueba: término sin uso legítimo posible | hortaliza | bloquea | — |\n'
   + '| Local-0022 | `capa de instalación` | la carpeta que viaja adentro del plugin | fase | avisa | — |\n');
+// El registro de reglas del Agente Desplegado también se fabrica: es Aprendizaje de cada repo y en el
+// destino puede estar vacío o traer cualquier cosa. Sin fabricarlo, el caso que verifica que las
+// reglas del Agente Multipropósito salen ANTES que las del repo no tenía ninguna regla del repo
+// contra la cual ordenar —este repo tiene una, `medir-contexto`, que no viaja—, y en toda instalación
+// pasaba en verde sin ejercitar nada. La regla sintética es `Ejecutar` sobre el mismo momento que la
+// Pantalla de bienvenida, que es donde el orden se observa.
+const NOTA = 'herramientas/emitir-nota-de-prueba/emitir-nota-de-prueba.js';
+const MARCA_NOTA = 'nota-de-prueba-del-agente-desplegado';
+fs.mkdirSync(path.join(REPO, '.claude', path.dirname(NOTA)), { recursive: true });
+fs.writeFileSync(path.join(REPO, '.claude', NOTA),
+  `console.log(JSON.stringify({ systemMessage: ${JSON.stringify(MARCA_NOTA)} }));\n`, 'utf8');
+escribirRegistro('conducta/INDICE-LOCAL.md',
+  '---\nindice: Reglas de conducta del Agente Desplegado\norigen: agente-desplegado\n'
+  + 'columnas: [Código, Nombre, Descripción, Momento, Clase, Contenido, Estado, Detalle]\n'
+  + 'descripcion: qué asegura la regla, en una línea\n---\n\n'
+  + '# Reglas de conducta del Agente Desplegado\n\n'
+  + '| Código | Nombre | Descripción | Momento | Clase | Contenido | Estado | Detalle |\n|---|---|---|---|---|---|---|---|\n'
+  + `| Local-0001 | Dejar una nota al arrancar | Dato de prueba: una regla del repo sobre el mismo momento que la Pantalla. | al arrancar la sesión | Ejecutar | ${NOTA} | vigente | — |\n`);
 escribirRegistro('decisiones/INDICE.md',
   '---\nindice: Decisiones del proyecto\norigen: agente-desplegado\n'
   + 'columnas: [Código, Nombre, Descripción, Fecha, Estado, Detalle]\ndescripcion: qué se decidió y por qué\n---\n\n'
@@ -142,12 +160,14 @@ console.log('== ENTREGA: cada evento despacha las reglas de su momento ==');
     r.mensaje.includes('╔') && r.mensaje.includes('╚'), r.mensaje.split('\n')[1] || '');
   // Varias reglas `Ejecutar` en el mismo momento se FUSIONAN en un `systemMessage`. Escribir los
   // JSON uno detrás del otro deja dos objetos pegados, que no es JSON válido: el harness lo
-  // descarta y no se ve NADA — ni siquiera la caja que sí funcionaba. Este repo tiene dos reglas en
-  // este momento, así que el caso corre de verdad; el chequeo afirma que la respuesta sigue siendo
-  // un JSON con `systemMessage` y que lo de la segunda regla llegó, no que haya exactamente dos.
+  // descarta y no se ve NADA — ni siquiera la caja que sí funcionaba. El banco fabrica la segunda
+  // regla, así que el caso corre de verdad en cualquier instalación: se afirma que la respuesta
+  // sigue siendo un JSON con `systemMessage` Y que el texto de la segunda regla llegó.
   chequear('  …y con varias reglas la respuesta sigue siendo un JSON solo',
     r.crudo.trim().startsWith('{') && r.crudo.trim().endsWith('}') && !/\}\s*\{/.test(r.crudo),
     `${r.crudo.length} caracteres, un objeto`);
+  chequear('  …y el texto de la segunda regla llegó', r.mensaje.includes(MARCA_NOTA),
+    r.mensaje.includes(MARCA_NOTA) ? 'presente' : 'se perdió');
   // El orden lo decide el origen, no el nombre del archivo. `INDICE-LOCAL.md` ordena antes que
   // `INDICE.md`, así que sin ordenar por origen lo que sumó el repo saldría DELANTE de la Pantalla de
   // bienvenida. Lo único que precede a la caja, por diseño, es el rótulo de la propia Pantalla —la
