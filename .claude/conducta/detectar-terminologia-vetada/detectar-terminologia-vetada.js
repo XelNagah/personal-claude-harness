@@ -27,39 +27,17 @@ const fs = require('fs'), path = require('path');
 // repartidor: si cada uno llevara su propia lista, la que sume una extension primero deja al otro
 // mirando para otro lado, sin emitir senal.
 const { alcanzaAlEscribir, esCodigo } = require('../alcance-al-escribir.js');
+// El registro lo lee el modulo comun, que es tambien el que lee `lint-semantica`. Cuando este
+// control lo leia por su cuenta EXIGIA que la celda del termino trajera comillas simples
+// invertidas y salteaba la fila que no las tuviera; el formato no esta documentado en ninguna
+// parte y la copia que viaja llega con la tabla vacia, asi que un repo que poblara su registro sin
+// comillas lo dejaba leyendo VACIO: contestaba en verde sin frenar nada. Medido en tres
+// instalaciones el 20/08/2026, dos no detectaban ninguna de sus filas.
+const { leerRegistroVetados } = require('../../common/terminos-vetados.js');
 const registro = path.resolve(__dirname, '..', '..', 'semantica', 'TERMINOLOGIA-FARLOPA.md');
 
 // Subsistema exento: el registro de vetados contiene los vetados por definicion.
 const EXENTOS = [/(^|\/)\.claude\/semantica\//];
-
-// -- registro: [{variantes:[...], comoDecirlo, control}] -----------------
-function leerRegistro() {
-  if (!fs.existsSync(registro)) return [];
-  const out = [];
-  const lineas = fs.readFileSync(registro, 'utf8').split('\n').map(l => l.trim()).filter(l => l.startsWith('|'));
-  let cols = null;
-  for (const l of lineas) {
-    const celdas = l.split('|').slice(1, -1).map(c => c.trim());
-    const norm = celdas.map(c => c.toLowerCase().replace(/\*/g, ''));
-    if (!cols) {
-      // El termino vive en `Nombre` desde que el registro tomo el nucleo de columnas; `Término` es
-      // la forma vieja y se acepta mientras haya Agentes Desplegados sin actualizar. Sin las dos, el
-      // encabezado no matchea, el registro se lee VACIO y el control deja de frenar nada — sin error.
-      const iTermino = norm.includes('nombre') ? norm.indexOf('nombre') : norm.indexOf('término');
-      if (iTermino >= 0 && norm.includes('cómo decirlo')) {
-        cols = { termino: iTermino, como: norm.indexOf('cómo decirlo'), control: norm.indexOf('control') };
-      }
-      continue;
-    }
-    if (/^:?-{2,}:?$/.test(celdas[0].replace(/\s/g, ''))) continue;
-    // las variantes del termino vienen entre comillas simples invertidas, separadas por /
-    const variantes = (celdas[cols.termino].match(/`([^`]+)`/g) || []).map(v => v.slice(1, -1).trim()).filter(Boolean);
-    if (!variantes.length) continue;
-    const control = (cols.control >= 0 && cols.control < celdas.length ? celdas[cols.control] : '').toLowerCase();
-    out.push({ variantes, comoDecirlo: celdas[cols.como] || '', control: control === 'bloquea' ? 'bloquea' : 'avisa' });
-  }
-  return out;
-}
 
 // -- texto en el que se busca: sin bloques de codigo ni tramos citados ---
 // Se reemplaza por espacios (no se borra) para no pegar palabras que estaban separadas.
@@ -131,7 +109,7 @@ process.stdin.on('end', () => {
 
     const desnudo = textoDesnudo(contenido);
     const bloquear = [], avisar = [];
-    for (const fila of leerRegistro()) {
+    for (const fila of leerRegistroVetados(registro)) {
       for (const v of fila.variantes) {
         const hits = apariciones(desnudo, v);
         if (!hits.length) continue;

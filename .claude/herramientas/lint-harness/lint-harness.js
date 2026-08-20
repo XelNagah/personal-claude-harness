@@ -349,6 +349,7 @@ const normArch = s => s.replace(/\r\n/g, '\n').replace(/\s+$/, '');
 const { origenDe } = require('../../common/frontmatter.js');
 const { basesDeInstalacion: basesDe } = require('../../common/bases-de-instalacion.js');
 const { indicesDe } = require('../../common/indices.js');
+const { leerRegistroVetados } = require('../../common/terminos-vetados.js');
 // Encabezado = todo lo anterior a la primera fila de datos de la primera tabla. El separador
 // `|---|` va incluido: es parte de la forma que manda el Agente Multiproposito.
 function encabezadoDe(txt) {
@@ -623,32 +624,14 @@ for (const baseDir of basesDeInstalacion) {
 // que contiene los vetados por definicion.
 const farlopaPath = path.join(repo, '.claude', 'semantica', 'TERMINOLOGIA-FARLOPA.md');
 const vetadosProducto = [];
-// El termino se ubica por el NOMBRE de su columna, no por su posicion: con el nucleo la primera
+// Lo lee el modulo comun —el mismo que `lint-semantica` y el control del momento `al escribir`—,
+// que ubica el termino por el NOMBRE de su columna y no por su posicion: con el nucleo la primera
 // celda es el Codigo, y saltear el encabezado por su texto —`Término`— dejo de funcionar apenas
 // esa columna se llamo `Nombre`, con lo que la palabra `Código` del encabezado entraba a la lista
 // de vetados y marcaba 54 apariciones legitimas del texto que viaja.
-try {
-  let cols = null;
-  for (const line of fs.readFileSync(farlopaPath, 'utf8').split('\n')) {
-    const t = line.trim();
-    if (!t.startsWith('|')) continue;
-    const cells = t.split('|').slice(1, -1).map(c => c.trim());
-    if (cells.length < 3) continue;
-    if (!cols) {
-      const norm = cells.map(c => c.replace(/\*/g, '').trim().toLowerCase());
-      // `Nombre` es la forma con nucleo; `Término` la vieja, que se acepta mientras haya Agentes
-      // Desplegados sin actualizar. Sin encabezado reconocible no se lee ninguna fila.
-      const i = norm.indexOf('nombre') >= 0 ? norm.indexOf('nombre') : norm.indexOf('término');
-      if (i >= 0 && norm.includes('cómo decirlo')) cols = { termino: i };
-      continue;
-    }
-    if (/^:?-{2,}:?$/.test(cells[0].replace(/[*`\s]/g, ''))) continue;
-    const celda = cells[cols.termino] || '';
-    for (const v of celda.replace(/`/g, '').split(/[,;/]/).map(x => x.trim()).filter(x => x && x !== '—' && x !== '-')) {
-      vetadosProducto.push(v.toLowerCase());
-    }
-  }
-} catch (e) { /* sin registro de farlopa: no hay nada contra que barrer */ }
+for (const fila of leerRegistroVetados(farlopaPath)) {
+  for (const v of fila.variantes) vetadosProducto.push(v.toLowerCase());
+}
 
 // Los bloques SIN lenguaje son arboles de estructura y salidas de consola: nombres de archivo,
 // no texto para reescribir. El texto que se escribe literal en el repo destino siempre viene

@@ -7,6 +7,11 @@
 const fs = require('fs'), path = require('path');
 
 const { indicesDe, problemasDeIndices } = require('../../common/indices.js');
+// El registro de vetados lo lee el modulo comun, que es tambien el que lee el control del momento
+// `al escribir`. Cuando cada uno lo leia por su cuenta, el control exigia comillas simples
+// invertidas que este lint no exigia y que ningun archivo documentaba: un repo que poblara su
+// registro sin ellas dejaba al control leyendo un registro vacio, en verde y sin frenar nada.
+const { filasVetadas } = require('../../common/terminos-vetados.js');
 const root = path.resolve(process.argv[2] || '.claude/semantica');
 // Los dos registros se descubren por frontmatter y se distinguen por sus COLUMNAS declaradas, que
 // es lo que dice cual es cual: aca la division no es por origen sino por funcion. Si el frontmatter
@@ -67,8 +72,8 @@ function resolverRef(t, fdir) {
 
 // separar celdas de una columna en terminos: coma/;, descartando vacios y guiones
 const splitTerms = s => (s || '').split(/[,;]/).map(x => x.trim()).filter(x => x && x !== '—' && x !== '-');
-// la columna Termino de la farlopa agrupa variantes con "/"; ademas viene con backticks
-const splitFarlop = s => (s || '').replace(/`/g, '').split(/[,;/]/).map(x => x.trim()).filter(x => x && x !== '—' && x !== '-');
+// El desarme de la celda del termino de la farlopa NO vive aca: es `variantesDeNombre` del modulo
+// comun, para que el control que frena la escritura lea exactamente lo mismo que este lint.
 
 // -- filas de los dos registros, leidas por NOMBRE de columna ---------------
 // Con el nucleo la primera celda es el Codigo, asi que leer por posicion hacia que el glosario
@@ -118,11 +123,9 @@ const vetados = [];   // termino pelado, en minuscula
 // distincion el lint decia `vetados: 54` y la Pantalla de bienvenida `39 vetados`, los dos con la
 // misma palabra para cosas distintas, y no habia manera de saber cual miraba que.
 let relacionesVetadas = 0;
-for (const f of filasDe(farlTxt, 'c[oó]mo decirlo')) {
-  const termino = primeraDe(f, ['Nombre', 'Término']);
-  if (!termino) continue;
+for (const fila of filasVetadas(farlTxt)) {
   relacionesVetadas++;
-  for (const v of splitFarlop(termino)) vetados.push(v.toLowerCase());
+  for (const v of fila.variantes) vetados.push(v.toLowerCase());
 }
 
 // [1] links de detalle rotos (en GLOSARIO.md)

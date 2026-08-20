@@ -13,6 +13,7 @@ const path = require('path');
 const fm = require(path.resolve('.claude/common/frontmatter.js'));
 const idx = require(path.resolve('.claude/common/indices.js'));
 const ide = require(path.resolve('.claude/common/identidad.js'));
+const tv = require(path.resolve('.claude/common/terminos-vetados.js'));
 
 let malos = 0, casos = 0;
 function caso(nombre, obtenido, esperado) {
@@ -208,6 +209,52 @@ caso('sin acento, con enfasis y citada',
   { titulo: 'T', proposito: 'Con marcas.' });
 // Un directorio que no existe no es un error: el buscador prueba candidatos que pueden no estar.
 caso('directorio inexistente', ide.leerIdentidad(path.join(TMP, 'no-existe')), { titulo: ide.SIN, proposito: ide.SIN });
+console.log('\n== La celda del termino de la Terminologia Farlopa ==');
+// El defecto que motivo el modulo: el registro tenia DOS lectores con contratos incompatibles. El
+// lint quitaba las comillas simples invertidas si estaban; el control del momento `al escribir` las
+// EXIGIA y salteaba la fila que no las trajera. Como el formato no estaba documentado en ninguna
+// parte —y la copia que viaja llega con la tabla vacia—, un repo que poblara su registro sin
+// comillas dejaba al control leyendo un registro VACIO: contestaba en verde sin frenar nada. El
+// contrato es tolerar, no exigir.
+caso('con comillas', tv.variantesDeNombre('`levelear`'), ['levelear']);
+caso('SIN comillas', tv.variantesDeNombre('levelear'), ['levelear']);
+caso('hermanas con comillas', tv.variantesDeNombre('`levelear` / `leveleo`'), ['levelear', 'leveleo']);
+caso('hermanas SIN comillas', tv.variantesDeNombre('levelear / leveleo / leveling'), ['levelear', 'leveleo', 'leveling']);
+caso('con resaltado', tv.variantesDeNombre('**`levelear`**'), ['levelear']);
+caso('expresion de varias palabras', tv.variantesDeNombre('capa de plugins'), ['capa de plugins']);
+caso('separada por coma', tv.variantesDeNombre('uno, dos'), ['uno', 'dos']);
+caso('celda vacia', tv.variantesDeNombre(''), []);
+caso('celda con guion largo', tv.variantesDeNombre('—'), []);
+caso('celda ausente', tv.variantesDeNombre(undefined), []);
+
+console.log('\n== Las filas del registro se ubican por NOMBRE de columna ==');
+// Leer por posicion hacia que la primera celda —el Codigo— entrara como termino vetado: el registro
+// dejaba de detectar nada, en verde y sin error (conocimiento `cambiar-la-forma-de-un-registro`).
+const REG = '| Código | Nombre | Descripción | Cómo decirlo | Control | Detalle |\n'
+  + '| --- | --- | --- | --- | --- | --- |\n'
+  + '| Local-0001 | `uno` | sig | asi | bloquea | — |\n'
+  + '| Local-0002 | dos / tres | sig | asa | | — |\n';
+caso('cuantas filas', tv.filasVetadas(REG).length, 2);
+caso('el Codigo no entra como termino', tv.filasVetadas(REG)[0].variantes, ['uno']);
+caso('control bloquea', tv.filasVetadas(REG)[0].control, 'bloquea');
+caso('control vacio se lee avisa', tv.filasVetadas(REG)[1].control, 'avisa');
+caso('las hermanas de una fila', tv.filasVetadas(REG)[1].variantes, ['dos', 'tres']);
+// La forma vieja del encabezado se acepta mientras haya Agentes Desplegados sin actualizar.
+caso('columna vieja Término',
+  tv.filasVetadas('| Término | Cómo decirlo |\n| --- | --- |\n| uno | asi |\n')[0].variantes, ['uno']);
+// Sin encabezado reconocible no se lee NINGUNA fila: es preferible el vacio explicito a leer las
+// columnas corridas. Quien lo nota es el banco del control, que exige veredicto.
+caso('sin encabezado reconocible', tv.filasVetadas('| A | B |\n| --- | --- |\n| uno | dos |\n'), []);
+caso('texto sin tabla', tv.filasVetadas('solo texto\n'), []);
+// Una tabla anterior en el mismo `.md` no se lee como si fuera el registro.
+caso('la tabla que no es el registro se saltea',
+  tv.filasVetadas('| X | Y |\n| --- | --- |\n| a | b |\n\n' + REG).length, 2);
+// Las tuberias escapadas no corren las columnas: quien lea la de al lado se lleva otro contenido.
+caso('tuberia escapada en una celda',
+  tv.filasVetadas('| Código | Nombre | Cómo decirlo |\n| --- | --- | --- |\n| L-1 | uno | a \\| b |\n')[0].comoDecirlo, 'a | b');
+// Un registro que no existe se lee vacio, no revienta: el subsistema puede no estar instalado.
+caso('registro inexistente', tv.leerRegistroVetados(path.join(TMP, 'no-esta.md')), []);
+
 fs.rmSync(TMP, { recursive: true, force: true });
 
 console.log(`\ncasos: ${casos}`);
