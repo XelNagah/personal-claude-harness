@@ -13,10 +13,67 @@ const LINT = '.claude/planes/lint-planes/lint-planes.js';
 // dentro de una prueba envejece igual que dentro de un registro.
 const filasDelBanco = () => (reg().match(/^\| Local-/gm) || []).length;
 
+// El banco FABRICA su registro y sus planes; no copia los del repo. Antes copiaba `.claude/planes`
+// entero y rompía archivos por su nombre real y filas por su código, que son planes de ESTE repo. En
+// un Agente Desplegado —donde el registro de planes es Aprendizaje propio y esos planes no existen—
+// el banco no fallaba: REVENTABA con ENOENT en el primer caso que tocaba un archivo por nombre, y se
+// llevaba puesta la corrida entera, con los últimos diez casos sin ejecutar. Reportado el 21/08/2026
+// por un Agente Desplegado cuyo `descartados/` ni siquiera existía. Es la forma «escenario prestado»
+// del conocimiento `controles-que-no-avisan`, y la Decisión `Local-0072` es la que la prohíbe.
+//
+// Lo único que se copia del subsistema instalado es lo que NO es contenido del repo: el par de
+// estados, el manifiesto y el README, que son Componentes del Agente Multipropósito e iguales en
+// todas las instalaciones. El registro y los planes se fabrican con datos sintéticos.
+const DEL_SUBSISTEMA = ['ESTADOS.md', 'ESTADOS-LOCAL.md', 'MANIFIESTO.md', 'README.md'];
+
+// Los tres planes que algún caso rompe por nombre de archivo. Se nombran una sola vez acá, para que
+// ningún caso vuelva a escribir el nombre de un plan real.
+const EJEC = 'ejecutados/Plan de prueba 01.md';
+const DESC = 'descartados/Plan de prueba 02.md';
+const PEND = 'pendientes/Plan de prueba 15.md';
+
+// La fecha de apertura de los planes vivos se deriva del reloj en vez de escribirse: un plan con
+// fecha fija envejece solo y cruza el umbral de antigüedad un día cualquiera, poniendo en rojo un
+// caso que no cambió (medido el 19/08/2026 sobre este mismo banco).
+const hoyAA = () => {
+  const d = new Date();
+  return [String(d.getFullYear()).slice(2), String(d.getMonth() + 1).padStart(2, '0'),
+          String(d.getDate()).padStart(2, '0')].join('-');
+};
+const nn = n => String(n).padStart(2, '0');
+const relDe = n => `pendientes/Plan de prueba ${nn(n)}.md`;
+const enlace = rel => `[${rel}](${rel.replace(/ /g, '%20')})`;
+
+function registroSintetico() {
+  const hoy = hoyAA();
+  const fila = (n, desc, estado, creado, cerrado, rel) =>
+    `| Local-${String(n).padStart(4, '0')} | Plan de prueba ${nn(n)} | ${desc} | ${estado} | ${creado} | ${cerrado} | — | ${enlace(rel)} |`;
+  const filas = [
+    fila(1, 'Plan terminado, con sus notas de implementación', 'Ejecutado', '26-07-18', '26-07-18', EJEC),
+    fila(2, 'Plan abandonado, con su motivo escrito', 'Descartado', '26-07-18', '26-07-19', DESC),
+  ];
+  for (let n = 3; n <= 20; n++) filas.push(fila(n, `Plan vivo de prueba, el número ${n}`, 'Nuevo', hoy, '—', relDe(n)));
+  return '---\nindice: Registro de planes\norigen: agente-desplegado\n'
+    + 'columnas: [Código, Nombre, Descripción, Estado, Fecha de creación, Fecha de cierre, Origen, Detalle]\n'
+    + 'descripcion: de qué se trata el plan\n---\n\n# Registro de planes\n\n'
+    + '| Código | Nombre | Descripción | Estado | Fecha de creación | Fecha de cierre | Origen | Detalle |\n'
+    + '|--------|--------|-------------|--------|-------------------|-----------------|--------|---------|\n'
+    + filas.join('\n') + '\n';
+}
+
 function armar() {
   fs.rmSync(BANCO, { recursive: true, force: true });
-  fs.cpSync(ORIGEN, BANCO, { recursive: true });
-  fs.rmSync(path.join(BANCO, 'lint-planes'), { recursive: true, force: true });
+  for (const c of ['pendientes', 'ejecutados', 'descartados']) fs.mkdirSync(path.join(BANCO, c), { recursive: true });
+  for (const f of DEL_SUBSISTEMA) {
+    const src = path.join(ORIGEN, f);
+    if (fs.existsSync(src)) fs.copyFileSync(src, path.join(BANCO, f));
+  }
+  escribir(registroSintetico());
+  const cuerpo = (n, estado, extra) =>
+    `# Plan de prueba ${nn(n)}\n\n**Estado: ${estado}.**\n\nDatos sintéticos: este plan existe solo para romperlo.\n${extra || ''}`;
+  fs.writeFileSync(path.join(BANCO, EJEC), cuerpo(1, 'Ejecutado', '\n## Notas de implementación\n\nHecho.\n'));
+  fs.writeFileSync(path.join(BANCO, DESC), cuerpo(2, 'Descartado', '\n## Notas de cierre\n\nNo se hace: era de prueba.\n'));
+  for (let n = 3; n <= 20; n++) fs.writeFileSync(path.join(BANCO, relDe(n)), cuerpo(n, 'Nuevo'));
 }
 const reg = () => fs.readFileSync(path.join(BANCO, 'PLANES.md'), 'utf8');
 const escribir = t => fs.writeFileSync(path.join(BANCO, 'PLANES.md'), t);
@@ -44,7 +101,7 @@ caso('código repetido', 'NUCLEO DEL INDICE (código, Nombre, Descripción, orde
 caso('Nombre vacío', 'NUCLEO DEL INDICE (código, Nombre, Descripción, orden)',
   () => escribir(reg().replace(/(\| Local-0007 \| )[^|]+(\|)/, '$1 $2')));
 caso('Nombre duplicado', 'NUCLEO DEL INDICE (código, Nombre, Descripción, orden)',
-  () => escribir(reg().replace(/(\| Local-0007 \| )[^|]+(\|)/, '$1Habilidad de ejecución de planes $2')));
+  () => escribir(reg().replace(/(\| Local-0007 \| )[^|]+(\|)/, '$1Plan de prueba 06 $2')));
 caso('Descripción vacía', 'NUCLEO DEL INDICE (código, Nombre, Descripción, orden)',
   () => escribir(reg().replace(/(\| Local-0008 \| [^|]+\| )[^|]+(\|)/, '$1— $2')));
 caso('filas fuera de orden ascendente', 'NUCLEO DEL INDICE (código, Nombre, Descripción, orden)',
@@ -54,7 +111,7 @@ caso('filas fuera de orden ascendente', 'NUCLEO DEL INDICE (código, Nombre, Des
 caso('archivo sin fila en el registro', 'ARCHIVOS SIN FILA EN PLANES.md',
   () => escribir(reg().split('\n').filter(x => !x.startsWith('| Local-0015 ')).join('\n')));
 caso('fila colgada (archivo inexistente)', 'FILAS COLGADAS (archivo no existe)',
-  () => escribir(reg().replace(/(\| Local-0015 \|[^\n]*)pendientes\/Estructura del documento de Plan\.md\)/,
+  () => escribir(reg().replace(/(\| Local-0015 \|[^\n]*)pendientes\/[^)]*\)/,
                                '$1pendientes/No existe.md)')));
 caso('estado que no está en ESTADOS.md', 'ESTADO INVALIDO (no esta en ESTADOS.md)',
   () => escribir(reg().replace(/(\| Local-0015 \| [^|]+\| [^|]+\| )Nuevo /, '$1Inventado ')));
@@ -63,13 +120,13 @@ caso('estado vs carpeta inconsistente', 'ESTADO vs CARPETA INCONSISTENTE',
 caso('cierre a medias (terminal sin fecha de cierre)', 'CIERRES A MEDIAS',
   () => escribir(reg().replace(/(\| Local-0001 \| [^|]+\| [^|]+\| Ejecutado \| 26-07-18 \| )26-07-18 /, '$1— ')));
 caso('descartado sin sección de notas de cierre', 'DESCARTADOS SIN MOTIVO',
-  () => { const f = path.join(BANCO, 'descartados/Restaurar la portabilidad copiar y pegar del orquestador.md');
+  () => { const f = path.join(BANCO, DESC);
           fs.writeFileSync(f, fs.readFileSync(f, 'utf8').replace(/^#{1,6}\s+Notas de cierre.*$/mi, '## Otra cosa')); });
 caso('ejecutado sin sección de implementación', 'EJECUTADOS SIN SECCIÓN DE IMPLEMENTACIÓN',
-  () => { const f = path.join(BANCO, 'ejecutados/Excluir tmp del barrido de los lints de subsistema.md');
+  () => { const f = path.join(BANCO, EJEC);
           fs.writeFileSync(f, fs.readFileSync(f, 'utf8').replace(/^#{1,6}\s+(Notas de )?[Ii]mplementaci[oó]n.*$/m, '## Otra cosa')); });
 caso('pendiente con marcador de resuelto', 'PENDIENTES CON MARCADOR DE RESUELTO (¿mover a ejecutados?)',
-  () => { const f = path.join(BANCO, 'pendientes/Estructura del documento de Plan.md');
+  () => { const f = path.join(BANCO, PEND);
           fs.appendFileSync(f, '\n\n## Notas de implementación\n\nHecho.\n'); });
 caso('columna declarada que la tabla no tiene', 'INDICES DECLARADOS (frontmatter vs tabla vs manifiesto)',
   () => escribir(reg().replace('| Código | Nombre |', '| Codigo | Nombre |')));
@@ -78,14 +135,14 @@ caso('fila sin Detalle (no apunta a ningún archivo)', 'NUCLEO DEL INDICE (códi
 caso('En pausa sin estado_a_retomar', 'EN PAUSA SIN estado_a_retomar VALIDO',
   () => escribir(reg().replace(/(\| Local-0015 \| [^|]+\| [^|]+\| )Nuevo /, '$1En pausa ')));
 caso('estado_a_retomar en un estado que no es En pausa', 'estado_a_retomar EN UN ESTADO QUE NO ES EN PAUSA',
-  () => fs.appendFileSync(path.join(BANCO, 'pendientes/Estructura del documento de Plan.md'),
+  () => fs.appendFileSync(path.join(BANCO, PEND),
                           '\n**estado_a_retomar:** En curso\n'));
 // "En pausa" sale ademas hacia Diferido y Descartado, pero de esos no se RETOMA. Mientras los
 // valores validos se derivaban de la fila "En pausa", este caso pasaba: el lint leia "Descartado"
 // entre los destinos declarados y lo daba por bueno, sin emitir nada. Se derivan de los origenes.
 caso('estado_a_retomar con una salida de cierre (no es un estado de retomada)', 'EN PAUSA SIN estado_a_retomar VALIDO',
   () => { escribir(reg().replace(/(\| Local-0015 \| [^|]+\| [^|]+\| )Nuevo /, '$1En pausa '));
-          fs.appendFileSync(path.join(BANCO, 'pendientes/Estructura del documento de Plan.md'),
+          fs.appendFileSync(path.join(BANCO, PEND),
                             '\n**estado_a_retomar:** Descartado\n'); });
 const romperEstados = f => { const p = path.join(BANCO, 'ESTADOS.md'); fs.writeFileSync(p, f(fs.readFileSync(p, 'utf8'))); };
 caso('grafo: un terminal declara salidas', 'GRAFO DE TRANSICIONES MAL FORMADO (ESTADOS.md)',
@@ -96,7 +153,7 @@ caso('grafo: un estado de la Base sin fila de transiciones', 'GRAFO DE TRANSICIO
   () => romperEstados(t => t.replace('\n| Listo | Análisis, En curso, Diferido, Descartado |', '')));
 caso('En pausa envejecido (interrumpido hace demasiado)', 'ACTIVOS ENVEJECIDOS (> 30 dias activo o en pausa: ¿sigue/retomar/diferido/descartado?)',
   () => { escribir(reg().replace(/(\| Local-0015 \| [^|]+\| [^|]+\| )Nuevo \| [0-9]{2}-[0-9]{2}-[0-9]{2}/, '$1En pausa | 20-01-01'));
-          fs.appendFileSync(path.join(BANCO, 'pendientes/Estructura del documento de Plan.md'), '\n**estado_a_retomar:** En curso\n'); });
+          fs.appendFileSync(path.join(BANCO, PEND), '\n**estado_a_retomar:** En curso\n'); });
 
 let malos = 0;
 console.log('== CASO MALO: cada control tiene que encenderse ==\n');
@@ -170,7 +227,7 @@ if (total(tub) !== 0) malos++;
 console.log('\n== RUTA CON % : no puede voltear el lint ==');
 armar();
 {
-  const viejo = 'pendientes/Estructura del documento de Plan.md';
+  const viejo = PEND;
   const nuevo = 'pendientes/100% de cobertura.md';
   fs.renameSync(path.join(BANCO, viejo), path.join(BANCO, nuevo));
   escribir(reg().split(viejo).join(nuevo));
@@ -188,11 +245,11 @@ if (!okPorciento) malos++;
 console.log('\n== RUTA ENTRE ANGULOS: la forma <ruta con espacios y parentesis> se cruza bien ==');
 armar();
 {
-  const viejo = 'pendientes/Estructura del documento de Plan.md';
-  const nuevo = 'pendientes/Estructura del documento (forma B).md';
+  const viejo = PEND;
+  const nuevo = 'pendientes/Plan de prueba (forma B).md';
   fs.renameSync(path.join(BANCO, viejo), path.join(BANCO, nuevo));
   escribir(reg().replace(/\| Local-0015 \|([^\n]*\| )\[[^\]]*\]\([^\n|]*\)( \|)/,
-    (_, medio, fin) => `| Local-0015 |${medio}[Estructura del documento (forma B).md](<${nuevo}>)${fin}`));
+    (_, medio, fin) => `| Local-0015 |${medio}[Plan de prueba (forma B).md](<${nuevo}>)${fin}`));
 }
 const conAngulos = hallazgos(correr());
 console.log(`${total(conAngulos) === 0 ? 'OK  ' : 'FALLA'} link con <ruta> → ${total(conAngulos)} hallazgos` +
@@ -206,7 +263,7 @@ armar();
 const esperadasDos = filasDelBanco();   // partir el registro en dos no cambia el total de filas
 {
   const t = reg(), l = t.split('\n');
-  const corte = l.findIndex(x => x.startsWith('| Local-0041 '));
+  const corte = l.findIndex(x => x.startsWith('| Local-0011 '));
   const filas = l.slice(corte).filter(x => x.startsWith('| Local-'));
   escribir(l.slice(0, corte).join('\n') + '\n');
   fs.writeFileSync(path.join(BANCO, 'PLANES-EXTRA.md'),
@@ -276,7 +333,7 @@ const d = new Date();
 const abiertoHoy = [String(d.getFullYear()).slice(2), String(d.getMonth() + 1).padStart(2, '0'),
                     String(d.getDate()).padStart(2, '0')].join('-');
 escribir(reg().replace(/(\| Local-0015 \| [^|]+\| [^|]+\| )Nuevo \| [0-9]{2}-[0-9]{2}-[0-9]{2}/, `$1En pausa | ${abiertoHoy}`));
-fs.appendFileSync(path.join(BANCO, 'pendientes/Estructura del documento de Plan.md'),
+fs.appendFileSync(path.join(BANCO, PEND),
                   '\n**estado_a_retomar:** En curso\n');
 const pausaOk = hallazgos(correr());
 console.log(`${total(pausaOk) === 0 ? 'OK  ' : 'FALLA'} En pausa con estado_a_retomar válido → ${total(pausaOk)} hallazgos`);

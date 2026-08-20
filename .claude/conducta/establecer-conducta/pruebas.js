@@ -8,17 +8,73 @@
 // repartidor ubica `Momento` y `Clase` por nombre de columna, y si una se renombra no encuentra
 // ninguna y cada fila queda con el momento vacio, sin emitir un error.
 //
-// Corre contra el registro REAL, no contra un banco: el repartidor resuelve su registro desde su
-// propia ubicacion, y eso es correcto para un hook (siempre opera sobre el repo donde esta
-// instalado, y su directorio de trabajo no es confiable). Lo que se verifica es la cadena completa:
-// leer el registro, resolver el momento del evento, despachar por clase.
+// Corre contra una COPIA del repo, no contra el repo real: el repartidor resuelve su registro desde
+// su propia ubicacion, y eso es correcto para un hook (siempre opera sobre el repo donde esta
+// instalado, y su directorio de trabajo no es confiable), asi que darle otro escenario es correr una
+// copia suya en otro arbol. Lo que se verifica es la cadena completa: leer el registro, resolver el
+// momento del evento, despachar por clase.
 //
 // Uso: node .claude/conducta/establecer-conducta/pruebas.js   (desde la raíz del repo)
 const path = require('path');
 const { spawnSync } = require('child_process');
 
-const HOOK = path.join(__dirname, 'establecer-conducta.js');
-const REPO = path.resolve(__dirname, '..', '..', '..');
+const fs = require('fs');
+const os = require('os');
+const REPO_REAL = path.resolve(__dirname, '..', '..', '..');
+
+// EL BANCO FABRICA SU REPO. El repartidor resuelve todo desde su propia ubicación —correcto para un
+// hook, que siempre opera sobre el repo donde está instalado—, así que la única forma de darle otro
+// escenario es correr una COPIA suya en otro árbol. Se copia `.claude/` entero y después se pisan los
+// tres registros que el contraste lee, con datos sintéticos.
+//
+// Antes corría contra los registros reales de este repo y esperaba encontrar filas de acá: el término
+// `churn` vetado, y tres Decisiones por su código. En un Agente Desplegado esas filas no existen —los
+// registros de semántica y decisiones son Aprendizaje de cada repo, y viajan vacíos—, así que el banco
+// daba 10 de 38 en rojo el día que se instalaba. Dos de esos rojos eran justamente los que prueban el
+// control de terminología vetada: el banco decía que el control no frena, cuando sí frena. Reportado
+// el 21/08/2026 por un Agente Desplegado. Es la forma «escenario prestado» del conocimiento
+// `controles-que-no-avisan`, y la Decisión `Local-0072` es la que la prohíbe.
+//
+// Lo que NO se fabrica es el subsistema `conducta` en sí —momentos, clases, reglas y controles— ni
+// `common/`: son Componentes del Agente Multipropósito, iguales en todas las instalaciones, y son
+// justamente lo que este banco viene a probar.
+// El árbol va al directorio temporal del sistema y no a `.claude/tmp/` —que es donde el repo pide
+// dejar los temporales— por un impedimento del copiado: copiar `.claude/` adentro de `.claude/tmp/`
+// es copiar una carpeta dentro de sí misma, y la biblioteca lo rechaza aunque el filtro excluya el
+// destino. Se borra al terminar, así que no queda nada fuera del repo.
+const REPO = fs.mkdtempSync(path.join(os.tmpdir(), 'banco-conducta-'));
+fs.cpSync(path.join(REPO_REAL, '.claude'), path.join(REPO, '.claude'), {
+  recursive: true,
+  // `tmp` es material descartable y puede pesar; `.respaldo-amp` son copias congeladas del `.claude/`
+  // que dejaron corridas viejas del actualizador. Ninguno de los dos es parte del escenario.
+  filter: src => !/[\\/](tmp|\.respaldo-amp)([\\/]|$)/.test(src),
+});
+
+// -- los tres registros que lee el contraste, con datos sintéticos --------------
+// Los términos y las decisiones son inventados a propósito: palabras corrientes del español que no
+// están vetadas en ningún registro real, y decisiones que no son de ningún repo. Cada fila existe
+// para que un mensaje concreto de más abajo la encuentre.
+const escribirRegistro = (rel, texto) => fs.writeFileSync(path.join(REPO, '.claude', rel), texto, 'utf8');
+escribirRegistro('semantica/GLOSARIO.md',
+  '---\nindice: Glosario\norigen: agente-desplegado\n'
+  + 'columnas: [Código, Nombre, Descripción, Alias, Propuestos, Detalle]\ndescripcion: qué significa el término\n---\n\n'
+  + '# Glosario\n\n| Código | Nombre | Descripción | Alias | Propuestos | Detalle |\n|---|---|---|---|---|---|\n'
+  + '| Local-0031 | Damajuana | El envase de vidrio donde se guarda el líquido de prueba | — | — | — |\n');
+escribirRegistro('semantica/TERMINOLOGIA-FARLOPA.md',
+  '---\nindice: Terminología Farlopa\norigen: agente-desplegado\n'
+  + 'columnas: [Código, Nombre, Descripción, Cómo decirlo, Control, Detalle]\n'
+  + 'descripcion: el significado que este registro veta para ese término\n---\n\n'
+  + '# Terminología Farlopa\n\n| Código | Nombre | Descripción | Cómo decirlo | Control | Detalle |\n|---|---|---|---|---|---|\n'
+  + '| Local-0021 | `berenjena` | dato de prueba: término sin uso legítimo posible | hortaliza | bloquea | — |\n'
+  + '| Local-0022 | `capa de instalación` | la carpeta que viaja adentro del plugin | fase | avisa | — |\n');
+escribirRegistro('decisiones/INDICE.md',
+  '---\nindice: Decisiones del proyecto\norigen: agente-desplegado\n'
+  + 'columnas: [Código, Nombre, Descripción, Fecha, Estado, Detalle]\ndescripcion: qué se decidió y por qué\n---\n\n'
+  + '# Decisiones del proyecto\n\n| Código | Nombre | Descripción | Fecha | Estado | Detalle |\n|---|---|---|---|---|---|\n'
+  + '| Local-0011 | Los planes guardan su prioridad en el registro | Cada plan guarda la prioridad que se le asignó, en una columna del registro de planes. | 2026-01-01 | vigente | — |\n'
+  + '| Local-0012 | Los lints corren solos al terminar una tarea | Los lints de subsistema corren solos al cerrar cada tarea, sin que nadie los invoque. | 2026-01-02 | vigente | — |\n');
+
+const HOOK = path.join(REPO, '.claude', 'conducta', 'establecer-conducta', 'establecer-conducta.js');
 const MD = path.join(REPO, 'caso-de-prueba-que-no-existe.md').replace(/\\/g, '/');
 
 function disparar(entrada, ms = 120000) {
@@ -72,7 +128,7 @@ console.log('== ENTREGA: cada evento despacha las reglas de su momento ==');
 // La clase `Bloquear` en acción: el mismo momento, con un término que no tiene uso legítimo posible.
 {
   const r = disparar({ hook_event_name: 'PreToolUse', tool_name: 'Write',
-    tool_input: { file_path: MD, content: 'hay mucho churn en el repo\n' } });
+    tool_input: { file_path: MD, content: 'hay mucha berenjena en el repo\n' } });
   chequear('PreToolUse frena la escritura con un término vetado', r.decision === 'deny', r.decision || '(nada)');
 }
 
@@ -110,20 +166,20 @@ console.log('\n== NO ENTREGA donde no corresponde ==');
   // El código entró al momento con la decisión `Local-0052`, pero solo avisando: el mismo término
   // que en un `.md` rechaza la escritura, acá tiene que informarse y dejarla pasar.
   const r = disparar({ hook_event_name: 'PreToolUse', tool_name: 'Write',
-    tool_input: { file_path: path.join(REPO, 'caso.js').replace(/\\/g, '/'), content: '// hay que levelear\n' } });
+    tool_input: { file_path: path.join(REPO, 'caso.js').replace(/\\/g, '/'), content: '// hay mucha berenjena\n' } });
   chequear('un .js dispara «al escribir»', !!r.contexto, r.contexto.slice(0, 50) || '(no emitió nada)');
   chequear('  …y en código nunca frena, aunque el término bloquee en texto',
     r.decision !== 'deny', r.decision || 'sin decisión, como debe');
 }
 {
   const r = disparar({ hook_event_name: 'PreToolUse', tool_name: 'Write',
-    tool_input: { file_path: path.join(REPO, 'caso.json').replace(/\\/g, '/'), content: 'hay mucho churn\n' } });
+    tool_input: { file_path: path.join(REPO, 'caso.json').replace(/\\/g, '/'), content: 'hay mucha berenjena\n' } });
   chequear('un archivo que no es texto ni código no dispara «al escribir»', !r.crudo, r.crudo.slice(0, 60) || '(nada)');
 }
 {
   const md = path.join(REPO, 'caso-de-prueba-vetado.md').replace(/\\/g, '/');
   const r = disparar({ hook_event_name: 'PreToolUse', tool_name: 'Write',
-    tool_input: { file_path: md, content: 'hay que levelear el repo\n' } });
+    tool_input: { file_path: md, content: 'hay mucha berenjena en el repo\n' } });
   chequear('el mismo término en un .md sí frena', r.decision === 'deny', r.decision || '(no frenó)');
 }
 {
@@ -216,23 +272,23 @@ const bloqueDelContraste = (ctx) => {
 {
   const c = contrasteDe('quiero que los planes guarden la prioridad');
   chequear('«…los planes guarden la prioridad» trae el contraste', c.includes(H));
-  chequear('  …y encabeza la Decisión de estados de planes (Local-0005)', c.includes('Local-0005'),
-    c.includes('Local-0005') ? 'presente' : 'ausente');
+  chequear('  …y encabeza la Decisión de prioridad de planes (Local-0011)', c.includes('Local-0011'),
+    c.includes('Local-0011') ? 'presente' : 'ausente');
   // Preferencia Base-0016: el código de una Entrada va precedido por su tipo. El patrón se arma en
   // runtime para no dejar en este archivo la adjacencia «Decisión»+número, que la Decisión de no
   // citar decisiones del harness en lo que viaja marca como cita colgante en el repo destino.
-  const conTipo = new RegExp('Decisión' + '\\s+Local-0005');
+  const conTipo = new RegExp('Decisión' + '\\s+Local-0011');
   chequear('  …con el tipo de entrada delante del código (Base-0016)', conTipo.test(c));
 }
 {
   const c = contrasteDe('se me ocurre que los lints deberían correr solos cuando termino una tarea');
-  chequear('«…los lints deberían correr solos…» trae la Decisión de lints co-ubicados (Local-0008)',
-    c.includes(H) && c.includes('Local-0008'), c.includes('Local-0008') ? 'presente' : 'ausente');
+  chequear('«…los lints deberían correr solos…» trae la Decisión de lints que corren solos (Local-0012)',
+    c.includes(H) && c.includes('Local-0012'), c.includes('Local-0012') ? 'presente' : 'ausente');
 }
 {
   const c = contrasteDe('a la carpeta que viaja adentro del plugin la llamaría capa de instalación');
-  chequear('«…la llamaría capa de instalación» trae la relación vetada capa=fase (Local-0034)',
-    c.includes(H) && c.includes('Local-0034'), c.includes('Local-0034') ? 'presente' : 'ausente');
+  chequear('«…la llamaría capa de instalación» trae la relación vetada `capa de instalación`=fase (Local-0022)',
+    c.includes(H) && c.includes('Local-0022'), c.includes('Local-0022') ? 'presente' : 'ausente');
   chequear('  …nombrada como relación vetada (Terminología Farlopa)', c.includes('Terminología Farlopa'));
   // Tope duro: nunca más de tres filas, aunque peguen muchas. Se cuentan los renglones de candidato,
   // que empiezan con «- » dentro del bloque del contraste.
@@ -286,4 +342,5 @@ for (const [nombre, entrada] of [
 
 console.log(`\ncasos: ${total}`);
 console.log(malos ? `${malos} FALLARON.` : 'TODO VERDE.');
+try { fs.rmSync(REPO, { recursive: true, force: true }); } catch { /* el escenario es descartable */ }
 process.exit(malos ? 1 : 0);

@@ -243,13 +243,18 @@ function conColumnaPropia() {
     (texto.split(/\r?\n/).find(l => l.includes('GLOSARIO.md')) || 'ninguna línea lo nombra').trim());
 }
 {
-  // Los bancos de pruebas viajan pero no se actualizan: se instalan y listo. Si se compararan, todo
-  // repo que corriera sus pruebas quedaría marcado para siempre.
+  // Los bancos de pruebas se actualizan como cualquier otro Componente de la Base. Este caso decía
+  // lo contrario hasta el 21/08/2026, con el argumento de que compararlos dejaría marcado para
+  // siempre a todo repo que corriera sus pruebas — lo que daba por sentado que cada repo ajusta su
+  // banco a lo que tiene registrado. La Decisión `Local-0072` lo prohíbe: un banco que viaja fabrica
+  // su escenario y no lee ningún registro del repo destino, así que no hay nada que ajustar ni que
+  // preservar. Mientras el salteo estuvo, el arreglo de un control llegaba al destino sin el banco
+  // que lo mide, y el control de cierre de allá seguía en rojo por un defecto ya corregido.
   armarAlDia();
   escribir('planes/lint-planes/pruebas.js', '// otra cosa\n');
   const { texto } = correr(REPO_PRUEBA);
-  chequear('un banco de pruebas distinto NO se marca (se instala, no se actualiza)',
-    !marca(texto, 'pruebas.js'));
+  chequear('un banco de pruebas divergente SÍ se marca (se actualiza como el resto de la Base)',
+    marca(texto, 'pruebas.js'));
 }
 
 console.log('\n== ESTRUCTURA ==');

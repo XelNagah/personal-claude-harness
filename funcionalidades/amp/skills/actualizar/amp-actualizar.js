@@ -198,7 +198,15 @@ function chequearContenido(add) {
     return;
   }
   for (const rel of listarBase('', [])) {
-    if (/(^|\/)pruebas\.js$/.test(rel)) continue;   // banco de pruebas: se instala, no se actualiza
+    // Los bancos de pruebas SE ACTUALIZAN como cualquier otro Componente de la Base. Antes se
+    // salteaban, con el argumento de que compararlos dejaba marcado para siempre a todo repo que
+    // corriera sus pruebas. Ese argumento daba por sentado que cada repo ajusta su banco a lo que
+    // tiene registrado —y eso es justo lo que la Decision `Local-0072` prohibe: un banco que viaja
+    // fabrica su escenario y no lee ningun registro del repo destino, asi que no hay nada que
+    // ajustar y nada que preservar. Salteandolos, un Agente Desplegado recibia el mecanismo
+    // arreglado y el banco viejo, y su control de cierre seguia en rojo por un defecto ya
+    // corregido: medido el 21/08/2026 en un Agente Desplegado, 6 de 20 casos en rojo despues de
+    // actualizar, y hubo que copiar el banco a mano.
     const destino = path.join(claude, rel);
     if (!existe(destino)) {
       // La ausencia NO siempre la reporta otro chequeo: los de arriba nombran a mano el MANIFIESTO,
