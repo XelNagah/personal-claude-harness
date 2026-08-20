@@ -441,6 +441,13 @@ if (basesDeInstalacion.length) {
     // saltea la carpeta entera y un modulo compartido que nunca se copio a `base/` sale en verde —
     // verificado borrando `base/common/frontmatter.js` el 01/08/2026: no lo marco nadie.
     if (!carpeta.includes('/') && !INFRA_RAIZ.has(carpeta)) continue;
+    // Una carpeta de la que viaja SOLO un `.gitkeep` viaja como contenedor vacio: lo que se
+    // instala es la carpeta, no su contenido. Son las tres del ciclo de planes, y ahi un archivo
+    // que no viaja es una entrada del repo, no un hueco. Sin esta guarda el control exige que
+    // viajen los 109 planes de este repo, y una fila que marca todo se deja de leer. Se deduce de
+    // lo que viaja y no de una lista: `.gitkeep` no significa otra cosa en ningun lado.
+    const queViajanDeLaCarpeta = [...queViajan].filter(r => path.posix.dirname(r) === carpeta);
+    if (queViajanDeLaCarpeta.every(r => path.posix.basename(r) === '.gitkeep')) continue;
     const dir = path.join(repo, '.claude', carpeta);
     if (!fs.existsSync(dir)) continue;
     for (const e of fs.readdirSync(dir, { withFileTypes: true })) {

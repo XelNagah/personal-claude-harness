@@ -35,6 +35,15 @@ function armar() {
       filter: src => !salteados.has(path.basename(src)),
     });
   }
+  // Las tres carpetas del ciclo de planes se saltean por peso, pero tienen que EXISTIR: su
+  // `.gitkeep` viaja en `base/`, y un Componente que viaja sin destino instalado es un hallazgo.
+  // Se reponen vacías —la carpeta sin los 110 planes—, que es exactamente lo que el `.gitkeep`
+  // instala en un repo recién inicializado.
+  for (const d of ['pendientes', 'ejecutados', 'descartados']) {
+    const dir = path.join(REPO_PRUEBA, '.claude', 'planes', d);
+    fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(path.join(dir, '.gitkeep'), '');
+  }
   neutralizarEnlaceConocido();
 }
 

@@ -52,10 +52,18 @@ function poner(rel, vivo, viejo) {
 
 const enBase = rel => fs.readFileSync(path.join(BASE_PRUEBA, rel), 'utf8');
 
-function armar() {
+// El repo de prueba se inicializa como repo git PROPIO, y no es un detalle de armado: la Herramienta
+// le pregunta a git qué archivos no versiona para no nombrarlos como candidatos. Sin `git init`, ese
+// `check-ignore` lo contesta el repo que contiene al banco —que gitignorea `.claude/tmp/`, donde el
+// banco vive— y responde que TODO está ignorado: ningún caso de candidatos podría fallar nunca.
+// Es el modo de falla que el conocimiento Local-0013 lista como fabricar medio escenario y dejar que
+// el entorno ponga el resto.
+function armar(gitignore) {
   fs.rmSync(REPO_PRUEBA, { recursive: true, force: true });
   fs.mkdirSync(BASE_PRUEBA, { recursive: true });
   fs.mkdirSync(path.join(REPO_PRUEBA, '.claude'), { recursive: true });
+  cp.spawnSync('git', ['init', '-q'], { cwd: REPO_PRUEBA, timeout: 30000 });
+  fs.writeFileSync(path.join(REPO_PRUEBA, '.gitignore'), (gitignore || '') + '\n', 'utf8');
 }
 
 console.log('== EL CORTE: QUÉ VIAJA ENTERO Y QUÉ SE CORTA ==');
@@ -136,6 +144,39 @@ console.log('\n== LA TRAMPA DEL BOM ==');
   chequear('un registro del repo con BOM NO hace viajar sus filas',
     !r.includes('Local-0001'),
     r.includes('Local-0001') ? 'las filas del repo viajaron: el BOM tapó el origen' : 'el corte resistió el BOM');
+}
+
+console.log('\n== EL COMPONENTE NUEVO QUE NADIE AGREGÓ A base/ ==');
+{
+  // El caso que la Herramienta no podía ver hasta el 20/08/2026, porque recorría `base/` —el
+  // destino— y buscaba el par vivo: lo que falta de ese lado no está en la lista que recorre, así
+  // que no viajaba y NINGUNA corrida lo mencionaba. Revertir el recorrido a `base/` deja este caso
+  // en rojo, que es todo el punto de tenerlo.
+  armar();
+  poner('lint-x/lint-x.js', '// mecanismo que ya viaja\n', '// mecanismo que ya viaja\n');
+  poner('conocimiento/pagina-nueva.md', '# una página Base recién escrita\n', null);
+  const { texto } = correr(false);
+  chequear('un Componente de .claude/ que no está en base/ sale como candidato',
+    /CANDIDATOS/.test(texto) && /conocimiento\/pagina-nueva\.md/.test(texto),
+    /pagina-nueva/.test(texto) ? 'lo nombró' : 'no lo vio: el recorrido está mirando el destino');
+  chequear('y NO se copia solo: que algo viaje sigue siendo una decisión',
+    !fs.existsSync(path.join(BASE_PRUEBA, 'conocimiento', 'pagina-nueva.md')));
+}
+{
+  // Las dos formas en que un archivo vivo está declarado como algo que no es de la Base. Sin
+  // ellas el control nombra 200 candidatos por corrida, y una lista que marca todo se deja de leer.
+  armar('no-versionado/\n');
+  poner('lint-x/lint-x.js', '// mecanismo\n', '// mecanismo\n');
+  poner('no-versionado/basura.txt', 'lo que git no versiona no es del repo\n', null);
+  poner('planes/PLANES.md', conFrontmatter('agente-desplegado',
+    tabla('Registro del repo.', ['Local-0001 | un plan | [pendientes/Un plan con espacios.md](pendientes/Un plan con espacios.md)'])), null);
+  poner('planes/pendientes/Un plan con espacios.md', '# un plan\n', null);
+  const { texto } = correr(false);
+  chequear('lo que git no versiona no sale como candidato',
+    !/basura\.txt/.test(texto), /basura\.txt/.test(texto) ? 'lo nombró igual' : 'excluido');
+  chequear('lo que enlaza un Índice del Agente Desplegado tampoco, aunque el nombre lleve espacios',
+    !/Un plan con espacios/.test(texto),
+    /Un plan con espacios/.test(texto) ? 'lo nombró: el patrón de enlaces corta en el espacio' : 'excluido');
 }
 
 fs.rmSync(REPO_PRUEBA, { recursive: true, force: true });

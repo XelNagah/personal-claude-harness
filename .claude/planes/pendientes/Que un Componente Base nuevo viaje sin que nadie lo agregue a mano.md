@@ -121,3 +121,46 @@ plugin. Se retoma cuando este cierre.
 
 - Plan Local-0086 (*Darle banco a las dos Herramientas que deciden qué viaja y qué está verde*) — **Ejecutado**: creó el banco que hay que extender.
 - Plan Local-0090 (*Preparar el AMP público y replicar Componentes de Subsistema*) — su §6 pide volver deterministas los flujos mecánicos y cubrir con pruebas negativas «cada operación que decide que algo viaja». Esta es exactamente una de esas.
+
+## Ejecución (20/08/2026) — y el índice que se dio de baja
+
+**El índice generado se descartó, y con él lo acordado el 20/08.** El usuario lo señaló como
+sobreingeniería y tiene razón: `base/` ya declara qué viaja por el solo hecho de tener el archivo
+adentro, y un índice derivado de esa carpeta es el mismo dato escrito dos veces. Para lo que el plan
+Local-0106 necesita —saber en el destino qué puso el Agente Multipropósito— alcanza con listar el
+árbol de `base/`, que llega adentro del plugin y está en la máquina del consumidor.
+
+Queda pendiente **reemplazar la Decisión Local-0071**, que fijó ese índice.
+
+### Lo que sí se hizo
+
+1. **El recorrido de `sincronizar-base` va del origen al destino.** Lista `.claude/` y busca el par
+   en `base/`. Un archivo vivo sin par sale como **candidato** y no se copia solo. Lo que ya está
+   declarado como algo que no es de la Base no se nombra: lo que git no versiona, lo que enlaza un
+   Índice de origen `agente-desplegado`, y los tres que el Agente Multipropósito genera en el destino.
+   Medido contra el repo: **3 candidatos**, los tres reales.
+2. **Los tres candidatos eran huecos de verdad.** Los `.gitkeep` de `planes/pendientes/`,
+   `ejecutados/` y `descartados/` no viajaban: los creaba a mano la skill `amp:inicializar`. Ahora
+   viajan en `base/` y la skill dejó de crearlos.
+3. **`lint-harness` aprendió a distinguir la carpeta que viaja vacía.** Hacer viajar esos `.gitkeep`
+   encendió su control de infra: toda carpeta anidada que viaja se exigía completa, y pasó a pedir
+   que viajaran los 109 planes de este repo. La guarda se deduce de lo que viaja —si de una carpeta
+   viaja solo un `.gitkeep`, viaja el contenedor y no el contenido— y no de una lista escrita.
+4. **El banco de `sincronizar-base` cubre el caso** (17 casos, verde). Verificado que **falla si se
+   revierte el arreglo**: al volver el recorrido a `base/`, dos casos se ponen en rojo, uno con el
+   mensaje «no lo vio: el recorrido está mirando el destino».
+5. **El banco fabricaba medio escenario.** Su repo de prueba vive bajo `.claude/tmp/`, que este repo
+   gitignorea, así que `git check-ignore` lo contestaba el repo padre y respondía que **todo** estaba
+   ignorado: ningún caso de candidatos podría haber fallado nunca. Ahora el repo de prueba se
+   inicializa como repo git propio con su `.gitignore`.
+
+### Lo que queda
+
+- **Reemplazar la Decisión Local-0071** por la regla que la sustituye: lo que está en `base/` viaja,
+  y esa es toda la declaración.
+- **Sumar la forma nueva al conocimiento Local-0013** (*Controles que dejan de controlar sin
+  avisar*): «recorre el destino en vez del origen, así que lo que falta no puede aparecer». Es la
+  **forma 13** y necesita nombre, que es potestad del usuario. Su celda del índice está en 200
+  caracteres exactos, el tope, así que hay que comprimirla antes.
+- **Publicar**: `sincronizar-base --aplicar` y subirle la versión al plugin. ⚠️ No se corrió porque
+  otra sesión dejó dos archivos a medias; ver el handoff.

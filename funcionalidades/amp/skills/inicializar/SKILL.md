@@ -45,9 +45,8 @@ Segura de re-correr para completar un repo nuevo o una instalación parcial con 
 
 ## Estructura objetivo
 
-Es exactamente el árbol de [`base/`](base/) colgado de `.claude/`, más lo que no es un archivo:
+Es exactamente el árbol de [`base/`](base/) colgado de `.claude/` —las tres carpetas del ciclo de planes incluidas, que viajan con su `.gitkeep`—, más lo que no es un archivo:
 
-- `.claude/planes/pendientes/`, `ejecutados/` y `descartados/`, cada una con su `.gitkeep`.
 - `AGENTS.md`, `CLAUDE.md`, `.claude/settings.json`, `.codex/hooks.json` y `.gitignore`, que se fusionan.
 
 `.claude/common/` no es un subsistema y no tiene manifiesto: son los módulos que usan varios y no son de ninguno —hoy la lectura de frontmatter, que requieren los nueve lints y los dos hooks—. **Se copia antes que el resto**: lo que lo requiere no corre sin él.
@@ -57,7 +56,7 @@ Cargan su índice **subsistemas, preferencias, conocimiento y herramientas**; NO
 ## Flujo de trabajo
 
 1. **Ubicar la raíz.** Si el directorio de trabajo contiene subproyectos independientes, preguntar en cuál inicializar antes de crear nada.
-2. **Completar el árbol `base/`** en `.claude/`, archivo por archivo: copiar solo lo ausente, empezando por `common/`; comparar lo existente y reportar toda diferencia sin pisarla. Crear las tres carpetas del ciclo de planes con su `.gitkeep` si faltan.
+2. **Completar el árbol `base/`** en `.claude/`, archivo por archivo: copiar solo lo ausente, empezando por `common/`; comparar lo existente y reportar toda diferencia sin pisarla.
 3. **Fusionar** `AGENTS.md`, `CLAUDE.md`, `.claude/settings.json`, `.codex/hooks.json` y `.gitignore` desde `PLANTILLA.md`.
 4. **Detectar formas anteriores** según `PLANTILLA.md` §Formas anteriores. Si aparece alguna, no migrarla acá: incluirla entre las divergencias y derivar la continuación a `amp:actualizar`.
 5. **Verificar.** Correr todos los lints instalados y `../actualizar/amp-actualizar.js --vista-previa`. En una instalación nueva o parcial sin divergencias, el grupo `BASE — INSTALAR / PISAR` tiene que quedar **vacío, o con `identidad.md` como única línea**: el Título y el Propósito **se preguntan, no se inventan**. Si la vista previa muestra contenido viejo o migraciones, no aplicar desde esta skill; reportar que la instalación requiere `amp:actualizar`.
