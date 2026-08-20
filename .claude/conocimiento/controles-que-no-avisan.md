@@ -4,7 +4,7 @@ Un control roto no se comporta como un control roto: se comporta como un control
 
 Medido en este repo el 30/07/2026, con todos los lints en verde y el actualizador informando el `.claude/` al día.
 
-## Las doce formas en que un control se apaga solo
+## Las trece formas en que un control se apaga solo
 
 Cada forma tiene un **nombre** para poder nombrarla y un **número** para las citas ya escritas en
 otros archivos. Las dos primeras tiran para lados opuestos, y varias se distinguen entre sí por un
@@ -24,6 +24,7 @@ detalle: el cuerpo de cada una dice de cuál se diferencia y en qué.
 | 10 | **Agrupador incompleto** | El control que agrupa a los otros cubre menos de lo que promete |
 | 11 | **Lista que creció** | La lista contra la que reconcilia crece, y los que ya cumplían quedan afuera |
 | 12 | **Escenario a medias** | La prueba fabrica la mitad del escenario y el entorno pone el resto |
+| 13 | **Escenario prestado** | La prueba de un control que viaja usa como escenario el contenido del repo autor |
 
 ### 1. Conjunto vacío
 
@@ -154,6 +155,24 @@ Medido el 14/08/2026 sobre `actualizar-plugins`. Su detección de dependencias s
 
 **Regla general:** un caso tiene que fabricar **todas** las fuentes que lo que prueba va a leer, no solo la que tiene más a mano. Lo que se fabrica a medias lo completa el entorno, y el entorno es de otro. Fabricar una casa de usuario sale barato: un archivo de configuración propio y los registros que hagan falta copiados de la real, con la variable de entorno que la ubica apuntada ahí.
 
+### 13. Escenario prestado
+
+Las doce anteriores son de controles que viven donde se escribieron. Esta es de un control que **viaja**: el Agente Multipropósito lo instala como parte de la Base en cada Agente Desplegado, y su banco de pruebas se instala con él. El caso no fabrica su escenario ni a medias — lo toma prestado del repo autor, leyendo un registro que en el autor está poblado y en el destino no. Ahí anda perfecto; en el destino falla siempre, desde el primer día.
+
+Medido el 20/08/2026 sobre `detectar-terminologia-vetada`, el control del subsistema `conducta` que en el momento `al escribir` rechaza un texto con un término vetado. Su banco declaraba en el encabezado que corría **contra el registro real del repo** —`.claude/semantica/TERMINOLOGIA-FARLOPA.md`, el registro de relaciones vetadas del subsistema `semantica`— con un argumento razonable: así verifica la cadena completa, leer el registro, clasificar y decidir. Como testigos usaba tres filas de este repo (`churn`, `capa de plugins`, `plomería`).
+
+El problema es de qué lado del reparto Base/Aprendizaje cae ese registro. Es **Aprendizaje del Agente Desplegado**: su frontmatter declara `origen: agente-desplegado`, así que viaja **con la tabla vacía** y lo puebla cada repo con los términos que veta su Propósito. Ninguno de los tres testigos existe en ningún otro repo. De los veinte casos del banco, los **ocho** que esperaban un veredicto fallaban en todo destino, y los doce que esperaban silencio pasaban **por el motivo equivocado**: un registro vacío no tiene con qué marcar.
+
+Lo reportó el Agente Desplegado de *Correr IAs locales*, que además lo midió con y sin la corrección del defecto que estaba investigando —otro, del lector del registro—: **8 de 20 en rojo con el defecto puesto, 6 de 20 sin él**. Seis de las ocho no tenían nada que ver con lo que se estaba buscando.
+
+**Cómo se distingue de las anteriores.** No es la «escenario a medias»: ahí el caso fabrica una parte y el entorno pone el resto, y el rojo aparece en el **propio repo autor** el día que algo del entorno cambia; acá el caso no fabrica nada, el autor **nunca** se pone rojo, y el rojo es del destino desde que se instala. No es la «premisa que no viaja»: ahí la premisa se cumple en el autor y no en el destino, y lo que el destino recibe es un **verde** que no vale; acá recibe un **rojo** que tampoco vale. No es la «población agotada»: la población no se fue vaciando con el tiempo — en el destino nunca estuvo.
+
+**Por qué el rojo permanente es el daño.** Un banco que arranca en rojo el día que se instala no distingue nada. El Agente Desplegado que corre `ejecutar-control-cierre` ve las mismas líneas en todas las corridas y aprende a saltearlas: es la «marca de más», entrando por la puerta de las pruebas. Y cuando aparece un defecto real, sus líneas entran entre las que ya estaban y no se pueden separar — acá pasó exactamente eso: dos de las ocho eran el defecto que se buscaba y seis eran ruido, y hubo que medir dos veces para saber cuáles eran cuáles.
+
+**Cómo se detecta:** preguntándole a cada caso de dónde sale su escenario, y si ese lugar existe en el destino. La regla corta: **un banco que viaja no puede leer ningún registro que puebla el repo destino** — ninguno de los que llevan `origen: agente-desplegado`. Lo que el caso necesite del registro se fabrica adentro del banco, con datos sintéticos declarados como tales (Preferencia Base-0009), y se le apunta el control ahí por variable de entorno.
+
+**El caso que ata la variable es obligatorio.** Un banco con registro propio deja de verificar que el registro instalado sea legible, y si algún día la variable dejara de leerse volvería a medir el registro real sin que nada avise: la «copia equivocada», acá. El caso que lo cierra nombra un término que el registro **real** sí tiene vetado y exige silencio — si el control estuviera leyendo el registro del repo en vez del de prueba, ese caso se pone rojo. Quien sigue vigilando el registro real es el `lint-semantica`, que es de este repo y no viaja.
+
 ## El remedio de una forma produce la otra
 
 La «conjunto vacío» y la «marca de más» tiran para lados opuestos, y ahí está la trampa: **lo que se agrega para que un control deje de marcar de más es lo que lo convierte en mudo.**
@@ -179,6 +198,7 @@ Los hallazgos de un control tienen que ser **resolubles**: cada uno nombra algo 
 - **Nada de números absolutos adentro de la prueba.** Un número absoluto envejece igual adentro de una prueba que adentro de un registro, y lo hace por dos caminos opuestos. El **ruidoso**: dos casos de la prueba de planes comparaban contra un `81` escrito a mano y empezaron a fallar solos el día que el repo abrió el plan 82, avisando de un defecto que no existía. El **mudo**, que es el que nadie ve: el caso deja de reproducir el defecto y pasa a no poder fallar (la «número envejecido» de esta lista). Se arregla igual en los dos casos — derivar el número de lo que se prueba, no escribirlo.
 - **Banco aparte, nunca el repo real.** Y si el control mira el repo entero, el banco tiene que ser un repo, no una carpeta: si no, el barrido cae sobre el repo real y los casos no quedan aislados.
 - **Lo que viaja se prueba además en un destino limpio.** Todo control que corre en el repo autor comparte el entorno del autor, así que ninguno puede contestar qué recibe el que instala (la «premisa que no viaja» de esta lista). Instalar contra un repo vacío y ejercer el mecanismo ahí es una corrida distinta, no una repetición: verifica lo que llega, no lo que hay.
+- **Un banco que viaja fabrica su registro; nunca lee el del repo.** Si el control se instala en otros repos, su banco se instala con él, y todo lo que el banco lea de un registro `origen: agente-desplegado` está vacío en el destino (la «escenario prestado» de esta lista). El escenario se fabrica adentro del banco con datos sintéticos y se apunta con una variable de entorno; el caso que ata esa variable —nombrar algo que el registro real sí tiene y exigir silencio— es parte del arreglo, no un extra.
 - **La entrada que el control arma se verifica una vez a mano.** Si el control invoca algo externo —un CLI, un proceso, un servicio— y le pasa texto, ese texto puede llegar cambiado sin que nada avise (la «entrada mutilada» de esta lista). Una corrida a mano con la misma entrada, comparada contra la del control, es la única que lo muestra.
 - **Una lista que crece se prueba contra quien ya cumplía la anterior.** Sumarle una entrada a una lista de reconciliación no obliga a escribir ningún caso, y los que hay siguen pasando. El que falta es el del destino que ya cumplía todo lo viejo (la «lista que creció» de esta lista): es el único que distingue un control que reconcilia la lista entera de uno que solo despierta cuando falta algo de antes. Si además la lista vive en dos lados, se compara con una prueba, no con un comentario.
 - **El caso fabrica todas las fuentes, no la más a mano.** Si lo que se prueba junta su entrada de varios lados —tres archivos de configuración, un registro, una carpeta—, un caso que fabrica uno solo le deja el resto al entorno (la «escenario a medias» de esta lista), y cambia de escenario sin que nadie toque el repo: alcanza con que alguien cambie una preferencia de la máquina, o con que pase el tiempo.
