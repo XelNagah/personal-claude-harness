@@ -1,7 +1,6 @@
 # Distribuir el inventario de componentes sueltos a los Agentes Desplegados
 
-**Estado: En pausa · Creado 26-08-12.**
-**estado_a_retomar:** Análisis
+**Estado: Análisis · Creado 26-08-12.**
  Origen: el punto 4 del frente B del plan Local-0037 (*Que el harness tenga efecto conductual*), que se cerró repartiendo lo que le quedaba vivo.
 
 ## El problema

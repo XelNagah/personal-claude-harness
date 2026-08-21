@@ -1,4 +1,4 @@
-**Estado: Listo · Creado 26-08-13.**
+**Estado: Ejecutado · Creado 26-08-13 · Cerrado 26-08-21.**
 
 # Que un Componente Base nuevo viaje sin que nadie lo agregue a mano
 
@@ -122,7 +122,9 @@ plugin. Se retoma cuando este cierre.
 - Plan Local-0086 (*Darle banco a las dos Herramientas que deciden qué viaja y qué está verde*) — **Ejecutado**: creó el banco que hay que extender.
 - Plan Local-0090 (*Preparar el AMP público y replicar Componentes de Subsistema*) — su §6 pide volver deterministas los flujos mecánicos y cubrir con pruebas negativas «cada operación que decide que algo viaja». Esta es exactamente una de esas.
 
-## Ejecución (20/08/2026) — y el índice que se dio de baja
+## Notas de implementación
+
+### Lo ejecutado el 20/08/2026 — y el índice que se dio de baja
 
 **El índice generado se descartó, y con él lo acordado el 20/08.** El usuario lo señaló como
 sobreingeniería y tiene razón: `base/` ya declara qué viaja por el solo hecho de tener el archivo
@@ -154,13 +156,28 @@ Queda pendiente **reemplazar la Decisión Local-0071**, que fijó ese índice.
    ignorado: ningún caso de candidatos podría haber fallado nunca. Ahora el repo de prueba se
    inicializa como repo git propio con su `.gitignore`.
 
-### Lo que queda
+### Lo que se cerró el 21/08/2026
 
-- **Reemplazar la Decisión Local-0071** por la regla que la sustituye: lo que está en `base/` viaja,
-  y esa es toda la declaración.
-- **Sumar la forma nueva al conocimiento Local-0013** (*Controles que dejan de controlar sin
-  avisar*): «recorre el destino en vez del origen, así que lo que falta no puede aparecer». Es la
-  **forma 13** y necesita nombre, que es potestad del usuario. Su celda del índice está en 200
-  caracteres exactos, el tope, así que hay que comprimirla antes.
-- **Publicar**: `sincronizar-base --aplicar` y subirle la versión al plugin. ⚠️ No se corrió porque
-  otra sesión dejó dos archivos a medias; ver el handoff.
+- **La Decisión Local-0071 quedó reemplazada por la Local-0076** (*La Base no lleva índice de lo que
+  trae: se lista la carpeta `base/`*). Su página de detalle se conserva con una nota arriba que
+  aclara que el índice generado **nunca se construyó** —se descartó antes de escribirlo— y que sigue
+  en pie por las tres formas de llegada (`copiado`, `generado`, `fragmentos`), que son el problema
+  que la regla nueva no cubre sola.
+- **La forma nueva es la 14 del conocimiento Local-0013** (*Controles que dejan de controlar sin
+  avisar*), y se llama **«Solo revisa lo que ya conoce»**: recorre el lado destino, así que lo que
+  falta en el origen no puede aparecer. La celda del Índice se comprimió de 199 a 187 caracteres
+  para que entrara, contra el tope de 200.
+- **Nada que publicar.** `sincronizar-base` reporta los 106 archivos que viajan al día, y
+  `lint-harness` da 0 hallazgos en el control de versión de plugin sin subir: la versión 0.51.0 que
+  publicó la sesión paralela ya lleva este arreglo.
+
+### Lo que este cierre desbloquea
+
+El plan Local-0106 (*Distribuir el inventario de componentes sueltos a los Agentes Desplegados*)
+puede retomarse. Su decisión 1 —de dónde saca la Herramienta qué es infraestructura— la contesta la
+Decisión Local-0076: **se lista el árbol de `base/`**, que llega adentro del plugin. Con una
+salvedad medida el 21/08/2026: eso cubre lo que se copia, no lo que el Agente Multipropósito
+**genera** en el destino (`identidad.md`, `tmp/`) ni lo que escribe **por partes**
+(`settings.json`). Corrido `inventariar-componentes-sueltos` sobre este repo, marca
+`output-styles/` como suelto —falso positivo, viaja en `base/`— y `scheduled_tasks.lock`, que es de
+Claude Code y no estaba en su lista escrita a mano.

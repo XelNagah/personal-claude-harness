@@ -4,7 +4,7 @@ Un control roto no se comporta como un control roto: se comporta como un control
 
 Medido en este repo el 30/07/2026, con todos los lints en verde y el actualizador informando el `.claude/` al día.
 
-## Las trece formas en que un control se apaga solo
+## Las catorce formas en que un control se apaga solo
 
 Cada forma tiene un **nombre** para poder nombrarla y un **número** para las citas ya escritas en
 otros archivos. Las dos primeras tiran para lados opuestos, y varias se distinguen entre sí por un
@@ -25,6 +25,7 @@ detalle: el cuerpo de cada una dice de cuál se diferencia y en qué.
 | 11 | **Lista que creció** | La lista contra la que reconcilia crece, y los que ya cumplían quedan afuera |
 | 12 | **Escenario a medias** | La prueba fabrica la mitad del escenario y el entorno pone el resto |
 | 13 | **Escenario prestado** | La prueba de un control que viaja usa como escenario el contenido del repo autor |
+| 14 | **Solo revisa lo que ya conoce** | Recorre el lado destino, así que lo que falta en el origen no puede aparecer |
 
 ### 1. Conjunto vacío
 
@@ -180,6 +181,22 @@ Lo reportó el Agente Desplegado de *Correr IAs locales*, que además lo midió 
 **Cómo se detecta:** preguntándole a cada caso de dónde sale su escenario, y si ese lugar existe en el destino. La regla corta: **un banco que viaja no puede leer ningún registro que puebla el repo destino** — ninguno de los que llevan `origen: agente-desplegado`. Lo que el caso necesite del registro se fabrica adentro del banco, con datos sintéticos declarados como tales (Preferencia Base-0009), y se le apunta el control ahí por variable de entorno.
 
 **El caso que ata la variable es obligatorio.** Un banco con registro propio deja de verificar que el registro instalado sea legible, y si algún día la variable dejara de leerse volvería a medir el registro real sin que nada avise: la «copia equivocada», acá. El caso que lo cierra nombra un término que el registro **real** sí tiene vetado y exige silencio — si el control estuviera leyendo el registro del repo en vez del de prueba, ese caso se pone rojo. Quien sigue vigilando el registro real es el `lint-semantica`, que es de este repo y no viaja.
+
+### 14. Solo revisa lo que ya conoce
+
+Un control que compara dos copias tiene que recorrer alguna de las dos, y esa elección decide qué respuestas puede dar. Si recorre la copia **destino**, cada archivo que abre existe en los dos lados por definición: la pregunta que hace es *«de lo que ya está allá, ¿cambió?»*, y esa pregunta no admite la respuesta *«falta esto»*. Un archivo nuevo en el origen no entra al recorrido, así que no se copia y ninguna corrida lo nombra.
+
+Medido el 20/08/2026 sobre `sincronizar-base`, la Herramienta que mantiene al día la carpeta `base/` que viaja en el plugin contra el `.claude/` vivo de este repo. Recorría `base/` —el destino— y para cada archivo iba a buscar su par vivo. La dirección inversa sí estaba cubierta: lo que estaba en `base/` y no en `.claude/` se reportaba. Pero esa es la que casi nunca pasa.
+
+Al invertir el recorrido aparecieron **tres huecos reales**: los `.gitkeep` de `planes/pendientes/`, `ejecutados/` y `descartados/` no viajaban, y la skill `amp:inicializar` los venía creando a mano en cada destino — tapaba el agujero sin que nadie supiera que había un agujero.
+
+**Por qué nadie lo agarró.** El banco de la Herramienta probaba el corte por frontmatter y la copia, no el **descubrimiento**: sus casos partían de un `base/` ya poblado, así que ninguno podía distinguir un recorrido al que le falte un archivo. Y `lint-harness` lo tocó una vez de rebote —encendió «lo que viaja apunta a algo que no viaja» porque un Índice que sí viajaba referenciaba al Componente nuevo—, pero un Componente que ningún Índice referencie no dispara nada.
+
+**El fondo: no había declaración de qué debía viajar.** La respuesta a *«¿este archivo viaja?»* era circular: viajaba lo que ya estaba en `base/`, porque alguien lo puso ahí a mano la primera vez. El destino se usaba como si fuera la lista de qué copiar, y una lista derivada del resultado no puede decir qué falta. Lo asienta la Decisión Local-0076.
+
+**Cómo se distingue de las anteriores.** No es la «conjunto vacío»: el recorrido no está vacío — trae todos los archivos que ya viajaban, y para ésos el control funciona perfecto. No es la «población agotada»: la población no se fue vaciando, nunca incluyó lo que hacía falta mirar. No es la «copia equivocada»: el control abre las dos copias; lo que está mal es desde cuál arranca.
+
+**Cómo se detecta:** preguntándole a cada control que compara dos lados cuál de los dos recorre, y qué respuesta se le vuelve imposible por recorrer ése. La regla corta: **se recorre el lado donde la novedad aparece primero.** Si lo que se busca es «falta algo en B», hay que recorrer A.
 
 ## El remedio de una forma produce la otra
 

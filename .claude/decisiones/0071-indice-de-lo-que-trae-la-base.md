@@ -1,5 +1,13 @@
 # 0071 — La Base declara lo que trae
 
+> **Reemplazada por la Decisión Local-0076** (*La Base no lleva índice de lo que trae: se lista la
+> carpeta `base/`*) el 21/08/2026. El índice generado que esta página describe **no se construyó**:
+> se descartó por sobreingeniería antes de escribirlo. `base/` ya declara qué trae por el solo hecho
+> de tener el archivo adentro, y un índice derivado del mismo recorrido que lo genera no puede
+> contradecirlo ni agregarle nada — solo puede quedar viejo. La página se conserva por lo que sí
+> sigue en pie: las tres formas de llegada (`copiado`, `generado`, `fragmentos`), que son el problema
+> real que la regla nueva no cubre sola y que el plan Local-0106 resuelve del lado del destino.
+
 ## Qué se decidió
 
 La carpeta `base/` lleva un **índice generado** que enumera lo que el Agente Multipropósito instala
