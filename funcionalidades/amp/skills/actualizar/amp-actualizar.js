@@ -144,7 +144,7 @@ const SUBSISTEMAS = ['subsistemas', 'preferencias', 'planes', 'conocimiento', 's
 // avisa": el INDICE.md Base se reemplaza entero y trae la fila, asi que la Herramienta queda
 // declarada y sin carpeta, y `lint-herramientas` sale con FILAS COLGADAS. El actualizado termina
 // "aplicado" habiendo roto un control que estaba verde.
-const HERRAMIENTAS_BASE = ['actualizar-plugins', 'instalar-plugins-codex'];
+const HERRAMIENTAS_BASE = ['actualizar-plugins', 'instalar-plugins-codex', 'inventariar-componentes-sueltos'];
 
 // -- contenido Base: comparar el archivo instalado contra el que viaja ------
 // Chequear que el Componente de Subsistema EXISTA no alcanza: un consumidor que ya tiene el script en su version vieja

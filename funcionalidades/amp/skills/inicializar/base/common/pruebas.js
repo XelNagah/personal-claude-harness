@@ -14,6 +14,7 @@ const fm = require(path.resolve('.claude/common/frontmatter.js'));
 const idx = require(path.resolve('.claude/common/indices.js'));
 const ide = require(path.resolve('.claude/common/identidad.js'));
 const tv = require(path.resolve('.claude/common/terminos-vetados.js'));
+const ee = require(path.resolve('.claude/common/enlaces-de-indices.js'));
 
 let malos = 0, casos = 0;
 function caso(nombre, obtenido, esperado) {
@@ -254,6 +255,52 @@ caso('tuberia escapada en una celda',
   tv.filasVetadas('| Código | Nombre | Cómo decirlo |\n| --- | --- | --- |\n| L-1 | uno | a \\| b |\n')[0].comoDecirlo, 'a | b');
 // Un registro que no existe se lee vacio, no revienta: el subsistema puede no estar instalado.
 caso('registro inexistente', tv.leerRegistroVetados(path.join(TMP, 'no-esta.md')), []);
+
+console.log('\n== Los enlaces que declaran los Indices de Subsistema ==');
+// Las dos puntas leen esto: en el origen, para saber que es Aprendizaje del repo y no viaja; en el
+// destino, para saber que hijo de `.claude/` esta declarado y no es un componente suelto. Contestar
+// de menos no falla en ninguna de las dos: en el origen nombra un candidato de mas, en el destino
+// enciende un hallazgo que nadie puede resolver.
+{
+  const CL = path.join(TMP, 'claude');
+  const poner = (rel, txt) => {
+    const f = path.join(CL, rel);
+    fs.mkdirSync(path.dirname(f), { recursive: true });
+    fs.writeFileSync(f, txt, 'utf8');
+  };
+  const indice = (origen, cuerpo) => `---\nindice: X\norigen: ${origen}\n---\n\n${cuerpo}`;
+
+  poner('planes/PLANES.md', indice('agente-desplegado',
+    // Un plan se llama con una frase entera: un patron que corte en el primer espacio los deja a
+    // todos sin declarar. Con `%20` y con espacios crudos, que las dos formas circulan.
+    '[Un plan con espacios](pendientes/Un plan con espacios.md)\n'
+    + '[Otro](pendientes/Otro%20con%20escape.md)\n'
+    + '[Con ancla](pendientes/Con ancla.md#seccion)\n'
+    + '[Afuera](../../README.md)\n'
+    + '[Externo](https://example.com/x.md)\n'));
+  poner('herramientas/INDICE.md', indice('agente-multiproposito', '[f](../modulos/f.js)\n'));
+  poner('semantica/README.md', '[no es Indice](../nada/x.md)\n');
+
+  const todos = ee.enlacesDeIndices(CL);
+  const tiene = (s, r) => s.has(r);
+  caso('enlace con espacios crudos', tiene(todos, 'planes/pendientes/Un plan con espacios.md'), true);
+  caso('enlace con %20', tiene(todos, 'planes/pendientes/Otro con escape.md'), true);
+  caso('el ancla no queda pegada a la ruta', tiene(todos, 'planes/pendientes/Con ancla.md'), true);
+  caso('lo que sale de .claude/ no cuenta', tiene(todos, '../README.md'), false);
+  caso('un enlace externo no cuenta', [...todos].some(r => r.includes('example.com')), false);
+  caso('un .md que no es Indice no declara nada', [...todos].some(r => r.includes('nada/')), false);
+
+  // Acotado por origen: es como lo lee `sincronizar-base`, que solo quiere lo del Agente Desplegado.
+  const soloRepo = ee.enlacesDeIndices(CL, { origen: 'agente-desplegado' });
+  caso('acotado por origen deja el Indice del repo', tiene(soloRepo, 'planes/pendientes/Un plan con espacios.md'), true);
+  caso('y saca el del Agente Multiproposito', tiene(soloRepo, 'modulos/f.js'), false);
+
+  // Los hijos directos: la forma en que lo lee el inventario del destino.
+  caso('hijos directos, sin acotar', [...ee.hijosDeclarados(CL)].sort(), ['modulos', 'planes']);
+  caso('una carpeta que no enlaza nadie no aparece', ee.hijosDeclarados(CL).has('nada'), false);
+  // Sin `.claude/` no revienta: el subsistema puede no estar instalado.
+  caso('directorio inexistente', [...ee.enlacesDeIndices(path.join(TMP, 'no-esta'))], []);
+}
 
 fs.rmSync(TMP, { recursive: true, force: true });
 

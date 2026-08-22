@@ -39,6 +39,7 @@ const INSTALADO = path.join(REPO, '.claude');
 // en cualquier editor. Al sacarla también del texto que se escribe, lo que viaja nunca la lleva.
 const { sinMarcaDeOrden, origenDe, leerFrontmatter } = require('../../common/frontmatter.js');
 const { basesDeInstalacion: basesDe } = require('../../common/bases-de-instalacion.js');
+const { enlacesDeIndices } = require('../../common/enlaces-de-indices.js');
 const norm = s => sinMarcaDeOrden(s).replace(/\r\n/g, '\n').replace(/\s+$/, '');
 function hastaLaTabla(txt) {
   const ls = norm(txt).split('\n');
@@ -98,33 +99,10 @@ function ignoradosPorGit(rutas) {
   }
 }
 
-// Los enlaces relativos de los Indices de origen `agente-desplegado`, como rutas relativas a
-// `.claude/`. Se resuelven desde la carpeta del Indice y se aceptan con espacios y con `%20`: los
-// planes se llaman con una frase entera, asi que un patron que corte en el primer espacio deja
-// afuera a los 110 archivos de `planes/` y los nombra a todos como candidatos.
-function declaradosPorIndicesDelRepo() {
-  const out = new Set();
-  let subs = [];
-  try { subs = fs.readdirSync(INSTALADO, { withFileTypes: true }).filter(e => e.isDirectory()); } catch (e) { return out; }
-  for (const sub of subs) {
-    const dir = path.join(INSTALADO, sub.name);
-    let archivos = [];
-    try { archivos = fs.readdirSync(dir).filter(n => n.endsWith('.md')); } catch (e) { continue; }
-    for (const f of archivos) {
-      let txt; try { txt = fs.readFileSync(path.join(dir, f), 'utf8'); } catch (e) { continue; }
-      const fm = leerFrontmatter(txt);
-      if (!fm || !fm.indice || fm.origen !== 'agente-desplegado') continue;
-      for (const m of sinMarcaDeOrden(txt).matchAll(/\]\(([^)]+)\)/g)) {
-        let destino = m[1].trim().replace(/^<|>$/g, '').split('#')[0];
-        if (!destino || /^[a-z][a-z0-9+.-]*:/i.test(destino)) continue;
-        try { destino = decodeURIComponent(destino); } catch (e) { /* la ruta cruda sirve igual */ }
-        const rel = path.relative(INSTALADO, path.resolve(dir, destino)).replace(/\\/g, '/');
-        if (rel && !rel.startsWith('..')) out.add(rel.replace(/\/$/, ''));
-      }
-    }
-  }
-  return out;
-}
+// Los enlaces de los Indices de origen `agente-desplegado`: lo que este repo declara como suyo, y
+// por lo tanto no viaja. El recorrido vive en `common/`, porque el inventario del destino se hace la
+// misma pregunta sin acotar el origen — que de lo que hay en `.claude/` esta declarado por alguien.
+const declaradosPorIndicesDelRepo = () => enlacesDeIndices(INSTALADO, { origen: 'agente-desplegado' });
 
 const cubierto = (r, conjunto) => conjunto.has(r) || [...conjunto].some(d => d && r.startsWith(d + '/'));
 
