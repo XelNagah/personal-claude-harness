@@ -4,7 +4,7 @@ Un control roto no se comporta como un control roto: se comporta como un control
 
 Medido en este repo el 30/07/2026, con todos los lints en verde y el actualizador informando el `.claude/` al día.
 
-## Las catorce formas en que un control se apaga solo
+## Las quince formas en que un control se apaga solo
 
 Cada forma tiene un **nombre** para poder nombrarla y un **número** para las citas ya escritas en
 otros archivos. Las dos primeras tiran para lados opuestos, y varias se distinguen entre sí por un
@@ -197,6 +197,20 @@ Al invertir el recorrido aparecieron **tres huecos reales**: los `.gitkeep` de `
 **Cómo se distingue de las anteriores.** No es la «conjunto vacío»: el recorrido no está vacío — trae todos los archivos que ya viajaban, y para ésos el control funciona perfecto. No es la «población agotada»: la población no se fue vaciando, nunca incluyó lo que hacía falta mirar. No es la «copia equivocada»: el control abre las dos copias; lo que está mal es desde cuál arranca.
 
 **Cómo se detecta:** preguntándole a cada control que compara dos lados cuál de los dos recorre, y qué respuesta se le vuelve imposible por recorrer ése. La regla corta: **se recorre el lado donde la novedad aparece primero.** Si lo que se busca es «falta algo en B», hay que recorrer A.
+
+### 15. Una excepción que en otro repo se vuelve la regla
+
+Un control que excluye por una condición del entorno —lo que git no versiona, lo que está bajo cierta ruta, lo que tiene cierta extensión— reparte bien mientras esa condición valga para algunos y no para otros. En un repo donde vale para **todos**, la excepción deja de excluir y pasa a absorber: el grupo de descarte se lleva la población entera y el grupo de hallazgos queda vacío. El control corre, no falla, y contesta cero.
+
+Medido el 21/08/2026 sobre `inventariar-componentes-sueltos`, que clasifica los hijos de `.claude/` y usa «git no lo versiona» para apartar el material de trabajo — el archivo de bloqueo del CLI, la configuración local, la carpeta de borradores. En este repo separa exactamente esos tres de los otros catorce. Apuntada a un Agente Desplegado que **no versiona `.claude/`**, sus diecisiete hijos pasaron a ser material de trabajo: el reporte dio **cero sueltos** tapando cinco hallazgos reales, entre ellos el `memory/` de la generación retirada que ese repo sigue sin migrar. Apagado el criterio, los cinco vuelven a salir.
+
+**Por qué es peor que marcar de más.** Un reporte en cero se lee como *«acá está todo bien»*, y esa lectura es correcta en el 99% de las corridas — no hay nada raro que invite a mirar dos veces. El control no se rompió: contestó, y contestó rápido.
+
+**Por qué nadie lo agarra.** El criterio es correcto y está bien implementado; lo que cambia no es el código sino el repo donde corre, y el repo autor es justamente donde el criterio anda. Un banco sintético que fabrique un caso ignorado y otro no lo reproduce: hace falta el escenario donde **la condición alcanza a todo**, que nadie escribe porque parece un caso degenerado.
+
+**Cómo se distingue de las vecinas.** No es la «conjunto vacío»: la población de entrada está completa, son diecisiete hijos y el control los mira a los diecisiete. No es la «premisa que no viaja»: no falta nada en el destino, el criterio existe y funciona. No es la «marca de más» al revés: el control no está siendo laxo con un caso, está siendo laxo con todos por igual.
+
+**Cómo se detecta:** por cada criterio de exclusión, preguntarse *«¿en qué repo esto vale para todo?»* y correr ahí. Si la respuesta existe, el criterio necesita una guarda que lo apague cuando deja de distinguir — **y que diga que se apagó**, porque un criterio que se desactiva en silencio devuelve el mismo cero que se quería evitar.
 
 ## El remedio de una forma produce la otra
 
