@@ -74,7 +74,9 @@ Reglas duras:
 Una entrada nueva se agrega al Índice declarado con `origen: agente-desplegado`, con `Código | Nombre | Descripción | Detalle`. Nunca agregarla al Índice del Agente Multipropósito. Solo el puntero; el índice nunca lleva contenido. Si se actualizó una página local existente, revisar que su fila siga siendo fiel.
 
 - **Código** — `Local-NNNN`, porque el conocimiento lo acumula el Agente Desplegado. El número es **el mayor del Índice local más uno**, nunca la cantidad de filas más uno: si alguna vez se retiró una página, contar filas repite un código ya usado. Un código retirado deja un hueco y no se reusa.
-- **Nombre** — el título de la página, sin link. **Descripción** — de qué trata, en una línea: lo suficiente para decidir si vale abrirla. **Detalle** — el link a la página, o a la carpeta con su propio índice.
+- **Nombre** — **qué se sabe**: la afirmación que la página sostiene, escrita para entenderse leída sola y sin link. Nunca el tema, salvo que la página sea una referencia y no una afirmación —la mecánica de un sistema externo, un relevamiento—, y ahí el nombre dice de qué sistema se trata.
+- **Descripción** — qué se sabe, desarrollado: lo suficiente para decidir si vale abrirla.
+- **Detalle** — el link a la página, o a la carpeta con su propio índice.
 
 ### 6. Cerrar con el lint
 

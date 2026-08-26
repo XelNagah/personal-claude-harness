@@ -2,7 +2,7 @@
 indice: Páginas de conocimiento del Agente Desplegado
 origen: agente-desplegado
 columnas: [Código, Nombre, Descripción, Detalle]
-descripcion: de qué trata esa página, en una línea
+descripcion: qué se sabe, en una línea
 ---
 
 # Páginas de conocimiento del Agente Desplegado

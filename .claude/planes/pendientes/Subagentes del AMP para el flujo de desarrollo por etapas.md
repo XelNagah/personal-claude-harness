@@ -23,7 +23,7 @@ Ejemplo del `test-runner`: el usuario pide "corré los tests", el principal lanz
 
 ## Por qué va por el harness y no a nivel usuario
 
-Los subagentes del AMP son **archivos dependientes de subsistemas**: su prompt referencia `semantica/`, `decisiones/`, `memoria/`. En un repo sin AMP apuntan a carpetas que no existen. Misma dependencia que tiene una skill — no es una propiedad del formato, es del contenido.
+Los subagentes del AMP son **archivos dependientes de subsistemas**: su prompt referencia `semantica/`, `decisiones/`, `planes/`. En un repo sin AMP apuntan a carpetas que no existen. Misma dependencia que tiene una skill — no es una propiedad del formato, es del contenido.
 
 ⇒ Van donde van las skills: en el plugin del harness, en la carpeta `agents/`. Un nivel usuario (`~/.claude/agents/`) los pondría en repos que no son AMP, donde no tienen sentido.
 
@@ -146,7 +146,7 @@ Los de dominio (`ingesta`, `protocolo-tester`, `verificador-de-alerta`, `auditor
 1. **Contrato entre etapas.** Cada etapa entrega un resultado definido, no texto suelto: el plan escrito en `planes/pendientes/`, la lista de hallazgos con `archivo:línea`, el `pass`/`fail` con las fallas. Sin eso, la etapa siguiente re-deriva y se pierde el trabajo de la anterior.
 2. **No encadenar diseño → desarrollo automático.** El punto de control humano entre esas dos es donde se evita el trabajo tirado. Crítica, tests, review y seguridad sí se encadenan solos: son verificación, y el peor caso es ruido descartable.
 
-## Puntos abiertos (bloquean la ejecución)
+## Puntos abiertos (resueltos el 23/08/2026; ya no bloquean)
 
 ### 1. Instalación condicional para la familia 2
 
@@ -164,6 +164,18 @@ Evaluados leyendo los archivos de tipo:
 Limitaciones de ambos: prompts en inglés sin la nomenclatura del dominio; no conocen las preferencias del AMP (cero invención, Control de terminología, verificación en el momento); alcance atado a `git diff` / PR de GitHub.
 
 **Recomendación:** escribir los tipos propios robando el contenido de los oficiales, traducido y con las preferencias adentro. No instalarlos como están. Ratifica el usuario.
+
+### Resueltos el 23/08/2026
+
+**Puntos abiertos resueltos el 23/08/2026 por el usuario, vía consulta desde el repo `como-uso-claude`.**
+
+**Punto 1 — instalación condicional: se resuelve como un plugin más que se habilita por repo, sin noción de tipo de repo.** El dato que el plan declaraba no verificado quedó verificado del lado de `como-uso-claude`: cada subsistema ya viaja como plugin propio (`amp-planes@xelnagah-harness`, `amp-semantica@…` y los otros ocho) y se habilita repo por repo en la clave `enabledPlugins` de su `.claude/settings.local.json`, que allá lista diez y coincide con lo habilitado a nivel usuario. Los cuatro subagentes de código toman el mismo camino: se habilitan solo en los Agentes Desplegados con código. No se construye ninguna noción de tipo de repo — se descarta esa alternativa por innecesaria, porque el mecanismo ya existe y lo usan los diez subsistemas instalados.
+
+**Punto 2 — ratificado: se escriben los tipos propios, no se instalan los oficiales.** El usuario ratificó el 23/08/2026 la recomendación que el plan ya traía escrita. Los cuatro prompts se escriben tomando el contenido de los plugins oficiales —el puntaje de confianza 0-100 con corte en 80 de `feature-dev/code-reviewer`, y las lentes `silent-failure-hunter` y `type-design-analyzer` de `pr-review-toolkit`—, traducidos y con las preferencias del Agente Multipropósito adentro. `feature-dev` y `pr-review-toolkit` no se instalan.
+
+**Qué queda destrabado.** El paso 4 queda cumplido. Siguen el 5 (escribir los cuatro archivos de tipo), el 6 (instalar y probar en un Agente Desplegado con código real; el candidato escrito es `beatsaber-overlay`) y el 7 (medir con el método del paso 2 y registrar el resultado en conocimiento).
+
+Lo del punto 1 quedó asentado además en la **Decisión Local-0078** (lo que sirve solo a algunos repos viaja en un plugin aparte que se habilita por repo, sin noción de tipo de repo), del 23/08/2026: extiende la Decisión Local-0060 al subagente que no pertenece a ningún subsistema y precisa la cláusula «bundle completo, no à la carte» de la Decisión Local-0029. El punto 2 no generó decisión: es la ratificación de una recomendación que este plan ya traía escrita, y vive acá.
 
 ## Pasos
 
@@ -186,9 +198,9 @@ El plan arrancó ordenado al revés de como se ejecutó: los pasos originales da
 1. ✅ ~~Seguir con `reubicar-aprendizaje`.~~ Hecho 26-08-11: escrito, instalado en 0.6.0 y medido (~89%).
 2. ✅ ~~Bajar al conocimiento lo aprendido de la familia 1: la medición, cómo se lee la transcripción del subagente para verificar modelo y volumen, y el corte evidencia/decisión.~~ Hecho 26-08-11: quedó en una página **de este repo**, [`medir-subagentes-de-subsistema.md`](../../conocimiento/medir-subagentes-de-subsistema.md) (conocimiento Local-0018), no en la de `como-uso-claude` que nombraba el plan original — ese saber es lo que este repo aprendió construyendo su harness, así que va a su Índice del Agente Desplegado; la página de diseño `subagentes-agentes-codigo.md` de aquel repo queda para actualizarse aparte vía `resolver` si se decide. Cierra el hueco «diseñado y sin ejecutar» para esta mitad.
 
-### Familia 2 — bloqueada, necesita al usuario
+### Familia 2 — desbloqueada el 23/08/2026
 
-4. **Ratificar el punto abierto 2** (tipos propios contra plugins oficiales) y **resolver el 1** (instalación condicional). Sin esto no arranca.
+4. ✅ ~~**Ratificar el punto abierto 2** (tipos propios contra plugins oficiales) y **resolver el 1** (instalación condicional). Sin esto no arranca.~~ Hecho 26-08-23: los dos resueltos por el usuario vía consulta desde el repo `como-uso-claude`. El texto acordado está arriba, en «Puntos abiertos → Resueltos el 23/08/2026».
 5. Escribir los cuatro archivos de tipo en el harness, con las preferencias del Agente Multipropósito embebidas en cada prompt.
 6. Instalar en un Agente con Propósito de código real y probar: `test-runner` sobre la suite, `code-reviewer` sobre un cambio chico. Candidato: `beatsaber-overlay` — **no** este repo.
 7. Medir el efecto con el mismo método del paso 2 y registrar el resultado en el conocimiento.
@@ -200,6 +212,13 @@ Auditado junto con los otros tres planes vivos, buscando pendientes ya resueltos
 Lo abierto es la Familia 2, y sigue bloqueada en sus dos puntos: ninguna decisión posterior los resolvió —buscados `subagente`, `selectiva`, `condicional`, `tipo de repo` y `familia` en el Índice de decisiones, aparecen solo las Decisiones Local-0060 y Local-0061, que el plan ya cita—.
 
 Envejeció un dato: el párrafo *«Por qué va por el harness y no a nivel usuario»* dice que el prompt de estos subagentes referencia `memoria/`, subsistema **retirado**. El argumento no cambia —siguen dependiendo de subsistemas concretos—, pero el ejemplo hay que reemplazarlo al tocar la sección.
+
+## Actualizado el 23/08/2026 — la Familia 2 queda desbloqueada
+
+Dos cosas, pedidas desde el repo `como-uso-claude` después de que el usuario ratificara ese mismo día:
+
+1. **Los dos puntos abiertos quedaron resueltos**, con el texto acordado en «Puntos abiertos → Resueltos el 23/08/2026», y el paso 4 quedó marcado como cumplido. Lo que sigue son los pasos 5, 6 y 7, que ya no dependen de ninguna definición del usuario.
+2. **Se corrigió el dato que el 12/08 quedaba anotado como envejecido.** El párrafo *«Por qué va por el harness y no a nivel usuario»* citaba `memoria/`, subsistema retirado; ahora nombra `planes/`, que es lo que efectivamente referencia `relevador-de-planes`. El argumento no cambia: los subagentes siguen dependiendo de subsistemas concretos, y por eso van en el plugin de su subsistema y no a nivel usuario.
 
 ## Fuera de alcance
 

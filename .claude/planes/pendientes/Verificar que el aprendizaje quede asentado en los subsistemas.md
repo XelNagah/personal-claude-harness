@@ -50,6 +50,29 @@ Qué mirar de ahí para este plan:
 - **Sesiones pasadas buscables** (`session_search_tool` sobre SQLite/FTS) — sostiene "recuperar lo que se dijo antes", que al Agente Multipropósito le falta estructurado.
 - Lo que **no** conviene copiar: los motores de entrenamiento en diferido (Atropos/GEPA) — fuera de alcance; acá alcanza `/contrastar` disparado por hook / cierre de plan.
 
+## Se ordena detrás del plan Local-0111 (acordado el 23/08/2026)
+
+> Esta sección es **la mitad de un acuerdo**; la otra mitad está en el plan
+> [Avisar al cerrar una tarea que hay algo para asentar](Avisar%20al%20cerrar%20una%20tarea%20que%20hay%20algo%20para%20asentar.md),
+> sección *Se cruza con*. Se anotan las dos a propósito: dejarlas sueltas es la forma exacta en que un
+> plan y su pariente terminan resueltos al revés uno del otro (conocimiento
+> [El plan que reparte su trabajo en otros planes](../../conocimiento/el-plan-que-reparte-su-trabajo.md)).
+
+Aquel plan quiere lo mismo que este —que lo aprendido no se pierda— con **otro disparo y menos alcance**:
+avisa al cerrar una tarea, y **no escribe nada**. Se evaluó fusionarlos y **se decidió que son dos**.
+
+**Por qué no se fusionan:** la asimetría es de dependencias, no de intención. Aquel **no depende de nada**
+—el momento, el texto de la regla y el repartidor ya existen en el repo, solo falta enchufarlos— mientras
+que este no arranca sin `/contrastar`, que no existe y arrastra un solape sin resolver con
+`amp:planificar`. Son tres planes encadenados; meter el chico adentro de esa cadena lo bloquea sin
+necesidad.
+
+**El orden:** primero aquel, después **reevaluar este** con la evidencia de cuánto alcanzó el aviso.
+**Hipótesis a verificar entonces, no ahora:** que el aviso más las habilidades de alta que ya existen
+cubran buena parte de lo que este plan pide, a una fracción del costo de construir `/contrastar`. Si se
+confirma, lo que quede de este plan es más chico de lo que hoy parece — y podría no necesitar
+`/contrastar` en absoluto. **No re-analizar este plan hasta que aquel haya corrido un tiempo.**
+
 ## Depende de
 
 - **`/contrastar`** — es el motor. Este plan no arranca sin él; su diseño incluye la entrada "hacia atrás". Diseñar `/contrastar` teniendo esta necesidad a la vista.

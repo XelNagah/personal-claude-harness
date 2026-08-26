@@ -2,7 +2,7 @@
 indice: Índice de la base de conocimiento
 origen: agente-multiproposito
 columnas: [Código, Nombre, Descripción, Detalle]
-descripcion: de qué trata esa página, en una línea
+descripcion: qué se sabe, en una línea
 ---
 
 # Índice de la base de conocimiento
@@ -12,8 +12,8 @@ descripcion: de qué trata esa página, en una línea
 Los markdown de la raíz del repo (README y similares) son **documentación del proyecto**, no conocimiento de agente: no se listan acá.
 
 - **Código** — `Base-NNNN` o `Local-NNNN` según el origen. Se asigna al crear la entrada y no se reusa.
-- **Nombre** — el título de la página.
-- **Descripción** — de qué trata, en una línea: lo suficiente para decidir si vale abrirla. El desarrollo va en la página; lo que sale de la celda deja de estar cargado. El **Control de Longitud de Descripción** avisa cuando una celda se pasa, y dice el máximo. Lo que baja a la página es la elaboración: la enumeración corta de lo que la página cubre se queda, porque la celda es también con lo que se la busca.
+- **Nombre** — **qué se sabe**: la afirmación que la página sostiene, escrita para entenderse leída sola («Buscar con acentos en Windows devuelve cero aunque haya coincidencias»). **No** es el tema, que dice de qué habla la página y no qué hay que saber de ella. Con una excepción: cuando la página es una referencia y no una afirmación —la mecánica de un sistema externo, un relevamiento—, el nombre es su tema y dice de qué sistema se trata.
+- **Descripción** — qué se sabe, desarrollado: lo suficiente para decidir si vale abrirla. El desarrollo va en la página; lo que sale de la celda deja de estar cargado. El **Control de Longitud de Descripción** avisa cuando una celda se pasa, y dice el máximo. Lo que baja a la página es la elaboración: la enumeración corta de lo que la página cubre se queda, porque la celda es también con lo que se la busca.
 - **Detalle** — la página, o la carpeta con su propio índice.
 
 Convención completa en el [README del subsistema](README.md).

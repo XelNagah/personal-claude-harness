@@ -14,7 +14,9 @@ El contrato de estados vive en `.claude/planes/ESTADOS.md`; la convención compl
 1. **Escribir el documento** en `.claude/planes/pendientes/<nombre-estable>.md`. **Nombre estable**: sin fecha, sin paréntesis (rompen los enlaces markdown), no cambia nunca aunque cambie el estado — el nombre del archivo es la identidad del plan. Encabezado: `**Estado: Nuevo · Creado <AA-MM-DD>.**` y el contexto del plan.
 2. **Agregar la fila** en `.claude/planes/PLANES.md`, al final de la tabla (las filas van en orden ascendente por Código):
    - **Código** — `Local-NNNN`, calculado como el **mayor del Índice más uno**, nunca la cantidad de filas más uno: si alguna vez se retiró un plan hay un hueco, y contar filas repite un código ya usado. Los huecos no se reusan.
-   - **Nombre** — el título del plan, único en el Índice. **Descripción** — de qué se trata, en una línea. **Estado** `Nuevo`, **Fecha de creación** (`AA-MM-DD`), **Fecha de cierre** en `—`, **Origen** si se desprende de otro plan, **Detalle** con el enlace al archivo.
+   - **Nombre** — **qué va a hacer el plan**, escrito para entenderse leído solo: si arregla algo, qué está mal hoy; si construye algo, qué va a existir cuando termine. Nunca el tema ni el área. Único en el Índice.
+   - **Descripción** — el desarrollo del Nombre: qué problema resuelve y qué va a cambiar cuando esté hecho. Tiene que seguir siendo cierta dentro de dos meses, así que los conteos del estado actual y el caso puntual de la sesión van en el archivo, no en la celda.
+   - **Estado** `Nuevo`, **Fecha de creación** (`AA-MM-DD`), **Fecha de cierre** en `—`, **Origen** si se desprende de otro plan, **Detalle** con el enlace al archivo.
 
 ## Cerrar con el lint
 
