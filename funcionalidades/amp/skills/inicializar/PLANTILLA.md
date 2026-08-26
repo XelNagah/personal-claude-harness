@@ -40,7 +40,7 @@ Si tu agente no expande imports, **leé estos manifiestos al inicio de la sesió
 
 Con `--quiet` el lint de planes solo imprime cuando hay hallazgos: sesión limpia, hook silencioso. Es el disparador mecánico del ciclo — sin él, mover planes vuelve a depender de acordarse.
 
-**Claude Code** — `.claude/settings.json` (la clave `outputStyle` que enciende el Estilo de Respuesta + `SessionStart` con las dos entradas + `UserPromptSubmit` sin matcher + `PreToolUse` con matcher `Write|Edit`):
+**Claude Code** — `.claude/settings.json` (la clave `outputStyle` que enciende el Estilo de Respuesta + `SessionStart` con las dos entradas + `UserPromptSubmit` sin matcher + `PreToolUse` con matcher `Write|Edit` + `Stop` sin matcher):
 
 > **`outputStyle` enciende el Estilo de Respuesta**, igual que el `SessionStart` deja funcionando la Pantalla de bienvenida: el Componente Base no se instala apagado. El valor tiene que coincidir **exacto** con el `name` del frontmatter del estilo (`Español corriente`, con acento y mayúscula), o Claude Code lo ignora. Es una clave escalar única, no una lista: si el destino **no** la tiene, se escribe; si ya trae **otro** valor, es una elección viva del repo — no se pisa, se reporta divergente. No recarga en vivo: la primera sesión tras instalar ya arranca con proceso nuevo y la toma. **Solo Claude Code**: Codex CLI no tiene equivalente, por eso su `hooks.json` no la lleva y ahí el estilo degrada a nada, sin fallar.
 
@@ -82,12 +82,22 @@ Con `--quiet` el lint de planes solo imprime cuando hay hallazgos: sesión limpi
           }
         ]
       }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node -e \"let f=require('fs'),p=require('path'),d=process.env.CLAUDE_PROJECT_DIR||process.cwd();while(!f.existsSync(p.join(d,'.claude'))&&p.dirname(d)!==d)d=p.dirname(d);require(p.join(d,'.claude/conducta/establecer-conducta/establecer-conducta.js'))\" establecer-conducta"
+          }
+        ]
+      }
     ]
   }
 }
 ```
 
-**Codex CLI** — `.codex/hooks.json` (los mismos tres eventos; el `SessionStart` del lint de planes lleva además `statusMessage`):
+**Codex CLI** — `.codex/hooks.json` (los mismos cuatro eventos; el `SessionStart` del lint de planes lleva además `statusMessage`):
 
 ```json
 {
@@ -120,6 +130,16 @@ Con `--quiet` el lint de planes solo imprime cuando hay hallazgos: sesión limpi
     "PreToolUse": [
       {
         "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node -e \"let f=require('fs'),p=require('path'),d=process.env.CLAUDE_PROJECT_DIR||process.cwd();while(!f.existsSync(p.join(d,'.claude'))&&p.dirname(d)!==d)d=p.dirname(d);require(p.join(d,'.claude/conducta/establecer-conducta/establecer-conducta.js'))\" establecer-conducta"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
         "hooks": [
           {
             "type": "command",

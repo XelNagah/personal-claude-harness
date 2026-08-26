@@ -9,7 +9,15 @@
 //   - PreToolUse Write|Edit|apply_patch de un .md -> momento `al escribir` (condicion sin juicio)
 //                                                   [clases Inyectar + Bloquear, combinadas]
 //   - SessionStart             -> momento `al arrancar la sesion` (sin condicion)     [clase Ejecutar]
+//   - Stop                     -> momento `al cerrar tarea`       (sin condicion)     [clases Bloquear + Inyectar]
 // El vocabulario de momentos vive en ../MOMENTOS.md; aca vive COMO se realiza cada uno.
+//
+// `al cerrar tarea` es distinto a todos los demas y por eso tiene reglas propias mas abajo: ahi
+// HABLAR CUESTA UNA VUELTA COMPLETA DEL MODELO. Un hook `Stop` no puede dejar una nota y que el turno
+// igual cierre —`decision: block` con `reason` y `hookSpecificOutput.additionalContext` continuan las
+// dos la conversacion—, asi que en ese momento CALLAR ES EL DEFAULT: el texto fijo de las reglas
+// `Inyectar` sale solo si un control del mismo momento lo habilito. Sin eso el aviso saldria en cada
+// cierre y el agente no podria terminar nunca, hasta el corte del CLI a las 8 continuaciones seguidas.
 //
 // Tres clases de despacho:
 //   - Inyectar: arma un texto y lo emite como additionalContext (llega al modelo).
@@ -32,6 +40,9 @@
 //     (PreToolUse sin permissionDecision => 'defer': inyecta y deja el flujo de permisos intacto,
 //     verificado 2026-07-23; NO auto-aprueba. additionalContext llega junto al resultado de la tool.)
 //   SessionStart: lo que emitan las Herramientas de la clase `Ejecutar` (ej. { systemMessage: <caja> }, visible al usuario).
+//   Stop: mismo { hookSpecificOutput: { hookEventName, additionalContext } }, con la salvedad de que
+//     emitir CONTINUA la conversacion. Si el harness manda `stop_hook_active`, se sale mudo sin
+//     despachar nada — es la unica forma de que el turno cierre.
 // Nunca rompe el turno: ante cualquier error o registro vacio, sale 0 sin emitir nada.
 //
 // Uso a mano (probar): echo {"hook_event_name":"SessionStart"} | node establecer-conducta.js
@@ -93,6 +104,7 @@ function momentoDe(data) {
   const ev = data.hook_event_name;
   if (ev === 'UserPromptSubmit') return 'cada turno';
   if (ev === 'SessionStart') return 'al arrancar la sesión';
+  if (ev === 'Stop') return 'al cerrar tarea';
   if (ev === 'PreToolUse') {
     const tool = data.tool_name || '';
     if (tool !== 'Write' && tool !== 'Edit' && tool !== 'apply_patch') return null;
@@ -108,6 +120,19 @@ function momentoDe(data) {
   }
   return null;
 }
+
+// -- momentos donde hablar cuesta un turno completo ---------------------
+// En estos momentos el harness NO deja emitir sin forzar otra respuesta del modelo, asi que el texto
+// fijo de las reglas `Inyectar` NO sale solo: necesita que una regla `Bloquear` del mismo momento
+// —un programa que mide— lo habilite. El registro sigue siendo el dueno del texto y el usuario lo
+// edita sin tocar codigo; lo que decide el control es CUANDO se dice, no QUE se dice.
+// En los demas momentos las `Inyectar` salen siempre, como hasta ahora.
+// La lista vive en UN solo archivo del subsistema, que tambien lee el `lint-conducta`: escrita dos
+// veces, la que sume un momento primero deja a la otra sin marcarlo.
+const { cuestaUnTurno } = require('../momentos-que-cuestan-un-turno.js');
+// Eventos cuyo nombre se devuelve tal cual en `hookSpecificOutput.hookEventName`. Lo que no este aca
+// cae a `UserPromptSubmit`, que es el comportamiento que habia antes de sumar `Stop`.
+const EVENTOS_DE_SALIDA = new Set(['PreToolUse', 'UserPromptSubmit', 'Stop']);
 
 // -- parseo minimo de la tabla markdown del registro de reglas ----------
 function leerReglas(txt) {
@@ -377,7 +402,14 @@ process.stdin.on('end', () => {
   let momento = null;
   try { momento = momentoDe(data); } catch (e) { momento = null; }
 
-  const ev = data.hook_event_name === 'PreToolUse' ? 'PreToolUse' : 'UserPromptSubmit';
+  // GUARDA CONTRA EL BUCLE, obligatoria en `Stop`: si el turno actual ya lo continuo un hook, el
+  // harness manda `stop_hook_active` y hay que salir MUDO. Sin esto, cada continuacion vuelve a
+  // disparar el evento y el agente no puede cerrar hasta el corte del CLI a las 8 seguidas. Va antes
+  // de despachar nada para que ni siquiera se arranquen los programas de las reglas `Bloquear`.
+  // El control del momento la repite por su cuenta; que este en los dos lados es a proposito.
+  if (data.stop_hook_active) return process.exit(0);
+
+  const ev = EVENTOS_DE_SALIDA.has(data.hook_event_name) ? data.hook_event_name : 'UserPromptSubmit';
 
   // clase `Bloquear`: si alguna frena, se emite el deny SOLO y no se sigue — si la escritura no va
   // a ocurrir, el resto sobra (y Claude Code descarta el additionalContext en un deny).
@@ -398,8 +430,12 @@ process.stdin.on('end', () => {
   let corrida = { mensaje: '', extra: null };
   try { corrida = ejecutarClase(momento, input); } catch (e) { corrida = { mensaje: '', extra: null }; }
 
+  // En un momento que cuesta un turno, el texto fijo NO sale solo: lo habilita el control que midio.
+  // Si ninguna regla `Bloquear` del momento aporto contexto, el hook se calla y el turno cierra.
   let ctx = '';
-  try { ctx = construir(momento); } catch (e) { ctx = ''; }   // ante error, no romper el turno
+  if (!cuestaUnTurno(momento) || medido.contexto) {
+    try { ctx = construir(momento); } catch (e) { ctx = ''; }   // ante error, no romper el turno
+  }
   if (medido.contexto) ctx = ctx ? ctx + '\n' + medido.contexto : medido.contexto;
 
   // El contraste con la sabiduria del repo solo tiene sentido cuando hay un mensaje del usuario, o

@@ -34,7 +34,16 @@ function filasTabla(txt, requeridas) {
   return { cols, filas: out };
 }
 
-const problemas = { estructura: [], indices: [], momentoInexistente: [], claseInvalida: [], estadoInvalido: [], inyectarSinTexto: [], vigenteSinRepartidor: [] };
+const problemas = { estructura: [], indices: [], momentoInexistente: [], claseInvalida: [], estadoInvalido: [], inyectarSinTexto: [], vigenteSinRepartidor: [], inyectarSinPortero: [] };
+
+// Los momentos donde emitir cuesta una vuelta completa del modelo: ahi callar es el default y el
+// texto fijo de una regla `Inyectar` sale solo si una regla `Bloquear` del mismo momento lo habilita.
+// La lista la lee tambien el repartidor, de este mismo archivo: es la unica copia del repo.
+const { cuestaUnTurno } = require('../momentos-que-cuestan-un-turno.js');
+// Se acumulan las clases vigentes por momento para poder cruzarlas DESPUES de recorrer todos los
+// Indices: la regla que habilita a otra puede vivir en el Indice del otro origen.
+const clasesPorMomento = new Map();   // momento -> Set(clase)
+const inyectarVigentes = [];          // { regla, momento, momentoCrudo }
 
 // -- vocabulario de momentos --------------------------------------------
 // El vocabulario se lee de DOS archivos: `MOMENTOS.md` (lo manda el Agente Multiproposito y el
@@ -112,7 +121,25 @@ for (const idx of indices) {
     // honestidad: una regla vigente no puede colgar de un momento sin repartidor (disponibilidad declarado)
     if (estado === 'vigente' && momentos.get(momento) === 'declarado')
       problemas.vigenteSinRepartidor.push(`"${regla}" -> vigente pero su momento "${f.momento}" es 'declarado' (sin repartidor): deberia ser 'pendiente'`);
+    // Material para el cruce de mas abajo. Se junta y no se juzga aca: la que habilita a otra puede
+    // estar en el Indice del otro origen, que todavia no se leyo.
+    if (estado === 'vigente') {
+      if (!clasesPorMomento.has(momento)) clasesPorMomento.set(momento, new Set());
+      clasesPorMomento.get(momento).add(clase);
+      if (clase === 'inyectar') inyectarVigentes.push({ regla, momento, momentoCrudo: f.momento });
+    }
   }
+}
+
+// -- inyectar que nadie habilita, en un momento que cuesta un turno ------
+// En esos momentos el repartidor calla por default, asi que una regla `Inyectar` vigente cuyo momento
+// no tenga ninguna regla `Bloquear` vigente que la habilite NO SE ENTREGA NUNCA — y el sintoma es que el agente
+// simplemente trabaja sin ella, sin ningun error en ninguna parte.
+for (const { regla, momento, momentoCrudo } of inyectarVigentes) {
+  if (!cuestaUnTurno(momento)) continue;
+  const clases = clasesPorMomento.get(momento) || new Set();
+  if (!clases.has('bloquear'))
+    problemas.inyectarSinPortero.push(`"${regla}" -> inyectar vigente en "${momentoCrudo}", donde emitir cuesta un turno: sin ninguna regla 'bloquear' vigente que la habilite, no se entrega nunca`);
 }
 
 // -- salida -------------------------------------------------------------
@@ -124,6 +151,7 @@ const secciones = [
   ['ESTADO INVALIDO', problemas.estadoInvalido],
   ['INYECTAR SIN CONTENIDO', problemas.inyectarSinTexto],
   ['VIGENTE SOBRE MOMENTO SIN REPARTIDOR', problemas.vigenteSinRepartidor],
+  ['INYECTAR QUE NADIE HABILITA (momento donde emitir cuesta un turno)', problemas.inyectarSinPortero],
 ];
 const total = secciones.reduce((n, [, it]) => n + it.length, 0);
 if (quiet && total === 0) process.exit(0);

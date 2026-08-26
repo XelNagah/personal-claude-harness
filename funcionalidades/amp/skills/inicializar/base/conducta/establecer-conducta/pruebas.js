@@ -348,6 +348,46 @@ const bloqueDelContraste = (ctx) => {
     !r.contexto.includes(H) && r.contexto.includes('Recordatorio de conducta'));
 }
 
+console.log('\n== `al cerrar tarea`: el momento donde CALLAR ES EL DEFAULT ==');
+// Es el unico momento donde emitir CONTINUA la conversacion en vez de dejar una nota, asi que el
+// texto fijo de su regla `Inyectar` no sale solo: lo habilita la regla `Bloquear` del mismo momento.
+// Las dos formas de romperlo son mudas — de mas, el agente no puede cerrar; de menos, el aviso no
+// existe— y ninguna emite un error en ninguna parte.
+{
+  // Una transcripcion que dispara: pasa el piso del control y no asienta nada. El piso real esta en
+  // el Contenido de la regla del registro copiado, asi que el archivo tiene que superarlo de verdad.
+  const relleno = JSON.stringify({ type: 'user', message: { role: 'user', content: 'relleno de una conversación larga' } }) + '\n';
+  const tDispara = path.join(REPO, 'sesion-sin-asentar.jsonl');
+  fs.writeFileSync(tDispara, relleno.repeat(3000), 'utf8');
+  // Y otra que no: la misma conversacion, pero con un registro escrito.
+  const asentado = JSON.stringify({ type: 'assistant', message: { role: 'assistant', content: [
+    { type: 'tool_use', name: 'Write', input: { file_path: path.join(REPO, '.claude', 'decisiones', 'INDICE.md') } }] } }) + '\n';
+  const tCalla = path.join(REPO, 'sesion-que-asento.jsonl');
+  fs.writeFileSync(tCalla, asentado + relleno.repeat(3000), 'utf8');
+
+  const r = disparar({ hook_event_name: 'Stop', transcript_path: tDispara, session_id: 'banco-stop-1' });
+  chequear('Stop sobre una sesión sin asentar entrega la regla de «al cerrar tarea»',
+    /registralo antes de cerrar/i.test(r.contexto), r.contexto.slice(0, 70).replace(/\n/g, ' ') + '…');
+  chequear('  …y el evento de salida es Stop, no UserPromptSubmit',
+    r.crudo.includes('"hookEventName":"Stop"'), r.crudo.slice(0, 80));
+
+  const rAsento = disparar({ hook_event_name: 'Stop', transcript_path: tCalla, session_id: 'banco-stop-2' });
+  chequear('Stop sobre una sesión que ya asentó → mudo', !rAsento.contexto, rAsento.crudo.slice(0, 60));
+
+  // LA GUARDA CONTRA EL BUCLE. Sin ella cada continuacion vuelve a disparar el evento y el agente no
+  // termina hasta el corte del CLI a las 8 seguidas. Va en el repartidor para proteger a TODAS las
+  // reglas del momento, no solo a la que hoy existe.
+  const rBucle = disparar({ hook_event_name: 'Stop', transcript_path: tDispara,
+    session_id: 'banco-stop-3', stop_hook_active: true });
+  chequear('Stop con stop_hook_active → mudo aunque la señal dispararía',
+    !rBucle.contexto && !rBucle.crudo, rBucle.crudo.slice(0, 60) || '(sin salida)');
+
+  // Sin transcripcion el control no puede medir y se calla; y si el control calla, el texto fijo
+  // NO sale. Este es el caso que prueba que la regla `Inyectar` no se entrega sola.
+  const rSinDatos = disparar({ hook_event_name: 'Stop' });
+  chequear('Stop sin nada que medir → el texto fijo tampoco sale', !rSinDatos.contexto, rSinDatos.crudo.slice(0, 60));
+}
+
 console.log('\n== NUNCA ROMPE EL TURNO ==');
 // Un hook que revienta se lleva puesto el turno del usuario. Ante cualquier entrada, sale 0.
 for (const [nombre, entrada] of [
