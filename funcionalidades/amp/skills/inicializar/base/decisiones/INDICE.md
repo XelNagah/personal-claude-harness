@@ -12,7 +12,7 @@ Registro de las decisiones **estructurales al propósito del repo**: las que def
 Una fila por decisión:
 
 - **Código** — `Local-NNNN`, referencia estable. Se asigna al crear la entrada y no se reusa. En lo que queda escrito no va solo: se dice `Decisión Local-NNNN`.
-- **Nombre** — de qué trata la decisión, en una frase corta. Único en el registro.
+- **Nombre** — **qué se decidió**, escrito para entenderse leído solo, sin abrir la Descripción. Es una afirmación con sujeto concreto —qué cosa del repo queda fijada— y el verbo de lo que esa cosa pasa a hacer o a dejar de hacer. Cuando la decisión eligió entre alternativas, el nombre nombra también la descartada: *X hace A, no B*. **No** es el tema ni el área: «Gobernanza de terminología» o «Diseño del actualizador» dicen de qué se habló, no qué se resolvió, y obligan a leer la Descripción entera para saberlo. Único en el registro.
 - **Descripción** — qué se decidió y por qué. Si requiere conceptualización mayor, la frase queda acá y el desarrollo va al `Detalle`.
 - **Fecha** — `AAAA-MM-DD`.
 - **Estado** — `vigente` o `reemplazada por NNNN`. Para revertir no se borra: se agrega una nueva y se marca la vieja.

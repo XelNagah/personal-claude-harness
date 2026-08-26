@@ -15,7 +15,7 @@ Asienta una decisión en el registro (`.claude/decisiones/INDICE.md`) sin ruido 
    - ¿Contradice una vigente? → no pisar: la decisión nueva **reemplaza** — se agrega con estado `vigente` y la vieja pasa a `reemplazada por NNNN`. Nunca se borra ni se edita la vieja.
 3. **Redactar la fila:**
    - **Código** — `Local-NNNN`, referencia estable. **El mayor del registro más uno**, nunca la cantidad de filas más uno: si alguna vez se retiró una decisión, contar filas repite un código ya usado. Un código retirado deja un hueco y no se reusa. En lo que queda escrito no va solo: se dice `Decisión Local-0042`.
-   - **Nombre** — de qué trata, en una frase corta. Único en el registro: es la clave práctica, la que se usa al hablar.
+   - **Nombre** — **qué se decidió**, escrito para entenderse leído solo, sin abrir la Descripción. Es una afirmación con sujeto concreto —qué cosa del repo queda fijada— y el verbo de lo que esa cosa pasa a hacer o a dejar de hacer. Cuando la decisión eligió entre alternativas, el nombre nombra también la descartada: *X hace A, no B*. **No** es el tema ni el área: «Gobernanza de terminología» o «Diseño del actualizador» dicen de qué se habló, no qué se resolvió, y obligan a leer la Descripción entera para saberlo. Único en el registro: es la clave práctica, la que se usa al hablar.
    - **Descripción** — qué se decidió **y por qué**, en una frase para las simples. Terminología del glosario y del usuario — ningún término acuñado por el agente se asienta sin ratificación.
    - **Fecha** — `AAAA-MM-DD` (absoluta).
    - **Estado** — `vigente`.
