@@ -1,6 +1,6 @@
 # La regla que propone cerrar la sesión manda escribir un handoff para trabajo que sigue otro día
 
-**Estado: Nuevo · Creado 26-08-25.**
+**Estado: Ejecutado · Creado 26-08-25 · Cerrado 26-08-26.** Se resolvió dentro del plan Local-0117, tramo 1.
 
 Reporte del Agente Desplegado `sicape-backend`. La regla es de la Base y viaja a todos los Agentes
 Desplegados, así que el defecto está en todos.
@@ -70,3 +70,31 @@ Los tres puntos del reporte se confirmaron acá el 25/08/2026: la fila existe co
   turno, así que compite por longitud con las otras reglas del mismo momento.
 - Si al arreglar esta fila conviene barrer las demás filas de la Base buscando el mismo defecto —un
   resumen que contradice a la Preferencia que cita—, o dejarlo para un plan aparte.
+
+## Notas de implementación
+
+Cerrado el 26/08/2026, resuelto **adentro del plan Local-0117** (tramo 1), como el propio Local-0117
+lo había previsto.
+
+**La corrección aplicada** es el texto que este plan proponía, ratificado por el usuario antes de
+escribirlo. Las dos celdas de la fila `Base-0010` de `.claude/conducta/INDICE.md`:
+
+- **`Contenido`** — «…asentá lo que falte, **actualizá su plan si el trabajo sigue otro día, escribí
+  un handoff solo si otro agente lo retoma ahora** (Preferencia Base-0014) y sugerí `/clear`.»
+- **`Descripción`** — «Recuerda la disciplina de higiene de sesión al terminar una tarea: persistir lo
+  que falte, dejar en su plan el trabajo que sigue otro día, y `/clear` con la terminal siempre
+  abierta». Ya no nombra el handoff como paso fijo.
+
+Espejado a `funcionalidades/amp/skills/inicializar/base/conducta/INDICE.md` con `sincronizar-base
+--aplicar`, y el plugin `amp` subido a **0.56.0**, sin lo cual ningún Agente Desplegado lo recibe.
+
+**Las dos cuestiones que este plan dejaba abiertas, resueltas:**
+
+1. *Si el texto propuesto era el final.* Lo fue, con un cambio: la `Descripción` arrancaba con
+   «Empuja la disciplina…», y el usuario objetó el término como calco de *push*. Se verió en la misma
+   sesión —relación `Local-0049` del registro de Terminología Farlopa, con canónico `recordar` /
+   `pedir` / `un recordatorio`— y la celda quedó redactada con el canónico.
+2. *Si convenía barrer las demás filas de la Base buscando el mismo defecto.* **No hay material.** El
+   defecto es «un resumen que contradice a la Preferencia que cita», y de las trece reglas de los dos
+   Índices la `Base-0010` es **la única que cita una Preferencia**. Verificado barriendo ambos Índices
+   por citas a Preferencias, Decisiones y páginas de conocimiento. No se abre plan de barrido.

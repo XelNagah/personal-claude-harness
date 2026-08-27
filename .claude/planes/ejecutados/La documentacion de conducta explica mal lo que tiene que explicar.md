@@ -1,6 +1,6 @@
 # La documentación de conducta explica mal lo que tiene que explicar
 
-**Estado: Análisis · Creado 26-08-26.** Origen: el usuario, tras cuatro intentos seguidos de que le explicaran el subsistema y ninguno entendido — *«Me parece que hay que revisar todo ese mecanismo y subsistema para dejar todo más claro. Eso de que ocurre todo en el mismo momento sigo sin entenderlo, y eso no es bueno.»*
+**Estado: Ejecutado · Creado 26-08-26 · Cerrado 26-08-26.** Los dos tramos hechos; las notas de implementación son las dos secciones «Tramo 1» y «Tramo 2» de más abajo. Origen: el usuario, tras cuatro intentos seguidos de que le explicaran el subsistema y ninguno entendido — *«Me parece que hay que revisar todo ese mecanismo y subsistema para dejar todo más claro. Eso de que ocurre todo en el mismo momento sigo sin entenderlo, y eso no es bueno.»*
 
 ## El problema
 
@@ -75,6 +75,79 @@ Se resuelve además, adentro de este plan, el **plan Local-0116** (La regla que 
 4. Corregir la regla del plan Local-0116, que cae adentro.
 5. Espejar a la Base, subir la versión y correr el control de cierre.
 6. Tramo 2: proponer el renombre de la clase `Bloquear` por `converger-terminologia`.
+
+## Notas de implementación
+
+### Tramo 1 — hecho el 26/08/2026
+
+- **`README.md` reescrito** con el molde de la Decisión Local-0066 (seis secciones), con el bloque de
+  arranque adelante como único ejemplo visible al usuario. La explicación de que varias reglas
+  conviven en un momento ya no habla de campos de respuesta: muestra las dos reglas que salen pegadas
+  en la terminal y dice que una la trae el Agente Multipropósito y la otra la sumó el repo.
+- **`MOMENTOS.md`**: la excepción de `al cerrar tarea` quedó escrita **una sola vez**, en la sección
+  *El momento donde hablar cuesta un turno*; `CLASES.md`, el registro de reglas y el README enlazan
+  ahí. Las celdas de la tabla perdieron los párrafos con excepciones adentro: el alcance de
+  `al escribir` bajó a una sección propia.
+- **`CLASES.md`**: la tabla ya no dice qué campo escribe cada clase, sino **quién recibe el resultado
+  y quién decide**. Se sumó el criterio de cuándo usar cada una.
+- **README del repartidor**: recibió el «por qué» que bajó de `CLASES.md` —por qué campo sale cada
+  clase y la nota histórica del 02/08/2026, cuando `Ejecutar` cortaba y apagaba a las `Inyectar`—,
+  más el evento `Stop`, que faltaba.
+- **La regla `Base-0010` corregida**, que es el plan Local-0116 entero. Cerrado con sus notas.
+
+**Dos datos falsos corregidos de paso**, que no estaban en el diagnóstico:
+
+1. `MOMENTOS.md` afirmaba que `al cerrar tarea` corre en Codex y describía cómo degradaba. El evento
+   existe, pero `.codex/hooks.json` declara solo los otros tres: ahí el momento **no se entrega**.
+2. El README del repartidor llamaba `correr` a la clase `Ejecutar`, un nombre que el código y los
+   dos vocabularios ya no usan.
+
+**Un veto que salió del tramo 1.** Al mostrar la celda `Descripción` de `Base-0010`, el usuario
+objetó «Empuja la disciplina…» como calco de *push*. Se tramitó por `converger-terminologia`: relación
+`Local-0049` del registro de Terminología Farlopa —`empujar` / `empuje` / `empujón` con el sentido de
+inducir una conducta—, con canónico `recordar` / `pedir` / `un recordatorio` y Control `avisa`, porque
+el verbo tiene cuatro usos legítimos vivos en el repo («empuja la decisión hacia el lado
+equivocado»). Barrido lo tocado: conducta, la Decisión Local-0021, la definición del glosario
+Local-0013 y el conocimiento Local-0007. **Quedan cinco apariciones en planes vivos**, que el lint
+marca y van con el barrido general.
+
+Todo espejado con `sincronizar-base --aplicar` (7 archivos) y el plugin `amp` subido a **0.56.0**.
+
+### Tramo 2 — hecho el 26/08/2026
+
+**La clase `Bloquear` pasó a llamarse `Controlar`**, ratificado por el usuario: renombre limpio, sin
+nombre alternativo, y la migración de los repos ya instalados a cargo de `amp:actualizar`.
+
+**El argumento medido:** de las tres reglas de esa clase que trae la Base, **dos declaran por escrito
+que nunca frenan** (`avisar-contexto-pesado`, «nunca frena nada»; `avisar-sesion-sin-asentar`, «Nunca
+frena»). La clase se llamaba por el efecto menos frecuente de sus reglas.
+
+**El nombre no se acuñó:** *Control* ya estaba ratificado en el glosario (término Local-0021),
+definido como el chequeo que al encontrar un incumplimiento **bloquea** o **avisa**. La clase se
+llamaba por una de las dos salidas de un Control; ahora se llama por lo que hace. El registro de
+Terminología Farlopa ya usaba esa misma pareja en su columna `Control`.
+
+**Lo tocado**, 17 archivos: `CLASES.md` (la fila), las tres filas del registro de reglas, `MOMENTOS.md`,
+el README del subsistema, el manifiesto, `momentos-que-cuestan-un-turno.js`, el repartidor y su README
+y su banco, el `lint-conducta` —la lista por defecto, la condición `clases.has` y el texto del
+hallazgo— y su banco, los tres controles y sus README, la habilidad `registrar-regla`, la definición
+del glosario Local-0012 y la Decisión Local-0021. En esos dos últimos se corrigió además `correr`, otro
+nombre de clase retirado que seguía escrito.
+
+**La migración, en `amp:actualizar`.** El vocabulario y el repartidor viajan con el nombre nuevo, pero
+las reglas propias de cada repo viven en `INDICE-LOCAL.md`, que el actualizador **no reemplaza**: sin
+migración quedarían con una clase inválida que el repartidor no despacha —la regla existe y no se
+entrega nunca, sin error en ninguna parte—. Se sumó el chequeo `[1c]`, que cuenta las filas con clase
+retirada en los dos Índices y las reporta como **renombre** (conservar la fila, cambiar la celda),
+cubriendo también `correr` → `Ejecutar`, que nunca había tenido migración. Verificado con datos
+sintéticos: cuenta las dos filas cuya **celda** `Clase` es la retirada, y no la fila donde la palabra
+aparece dentro de otra celda.
+
+**Verificado en vivo:** alimentando el repartidor con una escritura que usa un término vetado sin uso
+legítimo, sigue devolviendo `permissionDecision: deny`. Lint de conducta en 0 y los seis bancos del
+subsistema en verde.
+
+Plugins: `amp` a **0.56.0** y `amp-conducta` a **0.6.0**.
 
 ## Planes relacionados
 
