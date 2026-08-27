@@ -12,8 +12,8 @@ Se evaluó la alternativa de **config fija** (un `settings.json` escrito una vez
 
 ## El modelo
 
-- **Momento de conducta** = evento de hook + condición que la máquina evalúa sin juicio. Es agente-agnóstico; cada agente declara con qué mecanismo lo realiza (o que no puede). Lo que necesita juicio **no** es un momento de conducta: se degrada a un empujón por turno.
-- **Regla de conducta** = ata un momento a una **acción**, de tres clases: *inyectar texto* (el agente hace Y con su juicio) / *correr una Herramienta* (la máquina hace Y sin juicio) / *bloquear* (solo donde Y es sin juicio y el falso positivo es imposible). Regla: Y verificable por máquina → lo hace la máquina; Y con juicio → se empuja al agente.
+- **Momento de conducta** = evento de hook + condición que la máquina evalúa sin juicio. Es agente-agnóstico; cada agente declara con qué mecanismo lo realiza (o que no puede). Lo que necesita juicio **no** es un momento de conducta: se degrada a un recordatorio en cada turno.
+- **Regla de conducta** = ata un momento a una **acción**, de tres clases: *inyectar texto* (el agente hace Y con su juicio) / *ejecutar una Herramienta* (la máquina hace Y sin juicio) / *controlar* (un Control decide: avisa, o frena donde Y es sin juicio y el falso positivo es imposible). Regla: Y verificable por máquina → lo hace la máquina; Y con juicio → se le recuerda al agente.
 - **Dos registros:** `momentos` (momento · qué representa · evento · condición · disponibilidad por agente) y `reglas de conducta` (regla · momento · acción · estado).
 - **Entrega:** un **hook repartidor por evento** (sin filtro), escrito una vez por agente, que lee el registro compartido y entrega la regla que corresponde al evento + datos actuales. Agregar una regla **no toca la config**: el repartidor lee el registro vivo.
 - **Base instalada:** el subsistema no viene vacío. Trae reglas del Agente Multipropósito — respetar las preferencias, considerar el conocimiento, contrastar contra glosario/decisiones al escribir (test 0020), registrar en el subsistema que corresponde cuando algo cambia. Sobre esas, cada repo suma las suyas. Paralelo a cómo preferencias separa por origen.
