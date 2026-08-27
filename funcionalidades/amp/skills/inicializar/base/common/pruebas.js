@@ -81,17 +81,70 @@ caso('origen invalido enciende el origen y el cotejo con el manifiesto',
 // Filas fusionadas: una edicion que pierde el salto mete la fila siguiente adentro de la celda
 // final de la anterior. El texto se lee igual y la entrada deja de existir para quien lea por
 // filas; medido en dos registros el 01/08/2026 con los once chequeos del cierre en verde.
+//
+// Lo que delata la fusion es el ANCHO de la fila, no donde estan los codigos. Hasta el 27/08/2026
+// se contaban los codigos entre barras y fallaba para los dos lados; los dos casos estan abajo.
+// Los escenarios declaran el ancho REAL de su tabla: uno que declare 2 columnas sobre una tabla de
+// 3 no prueba este control, prueba el de columnas — y de paso volveria irrepetible cualquier
+// medicion, porque toda fila sana quedaria marcada.
+const COLS = ['Código', 'Nombre'];
+const pegadas = res => res.filter(m => /falta el salto de linea/.test(m));
 const TABLA_SANA = '| Código | Nombre |\n|---|---|\n| Local-0001 | Uno |\n| Local-0002 | Dos |\n';
-const TABLA_PEGADA = '| Código | Nombre |\n|---|---|\n| Local-0001 | Uno | | Local-0002 | Dos |\n';
+const TABLA_PEGADA = '| Código | Nombre |\n|---|---|\n| Local-0001 | Uno | Local-0002 | Dos |\n';
 caso('dos filas en una sola linea se marcan',
-  idx.problemasDeIndices(idxDe(['A'], ['A'], undefined, TABLA_PEGADA), MANI).length, 1);
+  pegadas(idx.problemasDeIndices(idxDe(COLS, COLS, undefined, TABLA_PEGADA), MANI)).length, 1);
 // El caso bueno con las MISMAS filas separadas: sin el, un chequeo que marcara siempre pasaria.
 caso('las mismas filas bien separadas no se marcan',
-  idx.problemasDeIndices(idxDe(['A'], ['A'], undefined, TABLA_SANA), MANI), []);
+  idx.problemasDeIndices(idxDe(COLS, COLS, undefined, TABLA_SANA), MANI), []);
 // Tres pegadas cuentan como UN hallazgo por linea, no como tres: la linea es la unidad a reparar.
 caso('tres filas pegadas dan un hallazgo por linea',
-  idx.problemasDeIndices(idxDe(['A'], ['A'], undefined,
-    '| Código |\n|---|\n| Local-0001 | a | | Local-0002 | b | | Local-0003 | c |\n'), MANI).length, 1);
+  pegadas(idx.problemasDeIndices(idxDe(['Código'], ['Código'], undefined,
+    '| Código |\n|---|\n| Local-0001 | Local-0002 | Local-0003 |\n'), MANI)).length, 1);
+
+// EL FALSO POSITIVO QUE ORIGINO EL ARREGLO. Un Agente Desplegado reporto el 25/08/2026 que su
+// `PLANES.md` marcaba dos filas pegadas sobre una fila sana: la columna Origen —"si se desprende de
+// otro plan"— llevaba un codigo pelado, y el patron viejo sumaba cualquier codigo entre barras.
+// No se veia en el repo autor porque ahi esa celda lleva el TIPO delante del codigo —`Plan
+// Local-0067`, la forma que pide citar cada codigo con su tipo porque los codigos se repiten entre
+// registros— y ese prefijo rompia el patron viejo: el defecto estaba latente y solo se manifestaba
+// afuera, en el repo que escribe el codigo pelado. Los dos casos de abajo fijan las dos formas.
+const CON_ORIGEN = ['Código', 'Nombre', 'Origen'];
+caso('la columna de referencia con el codigo pelado no es una fila pegada',
+  idx.problemasDeIndices(idxDe(CON_ORIGEN, CON_ORIGEN, undefined,
+    '| Código | Nombre | Origen |\n|---|---|---|\n| Local-0113 | Uno | Local-0067 |\n'), MANI), []);
+caso('la misma columna con el tipo delante tampoco',
+  idx.problemasDeIndices(idxDe(CON_ORIGEN, CON_ORIGEN, undefined,
+    '| Código | Nombre | Origen |\n|---|---|---|\n| Local-0113 | Uno | Plan Local-0067 |\n'), MANI), []);
+
+// EL FALSO NEGATIVO QUE DESTAPO. Contar codigos tampoco marcaba la fusion cuya segunda fila arranca
+// con un codigo que no matchea —mal escrito, o una entrada sin codigo todavia—: habia UN codigo en
+// la linea, asi que el conteo daba 1 y pasaba. El ancho la marca igual.
+caso('la fusion con el segundo codigo ilegible se marca igual',
+  pegadas(idx.problemasDeIndices(idxDe(COLS, COLS, undefined,
+    '| Código | Nombre |\n|---|---|\n| Local-0001 | Uno | Lcal-0002 | Dos |\n'), MANI)).length, 1);
+
+// LA CABECERA FUSIONADA, que es por que el ancho sale del frontmatter y no de la cabecera. Si la
+// linea que perdio el salto es la cabecera, medir contra ella deja el control muerto en silencio:
+// la fila pegada de 4 celdas da 4 = 4 y no se marca, y ademas toda fila sana queda por DEBAJO. El
+// frontmatter no lo toca esa edicion, asi que sigue diciendo 2 y el hallazgo sale.
+caso('con la cabecera fusionada el control sigue marcando la fila pegada',
+  pegadas(idx.problemasDeIndices(idxDe(COLS, ['Código', 'Nombre', 'Código', 'Nombre'], undefined,
+    '| Código | Nombre | Código | Nombre |\n|---|---|---|---|\n| Local-0001 | Uno | Local-0002 | Dos |\n'), MANI)).length, 1);
+
+// El Indice que todavia no declara `columnas` cae a la cabecera: no correr es peor que medir contra
+// algo fragil. Sin este caso, un `anchoEsperado` que devolviera null ahi apagaria el control entero
+// para los Agentes Desplegados a medio actualizar, en verde y sin decirlo.
+caso('sin columnas declaradas el ancho sale de la cabecera',
+  pegadas(idx.problemasDeIndices(idxDe(null, COLS, undefined, TABLA_PEGADA), MANI)).length, 1);
+caso('sin columnas declaradas la tabla sana tampoco se marca',
+  pegadas(idx.problemasDeIndices(idxDe(null, COLS, undefined, TABLA_SANA), MANI)).length, 0);
+
+// Una linea de tabla que no arranca con un Codigo no es una entrada y no se controla: una tabla
+// explicativa dentro de un Indice no es material de este control. Medido el 27/08/2026: en los 15
+// Indices de este repo no hay ninguna.
+caso('una tabla explicativa dentro del Indice no se controla',
+  pegadas(idx.problemasDeIndices(idxDe(COLS, COLS, undefined,
+    TABLA_SANA + '\n| Caso | Antes | Ahora | Nota |\n|---|---|---|---|\n| Uno | a | b | c |\n'), MANI)).length, 0);
 
 // CONTROL DE LONGITUD DE DESCRIPCION — avisa. La convencion de cada Indice define esa celda como
 // "una linea"; el Control es esa linea escrita como numero. Los cuatro Indices que se cargan en

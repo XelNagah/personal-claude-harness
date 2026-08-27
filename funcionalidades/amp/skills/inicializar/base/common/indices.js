@@ -105,18 +105,71 @@ function indicesDe(dirSub, nombresViejos) {
 // registro y los once chequeos siguieron en verde.
 //
 // Va aca y no en un lint porque los ocho lints de subsistema ya corren esta funcion: es un solo
-// lugar para los ocho registros. Se cuenta el Codigo, que es la primera celda de toda fila de
-// entrada por convencion del Patron; una linea de tabla con dos o mas son filas fusionadas.
-function filasPegadas(idx) {
+// lugar para los ocho registros.
+
+const RE_CODIGO = /^(?:Base|Local)-\d{4}$/;
+
+// UNA SOLA LECTURA DE FILAS para todos los controles de esta capa. Antes habia dos: [c] miraba la
+// linea cruda con una expresion regular que buscaba codigos entre barras, y [d] parseaba las celdas
+// contra la cabecera. Por eso una fallaba y la otra no — el que agregaba un control elegia camino y
+// heredaba los defectos de ese camino. Un control que lee distinto que su vecino no es un control
+// mas estricto: es otro control, sobre otra cosa.
+//
+// Fila de entrada = la que trae un Codigo en su PRIMERA celda, por convencion del Patron. Las demas
+// lineas de tabla —cabecera, separadora, cualquier tabla explicativa dentro del mismo archivo— no
+// son entradas y no se controlan. Medido el 27/08/2026: en los 15 Indices de este repo no hay
+// ninguna linea de tabla que no sea cabecera, separadora o entrada.
+function filasDe(idx) {
   const out = [];
   // `indicesDe` siempre trae el texto; la guarda es para el llamador que arme el objeto a mano.
   if (typeof idx.texto !== 'string') return out;
   for (const [n, linea] of idx.texto.split('\n').entries()) {
-    if (!linea.trim().startsWith('|')) continue;
-    const codigos = linea.match(/\|\s*(?:Base|Local)-\d{4}\s*\|/g) || [];
-    if (codigos.length > 1) {
-      out.push(`${idx.nombre}: linea ${n + 1} lleva ${codigos.length} entradas en una sola fila (falta el salto de linea): ${codigos.map(c => c.replace(/[|\s]/g, '')).join(', ')}`);
-    }
+    const celdas = celdasDe(linea);
+    if (!celdas || esSeparadora(celdas)) continue;
+    if (!RE_CODIGO.test(celdas[0] || '')) continue;
+    out.push({ linea: n + 1, celdas, codigo: celdas[0] });
+  }
+  return out;
+}
+
+// Ancho que la fila DEBE tener. Sale del frontmatter y no de la cabecera de la tabla a proposito:
+// el frontmatter se escribe a mano y una edicion que pierde un salto de linea no lo toca, mientras
+// que la cabecera es texto de la misma tabla que se rompio. Si la linea fusionada fuera la cabecera,
+// medir contra ella dejaria el control muerto en silencio —todas las filas sanas quedarian por
+// DEBAJO del ancho, y la fila realmente pegada justo encima—, que es la forma de falla del
+// conocimiento Local-0013. La cabecera queda de respaldo para el Indice que todavia no declara
+// `columnas`: sin ella el control no correria, y no correr es peor que medir contra algo fragil.
+function anchoEsperado(idx) {
+  const cols = (idx.columnas && idx.columnas.length) ? idx.columnas : idx.cabecera;
+  return (cols && cols.length) ? cols.length : null;
+}
+
+// [c] Dos filas en una sola linea. Una edicion que pierde el salto fusiona la fila siguiente dentro
+// de la celda final de la anterior: el texto queda entero y se lee normal —abrir el archivo no lo
+// delata— pero la entrada deja de existir para todo el que lea el registro por filas. Una
+// preferencia deja de aplicarse, una Herramienta deja de estar registrada, un termino deja de estar
+// vetado, y ningun control lo dice.
+//
+// Medido el 01/08/2026: dos decisiones consecutivas del repo autor estaban asi, y los once del
+// control de cierre daban verde. Se vio de casualidad, por la numeracion correlativa —que solo ese
+// registro tiene— y recien al sumarse una decision nueva que desalineo la cuenta. Repetido a
+// proposito en `preferencias`, donde no hay numeracion que lo delate: la entrada desaparecio del
+// registro y los once chequeos siguieron en verde.
+//
+// Lo que delata la fusion es el ANCHO, no donde estan los codigos. Contar codigos entre barras
+// —como se hacia hasta el 27/08/2026— fallaba para los dos lados: marcaba la fila sana cuya columna
+// referencia otra entrada con el codigo pelado (`| Local-0067 |` en la columna Origen de un
+// `PLANES.md`, que es como llego el reporte), y NO marcaba la fusion cuya segunda fila arranca con
+// un codigo ilegible. Los codigos siguen usandose para nombrar en el mensaje que entradas quedaron
+// adentro, nunca para decidir.
+function filasPegadas(idx) {
+  const out = [];
+  const ancho = anchoEsperado(idx);
+  if (ancho === null) return out;
+  for (const f of filasDe(idx)) {
+    if (f.celdas.length <= ancho) continue;
+    const dentro = f.celdas.filter(c => RE_CODIGO.test(c));
+    out.push(`${idx.nombre}: linea ${f.linea} lleva ${f.celdas.length} celdas y la tabla declara ${ancho} (falta el salto de linea): ${dentro.join(', ')}`);
   }
   return out;
 }
@@ -138,15 +191,14 @@ function descripcionesLargas(idx) {
   const out = [];
   const maximo = maximoDe(idx);
   if (typeof idx.texto !== 'string' || maximo === 0) return out;
+  // La posicion se busca en la cabecera y no en `columnas`: aca hace falta donde esta la celda EN LA
+  // TABLA, no cuantas deberia haber. Es la misma razon por la que [c] usa la otra referencia.
   const col = (idx.cabecera || []).findIndex(c => /^descripci[oó]n$/i.test(c));
   if (col < 0) return out;
-  for (const linea of idx.texto.split('\n')) {
-    const celdas = celdasDe(linea);
-    if (!celdas || esSeparadora(celdas)) continue;
-    if (!/^(?:Base|Local)-\d{4}$/.test(celdas[0] || '')) continue;
-    const desc = celdas[col] || '';
+  for (const f of filasDe(idx)) {
+    const desc = f.celdas[col] || '';
     if (desc.length > maximo) {
-      out.push(`Control de Longitud de Descripción — ${idx.nombre}: ${celdas[0]} la tiene en ${desc.length} caracteres y el máximo es ${maximo}. Bajar a la página de detalle la elaboración, nunca una condición operativa ni lo que hace encontrable la fila`);
+      out.push(`Control de Longitud de Descripción — ${idx.nombre}: ${f.codigo} la tiene en ${desc.length} caracteres y el máximo es ${maximo}. Bajar a la página de detalle la elaboración, nunca una condición operativa ni lo que hace encontrable la fila`);
     }
   }
   return out;
