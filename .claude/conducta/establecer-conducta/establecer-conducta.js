@@ -7,9 +7,9 @@
 // Eventos que realiza hoy (la realizacion del momento es agente-especifica):
 //   - UserPromptSubmit         -> momento `cada turno`            (sin condicion)      [clase Inyectar]
 //   - PreToolUse Write|Edit|apply_patch de un .md -> momento `al escribir` (condicion sin juicio)
-//                                                   [clases Inyectar + Bloquear, combinadas]
+//                                                   [clases Inyectar + Controlar, combinadas]
 //   - SessionStart             -> momento `al arrancar la sesion` (sin condicion)     [clase Ejecutar]
-//   - Stop                     -> momento `al cerrar tarea`       (sin condicion)     [clases Bloquear + Inyectar]
+//   - Stop                     -> momento `al cerrar tarea`       (sin condicion)     [clases Controlar + Inyectar]
 // El vocabulario de momentos vive en ../MOMENTOS.md; aca vive COMO se realiza cada uno.
 //
 // `al cerrar tarea` es distinto a todos los demas y por eso tiene reglas propias mas abajo: ahi
@@ -25,13 +25,13 @@
 //               (ej. la Pantalla de bienvenida emite {systemMessage} en SessionStart: ese campo es
 //               el unico que escribe en la terminal del usuario). Es para momentos donde la salida
 //               del hijo ES la respuesta del hook; si hay varias reglas, se fusionan (ver abajo).
-//   - Bloquear: ejecuta la Herramienta cuya ruta es el Contenido y LEE su respuesta. Si trae
+//   - Controlar: ejecuta el Control cuya ruta es el Contenido y LEE su respuesta. Si trae
 //               permissionDecision 'deny', se emite ese deny solo (frena la accion; el
 //               additionalContext se descartaria igual). Si trae additionalContext, se COMBINA
 //               con el texto de las reglas `Inyectar` del mismo momento.
 //
 // Combinacion: en un mismo momento conviven reglas `Inyectar` (texto fijo, vive en el registro y lo
-// actualiza el harness) y `Bloquear` (datos medidos, los produce un programa). Se emiten juntas, una
+// actualiza el harness) y `Controlar` (datos medidos, los produce un Control). Se emiten juntas, una
 // abajo de la otra. `Ejecutar` tambien se combina, pero por otro campo: sus salidas se fusionan en
 // un unico `systemMessage`, porque dos JSON pegados no son JSON valido y el harness los descarta.
 //
@@ -123,7 +123,7 @@ function momentoDe(data) {
 
 // -- momentos donde hablar cuesta un turno completo ---------------------
 // En estos momentos el harness NO deja emitir sin forzar otra respuesta del modelo, asi que el texto
-// fijo de las reglas `Inyectar` NO sale solo: necesita que una regla `Bloquear` del mismo momento
+// fijo de las reglas `Inyectar` NO sale solo: necesita que una regla `Controlar` del mismo momento
 // —un programa que mide— lo habilite. El registro sigue siendo el dueno del texto y el usuario lo
 // edita sin tocar codigo; lo que decide el control es CUANDO se dice, no QUE se dice.
 // En los demas momentos las `Inyectar` salen siempre, como hasta ahora.
@@ -375,13 +375,13 @@ function ejecutarClase(momento, input) {
   return { mensaje: mensajes.join('\n'), extra };
 }
 
-// -- bloquear: leer la respuesta del hijo -------------------------------
+// -- controlar: leer la respuesta del hijo -----------------------------
 // Devuelve { deny: <motivo> } si alguna regla frena la accion, o { contexto: <texto> } con lo que
 // haya que sumarle a las reglas `inyectar` del mismo momento. El deny gana: si la escritura no va a
 // ocurrir, el recordatorio sobra (y Claude Code descarta el additionalContext en un deny).
-function bloquear(momento, input) {
+function controlar(momento, input) {
   const partes = [];
-  for (const r of reglasDe(momento, 'bloquear')) {
+  for (const r of reglasDe(momento, 'controlar')) {
     const out = ejecutar(r, input);
     if (!out || !out.trim()) continue;
     let hs = null;
@@ -405,16 +405,16 @@ process.stdin.on('end', () => {
   // GUARDA CONTRA EL BUCLE, obligatoria en `Stop`: si el turno actual ya lo continuo un hook, el
   // harness manda `stop_hook_active` y hay que salir MUDO. Sin esto, cada continuacion vuelve a
   // disparar el evento y el agente no puede cerrar hasta el corte del CLI a las 8 seguidas. Va antes
-  // de despachar nada para que ni siquiera se arranquen los programas de las reglas `Bloquear`.
+  // de despachar nada para que ni siquiera se arranquen los programas de las reglas `Controlar`.
   // El control del momento la repite por su cuenta; que este en los dos lados es a proposito.
   if (data.stop_hook_active) return process.exit(0);
 
   const ev = EVENTOS_DE_SALIDA.has(data.hook_event_name) ? data.hook_event_name : 'UserPromptSubmit';
 
-  // clase `Bloquear`: si alguna frena, se emite el deny SOLO y no se sigue — si la escritura no va
+  // clase `Controlar`: si alguna frena, se emite el deny SOLO y no se sigue — si la escritura no va
   // a ocurrir, el resto sobra (y Claude Code descarta el additionalContext en un deny).
   let medido = { contexto: '' };
-  try { medido = bloquear(momento, input); } catch (e) { medido = { contexto: '' } }
+  try { medido = controlar(momento, input); } catch (e) { medido = { contexto: '' } }
   if (medido.deny) {
     process.stdout.write(JSON.stringify({ hookSpecificOutput: {
       hookEventName: ev, permissionDecision: 'deny', permissionDecisionReason: medido.deny } }));
@@ -426,12 +426,12 @@ process.stdin.on('end', () => {
   // apagaba a todas sin emitir ninguna senal, y el registro esta pensado para editarse sin tocar
   // este script. Se combinan por campos distintos, que es lo que las hace combinables: `Ejecutar` y
   // el Buzon de Avisos Generales escriben en `systemMessage` (lo ve el usuario); `Inyectar` y
-  // `Bloquear`, en `additionalContext` (lo lee el modelo).
+  // `Controlar`, en `additionalContext` (lo lee el modelo).
   let corrida = { mensaje: '', extra: null };
   try { corrida = ejecutarClase(momento, input); } catch (e) { corrida = { mensaje: '', extra: null }; }
 
   // En un momento que cuesta un turno, el texto fijo NO sale solo: lo habilita el control que midio.
-  // Si ninguna regla `Bloquear` del momento aporto contexto, el hook se calla y el turno cierra.
+  // Si ninguna regla `Controlar` del momento aporto contexto, el hook se calla y el turno cierra.
   let ctx = '';
   if (!cuestaUnTurno(momento) || medido.contexto) {
     try { ctx = construir(momento); } catch (e) { ctx = ''; }   // ante error, no romper el turno

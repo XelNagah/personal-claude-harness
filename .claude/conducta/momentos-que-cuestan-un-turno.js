@@ -7,7 +7,7 @@
 // hook no emita nada.
 //
 // De ahi la regla que rige ahi y en ningun otro lado: CALLAR ES EL DEFAULT. El texto fijo de una
-// regla `Inyectar` no sale solo; sale cuando una regla `Bloquear` del mismo momento —un programa que
+// regla `Inyectar` no sale solo; sale cuando una regla `Controlar` del mismo momento —un programa que
 // mide— lo habilita. Una regla `Inyectar` sin esa habilitacion prometeria un comportamiento que, de
 // entregarse siempre, dejaria al agente sin poder terminar: Claude Code corta recien a las 8
 // continuaciones seguidas.

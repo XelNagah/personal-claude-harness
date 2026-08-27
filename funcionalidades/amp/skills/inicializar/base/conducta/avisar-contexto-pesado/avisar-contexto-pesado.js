@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 // Control del momento `cada turno` del subsistema conducta: mide el transcript de la sesion como
 // aproximacion del contexto acumulado y, pasado un umbral, emite un aviso proponiendo un punto de
-// corte (persistir + handoff + /clear). NUNCA emite deny: es clase `Bloquear` porque esa es la clase
+// corte (persistir + handoff + /clear). NUNCA emite deny: es clase `Controlar` porque esa es la clase
 // que ejecuta un programa y combina su additionalContext con las reglas del momento, no porque frene.
 //
 // Por que existe: el problema medido nunca fue la sesion abierta sino la sesion abierta con contexto
 // gordo — cada turno re-lee todo el contexto, y volver de una pausa lo re-escribe entero. La
-// disciplina que este aviso empuja es: tarea terminada -> persistir + handoff + /clear, con la
+// disciplina que este aviso recuerda es: tarea terminada -> persistir + handoff + /clear, con la
 // terminal siempre abierta y en escucha.
 //
 // Estimacion PROVISORIA a calibrar: tokens ~ bytes del transcript / 4. El JSONL tiene sobrecarga
@@ -17,7 +17,7 @@
 // cada turno. La marca vive en `.claude/tmp/avisar-contexto-pesado/<session_id>.txt` (NO en
 // `.claude/tmp/avisos/`, que es el Buzon de Avisos Generales y el repartidor lo vacia).
 //
-// Lo invoca el hook repartidor `establecer-conducta` como Contenido de una regla clase `Bloquear`.
+// Lo invoca el hook repartidor `establecer-conducta` como Contenido de una regla clase `Controlar`.
 // No es una Herramienta (no va al registro de Herramientas): es infra del subsistema, co-ubicada.
 //
 // Entrada: el JSON del hook por stdin (transcript_path, session_id).

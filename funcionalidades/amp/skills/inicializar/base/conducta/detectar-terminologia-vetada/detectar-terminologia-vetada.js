@@ -12,7 +12,7 @@
 // barrido) nunca se frena; se frena usarlo. Sin esa distincion el control volveria inescribibles a
 // los propios archivos que documentan el veto.
 //
-// Lo invoca el hook repartidor `establecer-conducta` como Contenido de una regla clase `bloquear`.
+// Lo invoca el hook repartidor `establecer-conducta` como Contenido de una regla clase `controlar`.
 // No es una Herramienta (no va al registro de Herramientas): es infra del subsistema, co-ubicada.
 //
 // Entrada: el JSON del hook por stdin. Se leen tool_name y tool_input, en las dos formas:

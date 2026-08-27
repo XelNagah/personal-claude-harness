@@ -34,7 +34,7 @@
 // conocimiento y hay que volver a averiguarlo.
 // ⚠️ Este repo es el peor banco para calibrarlo: aca escribir el Producto ES escribir subsistemas.
 //
-// Lo invoca el hook repartidor `establecer-conducta` como Contenido de una regla clase `Bloquear`.
+// Lo invoca el hook repartidor `establecer-conducta` como Contenido de una regla clase `Cloquear`.
 // NUNCA emite deny: es esa clase porque es la que ejecuta un programa y combina su additionalContext
 // con las reglas del momento, no porque frene nada.
 // No es una Herramienta (no va al registro de Herramientas): es infra del subsistema, co-ubicada.

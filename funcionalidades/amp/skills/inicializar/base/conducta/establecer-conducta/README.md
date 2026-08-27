@@ -11,6 +11,7 @@ Eventos que realiza hoy:
 - **`SessionStart`** → momento `al arrancar la sesión` (sin condición).
 - **`UserPromptSubmit`** → momento `cada turno` (sin condición). El recordatorio en cada turno.
 - **`PreToolUse`** con `Write`/`Edit`/`apply_patch` cuando **alguna** ruta tocada es un `.md` fuera de `tmp/` → momento `al escribir`.
+- **`Stop`** → momento `al cerrar tarea`. Es el único con reglas de despacho propias: ahí emitir continúa la conversación, así que el default es callar y una regla `Inyectar` sale solo si una `Controlar` del mismo momento lo habilita ([`../MOMENTOS.md`](../MOMENTOS.md#el-momento-donde-hablar-cuesta-un-turno)). Con `stop_hook_active` sale mudo sin despachar nada, o el cierre entra en bucle.
 
 ## El Contraste automático (en `cada turno`)
 
@@ -23,13 +24,17 @@ Además de despachar las reglas, en `cada turno` el repartidor corre el **Contra
 
 ## Las tres clases
 
-| Clase | Qué hace | Se combina |
-|-------|----------|------------|
-| `inyectar` | Emite el `Contenido` de la regla como `additionalContext` | sí |
-| `correr` | Ejecuta la Herramienta cuya ruta es el `Contenido` y **reenvía su salida tal cual** (la Pantalla de bienvenida emite `systemMessage`, el único campo que escribe en la terminal) | no: su salida **es** la respuesta del hook |
-| `bloquear` | Ejecuta la Herramienta y **lee su respuesta**: un `deny` frena la acción y se emite solo; un `additionalContext` se suma al de las reglas `inyectar` | sí |
+Acá vive **por qué campo sale cada clase**, que es el dato que las hace combinables. Qué es cada una y cuándo usarla está en [`../CLASES.md`](../CLASES.md).
 
-En un mismo momento conviven el texto fijo de las `inyectar` —que vive en el registro y lo actualiza el Agente Multipropósito— y los datos medidos de las `bloquear`, que produce un programa. Se emiten juntos, uno abajo del otro.
+| Clase | Qué hace el repartidor | Campo de salida | Se combina |
+|-------|------------------------|-----------------|------------|
+| `Inyectar` | Emite el `Contenido` de la regla tal cual | `additionalContext` (lo lee el modelo) | sí |
+| `Ejecutar` | Corre la Herramienta cuya ruta es el `Contenido` y **reenvía su salida tal cual** | el campo que emita la Herramienta; la Pantalla de bienvenida usa `systemMessage`, el único que escribe en la terminal | sí: las salidas de varias reglas se fusionan en un único `systemMessage` |
+| `Controlar` | Corre el Control y **lee su respuesta** | `additionalContext` si devolvió texto; `permissionDecision: deny` si frena | sí, salvo el `deny`, que se emite solo |
+
+Las tres conviven en un mismo momento **porque escriben en campos distintos**: `Ejecutar` y el Buzón de Avisos Generales en `systemMessage`, `Inyectar` y `Controlar` en `additionalContext`. Así se emiten juntos el texto fijo de las `Inyectar` —que vive en el registro y lo actualiza el Agente Multipropósito— y los datos medidos de las `Controlar`, que produce un Control, uno abajo del otro. El `deny` gana solo: si la acción no va a ocurrir, el resto sobra.
+
+⚠️ **Hasta el 02/08/2026 no era así:** el repartidor despachaba `Ejecutar` primero y **cortaba**, de modo que una regla `Ejecutar` en un momento con reglas `Inyectar` las apagaba a todas sin emitir ninguna señal. No hizo daño porque la única `Ejecutar` vivía en un momento sin `Inyectar`, pero el registro está pensado para editarse sin tocar este script: la fila que lo destapara habría dejado el momento mudo.
 
 ## Contrato
 
@@ -42,8 +47,8 @@ Mecánica y capacidades de hooks: conocimiento `hooks-claude-code` (Claude Code)
 
 ## Cableado
 
-- **Claude Code (`.claude/settings.json`):** `SessionStart` + `UserPromptSubmit` (sin matcher) + `PreToolUse` (matcher `Write|Edit`).
-- **Codex (`.codex/hooks.json`):** los mismos tres. El matcher `Write|Edit` alcanza igual: toda edición de Codex pasa por `apply_patch`, que matchea como `apply_patch`, `Edit` o `Write`. ⚠️ Un hook de Codex **no corre hasta que se lo revisa y se le da confianza** con `/hooks`, y la confianza se pierde cada vez que cambia su texto.
+- **Claude Code (`.claude/settings.json`):** `SessionStart` + `UserPromptSubmit` + `Stop` (sin matcher) + `PreToolUse` (matcher `Write|Edit`).
+- **Codex (`.codex/hooks.json`):** los tres primeros. ⚠️ **`Stop` todavía no está cableado ahí**, así que en Codex el momento `al cerrar tarea` no se entrega, aunque el evento exista y el repartidor sepa realizarlo. El matcher `Write|Edit` alcanza igual: toda edición de Codex pasa por `apply_patch`, que matchea como `apply_patch`, `Edit` o `Write`. ⚠️ Un hook de Codex **no corre hasta que se lo revisa y se le da confianza** con `/hooks`, y la confianza se pierde cada vez que cambia su texto.
 
 ## Probar a mano
 

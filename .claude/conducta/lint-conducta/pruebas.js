@@ -259,7 +259,7 @@ armar();
 
 // -- INYECTAR QUE NADIE HABILITA, en un momento donde emitir cuesta un turno --
 // En esos momentos el repartidor calla por default: una regla `Inyectar` vigente sin ninguna
-// `Bloquear` vigente que la habilite NO SE ENTREGA NUNCA, y el sintoma es que el agente trabaja sin
+// `Controlar` vigente que la habilite NO SE ENTREGA NUNCA, y el sintoma es que el agente trabaja sin
 // ella. El nombre del momento sale del mismo archivo que lee el repartidor, no escrito a mano aca.
 const { MOMENTOS_QUE_CUESTAN_UN_TURNO } = require(path.resolve(ORIGEN, 'momentos-que-cuestan-un-turno.js'));
 const CARO = MOMENTOS_QUE_CUESTAN_UN_TURNO.find(m => {
@@ -281,16 +281,16 @@ if (!CARO) {
     console.log(`${marcados === 1 ? 'OK  ' : 'FALLA'} inyectar sola en "${CARO}" → ${marcados} marcadas (1 esperada)`);
     if (marcados !== 1) malos++;
   }
-  console.log('\n== CASO BUENO: con una `Bloquear` vigente en el mismo momento, no se marca ==');
+  console.log('\n== CASO BUENO: con una `Controlar` vigente en el mismo momento, no se marca ==');
   armar();
   cambiarCelda('Base-0002', 'Momento', CARO);
   escribir(IDX, leer(IDX).trimEnd() + '\n'
     + fila('Base-0003', 'Medir antes de dejar hablar', 'Decide si el texto fijo sale.',
-        CARO, 'Bloquear', 'conducta/un-control/un-control.js', 'vigente') + '\n');
+        CARO, 'Controlar', 'conducta/un-control/un-control.js', 'vigente') + '\n');
   {
     const h = hallazgos(correr());
     const marcados = h['INYECTAR QUE NADIE HABILITA (momento donde emitir cuesta un turno)'] || 0;
-    console.log(`${marcados === 0 ? 'OK  ' : 'FALLA'} inyectar + bloquear en "${CARO}" → ${marcados} marcadas (0 esperadas)`);
+    console.log(`${marcados === 0 ? 'OK  ' : 'FALLA'} inyectar + controlar en "${CARO}" → ${marcados} marcadas (0 esperadas)`);
     if (marcados !== 0) malos++;
   }
 }

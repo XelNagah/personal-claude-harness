@@ -4,24 +4,26 @@ origen: agente-multiproposito
 
 # Clases de acción de conducta
 
-Vocabulario de las **clases** válidas para una regla de conducta. La clase dice **qué hace el hook repartidor con la regla** cuando llega su momento: las tres pasan por un hook — el hook es el mecanismo de entrega, no una clase. El `lint-conducta` lee este archivo para validar que toda regla use una clase existente, en vez de tener la lista escrita a mano en su código.
+Vocabulario de las **clases** válidas para una regla de conducta. La clase dice **qué hace el subsistema con la regla** cuando llega su momento. El `lint-conducta` lee este archivo para validar que toda regla use una clase existente, en vez de tener la lista escrita a mano en su código.
+
+Las tres se entregan por un hook: el hook es el mecanismo, no una clase. Lo que las distingue es **quién recibe el resultado y quién decide qué hacer con él**.
 
 - **Clase** — nombre canónico, en español corriente.
-- **Qué es el Contenido** — qué se escribe en la celda `Contenido` de la regla.
-- **Qué hace el hook** — cómo la despacha el repartidor.
-- **A dónde va el resultado** — dónde termina.
+- **Qué se escribe en la regla** — qué va en la celda `Contenido` de la fila.
+- **Qué hace el subsistema** — cómo la despacha cuando llega el momento.
+- **Quién recibe el resultado** — a quién le llega y qué puede hacer con eso.
 - **Disponibilidad** — `activo` (hay repartidor que la entrega) o las salvedades por agente.
 
-> **Este vocabulario no tiene versión del Agente Desplegado, y es a propósito.** Los momentos sí: `MOMENTOS-LOCAL.md` existe para que un repo declare puntos del flujo propios de su Propósito. Las clases no, porque **están implementadas en el código del repartidor**: agregar una cuarta clase sin tocar `establecer-conducta/` deja reglas que nadie sabe despachar, y el síntoma sería una regla que existe y no se entrega nunca. Una clase nueva es un cambio del Agente Multipropósito, no una extensión del repo.
+| Clase | Qué se escribe en la regla | Qué hace el subsistema | Quién recibe el resultado | Disponibilidad |
+|-------|---------------------------|------------------------|---------------------------|----------------|
+| Inyectar | un texto fijo, escrito en el Índice | se lo entrega al agente tal cual | **el agente**, que actúa con su juicio; el usuario no lo ve | activo |
+| Ejecutar | la ruta de un programa, con sus flags | lo corre y reenvía su salida | **el usuario**, en su terminal; no le llega al agente | activo |
+| Controlar | la ruta de un **Control**, con sus flags | lo corre y lee su respuesta | **el agente**, si el Control avisó; **nadie**, si el Control bloqueó y la acción no ocurre | activo en Claude Code; en Codex el freno todavía no corta (bug abierto del CLI), así que ahí el Control degrada a aviso |
 
-| Clase | Qué es el Contenido | Qué hace el hook | A dónde va el resultado | Disponibilidad |
-|-------|---------------------|------------------|-------------------------|----------------|
-| Inyectar | texto fijo, escrito en el Índice | lo emite como `additionalContext` | al contexto del modelo; el usuario no lo ve | activo |
-| Ejecutar | la ruta de un programa, con sus flags | lo ejecuta y reenvía su salida; si el momento tiene varias reglas, las fusiona en un único `systemMessage` | a la terminal del usuario (hoy el `systemMessage` de la Pantalla de bienvenida); no entra al contexto | activo |
-| Bloquear | la ruta de un programa, con sus flags | lo ejecuta y **lee** su respuesta | si trae `deny`, frena la acción; si trae `additionalContext`, se combina con las reglas `Inyectar` del mismo momento | activo en Claude Code; en Codex el `deny` todavía no frena (bug abierto del CLI), así que ahí degrada a aviso |
+**Cuándo usar cada una.** El corte entre `Inyectar` y las otras dos es si lo que hay que asegurar necesita criterio. «Acordate de contrastar lo que escribiste contra lo ya asentado» lo tiene que juzgar el agente caso por caso, así que es un texto (`Inyectar`). «Este archivo usa un término vetado» se resuelve comparando contra una lista, sin juicio, así que lo decide un Control (`Controlar`). Producir una salida y ponerla a la vista del usuario no es ninguna de las dos: es `Ejecutar`.
 
-> ⚠️ **Con una excepción, en los momentos donde emitir cuesta un turno completo del modelo** —hoy solo `al cerrar tarea`—: ahí **callar es el default** y una regla `Inyectar` no sale sola, porque saldría en cada cierre y el agente no podría terminar. La habilita una regla `Bloquear` del mismo momento: el registro sigue siendo el dueño del texto y el control decide **cuándo** se dice, no **qué**. La lista de esos momentos vive en `momentos-que-cuestan-un-turno.js`, única copia que leen el repartidor y el `lint-conducta`.
+**Varias reglas de clases distintas conviven en un mismo momento** y se entregan juntas, no una en lugar de otra. El caso a la vista está en el arranque de sesión, donde una regla `Ejecutar` del Agente Multipropósito y otra del repo salen pegadas en la terminal; el ejemplo, en el [README del subsistema](README.md). La única que se entrega sola es la que frena: si la acción no va a ocurrir, el resto sobra. **Por qué campo sale cada una** —que es lo que hace posible combinarlas— está en el [README del repartidor](establecer-conducta/README.md).
 
-> **Las tres clases conviven en un mismo momento** y salen en una sola respuesta, porque cada una escribe en un campo distinto: `Ejecutar` en `systemMessage`, `Inyectar` y `Bloquear` en `additionalContext`. La única que gana sola es un `deny`: si la acción no va a ocurrir, el resto sobra. Hasta el 02/08/2026 no era así — el repartidor despachaba `Ejecutar` primero y **cortaba**, de modo que una regla `Ejecutar` en un momento con reglas `Inyectar` las apagaba a todas sin emitir ninguna señal. No hacía daño porque la única `Ejecutar` vivía en un momento sin `Inyectar`, pero el registro está pensado para editarse sin tocar el repartidor: la fila que lo destapara habría dejado el momento mudo.
+**En el momento `al cerrar tarea` esto tiene una excepción:** ahí una regla `Inyectar` no se entrega sola. Está explicada una sola vez, en [`MOMENTOS.md`](MOMENTOS.md#el-momento-donde-hablar-cuesta-un-turno).
 
-> **Las clases no son configurables por repo.** A diferencia de los estados de `planes`, agregar una fila acá no hace que el repartidor la soporte: las tres están implementadas en `establecer-conducta/`. El archivo existe para que la lista y su significado vivan en un solo lugar, y para que el lint valide contra él.
+> **Este vocabulario no tiene versión del Agente Desplegado, y es a propósito.** Los momentos sí: `MOMENTOS-LOCAL.md` existe para que un repo declare puntos del flujo propios de su Propósito. Las clases no, porque **están implementadas en el código del repartidor**: agregar una cuarta clase sin tocar `establecer-conducta/` deja reglas que nadie sabe despachar, y el síntoma sería una regla que existe y no se entrega nunca. Una clase nueva es un cambio del Agente Multipropósito, no una extensión del repo. A diferencia de los estados de `planes`, agregar una fila acá no hace que el repartidor la soporte: el archivo existe para que la lista y su significado vivan en un solo lugar, y para que el lint valide contra él.

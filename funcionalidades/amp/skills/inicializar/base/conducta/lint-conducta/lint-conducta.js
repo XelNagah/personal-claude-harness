@@ -37,7 +37,7 @@ function filasTabla(txt, requeridas) {
 const problemas = { estructura: [], indices: [], momentoInexistente: [], claseInvalida: [], estadoInvalido: [], inyectarSinTexto: [], vigenteSinRepartidor: [], inyectarSinPortero: [] };
 
 // Los momentos donde emitir cuesta una vuelta completa del modelo: ahi callar es el default y el
-// texto fijo de una regla `Inyectar` sale solo si una regla `Bloquear` del mismo momento lo habilita.
+// texto fijo de una regla `Inyectar` sale solo si una regla `Controlar` del mismo momento lo habilita.
 // La lista la lee tambien el repartidor, de este mismo archivo: es la unica copia del repo.
 const { cuestaUnTurno } = require('../momentos-que-cuestan-un-turno.js');
 // Se acumulan las clases vigentes por momento para poder cruzarlas DESPUES de recorrer todos los
@@ -81,7 +81,7 @@ if (fs.existsSync(momLocalPath)) {
 // no queden en dos lugares que nada sincroniza. Si el archivo falta —Agente Desplegado sin
 // actualizar— se cae a las tres de siempre en vez de dar por invalida toda regla.
 const clasPath = path.join(root, 'CLASES.md');
-let CLASES = ['inyectar', 'ejecutar', 'bloquear'];
+let CLASES = ['inyectar', 'ejecutar', 'controlar'];
 if (fs.existsSync(clasPath)) {
   const { cols, filas } = filasTabla(fs.readFileSync(clasPath, 'utf8'), ['clase', 'disponibilidad']);
   if (!cols) problemas.estructura.push('CLASES.md: no se encontro la tabla (columnas Clase, Disponibilidad)');
@@ -133,13 +133,13 @@ for (const idx of indices) {
 
 // -- inyectar que nadie habilita, en un momento que cuesta un turno ------
 // En esos momentos el repartidor calla por default, asi que una regla `Inyectar` vigente cuyo momento
-// no tenga ninguna regla `Bloquear` vigente que la habilite NO SE ENTREGA NUNCA — y el sintoma es que el agente
+// no tenga ninguna regla `Controlar` vigente que la habilite NO SE ENTREGA NUNCA — y el sintoma es que el agente
 // simplemente trabaja sin ella, sin ningun error en ninguna parte.
 for (const { regla, momento, momentoCrudo } of inyectarVigentes) {
   if (!cuestaUnTurno(momento)) continue;
   const clases = clasesPorMomento.get(momento) || new Set();
-  if (!clases.has('bloquear'))
-    problemas.inyectarSinPortero.push(`"${regla}" -> inyectar vigente en "${momentoCrudo}", donde emitir cuesta un turno: sin ninguna regla 'bloquear' vigente que la habilite, no se entrega nunca`);
+  if (!clases.has('controlar'))
+    problemas.inyectarSinPortero.push(`"${regla}" -> inyectar vigente en "${momentoCrudo}", donde emitir cuesta un turno: sin ninguna regla 'controlar' vigente que la habilite, no se entrega nunca`);
 }
 
 // -- salida -------------------------------------------------------------

@@ -449,7 +449,7 @@ function clasificar() {
       const tieneCorte = existe(path.join(cond, 'INDICE-LOCAL.md'))
                       || (/##\s+Reglas (Base|del Agente Multiprop[oó]sito)/i.test(t)
                           && /##\s+Reglas del (Prop[oó]sito|Agente Desplegado)/i.test(t));
-      const tieneReglas = /\|\s*inyectar\s*\||\|\s*correr\s*\||\|\s*bloquear\s*\|/i.test(t);
+      const tieneReglas = /\|\s*(inyectar|correr|ejecutar|bloquear|controlar)\s*\|/i.test(t);
       if (!tieneCorte && tieneReglas)
         add('divergente', '?', 'conducta/INDICE.md', 'reglas sin corte por origen: repartir requiere decidir cuales vienen de rio arriba y cuales son del Agente Desplegado');
       else if (!tieneCorte)
@@ -458,6 +458,25 @@ function clasificar() {
         add('base', '~', 'conducta/INDICE.md', 'sin la regla de rio arriba que muestra la Pantalla de bienvenida al arrancar: agregar la fila');
       if (!/detectar-terminologia-vetada/.test(t))
         add('base', '~', 'conducta/INDICE.md', 'sin la regla de rio arriba que frena la terminologia vetada al escribir: agregar la fila');
+    }
+    // [1c] CLASES RENOMBRADAS. Dos nombres de clase se retiraron: `correr` -> `Ejecutar` y
+    // `bloquear` -> `Controlar` (esta ultima porque nombraba un efecto que la mayoria de sus reglas
+    // no produce: de las tres que trae la Base, dos nunca frenan). El vocabulario `CLASES.md` y el
+    // repartidor viajan con el nombre nuevo, pero las reglas PROPIAS de cada repo viven en
+    // `INDICE-LOCAL.md`, que el actualizador NO reemplaza. Sin esta migracion quedan con una clase
+    // que el lint marca invalida y que el repartidor no despacha: la regla existe y no se entrega
+    // nunca, sin ningun error en ninguna parte. Se reporta como renombre —hay que conservar la
+    // fila— y no como contenido Base a pisar.
+    for (const indiceReglas of ['INDICE.md', 'INDICE-LOCAL.md']) {
+      const rutaReglas = path.join(cond, indiceReglas);
+      if (!existe(rutaReglas)) continue;
+      const textoReglas = leer(rutaReglas);
+      for (const [viejo, nuevo] of [['correr', 'Ejecutar'], ['bloquear', 'Controlar']]) {
+        const cuantas = (textoReglas.match(new RegExp('\\|\\s*' + viejo + '\\s*\\|', 'gi')) || []).length;
+        if (cuantas)
+          add('renombre', '→', `conducta/${indiceReglas}: ${viejo} → ${nuevo}`,
+              `${cuantas} regla(s) con la clase retirada «${viejo}»: renombrar la celda Clase a «${nuevo}» CONSERVANDO la fila (con el nombre viejo el lint la marca invalida y el repartidor no la despacha)`);
+      }
     }
     // La condicion del momento «al escribir» se amplio a todo .md del repo (antes solo `.claude/`):
     // un MOMENTOS.md con la condicion vieja deja sin cubrir lo que el repo publica.

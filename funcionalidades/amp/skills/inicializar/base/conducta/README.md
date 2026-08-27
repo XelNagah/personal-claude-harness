@@ -1,25 +1,97 @@
 # Conducta
 
-El subsistema `conducta` asegura comportamientos del tipo **"cuando hagas X, asegurate de Y"**: ata **momentos** del flujo a **acciones**. Vive en `.claude/conducta/`:
+El subsistema `conducta` sirve para **asegurar comportamientos del tipo "cuando hagas X, asegurate de Y"**: guarda reglas y se las entrega al agente **en el momento del flujo en que hacen falta**, no al arrancar la sesión.
 
-- `INDICE.md` e `INDICE-LOCAL.md` — el **registro de reglas**: cada fila ata un momento a una acción (`Código | Nombre | Descripción | Momento | Clase | Contenido | Estado | Detalle`). Separado por origen en **dos archivos**, cada uno con su frontmatter: `INDICE.md` (`origen: agente-multiproposito`, el actualizador lo reemplaza entero) e `INDICE-LOCAL.md` (`origen: agente-desplegado`, lo suma cada repo; el actualizador no lo abre). El repartidor lee los dos.
-- `MOMENTOS.md` — el **vocabulario de momentos**: un momento es un **evento de hook + una condición que la máquina evalúa sin juicio** (`cada turno` = `UserPromptSubmit`; `al escribir` = `PreToolUse` sobre un `.md` de **cualquier parte del repo** salvo `tmp/`; `al cerrar tarea` = `Stop`).
-- `CLASES.md` — el **vocabulario de clases**: qué hace el repartidor con la regla. `Inyectar` (el agente lee un texto y actúa con su juicio) · `Ejecutar` (una Herramienta lo resuelve sin juicio) · `Bloquear` (se frena la acción; solo donde Y es sin juicio y el falso positivo es imposible). El lint lo lee para validar la columna `Clase`. **No es configurable**: agregar una fila no hace que el repartidor la soporte.
-- `establecer-conducta/` — el **hook repartidor**: un mismo script sirve a varios eventos; resuelve qué momento realiza el evento que lo disparó, lee el registro **vivo** y despacha las reglas `vigente` de ese momento según su clase, **combinando** el texto de las `Inyectar` con lo que midan las `Bloquear`. Agregar o cambiar una regla **no toca el hook**.
-- `lint-conducta/` — valida que toda regla apunte a un momento existente, con clase/estado válidos, y que ninguna regla `vigente` cuelgue de un momento sin repartidor.
+Esto es lo que produce, y es lo único que se ve en la terminal — el bloque que aparece al abrir una sesión (los números son los del repo que lo emite):
 
-**Por qué:** una regla cargada al arranque **se recita, no se obedece** (conocimiento `modos-de-falla-ante-reglas-escritas`). El aporte de conducta es entregar la regla **en el momento** en que hace falta, no al inicio de la sesión — por eso el registro **NO se carga siempre** y el agente **no lo consulta a mano**: lo entrega el hook cerca del punto de acción.
+```
+╔══════════════════════════════════════════════════════════════════╗
+║ Agente Multipropósito                                            ║
+║ Título: Diseño de Agentes Multipropósito                         ║   ← una regla
+║ Propósito: Diseñar un Agente Multipropósito basado en …          ║
+╟──────────────────────────────────────────────────────────────────╢
+║ Subsistemas: 9      Lint: ⚠ 1 hallazgo                           ║
+║   · conducta       12 reglas                                     ║
+║   · planes         118 (57 pendientes · 55 ejecutados · 6 …)     ║
+╚══════════════════════════════════════════════════════════════════╝
+contexto: Agente Multipropósito 34.0 KB de 35.0  ·  este repo 15.6 KB   ← otra regla
+```
 
-**Gobernanza:** se edita al **agregar, modificar o dar de baja una regla**. Toda regla nueva que toque terminología o decisiones pasa por el usuario (el agente propone; ratificar es potestad del usuario).
+Son **dos reglas distintas** atadas al **mismo momento** —`al arrancar la sesión`— y de origen distinto: el bloque lo trae el Agente Multipropósito, la línea de abajo la sumó este repo. Ninguna sabe de la otra y ninguna se pisa: el subsistema las junta y las emite pegadas. Eso, y nada más, es lo que quiere decir que varias reglas **conviven en un momento**.
 
-**Cómo se aplica:**
+Lo que **no** es: un registro para consultar. El registro de reglas no se carga al arrancar y el agente no lo abre a mano. Es a propósito — una regla cargada al inicio de la sesión **se recita, no se obedece** (conocimiento `modos-de-falla-ante-reglas-escritas`), así que el aporte del subsistema es entregarla pegada al punto de acción.
 
-1. **En el flujo normal, no consultar `INDICE.md` a mano** — el hook entrega la regla que corresponde a cada momento.
-2. **Para agregar una regla:** elegir un momento existente de `MOMENTOS.md` (o declarar uno nuevo, en `declarado` hasta que tenga repartidor), sumar la fila al archivo que corresponda (`INDICE.md` si viene con el Agente Multipropósito, `INDICE-LOCAL.md` si es de este repo), y correr el lint. Una regla `vigente` no puede colgar de un momento sin repartidor: va en `pendiente`. Y en un momento donde **emitir cuesta un turno completo del modelo** —hoy solo `al cerrar tarea`, porque ahí hablar continúa la conversación en vez de dejar una nota— una regla `Inyectar` no se entrega sola: necesita una regla `Bloquear` vigente en el mismo momento que la habilite. La lista de esos momentos vive en `momentos-que-cuestan-un-turno.js`, que leen el repartidor y el lint.
-3. **Al cerrar** una tarea que tocó conducta, correr el lint: `node .claude/conducta/lint-conducta/lint-conducta.js`.
+## Cómo se arranca
 
-**El Buzón de Avisos Generales.** Un trabajo que corre **en segundo plano** —hoy, el chequeo de plugins que la Pantalla de bienvenida lanza al arrancar sin esperarlo— deja lo que averiguó en `.claude/tmp/avisos/<origen>.txt`, y el hook repartidor lo entrega en el momento `cada turno` y lo borra: un aviso se da una vez, y se rehace en el arranque siguiente mientras la condición persista. Existe porque un dato que tarda más que el arranque no se puede dar al arrancar, y el repartidor es lo único que ya corre en cada turno, así que leer un archivo no le cuesta arrancar un proceso. **No sabe de qué trata el aviso**: escribe ahí cualquier trabajo en segundo plano. Va por los dos canales —`systemMessage` para el usuario, que es quien decide, y `additionalContext` para el modelo, que tiene que poder responder si le preguntan— y **sin pisar** las reglas del momento.
+**No hay que encenderlo.** Recién instalado, el subsistema llega con sus reglas del Agente Multipropósito ya vigentes: el bloque de arranque, los recordatorios de cada turno, el control de terminología al escribir y el aviso de cierre. Se ven trabajando desde la primera sesión.
 
-**Las tres clases conviven** en un mismo momento y salen en una sola respuesta, cada una por su campo (ver `CLASES.md`). Lo único que gana solo es un `deny`.
+Lo que sí se hace es **sumarle reglas propias del Propósito del repo**:
 
-Relacionado: [[flujo-planes]] (construcción del subsistema por plan), [[semantica]] (el control de terminología consume los momentos `cada turno` y `al escribir`).
+1. **Invocar `registrar-regla`.** Pide qué hay que asegurar y en qué punto del flujo, elige el **momento** y la **clase** compatibles, y escribe la fila en `INDICE-LOCAL.md`, el registro de este repo.
+2. **Reiniciar la sesión** si la regla es del momento `al arrancar la sesión`; las de los demás momentos empiezan a entregarse en el turno siguiente. No hay que tocar ninguna configuración: el repartidor lee el registro vivo en cada disparo.
+3. **Correr el lint** al cerrar cualquier tarea que haya tocado el subsistema:
+
+   ```bash
+   node .claude/conducta/lint-conducta/lint-conducta.js
+   ```
+
+Para ver qué entrega un momento sin esperar a que ocurra, se lo puede alimentar a mano — el ejemplo está en el [README del repartidor](establecer-conducta/README.md#probar-a-mano).
+
+## Las dos decisiones de cada regla
+
+Escribir una regla es contestar dos preguntas: **cuándo** se entrega y **qué se entrega**.
+
+### Cuándo: el momento
+
+Un **momento** es un punto del flujo que la máquina reconoce sin juzgar nada. Los que hoy se entregan:
+
+| Momento | Sirve para | Ejemplo de lo que se consigue |
+|---|---|---|
+| `al arrancar la sesión` | poner algo a la vista del usuario antes de que pida nada | el bloque de arriba: estado del repo y peso del contexto |
+| `cada turno` | recordarle algo al agente antes de cada respuesta | «respetá las preferencias que ya tenés cargadas» |
+| `al escribir` | revisar o frenar lo que se acaba de escribir en un archivo | rechazar un texto que usa un término vetado |
+| `al cerrar tarea` | avisar algo al terminar de responder | «esta sesión no asentó nada en ningún registro» |
+
+El vocabulario completo, con el evento que dispara cada uno y en qué agentes anda, está en [`MOMENTOS.md`](MOMENTOS.md). Un repo puede declarar momentos propios en [`MOMENTOS-LOCAL.md`](MOMENTOS-LOCAL.md), pero **declararlos no los enciende**: que un momento se entregue es código del repartidor, no una fila de registro.
+
+### Qué: la clase
+
+La **clase** dice qué hace el subsistema cuando llega el momento. Son tres, y la diferencia práctica es **quién recibe el resultado y quién decide qué hacer con él**:
+
+| Clase | Qué se escribe en la regla | Quién lo recibe | Quién decide |
+|---|---|---|---|
+| `Inyectar` | un texto fijo | el agente | el agente, con su juicio |
+| `Ejecutar` | la ruta de un programa | el usuario, en su terminal | nadie: el programa ya resolvió |
+| `Controlar` | la ruta de un Control | el agente, o nadie si el Control frena la acción | el Control |
+
+El corte entre `Inyectar` y las otras dos es si lo que hay que asegurar necesita criterio. «Acordate de contrastar contra lo asentado» lo tiene que juzgar el agente, así que es un texto (`Inyectar`). «Este archivo usa un término vetado» se decide comparando contra una lista, sin criterio, así que lo resuelve un Control (`Controlar`). Y «mostrale al usuario el estado del repo» no es ni una cosa ni la otra: es producir una salida y mostrarla (`Ejecutar`).
+
+Las tres se pueden mezclar en un mismo momento, como en el ejemplo del arranque. La definición formal de cada una está en [`CLASES.md`](CLASES.md); las clases **no se extienden por repo**, porque están implementadas en el código del repartidor.
+
+### La excepción: `al cerrar tarea`
+
+Es el único momento donde **entregar algo le cuesta al usuario un turno completo del modelo**, así que ahí el default es callar y una regla `Inyectar` no sale sola. Está explicado una sola vez, en [`MOMENTOS.md`](MOMENTOS.md#el-momento-donde-hablar-cuesta-un-turno).
+
+## Qué esperar al usarlo
+
+- **Casi nada de esto se ve.** Solo el momento `al arrancar la sesión` escribe en la terminal del usuario. Los otros tres entregan su texto al agente; el usuario nota el efecto —que el agente respetó una regla— pero no el recordatorio.
+- **Una regla `Inyectar` no obliga.** Entrega un texto y el agente actúa con su juicio; puede desobedecerlo. Lo único que garantiza cumplimiento es un Control que frene la acción.
+- **Agregar o cambiar una regla no toca ningún mecanismo.** El repartidor lee el registro en cada disparo, así que la fila nueva rige de inmediato.
+- **Cuesta tiempo en cada evento.** Alrededor de 65 ms por disparo, dominados por arrancar el intérprete (conocimiento `latencia-hooks`). Una regla `Ejecutar` o `Controlar` suma además lo que tarde su programa.
+- **Fuera de Claude Code hay degradaciones**, documentadas por momento en [`MOMENTOS.md`](MOMENTOS.md). La principal: en Codex, frenar una acción todavía no funciona y la regla degrada a aviso.
+- **Un aviso de un trabajo en segundo plano llega tarde, y llega igual.** Lo que se averigua después del arranque —hoy, el chequeo de plugins— queda en el Buzón de Avisos Generales (`.claude/tmp/avisos/`) y se entrega en el turno siguiente, una sola vez.
+
+## Lo que no cubre
+
+- **No inventa momentos nuevos desde el registro.** Declarar uno en `MOMENTOS-LOCAL.md` deja sus reglas en estado `pendiente` hasta que el repartidor lo contemple, que es código del Agente Multipropósito.
+- **No admite clases nuevas por repo.** No hay `CLASES-LOCAL.md`, y es deliberado: el motivo está en [`CLASES.md`](CLASES.md).
+- **No guarda el contenido de los otros subsistemas.** Una regla deriva al subsistema que corresponde —preferencias, conocimiento, semántica— en vez de copiar lo que ahí está escrito. Copiarlo lo dejaría divergiendo en dos lugares.
+- **No cubre el momento del commit.** Está declarado y todavía no tiene repartidor.
+
+## Dónde está el detalle
+
+- **El registro de reglas:** [`INDICE.md`](INDICE.md) (las del Agente Multipropósito) e [`INDICE-LOCAL.md`](INDICE-LOCAL.md) (las de este repo). El repartidor lee los dos.
+- **Los dos vocabularios:** [`MOMENTOS.md`](MOMENTOS.md) y [`CLASES.md`](CLASES.md).
+- **El mecanismo** que entrega las reglas, su contrato y por qué está armado así: [`establecer-conducta/`](establecer-conducta/README.md).
+- **Los controles** que corren como reglas: [`detectar-terminologia-vetada/`](detectar-terminologia-vetada/), [`avisar-contexto-pesado/`](avisar-contexto-pesado/), [`avisar-sesion-sin-asentar/`](avisar-sesion-sin-asentar/) y [`mostrar-pantalla-bienvenida/`](mostrar-pantalla-bienvenida/).
+- **El lint,** que valida que toda regla apunte a un momento existente, con clase y estado válidos, y que ninguna regla `vigente` cuelgue de un momento sin repartidor: [`lint-conducta/`](lint-conducta/).

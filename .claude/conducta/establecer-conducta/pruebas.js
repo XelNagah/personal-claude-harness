@@ -133,7 +133,7 @@ console.log('== ENTREGA: cada evento despacha las reglas de su momento ==');
 }
 
 // `al escribir` sobre un .md: combina el texto fijo de las reglas `Inyectar` con lo que mide la
-// regla `Bloquear`.
+// regla `Controlar`.
 {
   const r = disparar({ hook_event_name: 'PreToolUse', tool_name: 'Write',
     tool_input: { file_path: MD, content: 'Un texto en español corriente, sin nada que objetar.\n' } });
@@ -143,7 +143,7 @@ console.log('== ENTREGA: cada evento despacha las reglas de su momento ==');
     r.decision !== 'deny', r.decision || '(sin decisión: defer)');
 }
 
-// La clase `Bloquear` en acción: el mismo momento, con un término que no tiene uso legítimo posible.
+// La clase `Controlar` en acción: el mismo momento, con un término que no tiene uso legítimo posible.
 {
   const r = disparar({ hook_event_name: 'PreToolUse', tool_name: 'Write',
     tool_input: { file_path: MD, content: 'hay mucha berenjena en el repo\n' } });
@@ -350,7 +350,7 @@ const bloqueDelContraste = (ctx) => {
 
 console.log('\n== `al cerrar tarea`: el momento donde CALLAR ES EL DEFAULT ==');
 // Es el unico momento donde emitir CONTINUA la conversacion en vez de dejar una nota, asi que el
-// texto fijo de su regla `Inyectar` no sale solo: lo habilita la regla `Bloquear` del mismo momento.
+// texto fijo de su regla `Inyectar` no sale solo: lo habilita la regla `Controlar` del mismo momento.
 // Las dos formas de romperlo son mudas — de mas, el agente no puede cerrar; de menos, el aviso no
 // existe— y ninguna emite un error en ninguna parte.
 {
