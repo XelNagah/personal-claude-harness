@@ -4,13 +4,13 @@ Diseño del **2026-07-23**. Toma los mecanismos de Hermes Agent (relevados en [p
 
 ## Principio rector
 
-La auto-mejora de Hermes **en vivo** no es magia estadística: son **dos componentes simples** — (1) un texto en el prompt de sistema que empuja al agente a guardar lo que aprendió, y (2) una herramienta que escribe ese aprendizaje a un archivo. La minería de sesiones y el entrenamiento corren **en diferido**, en un repo aparte, con una persona aprobando cada cambio: fuera del alcance del Agente Multipropósito y no hace falta.
+La auto-mejora de Hermes **en vivo** no es magia estadística: son **dos componentes simples** — (1) un texto en el prompt de sistema que le pide al agente que guarde lo que aprendió, y (2) una herramienta que escribe ese aprendizaje a un archivo. La minería de sesiones y el entrenamiento corren **en diferido**, en un repo aparte, con una persona aprobando cada cambio: fuera del alcance del Agente Multipropósito y no hace falta.
 
 Consecuencia clave: el Agente Multipropósito tiene un componente que Hermes **en vivo no** tiene — el subsistema `conducta` con reglas de clase **correr**, donde una Herramienta resuelve el momento **sin juicio del agente**. Donde Hermes solo puede *inyectar* un recordatorio y confiar en que el agente lo siga, el Agente Multipropósito puede *correr* la captura de forma determinística. En vivo, el Agente Multipropósito puede igualar o superar a Hermes.
 
 Regla de traducción:
 
-- El componente **empuje/observador** de Hermes → una **regla de conducta** (`inyectar` o `correr`) atada a un momento del flujo.
+- El componente **recordatorio/observador** de Hermes → una **regla de conducta** (`inyectar` o `correr`) atada a un momento del flujo.
 - El componente **herramienta que escribe** de Hermes → una **skill de registro** del subsistema que corresponda (`registrar-*`, `/contrastar`).
 - El componente **en diferido / entrenamiento** → fuera de alcance.
 
@@ -18,10 +18,10 @@ Regla de traducción:
 
 | Componente Hermes | Mecanismo Hermes | Subsistema(s) del Agente Multipropósito | Estado | Plan que lo cubre |
 |---|---|---|---|---|
-| **Bucle de auto-mejora** | empuje "guardá una skill tras una tarea compleja" + herramienta que escribe skills | `conducta` (dispara) + `conocimiento`/`decisiones`/… (escribe) vía `/contrastar` | Diseño listo; falta el repartidor del hook `Stop` | *Verificar que el aprendizaje quede asentado* + *Crecer el subsistema conducta* |
+| **Bucle de auto-mejora** | recordatorio "guardá una skill tras una tarea compleja" + herramienta que escribe skills | `conducta` (dispara) + `conocimiento`/`decisiones`/… (escribe) vía `/contrastar` | Diseño listo; falta el repartidor del hook `Stop` | *Verificar que el aprendizaje quede asentado* + *Crecer el subsistema conducta* |
 | **Memoria — auto-escritura** | el agente agrega/reemplaza/borra en sus archivos de memoria, con chequeo de inyección de prompt antes de escribir | `memoria` + skills `registrar-*` | La escritura existe (a mano); falta el disparo | *Verificar que el aprendizaje quede asentado* (parcial); **auto-escritura sin plan propio** |
 | **Memoria — sesiones buscables** | búsqueda de texto completo sobre las conversaciones pasadas guardadas en SQLite | — (no hay subsistema de sesiones) | **Falta, sin plan** | ninguno |
-| **Skills — que el agente las escriba solo** | el agente crea y parcha sus propias skills; carga por niveles | skills del harness + `conducta` (empuje) | Las skills existen; la auto-escritura no | *Crecer el subsistema conducta* (empuje); auto-escritura sin plan |
+| **Skills — que el agente las escriba solo** | el agente crea y parcha sus propias skills; carga por niveles | skills del harness + `conducta` (recordatorio) | Las skills existen; la auto-escritura no | *Crecer el subsistema conducta* (recordatorio); auto-escritura sin plan |
 | **Tareas agendadas** | tarea de agente en lenguaje natural, modo sin LLM, corte por seguridad de costo, adjuntar skills | repo `Alertas-Push` (fuera del harness) | Existe base; sin corte por seguridad | **Falta** — vive en `Alertas-Push` |
 | **Persona** | `SOUL.md` | `preferencias` (separado por origen) | Cubierto | — |
 | **Gobernanza terminológica** | *(Hermes no tiene)* | `semantica` + `converger-terminologia` | **Agente Multipropósito adelante** | — (exportar, no importar) |
@@ -53,7 +53,7 @@ Regla de traducción:
 
 ### 3. Skills — que el agente las escriba solo
 
-El Agente Multipropósito ya tiene skills como slash y como disparo conversacional, y una carga por niveles equivalente: el índice liviano se carga, el cuerpo se lee al invocar. Lo que Hermes agrega es que **el agente las escribe solo**. En el Agente Multipropósito sería una regla de `conducta` que empuje *"esto que repetiste, ¿va como skill?"* más una skill que redacte skills. Baja prioridad: primero el bucle de conocimiento.
+El Agente Multipropósito ya tiene skills como slash y como disparo conversacional, y una carga por niveles equivalente: el índice liviano se carga, el cuerpo se lee al invocar. Lo que Hermes agrega es que **el agente las escribe solo**. En el Agente Multipropósito sería una regla de `conducta` que recuerde *"esto que repetiste, ¿va como skill?"* más una skill que redacte skills. Baja prioridad: primero el bucle de conocimiento.
 
 ### 4. Tareas agendadas — con las salvaguardas de Hermes
 
