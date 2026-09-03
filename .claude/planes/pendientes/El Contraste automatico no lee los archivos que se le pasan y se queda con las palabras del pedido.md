@@ -1,6 +1,6 @@
 # El Contraste automático no lee los archivos que se le pasan y se queda con las palabras del pedido
 
-**Estado: Listo · Creado 26-08-26.** Origen: [Que las habilidades se disparen solas al plantear un tema](../ejecutados/Que%20las%20habilidades%20se%20disparen%20solas%20al%20plantear%20un%20tema.md) (Local-0095), que dejó esto como seguimiento aparte al cerrar. Lo detectó el usuario al ver que una sesión que arrancó leyendo un handoff trabajó sin haber consultado ningún registro — *«Que ni bien se arranque a laburar se contraste con la sabiduría del repo en lugar de trabajar a ciegas»*.
+**Estado: En curso · Creado 26-08-26.** Origen: [Que las habilidades se disparen solas al plantear un tema](../ejecutados/Que%20las%20habilidades%20se%20disparen%20solas%20al%20plantear%20un%20tema.md) (Local-0095), que dejó esto como seguimiento aparte al cerrar. Lo detectó el usuario al ver que una sesión que arrancó leyendo un handoff trabajó sin haber consultado ningún registro — *«Que ni bien se arranque a laburar se contraste con la sabiduría del repo en lugar de trabajar a ciegas»*.
 
 ## El problema
 
@@ -182,6 +182,77 @@ el documento largo, y los Abiertos 1 y 2 se deciden contra un hook que solo hace
 Encuadre acordado con el usuario: **los dos mecanismos no compiten**. El hook es barato, corre
 siempre y no puede traer todo; la habilidad es cara, trae todo y depende de que se la invoque. Lo que
 hoy está mal es que el hook intenta hacer el trabajo del segundo con el presupuesto del primero.
+
+## Paso 1 — el hook, implementado (26-08-31)
+
+Todo dentro de `establecer-conducta.js`, que ya corre en `cada turno`: no hay proceso nuevo ni clase
+nueva en `CLASES.md`.
+
+- **Dos caminos con alcances distintos.** `REGISTROS_PUNTAJE` (semántica + decisiones) y
+  `REGISTROS_CITAS` (los anteriores **+ planes**). `filasDeContraste()` quedó parametrizada por el
+  alcance, y cada fila trae ahora `registro` y `clave` — el mismo código existe en varios registros,
+  así que ni la cita ni la memoria pueden identificar una fila por el código solo.
+- **El idf se calcula solo sobre las filas del puntaje.** Sumar las de planes al corpus le correría
+  el peso a cada palabra y descalibraría un umbral medido con un banco de 38 casos. Verificado: los
+  cuatro casos del banco dan **exactamente las mismas filas que antes del cambio**.
+- **`citasDe(texto)`** extrae los códigos que traen una palabra de tipo hasta seis tokens antes. Seis
+  y no dos, para que una enumeración —«las Decisiones Local-0011, Local-0012»— no pierda las citas de
+  la segunda en adelante, que es donde el tipo ya no está escrito.
+- **`archivosApuntados(prompt)`** se ancla en la extensión y retrocede token a token probando cuál
+  ruta existe. Los nombres de archivo de este repo **llevan espacios**, así que cortar por el espacio
+  no resolvería ninguno; el sistema de archivos es el que valida, no una expresión regular que
+  adivine dónde empieza la ruta. Nada de afuera del repo se abre, y de un documento de más de 200 KB
+  se leen los primeros 200 KB.
+- **Memoria de sesión** en `.claude/tmp/contraste-automatico/<session_id>.txt`, con el turno en que
+  salió cada fila y ventana de 20. **El tope se aplica después de callar**, que es lo que hace que
+  las 3 del turno sean 3 nuevas.
+
+**Lo que el plan no había enunciado y se resolvió con la medición:** las citas se extraen **también
+del mensaje del usuario**, no solo del archivo apuntado. El caso que lo destapó es el pedido con que
+arrancó esta sesión —*«Seguimos con el plan Local-0113»*—, que medido contra el hook anterior daba
+**cero filas** teniendo una cita exacta: «plan» y el número no son palabras discriminantes de ninguna
+celda, así que el puntaje no la encuentra. Extraerla es el mismo mecanismo determinista, cuesta lo
+mismo y no compite con nada.
+
+Medido, los tres pedidos que antes fallaban:
+
+| Pedido | Antes | Ahora |
+|---|---|---|
+| «Seguimos con el plan Local-0113» | nada | el plan Local-0113 |
+| «Leé `…/handoff-….md` y seguimos» | 1 acierto de 3 | los planes Local-0118, Local-0095 y Local-0115 |
+| «Retomá `…/El Contraste automatico….md`» | 1 acierto de 3 | la Decisión Local-0073 y los planes Local-0095 y Local-0119 |
+
+Y la memoria, sobre el mismo mensaje repetido en la misma sesión: el turno 1 entrega tres Decisiones;
+el turno 2 **no las repite** y trae una cuarta que antes nunca entraba por el tope.
+
+**Banco: 55 casos, todo verde** (once nuevos). Se fabrica además un `planes/PLANES.md` sintético: el
+registro entró al alcance, y esperar filas del repo real sería el escenario prestado que prohíbe la
+Decisión Local-0072. **Latencia: +2 a +6 ms** sobre los ~150 ms que el hook ya costaba.
+
+`sincronizar-base --aplicar` (viajan el hook, su banco y su README) y `amp` a **0.59.0**.
+
+## Paso 2 — la habilidad de contraste a demanda, implementado (26-09-02)
+
+Tres piezas, todas dentro del plugin `amp`, que ya existe: no hay funcionalidad nueva ni entrada nueva en el marketplace.
+
+- **Subagente `contrastador`** (`funcionalidades/amp/agents/`). Recibe un texto o la ruta de un archivo y devuelve las filas de los registros que ese material toca, con su código, qué dice y por qué aplica. Lee los cuatro registros **enteros** —glosario, relaciones vetadas, decisiones y planes vivos—, que es el punto: buscar solo lo que el material nombra encuentra lo que el material ya sabía que existía, y eso el hilo principal lo hacía solo. Marca aparte las filas que el material **cita**, porque el hook ya pudo inyectarlas. **Conocimiento queda afuera**, con el mismo argumento del Decidido 4: sus dos Índices ya están cargados. Tope de 12 filas directas y 8 que rozan, con el sobrante declarado — la medición 4 de este plan dice que un material largo toca treinta temas con parecida intensidad, y una lista de treinta cuesta lo mismo que el trabajo que se evita.
+- **Habilidad `contrastar`** (`funcionalidades/amp/skills/contrastar/`). La puerta para invocarlo a mano sobre un material que entró desde afuera. Delega en el subagente, y se queda con lo que el subagente tiene prohibido: juzgar si el material contradice una decisión, usa un término en un significado vetado o duplica un plan vivo. Informa en tres grupos —ya decidido · trabajo ya abierto · terminología— y **no actúa** sobre lo que encuentra.
+- **`amp:planificar` deja de leer a mano.** Era el único flujo de recorrido del repo sin subagente, y su instrucción era «leer los Índices relevantes», que es leer lo que se le ocurra buscar al que busca. Pasa a delegar en el `contrastador` y a quedarse con lo que sigue siendo suyo: abrir las páginas de detalle de las filas que trajo, y mirar conocimiento, cuyos Índices ya están cargados.
+
+**Corrección de un argumento que se venía usando mal.** El motivo que este plan y el Decidido 3 daban para el subagente era el ahorro de contexto —187 KB de registros, decisiones sola 102 KB—. Medido el 02/09/2026 con `medir-contexto`, ese argumento no da para tanto: los cuatro registros son **188 mil caracteres, unos 47 mil tokens, el 24% de una ventana de 200 mil**, contra los **58,7 KB** que el repo ya carga solo al arrancar. Leerlos enteros consume una cuarta parte de la conversación y deja tres cuartas partes para trabajar: molesta, no impide nada.
+
+Los dos motivos que quedan en pie son más chicos y son los que sostienen la decisión:
+
+- **Método.** Sin subagente no hay recorrido definido. En la sesión que diseñó esto, el hilo principal abrió el glosario entero y siete filas de decisiones **porque el plan las citaba**; sin esas citas no las encontraba. El subagente mira siempre lo mismo, cite el material o no — que es exactamente el hueco que el Decidido 1 dejó abierto a propósito para el paso 2.
+- **Precio.** Los 47 mil tokens se pagan al modelo de la sesión; en el subagente, a uno más barato (conocimiento Local-0018). Es plata, no es capacidad.
+
+**Lo que queda por medir, y no está medido:**
+
+- **El ahorro real del `contrastador`**, con el método del conocimiento Local-0018 (leer su transcripción y comparar lo evitado contra lo devuelto). Los cuatro subagentes existentes dan entre 84% y 94%; éste debería comprimir parecido a `relevador-de-planes`, que también abre volumen para devolver fichas.
+- **Cuánto tarda.** No hay ningún número de tiempo medido para ningún subagente del repo. Se estimó entre medio minuto y minuto y medio por comparación, sin evidencia.
+- **Si la habilidad `contrastar` se dispara sola** ante «leé este archivo y seguimos», con la Herramienta `probar-disparo-de-skills` (Local-0012). ⚠️ Esa Herramienta **mide lo instalado, no lo editado**: hay que publicar `amp` 0.60.0 antes, o mide la versión vieja.
+
+`amp` a **0.60.0**. `lint-harness` verde.
 
 ## Cómo se mide
 

@@ -15,9 +15,20 @@ Eventos que realiza hoy:
 
 ## El Contraste automático (en `cada turno`)
 
-Además de despachar las reglas, en `cada turno` el repartidor corre el **Contraste automático** (glosario): **puntúa el mensaje del usuario** contra las celdas `Nombre` + `Descripción` de dos registros que no cargan siempre —semántica (glosario + Terminología Farlopa) y decisiones— e **inyecta al `additionalContext` las pocas filas que pegan fuerte**. Así el modelo tiene el material del contraste presente al responder, sin que tenga que invocar ninguna habilidad ni leer los 135 KB de esos registros.
+Además de despachar las reglas, en `cada turno` el repartidor corre el **Contraste automático** (glosario): busca las filas de los registros que el turno toca e **inyecta al `additionalContext` las pocas que pegan fuerte**. Así el modelo tiene el material del contraste presente al responder, sin que tenga que invocar ninguna habilidad ni leer los 135 KB de esos registros.
 
-- **Precisión primero.** Cada palabra pesa por lo **rara** que es en los registros (una que está en muchas filas casi no suma) y el `Nombre` pesa más que la `Descripción`. Hay un umbral alto y un tope duro de 3 filas: la **mayoría de los turnos no inyecta nada** (un saludo, una consulta fáctica de un solo sustantivo → silencio). Un registro que marca todo entrena a ignorarlo.
+Las busca por **dos caminos, con alcances distintos porque tienen precisiones distintas**:
+
+| Camino | Sobre qué texto | Alcance | Cómo elige |
+|---|---|---|---|
+| **Puntaje** | el mensaje del usuario | semántica (glosario + Terminología Farlopa) y decisiones | palabras compartidas, con umbral |
+| **Citas** | el mensaje **y el material que apunta** | los anteriores **+ planes** | el código de la Entrada, exacto |
+
+- **Precisión primero (puntaje).** Cada palabra pesa por lo **rara** que es en los registros (una que está en muchas filas casi no suma) y el `Nombre` pesa más que la `Descripción`. Hay un umbral alto: la **mayoría de los turnos no inyecta nada** (un saludo, una consulta fáctica de un solo sustantivo → silencio). Un registro que marca todo entrena a ignorarlo.
+- **El puntaje no se traslada a un documento entero.** Está calibrado para un mensaje de 16 palabras; con un handoff superan el umbral 124 de 166 filas, o sea mide largo y no relevancia. Por eso el material apuntado entra **solo por sus citas**.
+- **Sigue el puntero.** Un pedido que apunta a un archivo —«leé este handoff y seguimos»— lleva el contenido **afuera** del mensaje, así que el repartidor abre la ruta que el mensaje nombre, siempre que caiga dentro del repo. Los nombres de archivo llevan espacios, así que la ruta se ancla en la extensión y se retrocede token a token probando cuál existe: el sistema de archivos valida, no una expresión regular.
+- **Una cita es un código con su tipo delante** («el plan `Local-0118`», «Decisión `Local-0073`»), la forma que impone la Preferencia `Base-0016`. Sin esa palabra, un código no se toma como cita. Conocimiento y preferencias quedan afuera aunque se los cite: sus Índices ya cargan siempre.
+- **Tope duro de 3 filas por turno, y son 3 nuevas:** una fila ya entregada se calla mientras no pasen 20 turnos, con la marca en `.claude/tmp/contraste-automatico/<session_id>.txt`. **No** se calla para siempre — en una conversación larga el contexto se resume, así que la fila del turno 3 puede no estar entera en el turno 60. Sin `session_id` la memoria no se aplica: repetir es la degradación segura.
 - **Normaliza sin acentos** para tolerar que el usuario los omita al escribir.
 - **No agrega una clase** al modelo de conducta: es mecánica interna que escribe en `additionalContext`, igual que el Buzón de Avisos Generales. Vive dentro del repartidor —que ya corre en `cada turno` y ya es Node— en vez de como programa aparte, que costaría ~48 ms en cada mensaje.
 - **Es determinista**, así que su calidad de selección se prueba en el banco `pruebas.js` (mensaje → filas esperadas), sin costo de sesión, y ahí se calibra el umbral. La Herramienta `probar-disparo-de-skills` no aplica: mide si una habilidad se dispara, y esto no dispara ninguna.

@@ -6,7 +6,7 @@ Catálogo de las funcionalidades que este repo instala para armar un agente de *
 
 | Funcionalidad | Qué hace | Depende de | Carpeta |
 |---------------|----------|-----------|---------|
-| **amp** | Plugin transversal. Skills: `inicializar`, `planificar`, `info`, `alto-nivel` y `actualizar`. El actualizador también conduce las migraciones de formas retiradas y no informa “al día” mientras quede `memoria/`. | los 9 `amp-<sub>` | [`amp/`](funcionalidades/amp/) |
+| **amp** | Plugin transversal. Skills: `inicializar`, `planificar`, `contrastar`, `info`, `alto-nivel` y `actualizar`; subagente `contrastador`, en el que `planificar` y `contrastar` delegan la lectura de los registros. El actualizador también conduce las migraciones de formas retiradas y no informa “al día” mientras quede `memoria/`. | los 9 `amp-<sub>` | [`amp/`](funcionalidades/amp/) |
 | **amp-subsistemas** | Catálogo Base/Propósito y coordinación de la reubicación del Aprendizaje. Skills: `agregar-subsistema` y `reubicar-aprendizaje`; subagente `relevador-de-aprendizaje`, en el que la segunda delega el recorrido del Aprendizaje. | — | [`amp-subsistemas/`](funcionalidades/amp-subsistemas/) |
 | **amp-preferencias** | Preferencias versionadas en `preferencias/`, un archivo por origen (`PREFERENCIAS.md` del Agente Multipropósito + `PREFERENCIAS-LOCAL.md` del Agente Desplegado), los dos importados siempre vía `@`, + lint estructural. `registrar-preferencia` da de alta o copia puntualmente una regla con vista previa e idempotencia; `adoptar-recomendadas` muestra el catálogo de Preferencias Recomendadas que trae el plugin y adopta las que el usuario elija, sin instalar ninguna sola. | — | [`amp-preferencias/`](funcionalidades/amp-preferencias/) |
 | **amp-planes** | Ciclo de planes `pendientes/ejecutados/descartados` + registro, README, lint y hook. Familia de skills por verbo: `crear-plan`, `analizar-plan`, `explicar-plan`, `priorizar-planes`, `sugerir-siguiente-plan`, `pausar-plan`, `retomar-plan`, `diferir-plan`, `cerrar-plan`, `descartar-plan`; subagente `relevador-de-planes`, en el que las dos de prioridad delegan la lectura de los planes vivos. | — | [`amp-planes/`](funcionalidades/amp-planes/) |
@@ -27,7 +27,7 @@ Un plugin transporta además **subagentes**, en su carpeta `agents/`. Se disting
 
 | Funcionalidad | Plugin | Skill | Subagente |
 |---------------|--------|-------|-----------|
-| amp | `amp@xelnagah-harness` | `inicializar`, `planificar`, `actualizar` | — |
+| amp | `amp@xelnagah-harness` | `inicializar`, `planificar`, `contrastar`, `actualizar` | `contrastador` |
 | amp-subsistemas | `amp-subsistemas@xelnagah-harness` | `agregar-subsistema`, `reubicar-aprendizaje` | `relevador-de-aprendizaje` |
 | amp-preferencias | `amp-preferencias@xelnagah-harness` | `registrar-preferencia`, `adoptar-recomendadas` | — |
 | amp-planes | `amp-planes@xelnagah-harness` | `crear-plan`, `analizar-plan`, `explicar-plan`, `priorizar-planes`, `sugerir-siguiente-plan`, `pausar-plan`, `retomar-plan`, `diferir-plan`, `cerrar-plan`, `descartar-plan` | `relevador-de-planes` |

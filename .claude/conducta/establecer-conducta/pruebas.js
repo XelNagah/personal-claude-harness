@@ -91,6 +91,19 @@ escribirRegistro('decisiones/INDICE.md',
   + '# Decisiones del proyecto\n\n| Código | Nombre | Descripción | Fecha | Estado | Detalle |\n|---|---|---|---|---|---|\n'
   + '| Local-0011 | Los planes guardan su prioridad en el registro | Cada plan guarda la prioridad que se le asignó, en una columna del registro de planes. | 2026-01-01 | vigente | — |\n'
   + '| Local-0012 | Los lints corren solos al terminar una tarea | Los lints de subsistema corren solos al cerrar cada tarea, sin que nadie los invoque. | 2026-01-02 | vigente | — |\n');
+// El registro de planes también se fabrica, y por el mismo motivo que los otros tres: es Aprendizaje
+// de cada repo, así que esperar filas de acá sería el escenario prestado que prohíbe la Decisión
+// `Local-0072`. Entró al alcance del contraste por la vía de las CITAS —un documento que dice «el plan
+// Local-0041» nombra la fila exacta, sin fórmula—, que es lo que estos planes sintéticos ejercitan.
+escribirRegistro('planes/PLANES.md',
+  '---\nindice: Registro de planes\norigen: agente-desplegado\n'
+  + 'columnas: [Código, Nombre, Descripción, Estado, Fecha de creación, Fecha de cierre, Origen, Detalle]\n'
+  + 'descripcion: qué problema resuelve el plan y qué va a cambiar cuando esté hecho\n---\n\n'
+  + '# Registro de planes\n\n'
+  + '| Código | Nombre | Descripción | Estado | Fecha de creación | Fecha de cierre | Origen | Detalle |\n'
+  + '|---|---|---|---|---|---|---|---|\n'
+  + '| Local-0041 | Cambiar el envase del líquido de prueba | Dato de prueba: el envase actual no entra en la heladera y hay que reemplazarlo. | Nuevo | 26-01-03 | — | — | — |\n'
+  + '| Local-0042 | Cambiar la cerradura del galpón | Dato de prueba: la cerradura se trabó dos veces y conviene reemplazarla antes del invierno. | Nuevo | 26-01-04 | — | — | — |\n');
 
 const HOOK = path.join(REPO, '.claude', 'conducta', 'establecer-conducta', 'establecer-conducta.js');
 const MD = path.join(REPO, 'caso-de-prueba-que-no-existe.md').replace(/\\/g, '/');
@@ -266,11 +279,14 @@ console.log('\n== CONTRASTE CON LA SABIDURÍA DEL REPO (el comparador) ==');
 // se prueba acá SIN costo de sesión (mensaje → filas esperadas), y es donde se calibra el umbral. La
 // Herramienta `probar-disparo-de-skills` NO aplica: mide si una skill dispara, y esto no dispara ninguna.
 //
-// Corre contra los registros REALES del repo, igual que el resto de este banco: qué fila elige para un
-// mensaje depende del contenido vivo de los registros, y eso es lo que se quiere verificar. Si una edición
-// de los registros deja de surtir el caso, el banco lo dice — que es el punto de un control.
+// Corre contra los registros SINTÉTICOS que este banco fabrica más arriba, no contra los del repo:
+// semántica, decisiones y planes son Aprendizaje de cada repo y viajan vacíos, así que esperar filas
+// de acá daría rojo el día que se instala (Decisión `Local-0072`).
 const H = 'Contraste con la sabiduría del repo';
-const contrasteDe = msg => disparar({ hook_event_name: 'UserPromptSubmit', prompt: msg }).contexto;
+// Sin `session_id` la memoria de sesión no se aplica, así que cada caso arranca de cero salvo los que
+// piden explícitamente una sesión — que son los que la prueban.
+const contrasteDe = (msg, sesion) => disparar(Object.assign(
+  { hook_event_name: 'UserPromptSubmit', prompt: msg }, sesion ? { session_id: sesion } : {})).contexto;
 
 // El `additionalContext` de `cada turno` trae tres cosas: las reglas `Inyectar`, este contraste y, si
 // hay algo pendiente, el Buzón de Avisos Generales — que se entrega UNA vez y se borra. Lo que mide
@@ -347,6 +363,95 @@ const bloqueDelContraste = (ctx) => {
   chequear('sin prompt no hay contraste pero sí las reglas del momento',
     !r.contexto.includes(H) && r.contexto.includes('Recordatorio de conducta'));
 }
+
+console.log('\n== el contraste sigue el puntero: citas del mensaje y del material apuntado ==');
+// El puntaje solo mira el mensaje. Un pedido que apunta a un archivo lleva el contenido AFUERA del
+// mensaje —«leé este handoff y seguimos»—, así que el agente cargaba el documento entero sin que
+// ninguna de sus palabras se hubiera comparado contra nada. Las CITAS son la salida: el código de una
+// Entrada con su tipo delante nombra la fila exacta, sin fórmula ni umbral.
+
+// Una cita en el propio mensaje. El puntaje no la encuentra —«plan» y el número no son palabras
+// discriminantes de ninguna celda—, y es el caso más corriente al retomar un trabajo.
+{
+  const c = contrasteDe('Seguimos con el plan Local-0041');
+  chequear('un plan citado en el mensaje trae su fila', c.includes(H) && c.includes('Local-0041'),
+    c.includes('Local-0041') ? 'presente' : 'ausente');
+  chequear('  …nombrada como plan, no como Decisión del mismo código',
+    /- plan Local-0041/.test(c));
+}
+// El mismo código existe en varios registros: sin el tipo delante no se sabe cuál es, y por eso la
+// palabra de tipo es obligatoria. `Local-0012` es una Decisión Y no existe como plan.
+{
+  const c = contrasteDe('acordate de Local-0041 cuando puedas');
+  chequear('un código suelto, sin su tipo delante, NO se toma como cita', !c.includes('Local-0041'),
+    c.includes('Local-0041') ? 'lo tomó igual' : 'ignorado');
+}
+// Una enumeración escribe el tipo una sola vez, al principio. La ventana hacia atrás tiene que
+// alcanzar para que la segunda y la tercera no se pierdan.
+//
+// El tipo va en una variable y no pegado al código: este archivo VIAJA, y la adjacencia
+// «Decisión»+número deja una cita colgante en el repo destino, donde esa decisión no existe. Es el
+// mismo recaudo que toma el caso del tipo de entrada, más arriba.
+const TIPO_DEC = 'Decisión', TIPO_DECS = 'Decisiones';
+{
+  const c = contrasteDe(`mirá las ${TIPO_DECS} Local-0011, Local-0012 antes de seguir`);
+  chequear('una enumeración con el tipo escrito una vez trae las dos filas',
+    c.includes('Local-0011') && c.includes('Local-0012'));
+}
+// Conocimiento y preferencias quedan afuera a propósito: sus Índices ya cargan siempre, así que
+// traer la fila de nuevo gasta el presupuesto del turno sin agregar nada.
+{
+  const c = contrasteDe('esto lo dice el conocimiento Local-0011 y la Preferencia Local-0012');
+  chequear('conocimiento y preferencias citados NO entran (ya cargan siempre)',
+    !c.includes(H) || (!c.includes('Local-0011') && !c.includes('Local-0012')),
+    c.includes('Local-0011') || c.includes('Local-0012') ? 'entró una' : 'ignorados');
+}
+
+// El material apuntado. El nombre lleva espacios a propósito: los archivos de este repo los tienen, y
+// una ruta cortada por el espacio no existiría — el hook se ancla en la extensión y retrocede token a
+// token probando cuál existe.
+{
+  const doc = path.join(REPO, 'una nota de trabajo.md');
+  fs.writeFileSync(doc, `Lo que sigue sale del plan Local-0042 y de la ${TIPO_DEC} Local-0011.\n`, 'utf8');
+  const c = contrasteDe('Leé "una nota de trabajo.md" y seguimos');
+  chequear('el hook sigue el puntero y trae las citas del archivo apuntado',
+    c.includes(H) && c.includes('Local-0042') && c.includes('Local-0011'),
+    c.includes('Local-0042') ? 'trajo el plan citado' : 'no abrió el archivo');
+  chequear('  …y el nombre con espacios se resuelve entero', c.includes('Local-0042'));
+}
+// Una ruta que no existe, y una que sale del repo, no rompen el turno ni abren nada: el hook resuelve
+// contra el repo y descarta lo de afuera.
+{
+  const c = contrasteDe('leé archivo-que-no-existe.md y ../../afuera-del-repo.md');
+  chequear('rutas inexistentes o fuera del repo no rompen el turno',
+    c.includes('Recordatorio de conducta'));
+}
+
+console.log('\n== memoria de sesión: la misma fila no se repite dentro de la ventana ==');
+// El comparador no guardaba nada entre turnos, así que volvía a inyectar la misma fila cada vez que
+// el tema se repetía —medido sobre transcripciones reales, el 64% de lo entregado en una sesión—. El
+// tope de 3 dolía porque dos de esas tres se gastaban repitiendo.
+{
+  const S = 'banco-memoria-1';
+  const uno = contrasteDe('Seguimos con el plan Local-0041', S);
+  const dos = contrasteDe('Seguimos con el plan Local-0041', S);
+  chequear('la primera vez trae la fila citada', uno.includes('Local-0041'));
+  chequear('  …y la segunda, en la misma sesión, ya no la repite', !dos.includes('Local-0041'),
+    dos.includes('Local-0041') ? 'la repitió' : 'callada');
+}
+// Callar libera presupuesto: con el tope lleno de repeticiones, la cuarta fila nunca entraba. Al
+// callar las tres primeras, el turno siguiente trae las que quedaban afuera.
+{
+  const S = 'banco-memoria-2';
+  const msg = 'a la carpeta que viaja adentro del plugin la llamaría capa de instalación';
+  const uno = bloqueDelContraste(contrasteDe(msg, S));
+  const dos = bloqueDelContraste(contrasteDe(msg, S));
+  chequear('el mismo mensaje repetido no devuelve las mismas filas', !!uno && uno !== dos,
+    uno === dos ? 'devolvió lo mismo' : 'entregó filas nuevas');
+}
+// Que sin `session_id` la memoria NO se aplique lo prueba el caso de determinismo de más arriba: sin
+// sesión, el mismo mensaje repetido devuelve exactamente las mismas filas. Es la degradación buscada
+// —compartir una marca entre sesiones distintas callaría filas que nadie vio—, no un olvido.
 
 console.log('\n== `al cerrar tarea`: el momento donde CALLAR ES EL DEFAULT ==');
 // Es el unico momento donde emitir CONTINUA la conversacion en vez de dejar una nota, asi que el

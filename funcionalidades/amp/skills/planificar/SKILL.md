@@ -9,11 +9,14 @@ Interrogá el plan o la idea a fondo, sin pausa, hasta llegar a un **entendimien
 
 ## Antes de arrancar: leer la sabiduría del repo
 
-Para cada subsistema relevante, leer primero su `MANIFIESTO.md` y después **todos los Índices o registros que declare**, sin suponer que hay uno solo ni inferir el origen por el nombre del archivo. Abrir también las páginas de detalle candidatas. En particular:
+**Delegar el recorrido en el subagente `contrastador`**, pasándole el plan o la idea a analizar. Lee los registros enteros —glosario, relaciones vetadas, decisiones y planes vivos— en su propia ventana y devuelve las filas que el tema toca. **No leerlos en el hilo principal**: leer a ojo encuentra lo que se le ocurra buscar al que busca, y lo que se abre queda pagado en la conversación.
 
-- **Semántica:** glosario, Terminología Farlopa y sus detalles.
-- **Decisiones:** todos los Índices declarados y el detalle de las decisiones relacionadas.
-- **Conocimiento:** los Índices del Agente Multipropósito y del Agente Desplegado, más las páginas relacionadas.
+Después de esa pasada, y solo sobre lo que trajo:
+
+- **Abrir las páginas de detalle** de las filas que las tengan y vengan al caso. El subagente devuelve la fila, no la página.
+- **Conocimiento se mira acá**, no en el subagente: sus dos Índices ya están cargados en el contexto, así que basta con abrir las páginas relacionadas.
+
+En un agente sin subagentes, el recorrido se hace en el hilo principal siguiendo las instrucciones del `contrastador`: leer para cada subsistema relevante su `MANIFIESTO.md` y **todos los Índices o registros que declare**, sin suponer que hay uno solo ni inferir el origen por el nombre del archivo. Cambia el costo, no el flujo.
 
 Si alguna no existe, seguir igual (la sesión degrada, no se rompe).
 
