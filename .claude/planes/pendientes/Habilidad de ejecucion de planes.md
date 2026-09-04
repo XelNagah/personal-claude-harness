@@ -61,8 +61,8 @@ la aprobación deja el plan cerrado en falso si el resultado se rechaza.
 
 **Lo que le sigue faltando a este plan:** qué hace con el aprendizaje al cerrar
 —hoy remite al plan «Verificar que el aprendizaje quede asentado en los
-subsistemas», que sigue en `Nuevo`— y cómo se comporta cuando corre dentro de una
-copia de trabajo aislada, que en julio no estaba sobre la mesa.
+subsistemas», que sigue en `Nuevo`— y cómo se comporta cuando corre dentro de un
+worktree aislado, que en julio no estaba sobre la mesa.
 
 Este plan es **precondición** de [Hacer avanzar varios planes a la vez hasta la
 próxima decisión del usuario](Hacer%20avanzar%20varios%20planes%20a%20la%20vez%20hasta%20la%20proxima%20decision%20del%20usuario.md)

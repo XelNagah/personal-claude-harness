@@ -47,12 +47,12 @@ El avance de cada plan para de tres maneras, y las tres son salidas normales:
 - **Terminó** → queda `En curso`, sin commitear y sin cerrar, esperando revisión.
 - **No era ejecutable** → vuelve a `Análisis` diciendo qué le faltaba.
 
-## Por qué el aislamiento por copia de trabajo, y qué se verificó
+## Por qué el aislamiento por worktree, y qué se verificó
 
 La restricción «un plan por repo a la vez» se sostenía en que dos planes se pisan
 los registros compartidos y dejan el `git diff` ilegible. Es cierto, pero se
-disuelve con una copia de trabajo por plan (`git worktree`), y el descarte que se
-le había hecho —que la copia arrancaría sin `.claude/`— es falso acá.
+disuelve con un worktree por plan, y el descarte que se
+le había hecho —que el worktree arrancaría sin `.claude/`— es falso acá.
 
 Verificado el 26/08/2026 en este repo:
 
@@ -69,7 +69,7 @@ Verificado el 26/08/2026 en este repo:
   encontrar `.claude`, así que en una copia resuelven a la copia. Es el
   conocimiento Local-0008 (El repo que un script describe) ya aplicado en código.
 - **La plataforma ya lo hace**: el mecanismo de subagentes acepta aislamiento por
-  copia de trabajo y la limpia sola si el agente no cambió nada. No hay que
+  worktree y lo limpia solo si el agente no cambió nada. No hay que
   construir el manejo.
 
 ⚠️ **Salvedad para otros Agentes Desplegados.** Acá `enabledPlugins` está en
@@ -134,8 +134,8 @@ Exigir el árbol limpio antes de lanzar trata igual tres casos distintos:
 
 - **Basura ignorada del propio harness** — no cuenta, y `git status --porcelain`
   ya no la lista.
-- **Trabajo real sin commitear de otra sesión** — con copia de trabajo deja de
-  importar: la copia se crea desde un commit, así que el plan no ve la basura ni
+- **Trabajo real sin commitear de otra sesión** — con worktree deja de
+  importar: el worktree se crea desde un commit, así que el plan no ve la basura ni
   la basura ve al plan.
 - **Cambios del mismo plan que se va a lanzar** — no hay que frenar, hay que
   retomar.
@@ -157,7 +157,7 @@ en ningún commit y no se puede reconstruir ni descartar limpio.
    Decisión Local-0078 fija que eso viaja en plugin aparte habilitado por repo.
    Puede que el verbo vaya en `amp-planes` y la conducción en un plugin propio.
 3. **Si es una habilidad o dos, para planes propios y ajenos.** El verbo es el
-   mismo y lo que cambia es quién ejecuta —copia de trabajo local, o `resolver`
+   mismo y lo que cambia es quién ejecuta —worktree local, o `resolver`
    sobre el repo del otro—, así que en principio es una. Pero hay una asimetría
    que no desaparece: en el repo propio se controla el aislamiento y en el ajeno
    no, así que allá «un plan por agente a la vez» sigue valiendo. Cambia de dueño,
@@ -199,6 +199,6 @@ es el problema del merge en chico, con daño acotado y reversible.
 ## Planes relacionados
 
 - [Habilidad de ejecucion de planes](Habilidad%20de%20ejecucion%20de%20planes.md) (Local-0043) — el verbo que falta. Precondición.
-- [Dos corridas de las pruebas a la vez se pisan el directorio de trabajo](Dos%20corridas%20de%20las%20pruebas%20a%20la%20vez%20se%20pisan%20el%20directorio%20de%20trabajo.md) (Local-0110) — sigue valiendo para dos sesiones a mano, que no tienen copia de trabajo.
+- [Dos corridas de las pruebas a la vez se pisan el directorio de trabajo](Dos%20corridas%20de%20las%20pruebas%20a%20la%20vez%20se%20pisan%20el%20directorio%20de%20trabajo.md) (Local-0110) — sigue valiendo para dos sesiones a mano, que no tienen worktree.
 - [Priorizar planes releva de cero los planes que no cambiaron](Priorizar%20planes%20releva%20de%20cero%20los%20planes%20que%20no%20cambiaron.md) (Local-0114) — su punto a decidir 2 es el mismo problema de concurrencia.
 - [Partir las mega-skills en habilidades de un verbo](Partir%20las%20mega-skills%20en%20habilidades%20de%20un%20verbo.md) (Local-0070) — el criterio que impide que la conducción se coma a la familia.
