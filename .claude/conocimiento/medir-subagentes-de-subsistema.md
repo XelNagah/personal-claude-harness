@@ -33,8 +33,15 @@ Que el frontmatter del subagente declare `model: sonnet` no prueba que haya corr
 | `buscador-de-terminologia` (43 planes) | 2026-08-06 | `claude-sonnet-5` | 119.778 | 19.439 | ~84% |
 | `relevador-de-planes` (49 planes vivos) | 2026-08-10 | `claude-sonnet-5` | 390.458 | 22.708 | ~94% |
 | `relevador-de-aprendizaje` (todo el Aprendizaje) | 2026-08-11 | `claude-sonnet-5` | 48.511 | 5.291 | ~89% |
+| `contrastador` (los 4 registros enteros) | 2026-09-04 | `claude-sonnet-5` | 210.822 | 5.926 | ~97% |
 
-**Por qué el ahorro varía:** depende de cuánto lee el recorrido por cada dato que devuelve, no del subsistema. `relevador-de-planes` abre un documento entero por plan (390 KB para 49 fichas) y comprime al ~94%. `relevador-de-aprendizaje` **muestrea** —lista directorios, lee encabezados y los Índices ya cargados, sin abrir cada plan, cada página ni cada detalle— así que lee menos por dato y queda en ~89%. `buscador-de-terminologia` devuelve apariciones sueltas de un término, el dato más liviano de los tres, y queda en ~84%. Cuanto más lee por unidad de resultado, más comprime.
+**Por qué el ahorro varía:** depende de cuánto lee el recorrido por cada dato que devuelve, no del subsistema. `relevador-de-planes` abre un documento entero por plan (390 KB para 49 fichas) y comprime al ~94%. `relevador-de-aprendizaje` **muestrea** —lista directorios, lee encabezados y los Índices ya cargados, sin abrir cada plan, cada página ni cada detalle— así que lee menos por dato y queda en ~89%. `buscador-de-terminologia` devuelve apariciones sueltas de un término, el dato más liviano de los tres, y queda en ~84%. Cuanto más lee por unidad de resultado, más comprime. `contrastador` es el extremo de esa escala y por eso da el número más alto: lee **los cuatro registros enteros siempre** —287 filas entre glosario, relaciones vetadas, decisiones y planes— y devuelve una tabla de dos docenas de filas.
+
+## Cuánto tarda
+
+**Medido por primera vez el 04/09/2026, y sirve para cualquier subagente**: la transcripción trae `timestamp` por evento, así que la duración sale de restar el último menos el primero, sin cronómetro afuera. La corrida del `contrastador` sobre un documento de 75 líneas tardó **137,5 segundos** con 14 llamadas a herramienta.
+
+El número importa porque **la estimación que se venía usando era menos de la mitad**: el plan Local-0118 estimaba «entre medio minuto y minuto y medio por comparación», marcado como estimación y sin evidencia. Un subagente que lee registros enteros no es una consulta rápida: es un par de minutos de espera del hilo principal. Al diseñar un flujo que lo invoque, contar dos minutos, no medio.
 
 ## El corte evidencia/decisión
 

@@ -254,6 +254,85 @@ Los dos motivos que quedan en pie son más chicos y son los que sostienen la dec
 
 `amp` a **0.60.0**. `lint-harness` verde.
 
+## Paso 2 — medido (26-09-04)
+
+Primera corrida real del `contrastador`, en una sesión con `amp` 0.60.0 ya cargado. **Material:** el
+pedido que trajo el Agente Desplegado `sicape-backend` sobre paralelizar planes en worktrees —un
+documento de otro repo, de 75 líneas, que **no cita ningún código de acá**, que es exactamente el
+caso que el subagente existe para cubrir—. Medido con el método del conocimiento Local-0018.
+
+| | |
+|---|---|
+| Modelo (leído del `.jsonl`, no del frontmatter) | `claude-sonnet-5` ✓ |
+| Llamadas a herramienta | 14 |
+| Evitado | 210.822 caracteres (~52.700 tokens) |
+| Devuelto | 5.926 caracteres (~1.500 tokens) |
+| **Ahorro** | **97,2%** |
+| **Duración** | **137,5 s** |
+
+**El ahorro es el más alto de los cinco subagentes del repo** (los otros dan 84%, 89% y 94%), y es
+coherente con la explicación que ya estaba asentada: comprime más el que más lee por unidad de
+resultado, y éste lee los cuatro registros enteros —287 filas— siempre.
+
+**El tiempo desmiente la estimación.** Este plan estimaba «entre medio minuto y minuto y medio»: el
+número real es **137 segundos**, más del doble del techo estimado. Es el primer número de duración
+medido para cualquier subagente del repo, y el método quedó asentado en el conocimiento Local-0018:
+la transcripción trae `timestamp` por evento, así que no hace falta cronómetro afuera. Consecuencia
+de diseño: invocar al `contrastador` cuesta **dos minutos de espera**, no medio. Un flujo que lo
+llame en cada arranque tiene que contar eso.
+
+**Sirvió, y se puede mostrar.** El hilo principal ya había escrito el plan Local-0120 con ese mismo
+material antes de correr el subagente, mirando el registro de planes y el glosario. El
+`contrastador` trajo **cuatro decisiones que el hilo no había abierto** —la Local-0047 (Node sin
+dependencias externas), y las Local-0048 / Local-0053 / Local-0054 / Local-0055, que son las que
+gobiernan si algo sube a la Base—, más la relación vetada Local-0043 (`transcript`), que estaba
+incumplida en el texto recién escrito. Las seis se incorporaron al plan Local-0120. Es la evidencia
+del argumento «método» de más arriba: el hilo encontró lo que el material citaba, el subagente
+encontró lo que el material tocaba.
+
+### La habilidad `contrastar` NO se dispara sola (26-09-04)
+
+Medido con la Herramienta `probar-disparo-de-skills` (Local-0012), tres sesiones reales contra
+`amp` 0.60.0 instalado. El banco no tenía ningún caso para esta habilidad —se creó el 02/09 y nadie
+se los agregó—: se escribieron los tres y quedaron en `banco.json`.
+
+| Caso | Consulta | Esperado | Observado |
+|---|---|---|---|
+| `contrastar-01` | «lee .claude/tmp/handoff-….md y seguimos» | dispara | **usó `Read`** |
+| `contrastar-02` | «mira este documento que me paso otro repo y decime que sabemos de esto» | dispara | **usó `PowerShell`** |
+| `contrastar-03` | «que decisiones hay asentadas sobre subagentes» | no dispara | usó `Grep` — correcto |
+
+**En ninguna de las tres se invocó ninguna habilidad.** El caso que importa es el 01: ruta concreta,
+archivo existente, y el agente abrió el archivo directo. Es la forma exacta del pedido que motivó
+este plan.
+
+⚠️ **El caso 02 está mal construido y su resultado no cuenta como evidencia limpia:** la consulta
+dice «este documento» sin dar ninguna ruta, así que el agente arrancó a buscarlo con `PowerShell`.
+Eso es razonable y no prueba nada sobre el disparo. Hay que reescribirlo con un archivo concreto
+para que mida lo que dice medir.
+
+**Qué significa.** Confirma en el terreno de esta habilidad lo que el plan Local-0095 ya había
+medido en general y que este mismo plan tiene en «Lo que ya está decidido y no se re-abre»: *que el
+agente invoque una habilidad de contraste por su cuenta no funciona* — el modo «recita sin
+obedecer» del conocimiento Local-0001. La `description` de `contrastar` es directiva y explícita
+(«o al arrancar a trabajar sobre un material que entró a la sesión desde afuera… antes de tocar
+nada») y aun así no se ejecuta.
+
+**Consecuencia para el diseño, que hay que decidir:** la habilidad `contrastar` sirve como puerta
+**cuando el usuario la nombra**, y eso está bien y no se toca. Pero **no cubre el caso central de
+este plan**, que es justamente el que ocurre sin que nadie lo pida. Las salidas posibles, sin
+elegir todavía:
+
+1. **Colgar el contraste del material del hook**, como ya se hizo con el texto del pedido. Es el
+   mecanismo que este plan estableció y que sí funciona por construcción, porque no depende de que
+   el modelo decida. Cuesta definir en qué momento y sobre qué archivos.
+2. **Resolverlo en el origen**, como la Decisión Local-0073 hizo con el reencuadre: que el handoff
+   traiga escritas las filas que toca. Cubre el caso más caro y ninguno de los otros.
+3. **Aceptar que es a demanda** y dejar el hueco documentado.
+
+Mientras no se decida, este plan **no se cierra**: su enunciado es que el material que se lee no se
+contrasta, y para el arranque desde un handoff eso sigue siendo cierto.
+
 ## Cómo se mide
 
 El Contraste automático es determinista: la calidad de la selección se prueba con su banco co-ubicado —pedido de entrada, filas esperadas— sin costo de sesión. Que el agente **use** las filas inyectadas es la apuesta blanda, y esa sí necesita sesiones reales.

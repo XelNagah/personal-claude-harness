@@ -77,6 +77,27 @@
       "skill": "buscar-agentes",
       "debe_disparar": true,
       "por_que": "Pregunta por el inventario de instalaciones de la maquina, que es exactamente lo que resuelve el buscador."
+    },
+    {
+      "id": "contrastar-01",
+      "consulta": "lee .claude/tmp/handoff-medir-el-contrastador.md y seguimos",
+      "skill": "contrastar",
+      "debe_disparar": true,
+      "por_que": "El caso que el plan Local-0118 existe para cubrir: arrancar a trabajar sobre material que entro desde afuera. Es la forma exacta del pedido que motivo el plan, y la Decision Local-0073 la tiene medida como la tercera familia de pedidos mas repetida. Si la primera herramienta es Read en vez de Skill, la habilidad no se disparo y el material entra al contexto sin contrastar."
+    },
+    {
+      "id": "contrastar-02",
+      "consulta": "abri REGISTRO.md y decime que sabemos de eso",
+      "skill": "contrastar",
+      "debe_disparar": true,
+      "por_que": "El pedido explicito, sin usar el verbo contrastar. Separa el disparo por intencion del disparo por coincidencia de palabra: si solo dispara cuando el usuario dice contrasta, la habilidad no sirve para el caso real. La primera version decia «mira este documento que me paso otro repo» SIN dar ninguna ruta, y el 04/09/2026 el agente arranco a buscarlo con PowerShell: el caso medía si encontraba el archivo, no si disparaba la habilidad. Un caso de disparo tiene que nombrar un archivo que exista, y versionado, para que no dependa de que .claude/tmp/ siga teniendo algo."
+    },
+    {
+      "id": "contrastar-03",
+      "consulta": "que decisiones hay asentadas sobre subagentes",
+      "skill": "contrastar",
+      "debe_disparar": false,
+      "por_que": "Comparte el dominio —los registros del repo— pero no hay ningun material externo que contrastar: es una consulta de inventario que se responde leyendo el Indice. Disparar aca gasta dos minutos de subagente para nada."
     }
   ]
 }
