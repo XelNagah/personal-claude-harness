@@ -1,6 +1,6 @@
 # Paralelizar planes en worktrees es casero y en Windows borra el .claude del repo
 
-**Estado: Nuevo · Creado 26-09-04.**
+**Estado: Ejecutado · Creado 26-09-04 · Cerrado 26-09-04.**
 
 **Origen:** pedido del Agente Desplegado `sicape-backend` (backend Java del sistema SICAPE), traído
 por el usuario el 04/09/2026. El repo del front del mismo sistema usa el mismo patrón casero, así
@@ -57,104 +57,194 @@ gitignoreado por diseño: un borrado no deja rastro en `git status` del repo pri
 `git checkout --` que lo deshaga. Allá lo resolvieron recreando un `.claude/.git` local sin remoto,
 también artesanal.
 
-## La idea que trae el pedido, con sus datos
+## Lo verificado en este repo el 04/09/2026
 
-**Que el worktree reciba una copia de `.claude/`, no un enlace.** Sin enlace no hay nada que
-atravesar, y ningún borrado del worktree —por git, por PowerShell o a mano— puede tocar el
-original. Es más robusto que ordenar bien los pasos, porque no depende de que nadie se olvide del
-orden.
+Las mediciones de arriba son del repo que pide, sobre PowerShell. Estas son de acá, en Node 24.14.1
+sobre Windows 11, con un junction real hacia un destino de 25 archivos en 5 subcarpetas:
 
-- `.claude/` pesa **6,1 MB** en ese repo (el grueso: `planes/` 1,7 MB, `tmp/` 874 KB). Copiar eso
-  por worktree es intrascendente.
-- El costo real es la **divergencia**, no el espacio: el agente del worktree lee una foto, y no ve
-  lo que el principal actualice mientras tanto. Allá ya rige que ningún agente de worktree escribe
-  en `.claude/`, así que la copia sería de solo lectura de hecho — pero conviene volverlo explícito
-  en el mecanismo, no dejarlo librado a la disciplina. Hoy, si igual escribe, se pierde en silencio
-  al borrar el worktree.
-- Si la copia va **adentro** del worktree no hace falta ningún enlace. Copiar afuera y enlazar a esa
-  copia deja el enlace en el medio otra vez: menos daño, mismo mecanismo.
+| Forma de borrar | Destino real |
+|---|---|
+| `fs.rmSync(junction, {recursive, force})` | 25 de 25 intactos |
+| `fs.rmSync(worktree entero, con el junction adentro)` | 25 de 25 intactos |
+| `fs.unlinkSync(junction)` / `fs.rmdirSync(junction)` | 25 de 25 intactos |
+| `git worktree remove` (medido allá) | 0 de 25 |
 
-## Dónde va el worktree — la trampa que el pedido anticipa
+**Node no atraviesa el junction.** `lstat()` lo devuelve como `isSymbolicLink=true` y
+`isDirectory=false`, así que el recorrido recursivo lo desarma en vez de entrar. El que atraviesa es
+`git worktree remove`, no el borrado recursivo.
 
-Que los worktrees estén en `D:\wt\<plan>` y no en el directorio temporal del agente **no es
-descuido**: es un rodeo al límite de longitud de ruta de Windows.
+Probado además el ciclo completo en un repo de laboratorio:
 
-- La ruta de ese repo mide 85 caracteres, y adentro hay archivos cuya ruta relativa llega a 228.
-  Sumadas pasan el límite y `git worktree remove` corta con `Filename too long`.
-- `D:\wt` da 5 caracteres de base y deja margen.
-- El directorio de scratchpad que asigna el agente mide 150 caracteres de base: un worktree ahí
-  adentro rompería seguro.
+- `git worktree add` trae el `.claude/` versionado solo, sin copiar ni enlazar nada.
+- `fs.rmSync` del árbol más `git worktree prune` deja el registro de git consistente y el `.claude/`
+  original intacto.
+- **La rama sobrevive al `prune`**: si no se la quiere, hay que borrarla aparte. El pedido no lo
+  anotaba.
+- Con un archivo abierto por otro proceso Node, `fs.rmSync` igual borró todo (libuv abre con
+  `FILE_SHARE_DELETE`). **No probado contra una JVM**, que puede abrir sin esa bandera: por eso la
+  verificación posterior sigue haciendo falta.
 
-Es decir: un mecanismo que «ordene» las cosas moviendo los worktrees al temporal del agente va a
-fallar en Windows en cualquier repo con rutas largas — el caso normal cuando el repo vive bajo una
-carpeta de usuario con nombres en español. La raíz corta parece fea y es funcional. Si se hace
-configurable, que el valor por omisión en Windows sea una raíz corta y que el mecanismo **avise**
-cuando la ruta elegida no deja margen.
+Y sobre la longitud de ruta, que allá era el motivo de la raíz corta: **acá pasa lo mismo**. La raíz
+del repo mide 51 caracteres y la ruta relativa más larga 127, o sea 179 de los 260 del límite. El
+directorio de scratchpad de la sesión mide 150 de base y daría 278.
 
-⚠️ Esto choca de frente con la Preferencia Local-0003 (*Guardar los archivos temporales en
-`.claude/tmp/`*): un worktree no es un archivo temporal de trabajo, pero la distinción hay que
-dejarla escrita o el mecanismo va a discutir con la preferencia.
+## El acuerdo
 
-## Lo demás que el mecanismo debería resolver
+Este plan entrega el **ciclo de vida de un worktree** —armar, aislar, limpiar y verificar—,
+invocable por comando, que no depende de `ejecutar-plan` (plan Local-0043) ni de `avanzar-planes`
+(plan Local-0119). Los dos están en `Nuevo`, y el daño ya ocurrió y está replicado en dos
+instalaciones: el arreglo no espera detrás de ellos. El plan Local-0119 lo consume después y
+conserva lo suyo — la reserva de códigos, la cola de decisiones y el control de cierre sobre el
+árbol integrado.
 
-- **Limpiar es parte del mecanismo, no del criterio del agente.** Que el paso exista y que verifique
-  el resultado, en vez de confiar en que alguien se acuerde.
-- **Verificar después de borrar, siempre.** Listar el contenido real de `.claude/` y compararlo con
-  lo que había antes. Allá el daño se descubrió siete minutos tarde y por un hook que falló de
-  casualidad.
-- **Los locks son normales, no una excepción.** Si el agente corrió tests en el worktree va a haber
-  un daemon de Gradle (o equivalente) con locks. Liberarlos antes de intentar borrar, y tratar un
-  fallo de borrado como **estado sucio a revisar**, nunca como no-evento.
-- **La red de seguridad.** `.claude/` gitignoreado no tiene forma de deshacer nada. Un repo local
-  sin remoto adentro de `.claude/` resuelve la mayor parte y cuesta un `git init`; quizá valga la
-  pena que el Agente Multipropósito lo ofrezca de fábrica, no solo para esto.
+**Son dos Herramientas y un módulo común**, ratificado el 04/09/2026: `preparar-worktree` arma y
+`limpiar-worktree` borra y verifica. Se separan porque son dos momentos distintos —uno al empezar el
+trabajo, otro al terminarlo— y un solo verbo dejaba la punta riesgosa fuera del nombre: una
+Herramienta llamada `preparar-` que además borra árboles enteros no dice lo que hace, y es
+justamente el borrado el que causó el daño que este plan repara. El código que comparten —el cálculo
+de margen de ruta, el listado de worktrees y la verificación del resultado— vive en
+`.claude/common/worktrees.js`, que es donde la Decisión Local-0049 pone el código que necesitan dos
+o más y que nadie invoca por comando. Las cinco reglas de abajo valen para las dos: la 1 es de
+`preparar-worktree`, la 2, la 3 y la 4 de `limpiar-worktree`, y la 5 alcanza a todo.
 
-## Lo que queda abierto para el análisis
+Cinco reglas fijadas al analizar:
 
-1. **Copia, enlace bien manejado, o `git worktree add` con un `.gitignore` que excluya `.claude/`
-   del árbol del worktree.** El repo que pide no evaluó las tres.
-2. **Cómo se comporta esto en Linux y macOS con symlinks reales.** Todo lo probado fue Windows con
-   junctions y PowerShell 5.1.
-3. **Si el mecanismo debería impedir del todo que un agente de worktree escriba en `.claude/`, o
-   permitirlo y reconciliar al final.**
-4. **La Herramienta `recuperar-desde-transcritos`.** La recuperación de allá fue posible porque las
-   transcripciones de sesión de Claude Code (`~/.claude/projects/`) guardan íntegro el contenido de
-   cada `Write` y cada `Read`: de ahí volvieron 11 páginas con su texto original. La empaquetaron
-   como Herramienta local y ofrecen subirla si sirve para cualquier instalación. **Decidir si se
-   adopta** — es útil mucho más allá de este incidente. El nombre que le pusieron allá lleva
-   `transcritos`, que acá es una relación vetada (Local-0043 de la Terminología Farlopa, canónico
-   «la transcripción de la sesión»): si se adopta, se renombra.
+1. **Copiar, nunca enlazar.** La Herramienta trae al worktree lo que git no llevó: si `.claude/`
+   está versionado son tres archivos ignorados, y de esos el que importa es `settings.local.json`
+   —por la Decisión Local-0035, `enabledPlugins` vive ahí y no se commitea, así que sin copiarlo el
+   worktree arranca sin ningún plugin habilitado y **sin señal**—; si `.claude/` está gitignoreado,
+   son los 6,1 MB completos. Es la misma operación con distinto tamaño. Como no se crea ningún
+   enlace, la clase entera de problema deja de existir.
+2. **La limpieza no usa `git worktree remove`.** Borra el árbol con `fs.rmSync` recursivo, corre
+   `git worktree prune` y decide aparte qué hace con la rama. Nada de esto necesita PowerShell ni
+   `.NET`: se resuelve en Node nativo, como pide la Decisión Local-0047.
+3. **Verificar siempre después de borrar, y la verificación la hace la propia Herramienta.**
+   Comparar el listado real contra el de antes y mirar `git status` no es un recorrido de volumen,
+   así que no corresponde delegarlo a un subagente por la Decisión Local-0060. Un fallo de borrado
+   es **estado sucio a revisar**, nunca un no-evento: allá el daño se descubrió siete minutos tarde
+   porque un `Permission denied` se leyó como «no borró nada».
+4. **El agente que corre en un worktree no escribe en su `.claude/`**, y la limpieza avisa si
+   detecta escrituras antes de borrar. No queda librado a la disciplina. El motivo no es la copia
+   sino la reserva de códigos, que todavía no existe: dos worktrees que registran una entrada a la
+   vez eligen los dos `máximo + 1`, y git mergea las dos filas sin conflicto porque son dos líneas
+   distintas al final de la misma tabla. Medido en el plan Local-0119 sobre los lints de este repo,
+   lo detectan `planes`, `decisiones`, `herramientas`, `preferencias`, `subsistemas` y
+   `comunicacion`, y **no lo detectan `conocimiento` ni `semantica`**. El plan Local-0119 puede
+   levantar esta restricción cuando tenga la reserva.
+5. **La Herramienta es Base** y viaja a todo Agente Desplegado: paralelizar planes le sirve a
+   cualquier Propósito y no es una elección personal del autor, así que pasa el filtro de la
+   Decisión Local-0048 y no la frena la Local-0053. Va al `INDICE.md` de Herramientas del Agente
+   Multipropósito, por la Decisión Local-0032. **No** va a `.claude/common/`: la Decisión Local-0049
+   reserva esa carpeta para código que no se invoca, y esta se invoca por comando.
 
-   Al adoptarla mandan cuatro decisiones que el contraste trajo y que este plan no puede saltear:
-   la Decisión Local-0048 (*qué sube a la Base y qué se queda como documentación de este proyecto*),
-   la Decisión Local-0053 (*la Base pública no incluye elecciones personales del autor*), la
-   Decisión Local-0054 (*replicar una elección personal no la convierte en Base*) y la Decisión
-   Local-0055 (*copiar una entrada entre Agentes Desplegados es una operación puntual*). Vale para
-   el mecanismo de worktrees entero, no solo para esta Herramienta.
+## Dónde va el worktree
 
-5. **El mecanismo se escribe en Node sin dependencias externas** — Decisión Local-0047. Todo lo que
-   el pedido describe en PowerShell y en `.NET` (`[System.IO.Directory]::Delete`) hay que resolverlo
-   en Node nativo, o justificar por qué no se puede. Es una restricción de diseño, no un detalle.
+La regla acordada: **`.claude/tmp/` por omisión, y una raíz corta solo cuando la ruta no entra.** La
+Herramienta calcula la ruta candidata contra la relativa más larga del repo; si el total pasa el
+límite de 260 de Windows, cae a una raíz corta configurable y **dice por qué**.
 
-6. **Dónde vive el código.** Un mecanismo de worktrees toca planes y subsistemas por igual, así que
-   por la Decisión Local-0049 iría a `.claude/common/`, con prueba propia. Confirmarlo al analizar.
+Así la Preferencia Local-0003 (*Guardar los archivos temporales en `.claude/tmp/`*) sigue siendo la
+norma y el rodeo queda como excepción medida, no como criterio suelto. Verificado el 04/09/2026 que
+`.claude/tmp/` no rompe ningún control: `lint-conocimiento` y `lint-semantica` excluyen `tmp` en
+cualquier nivel por lista, `inventariar-componentes-sueltos` lo descarta por `git check-ignore`, y
+los bancos de prueba de `medir-contexto` y de `inventariar-componentes-sueltos` ya arman repos de
+prueba ahí adentro. Con un nombre de worktree corto, acá da 204 de 260.
 
-7. **El paso de verificación posterior al borrado podría delegarse a un subagente**, por la Decisión
-   Local-0060 — recorrer `.claude/` y comparar contra lo que había es exactamente un recorrido de
-   volumen. Y el patrón de limpieza tiene antecedente: la Decisión Local-0028 (*diseño del
-   actualizador*) ya fijó «respaldo antes de tocar y reporte al final».
+
+## Notas de implementación
+
+Ejecutado el 04/09/2026. Salió como el acuerdo lo fijaba, con dos correcciones de diseño que
+aparecieron recién al usar las Herramientas contra este repo, no al escribirlas.
+
+**Lo que se construyó:**
+
+- `.claude/common/worktrees.js` — calcula la ubicación contra el margen de ruta, lista los worktrees
+  de git, inventaría y compara los dos `.claude/`, halla enlaces sin atravesarlos y verifica el
+  borrado. No crea ni borra: eso es de las Herramientas.
+- `.claude/herramientas/preparar-worktree/` — arma, completa y verifica. Reconciliable: re-correr
+  informa `ya estaba`, rearma un registro huérfano y se niega a pisar una carpeta ocupada.
+- `.claude/herramientas/limpiar-worktree/` — mira enlaces y escrituras, borra con `fs.rmSync`, poda
+  el registro, decide sobre la rama y verifica contra el inventario previo. `--listar` de yapa.
+- Dos bancos con escenario sintético: 24 casos cada uno, los dos en verde. El de `limpiar-worktree`
+  rearma el caso que causó el daño —repo, worktree y junction real— y verifica que el destino del
+  enlace conserve sus 25 archivos.
+- Tres filas Base en el Índice de Herramientas, la copia a `base/` y `sincronizar-base` corrido. La
+  versión del plugin ya venía subida a 0.61.0 y no se volvió a tocar: 0.61.0 todavía no se publicó.
+
+**Las dos correcciones que el uso reveló:**
+
+1. **Copiar «lo que git no llevó» era la regla equivocada; la correcta es «lo que git ignora».** La
+   primera versión copiaba también lo que estaba sin commitear, y al probarla contra este repo —con
+   seis archivos nuevos sin commitear— el worktree se llevó el trabajo a medias, y después la
+   limpieza lo leyó como escrito adentro y frenó. Arrastrar el trabajo sin commitear además
+   contradice que el worktree se arme desde un commit.
+2. **Comparar el `.claude/` byte a byte marcaba como escrito cada archivo versionado.** Con
+   `core.autocrlf` prendido —el valor por omisión en Windows— el checkout del worktree convierte los
+   fines de línea. Lo detectó el banco: 4 casos en rojo y la limpieza frenando siempre. Ahora lo
+   versionado se lo pregunta a git (`status`) y solo lo no versionado —lo que la Herramienta copió
+   con `copyFileSync`— se compara byte a byte, que es además el único camino cuando `.claude/` entero
+   está gitignoreado.
+
+**Terminología, resuelta antes de programar:** `worktree` entró al glosario como el término
+Local-0040 y `copia de trabajo` quedó vetada para ese significado (relación Local-0050), con sus
+siete apariciones barridas.
+
+**Lo que queda afuera:** cuántos worktrees a la vez —la cuestión abierta 2— sigue sin medir y la
+hereda el plan Local-0119, que es quien consume estas Herramientas.
+## Alcance del trabajo
+
+- La Herramienta: armar, completar lo que git no llevó, limpiar, verificar y reportar.
+- El cálculo de margen de ruta y la caída a raíz corta con aviso.
+- La detección de escrituras en el `.claude/` del worktree antes de borrar.
+- El respaldo antes de tocar y el reporte al final, siguiendo el patrón que la Decisión Local-0028
+  ya fijó para el actualizador.
+- Banco de pruebas propio con escenario sintético, incluido el caso del junction preexistente: una
+  instalación que ya venía armando worktrees a mano puede tener uno.
+- Los nombres `preparar-worktree` y `limpiar-worktree`, en verbo más objeto (Decisión Local-0015) y
+  ratificados el 04/09/2026 (Decisión Local-0016), con el módulo común `.claude/common/worktrees.js`.
+- Su fila en el Índice de Herramientas del Agente Multipropósito, `sincronizar-base` y la versión
+  del plugin.
+
+## Lo que queda abierto
+
+1. **Cómo se llama esto en español — resuelto el 04/09/2026.** Se corrió `converger-terminologia` y
+   el usuario ratificó **`worktree`**, que entró al glosario como el término Local-0040: se conserva
+   en inglés porque es el nombre del subcomando de git y aparece literal en todo texto que lo
+   mencione. `copia de trabajo`, que el plan Local-0119 venía usando sin ratificar, quedó vetada
+   para este significado (relación Local-0050) porque es la traducción histórica de *working copy* y
+   se confundía con «árbol de trabajo», el canónico de la relación vetada Local-0045 para otra cosa
+   —los archivos del repo en disco—. Sus siete apariciones ya se barrieron. La Herramienta se nombra
+   `<verbo>-worktree`.
+2. **Cuántos worktrees a la vez.** Ninguna medición dice si el rendimiento sube lineal o si el merge
+   se come la ganancia; lo hereda del plan Local-0119 y no bloquea a la Herramienta.
+
+## Lo que se decidió no hacer
+
+**No se adoptan la Herramienta de recuperación desde las transcripciones de sesión que ofrece
+`sicape-backend` ni el repo local sin remoto dentro de `.claude/`.** Con la Herramienta copiando en
+vez de enlazar, el daño de esta clase deja de ocurrir, así que la red de reparación pierde su
+motivo. Queda anotado el riesgo asumido: si `.claude/` se pierde por otra vía, no hay nada que lo
+deshaga. **No hace falta contestarle nada al repo que las ofreció:** el conocimiento Base-0007 viaja
+en la Base, así que se entera al actualizar su Agente Multipropósito.
+
+Las cuestiones abiertas 1, 2, 3, 5, 6 y 7 del pedido original quedaron cerradas al analizar: la 1 y
+la 3 por el acuerdo, la 2 porque sin enlaces no hay symlink de Linux ni macOS que probar, la 5 y la
+7 por medición, y la 6 por la Decisión Local-0049.
 
 ## Relación con otros planes
 
 - El plan **Local-0119** (*Hacer avanzar varios planes a la vez hasta la próxima decisión del
-  usuario*): es lo que hace falta paralelizar. Este mecanismo es su infraestructura, o parte de ella.
-- El plan **Local-0043** (*Habilidad de ejecución de planes*): tiene el contrato escrito y le falta, entre
-  otras cosas, **cómo se comporta dentro de una copia de trabajo aislada** — que es exactamente lo
-  que este plan tiene que definir. Al analizar, mirar si los dos se resuelven juntos.
+  usuario*): consume esta Herramienta. Ahí viven la reserva de códigos, la cola de decisiones y el
+  control de cierre sobre el árbol integrado.
+- El plan **Local-0043** (*Habilidad de ejecución de planes*): le falta cómo se comporta dentro de
+  un worktree, y esta Herramienta le da la respuesta.
+- El plan **Local-0081** (*Mudar los subsistemas de `.claude` a `.amp`*): ataca el mismo dolor de
+  fondo —un `.claude/` frágil y a veces gitignoreado— por otra vía. No hay dependencia, pero si se
+  ejecuta cambia qué carpeta copia esta Herramienta.
 
 ## Contexto de dónde salió
 
 El registro del incidente, con la línea de tiempo completa y las pruebas, está en
 `.claude/conocimiento/incidente-borrado-de-claude-por-junction.md` del repo `sicape-backend`. Ese
-repo es un Agente Desplegado alcanzable por el subsistema `comunicacion`: si al analizar hace falta
-el detalle, se le pregunta en vez de reconstruirlo.
+repo es un Agente Multipropósito Conocido: si al ejecutar hace falta el detalle, se le pregunta en
+vez de reconstruirlo.
