@@ -17,7 +17,7 @@ Hoy la fila vieja queda `vigente` con una nota entre paréntesis: o sea, **marca
 
 ## Lo que lo traba, y hay que resolver primero
 
-La regla **solo funciona si cada decisión es de un tema**. La 0029 decide cuatro cosas a la vez —empaquetado en 7 plugins, bundle por dependencias, alcance, y consolidación de los 10 `inicializar-<sub>` en uno—, así que no se la puede dar de baja sin arrastrar tres decisiones que siguen vigentes. **La baja parcial no existe.**
+La regla **solo funciona si cada decisión es de un tema**. La 0029 decide cuatro cosas a la vez —empaquetado en 7 plugins, paquete por dependencias, alcance, y consolidación de los 10 `inicializar-<sub>` en uno—, así que no se la puede dar de baja sin arrastrar tres decisiones que siguen vigentes. **La baja parcial no existe.**
 
 Primer paso concreto: partir la 0029 en sus cuatro temas y dar de baja solo el de alcance (que la 0035 ya reenuncia completo).
 

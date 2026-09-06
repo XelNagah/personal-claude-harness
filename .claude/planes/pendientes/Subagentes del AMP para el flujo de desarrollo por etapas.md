@@ -175,7 +175,7 @@ Limitaciones de ambos: prompts en inglés sin la nomenclatura del dominio; no co
 
 **Qué queda destrabado.** El paso 4 queda cumplido. Siguen el 5 (escribir los cuatro archivos de tipo), el 6 (instalar y probar en un Agente Desplegado con código real; el candidato escrito es `beatsaber-overlay`) y el 7 (medir con el método del paso 2 y registrar el resultado en conocimiento).
 
-Lo del punto 1 quedó asentado además en la **Decisión Local-0078** (lo que sirve solo a algunos repos viaja en un plugin aparte que se habilita por repo, sin noción de tipo de repo), del 23/08/2026: extiende la Decisión Local-0060 al subagente que no pertenece a ningún subsistema y precisa la cláusula «bundle completo, no à la carte» de la Decisión Local-0029. El punto 2 no generó decisión: es la ratificación de una recomendación que este plan ya traía escrita, y vive acá.
+Lo del punto 1 quedó asentado además en la **Decisión Local-0078** (lo que sirve solo a algunos repos viaja en un plugin aparte que se habilita por repo, sin noción de tipo de repo), del 23/08/2026: extiende la Decisión Local-0060 al subagente que no pertenece a ningún subsistema y precisa la cláusula de la Decisión Local-0029 que manda instalar todo junto y no à la carte. El punto 2 no generó decisión: es la ratificación de una recomendación que este plan ya traía escrita, y vive acá.
 
 ## Pasos
 
