@@ -330,3 +330,48 @@ de estado sobre el mismo `PLANES.md`. Cierre con `ejecutar-control-cierre` sobre
 5. **Cuántos planes a la vez sigue sin responder.** Con dos, la juntada no costó
    nada; el costo aparece cuando dos planes tocan el mismo archivo en serio, y eso
    no pasó.
+
+- **07/09/2026 — La juntada final, con `main` ya movido. Séptimo hallazgo, y es el
+  peor de los siete.**
+
+  Entre el armado de las copias y la juntada, `main` avanzó un commit —el barrido de
+  la relación vetada Local-0051 (`bundle` → `paquete`)—. Las copias seguían paradas
+  en la foto anterior.
+
+  **7. El agente de la copia reintrodujo tres veces un término que se había vetado
+  y barrido mientras él trabajaba.** El análisis del plan Local-0067 escribió
+  «bundle por dependencias» en tres lugares nuevos, sobre un texto del que `main`
+  acababa de sacarlo. La copia no podía saberlo: su registro de relaciones vetadas
+  era el viejo.
+
+  **Los dos controles que existen para esto no lo hubieran visto, y por motivos
+  distintos.** El hook `detectar-terminologia-vetada` sí corrió y sí dejó escribir,
+  porque lee el registro de **su** copia, donde la relación todavía no existía —un
+  control que valida contra un registro viejo es la forma «mira una copia» del
+  conocimiento Local-0013—. Y el control de cierre adentro de la copia está roto por
+  el hallazgo 6, así que tampoco había segunda barrera.
+
+  **Lo que sí lo agarró fue git**, y por casualidad: `main` había tocado el mismo
+  párrafo, así que la juntada dio conflicto y hubo que mirarla a mano. Las otras dos
+  apariciones estaban en párrafos nuevos y se habrían mergeado limpio. Si el barrido
+  hubiera tocado otra línea del archivo, el término entraba en verde.
+
+  **Consecuencia para el diseño, y es una precondición más:** una copia envejece
+  respecto del repo, y lo que envejece no es solo el código — son **los registros
+  contra los que el agente valida lo que escribe**. `avanzar-planes` tiene que traer
+  el repo a la copia antes de dar por bueno lo que produjo, y volver a pasarle los
+  controles del subsistema semántica al texto ya integrado, no al de la copia.
+
+## Resultado de la corrida
+
+**Integrado en `main`.** Los dos análisis quedaron en el repo, los planes Local-0067
+y Local-0110 pasaron a `Análisis`, el término reintroducido se barrió al juntar, y
+las cuatro copias se limpiaron con `limpiar-worktree` dejando el `.claude/` completo
+en 304 archivos.
+
+**Verificado sobre `main` ya integrado:** `detectar-terminologia-vetada` da **OK en
+sus 25 casos** y `establecer-conducta` **OK en 55** — los mismos que fallaban 8 y
+entero adentro de la copia. Es la prueba del hallazgo 6. Queda fallando
+`actualizar-plugins` (1 caso), que mira el estado de plugins de la máquina y no lo
+tocó nada de este trabajo: la juntada movió tres archivos, los tres de
+`.claude/planes/`.
