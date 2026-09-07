@@ -90,6 +90,22 @@ Es una metáfora, no un término técnico, y el reemplazo literal ya existe en e
 
 A resolver: ratificarla como alias legítimo o vetarla y barrer las 42.
 
+## 5.c `bundle` — vetado el 06/09/2026, queda la Decisión Local-0029
+
+`bundle` quedó vetado como Local-0051 del registro de relaciones vetadas (`avisa`: sigue siendo
+legítimo citar cómo llama otro producto a lo suyo, y la documentación oficial en inglés bajada en
+`.claude/tmp/`). El texto plano propio se barrió el mismo día: el Índice de Herramientas y el
+`README` de `instalar-plugins-codex` —con sus dos copias en `base/`— y dos planes pendientes.
+
+**Queda pendiente la Decisión Local-0029**, que nombra su propia cláusula «bundle completo, no à
+la carte». Corregir el texto de una decisión vigente es otra ratificación, y el usuario no la dio:
+se resuelve acá, junto con `à la carte`, que la misma cláusula usa y que ya figura como candidato
+en la sección 5. Los dos términos están en la misma frase: conviene tocarla una sola vez.
+
+También quedan apariciones en **planes ejecutados** —registro histórico— y en el código de
+`actualizar-plugins` y `instalar-plugins-codex`, donde `bundle` nombra una función y una constante:
+cambiarlo ahí es una reescritura del código, no un barrido de texto.
+
 ## 6. Residuo de un subsistema retirado
 
 La 0036 retiró memoria y con ella las `feedback_<sub>`. El término sigue vivo en tres archivos, apuntando a documentos que ya no existen:

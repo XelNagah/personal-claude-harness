@@ -17,6 +17,10 @@ Hoy la fila vieja queda `vigente` con una nota entre paréntesis: o sea, **marca
 
 ---
 
+La regla **solo funciona si cada decisión es de un tema**. La 0029 decide cuatro cosas a la vez —empaquetado en 7 plugins, paquete por dependencias, alcance, y consolidación de los 10 `inicializar-<sub>` en uno—, así que no se la puede dar de baja sin arrastrar tres decisiones que siguen vigentes. **La baja parcial no existe.**
+
+---
+
 ## Análisis (04/09/2026)
 
 ### Lo medido en el registro
@@ -39,7 +43,7 @@ Datos verificados sobre `.claude/decisiones/INDICE.md` al 04/09/2026:
 
 ### El hueco central: qué cuenta como "un tema"
 
-El plan dice "la Decisión Local-0029 decide cuatro cosas a la vez" y las enumera —empaquetado en 7 plugins, bundle por dependencias, alcance, consolidación de los `inicializar-<sub>`—, pero **no da el criterio con que se llegó a cuatro**. Sin criterio la regla es inaplicable: la misma fila se puede partir en dos o en ocho, y cada sesión va a partirla distinto.
+El plan dice "la Decisión Local-0029 decide cuatro cosas a la vez" y las enumera —empaquetado en 7 plugins, paquete por dependencias, alcance, consolidación de los `inicializar-<sub>`—, pero **no da el criterio con que se llegó a cuatro**. Sin criterio la regla es inaplicable: la misma fila se puede partir en dos o en ocho, y cada sesión va a partirla distinto.
 
 El test que se propone —y que hace falta ratificar, es la decisión 1 de abajo— es **de reemplazabilidad, no de contenido**: *una decisión es de un tema si se la puede dar de baja entera sin arrastrar nada que siga rigiendo*. La unidad de tema es la unidad de baja, porque la baja es para lo que la regla existe. Aplicado a la Local-0029 da exactamente las cuatro que el plan enumera: la Local-0035 dio de baja el alcance y **no** pudo llevarse el resto, y eso es lo que prueba que el resto son temas aparte.
 
@@ -97,7 +101,7 @@ Ninguna se resolvió sola: cada una es una convención del registro de decisione
 
 **Alternativas.**
 
-- **(a) Test de reemplazabilidad.** Una decisión es de un tema si se la puede dar de baja entera sin arrastrar nada que siga rigiendo. Ejemplo: la Local-0029 falla el test, porque bajarla se llevaría puestos el multi-plugin, el bundle por dependencias y la consolidación de los `inicializar-<sub>`, que rigen. Partida en cuatro, cada parte lo pasa.
+- **(a) Test de reemplazabilidad.** Una decisión es de un tema si se la puede dar de baja entera sin arrastrar nada que siga rigiendo. Ejemplo: la Local-0029 falla el test, porque bajarla se llevaría puestos el multi-plugin, el paquete por dependencias y la consolidación de los `inicializar-<sub>`, que rigen. Partida en cuatro, cada parte lo pasa.
 - **(b) Test de enunciado.** Una decisión es de un tema si su Descripción sostiene una sola afirmación principal. Es más fácil de evaluar leyendo, pero no dice nada sobre la baja, que es el problema: una fila puede tener una afirmación principal y tres cláusulas colgadas, y al bajarla se van las tres.
 - **(c) Sin test.** Juicio caso por caso al registrar. Es lo que hay hoy, y produjo tres cláusulas caídas en 80 filas.
 
@@ -203,7 +207,7 @@ Lo aprendido en este análisis —que la deuda son tres filas y no ochenta, y qu
 Con las recomendaciones de arriba, el trabajo es:
 
 1. Asentar la decisión de la convención (texto propuesto arriba).
-2. **Partir la Decisión Local-0029** en sus cuatro temas: empaquetado en un plugin transversal más uno por subsistema con habilidad de operación · bundle completo por dependencias, no à la carte · alcance de instalación · consolidación de los `inicializar-<sub>` en `amp:inicializar`. Al reenunciar, **no copiar el conteo de plugins**, que hoy dice 7 y son 10. La fila vieja queda `reemplazada por` las cuatro; la de alcance nace ya reemplazada por la Decisión Local-0035, o directamente no se escribe y la Local-0035 la absorbe (a definir al ejecutar, con el texto a la vista).
+2. **Partir la Decisión Local-0029** en sus cuatro temas: empaquetado en un plugin transversal más uno por subsistema con habilidad de operación · paquete completo por dependencias, no à la carte · alcance de instalación · consolidación de los `inicializar-<sub>` en `amp:inicializar`. Al reenunciar, **no copiar el conteo de plugins**, que hoy dice 7 y son 10. La fila vieja queda `reemplazada por` las cuatro; la de alcance nace ya reemplazada por la Decisión Local-0035, o directamente no se escribe y la Local-0035 la absorbe (a definir al ejecutar, con el texto a la vista).
 3. **Partir la Decisión Local-0002** y dar de baja la cláusula de carga del índice, que la Local-0017 ya reenunció.
 4. **Partir la Decisión Local-0013** y dar de baja la cláusula del prefijo pelado, que la Local-0029 ya reenunció.
 5. Ajustar `lint-decisiones`: lista de reemplazos en la columna `Estado`, chequeo de cláusula caída en fila `vigente`, y los dos casos en su `pruebas.js`.
