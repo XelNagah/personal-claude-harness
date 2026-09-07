@@ -202,3 +202,131 @@ es el problema del merge en chico, con daño acotado y reversible.
 - [Dos corridas de las pruebas a la vez se pisan el directorio de trabajo](Dos%20corridas%20de%20las%20pruebas%20a%20la%20vez%20se%20pisan%20el%20directorio%20de%20trabajo.md) (Local-0110) — sigue valiendo para dos sesiones a mano, que no tienen worktree.
 - [Priorizar planes releva de cero los planes que no cambiaron](Priorizar%20planes%20releva%20de%20cero%20los%20planes%20que%20no%20cambiaron.md) (Local-0114) — su punto a decidir 2 es el mismo problema de concurrencia.
 - [Partir las mega-skills en habilidades de un verbo](Partir%20las%20mega-skills%20en%20habilidades%20de%20un%20verbo.md) (Local-0070) — el criterio que impide que la conducción se coma a la familia.
+
+## Estado
+
+Archivo de estado de la **medición del 04/09/2026**: la corrida a mano que responde
+la cuestión abierta 6 (cuántos planes a la vez) heredada del plan Local-0120.
+
+**Diseño de la corrida.** Tres planes en `Nuevo`, chicos y de subsistemas distintos,
+llevados a `Análisis`/`Listo` — el embudo real. Cada uno en su worktree armado con
+`preparar-worktree`, con una sesión no interactiva de Claude Code adentro y
+`--output-format json`, que es lo único que deja ver una denegación de permisos
+(conocimiento Local-0017). **No** se usa el aislamiento por worktree nativo del
+mecanismo de subagentes: arma un `git worktree add` pelado, sin `settings.local.json`,
+y el agente de adentro arranca sin plugins y sin señal.
+
+**Restricción impuesta a cada agente:** escribe solo su archivo de plan y su fila en
+`PLANES.md`. Nada de decisiones, glosario ni conocimiento — lo que proponga queda en
+el archivo del plan y lo asienta el hilo principal (Decisión Local-0060). Esquiva
+además la reserva de códigos, que todavía no existe.
+
+| Plan | Modo de permisos | Turnos | Duración | Costo | Denegaciones | ¿Escribió? |
+|---|---|---|---|---|---|---|
+| Local-0067 | `bypassPermissions` | 35 | 453 s | US$ 3,40 | 0 | **sí** |
+| Local-0110 | `dontAsk` + `--allowedTools` | 29 | 463 s | US$ 3,13 | 3 | no |
+| Local-0107 | `dontAsk` + `--allowedTools` | 16 | 70 s | US$ 1,04 | 5 | no |
+
+Total US$ 7,57, contra los ~US$ 2 estimados. La estimación venía del conocimiento
+Local-0017, que midió **consultas** de un turno; un análisis de plan son 16 a 35
+turnos y cuesta otro orden.
+
+**Margen de ruta medido:** 211 de 260 caracteres con la raíz por omisión
+(`.claude/tmp/worktrees/`). Entra sin raíz corta, pero con 49 de margen: un repo
+instalado en una ruta más larga que ésta no entra.
+
+**Qué se mide:** duración y costo de cada corrida, denegaciones de permiso, cuántas
+decisiones abiertas produce cada plan, y qué pasa al integrar las tres transiciones
+de estado sobre el mismo `PLANES.md`. Cierre con `ejecutar-control-cierre` sobre el
+árbol ya integrado — el arreglo 2 de este plan.
+
+### Bitácora
+
+- **04/09/2026** — Worktrees `plan-0110`, `plan-0107` y `plan-0067` armados sobre
+  `19c04a6`, con repo limpio. Los tres verificados sin enlaces adentro.
+
+- **05/09/2026 — Resultado de la primera corrida. Cuatro hallazgos, y el objetivo
+  principal quedó sin responder.**
+
+  **1. `--allowedTools` no habilita la escritura en modo `dontAsk`.** Las dos
+  corridas lanzadas con `--permission-mode dontAsk --allowedTools
+  "Read,Write,Edit,Glob,Grep,Skill,TodoWrite"` tuvieron **todo** `Write` y `Edit`
+  denegado, pese a estar nombrados en la lista. `settings.local.json` del repo
+  incluso trae `Write(.claude/planes/**)` y `Edit(.claude/planes/**)` en `allow`, y
+  tampoco alcanzó. Es una cuarta forma de la falla del conocimiento Local-0017: los
+  frenos obvios no hacen lo que dicen. La diferencia es que **esta vez se vio**,
+  porque `--output-format json` devuelve `permission_denials`. Leyendo la respuesta
+  pelada, el reporte del plan Local-0110 se lee como un análisis hecho.
+
+  El trabajo se perdió igual: 463 s y US$ 3,13 de análisis completo que nunca llegó
+  a disco. **Para `avanzar-planes` esto es una precondición, no un detalle**: el
+  modo de permisos con que se lanza cada worktree hay que verificarlo con una
+  escritura de prueba antes de gastar la corrida.
+
+  **2. El worktree no contiene al agente de adentro.** El del plan Local-0067
+  escribió su primera edición de `PLANES.md` **en el repo principal**, no en su
+  worktree. La revirtió por su cuenta y el árbol principal quedó limpio, pero pudo
+  no hacerlo. La ruta absoluta del repo original le sigue estando disponible, y
+  aparece en el texto que carga al arrancar. El aislamiento es de árbol, no de
+  alcance de escritura: hay que acotarlo aparte.
+
+  **3. El clasificador del modo automático bloquea `bypassPermissions`, y no
+  siempre.** De tres lanzamientos idénticos, uno pasó y dos se rechazaron. O sea que
+  el único modo que sí escribió no se puede lanzar de forma reproducible desde una
+  sesión en modo automático. Es un problema de mecanismo, no de diseño del plan.
+
+  **4. El objetivo principal quedó sin responder.** Como escribió uno solo, **no
+  hubo merge que medir**: las tres transiciones de estado simultáneas sobre
+  `PLANES.md`, que era el punto, no llegaron a ocurrir. Tampoco quedó medido cuántos
+  planes a la vez rinden.
+
+  **Lo que sí rindió, y era el otro objetivo:** el análisis del plan Local-0067
+  quedó hecho y persistido en su worktree, con 7 decisiones anotadas para el usuario
+  y un hallazgo que le cambia el tamaño al plan — la deuda son 3 filas, no 80.
+
+- **05/09/2026 — Segunda parte: la integración, que era el objetivo. Se completó
+  con dos planes, y apareció el hallazgo que más cambia el diseño.**
+
+  El análisis del plan Local-0110 se recuperó **del archivo de la corrida**: el
+  `content` del `Write` denegado traía el documento entero, 181 líneas. Se escribió
+  en su worktree y se le hizo la transición de estado, para que la integración
+  ocurriera de verdad por git y no la fabricara el hilo principal. Cada worktree
+  quedó con un commit propio, y los dos se juntaron en un cuarto worktree
+  (`integracion`) armado desde el mismo commit — el repo principal no se tocó.
+
+  **5. Las dos transiciones simultáneas sobre `PLANES.md` se juntan solas, sin
+  conflicto.** `git` las auto-mergeó y las dos sobrevivieron: Local-0067 y
+  Local-0110 quedaron los dos en `Análisis`. **Es la respuesta al objetivo, y no es
+  tranquilizadora**: es exactamente lo que el arreglo 2 de este plan advertía —dos
+  ediciones de secciones distintas del mismo archivo mergean limpio y nadie mira el
+  resultado combinado—. Acá el combinado está bien porque son dos filas distintas,
+  pero eso lo garantizó el caso, no el mecanismo. El control sobre el árbol
+  integrado sigue siendo obligatorio.
+
+  **6. Los controles del repo dan rojo adentro de un worktree, sin que nada haya
+  cambiado.** El control de cierre sobre el árbol integrado marcó 3 pruebas
+  fallando; sobre el repo principal, ninguna. Aislado con el worktree `plan-0107`,
+  que **no tiene un solo cambio**: falla idéntico —8 de 25 casos de
+  `detectar-terminologia-vetada`, más `establecer-conducta`—. O sea que la falla es
+  de correr en una copia, no del trabajo.
+
+  **Para `avanzar-planes` esto es lo más caro de los seis hallazgos:** el agente que
+  trabaja en un worktree **no puede verificar su propio trabajo**, porque el control
+  de cierre le contesta rojo por el entorno. Y un rojo que no corresponde a ningún
+  defecto es la forma que el propio plan Local-0110 describe: se lee como problema
+  de máquina y se ignora, hasta que un día tapa uno real. Hay que diagnosticar por
+  qué esos bancos dependen del árbol antes de construir la conducción; si no, el
+  control sobre el árbol integrado nace sin valor.
+
+### Lo que la medición deja para el diseño
+
+1. **Verificar el permiso de escritura con una escritura de prueba antes de gastar
+   la corrida.** Cuesta un turno y evita perder los treinta.
+2. **Acotar por dónde puede escribir el agente**, que el worktree no hace.
+3. **Correr el control de cierre sobre el árbol integrado**, ya confirmado como
+   necesario — pero antes arreglar el hallazgo 6, o no mide nada.
+4. **Guardar siempre la salida en JSON**: es lo único que muestra las denegaciones,
+   y además es de donde se recuperó un análisis entero que ya estaba pago.
+5. **Cuántos planes a la vez sigue sin responder.** Con dos, la juntada no costó
+   nada; el costo aparece cuando dos planes tocan el mismo archivo en serio, y eso
+   no pasó.
