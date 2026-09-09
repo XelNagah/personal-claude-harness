@@ -47,7 +47,16 @@ fs.cpSync(path.join(REPO_REAL, '.claude'), path.join(REPO, '.claude'), {
   recursive: true,
   // `tmp` es material descartable y puede pesar; `.respaldo-amp` son copias congeladas del `.claude/`
   // que dejaron corridas viejas del actualizador. Ninguno de los dos es parte del escenario.
-  filter: src => !/[\\/](tmp|\.respaldo-amp)([\\/]|$)/.test(src),
+  //
+  // SE MIDE CONTRA LA RUTA RELATIVA AL REPO, no contra la absoluta. Mirando la absoluta, un repo que
+  // viva bajo una carpeta `tmp` —el caso del worktree, que caía en `.claude/tmp/worktrees/<nombre>/`—
+  // hacía que el filtro excluyera TODO: no se copiaba un solo archivo y el banco moría con ENOENT al
+  // escribir el primer registro, antes de correr un caso. Medido el 08/09/2026 adentro de un
+  // worktree. Es el mismo defecto que tenía la exención de borradores de `alcance-al-escribir.js`.
+  filter: src => {
+    const rel = path.relative(REPO_REAL, src).replace(/\\/g, '/');
+    return !/(^|\/)(tmp|\.respaldo-amp)(\/|$)/.test(rel);
+  },
 });
 
 // -- los tres registros que lee el contraste, con datos sintéticos --------------

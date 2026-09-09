@@ -59,6 +59,17 @@ const RUTA_REGISTRO_VIEJO = path.join(TMP, 'REGISTRO-VIEJO.md');
 fs.writeFileSync(RUTA_REGISTRO, REGISTRO, 'utf8');
 fs.writeFileSync(RUTA_REGISTRO_VIEJO, REGISTRO_VIEJO, 'utf8');
 
+// -- un repo adentro de una carpeta `tmp`, que es la forma del worktree ---------
+// Reproduce con datos sinteticos el defecto medido el 08/09/2026: los worktrees caian en
+// `.claude/tmp/worktrees/<nombre>/` y la exencion de borradores miraba la ruta ENTERA, asi que todo
+// archivo escrito adentro de un worktree quedaba exento — el control corria y no revisaba nada.
+// Basta un `.git` para que el directorio sea un repo: en un worktree `.git` es un ARCHIVO.
+const REPO_ADENTRO_DE_TMP = path.join(TMP, 'repo-simulado');
+fs.mkdirSync(path.join(REPO_ADENTRO_DE_TMP, '.claude', 'tmp'), { recursive: true });
+fs.writeFileSync(path.join(REPO_ADENTRO_DE_TMP, '.git'), 'gitdir: ../inventado\n', 'utf8');
+const MD_EN_REPO_ADENTRO_DE_TMP = path.join(REPO_ADENTRO_DE_TMP, 'nota.md').replace(/\\/g, '/');
+const MD_EN_BORRADOR_DE_ESE_REPO = path.join(REPO_ADENTRO_DE_TMP, '.claude', 'tmp', 'nota.md').replace(/\\/g, '/');
+
 // -- correr el control una vez -------------------------------------------------
 function correr({ tool = 'Write', ruta = MD, contenido = '', campo = 'content', registro = RUTA_REGISTRO }) {
   const tool_input = tool === 'apply_patch' ? { command: contenido } : { file_path: ruta, [campo]: contenido };
@@ -106,6 +117,13 @@ const CASOS = [
     entrada: { ruta: 'D:/repo/datos.json', contenido: 'hay mucha berenjena' }, espera: 'nada' },
   { nombre: 'el directorio de borradores queda afuera',
     entrada: { ruta: 'D:/repo/.claude/tmp/nota.md', contenido: 'hay mucha berenjena' }, espera: 'nada' },
+  // --- la exencion se mide contra el repo del archivo, no contra la ruta entera (08/09/2026) ---
+  { nombre: 'un repo adentro de una carpeta tmp SI se revisa (la forma del worktree)',
+    entrada: { ruta: MD_EN_REPO_ADENTRO_DE_TMP, contenido: 'hay mucha berenjena en el repo' },
+    espera: 'bloquea', contiene: 'berenjena' },
+  { nombre: 'y su propio directorio de borradores sigue afuera',
+    entrada: { ruta: MD_EN_BORRADOR_DE_ESE_REPO, contenido: 'hay mucha berenjena en el repo' },
+    espera: 'nada' },
   { nombre: 'Edit manda new_string en vez de content',
     entrada: { contenido: 'hay mucha berenjena', campo: 'new_string' }, espera: 'bloquea', contiene: 'berenjena' },
   { nombre: 'Codex manda el parche entero en command',

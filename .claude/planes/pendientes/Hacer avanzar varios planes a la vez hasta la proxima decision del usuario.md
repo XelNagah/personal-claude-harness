@@ -375,3 +375,53 @@ entero adentro de la copia. Es la prueba del hallazgo 6. Queda fallando
 `actualizar-plugins` (1 caso), que mira el estado de plugins de la máquina y no lo
 tocó nada de este trabajo: la juntada movió tres archivos, los tres de
 `.claude/planes/`.
+
+## Diagnóstico del hallazgo 6 — resuelto el 08/09/2026
+
+**El hallazgo 6 no era «los controles dan rojo»: era que el control estaba apagado.**
+Y no había una causa sino dos, las dos del mismo tipo — una expresión que busca `tmp`
+en la ruta **absoluta** entera, aplicada a un repo que vive bajo una carpeta `tmp`.
+
+| Archivo | Qué miraba | Efecto adentro de un worktree |
+|---|---|---|
+| `conducta/alcance-al-escribir.js` (l. 20) | eximía toda ruta con `/tmp/` | el control de términos vetados quedaba **apagado**: no revisaba nada |
+| `conducta/establecer-conducta/pruebas.js` (l. 50) | excluía del copiado toda ruta con `/tmp/` | **no copiaba un solo archivo**; el banco moría con `ENOENT` antes de correr un caso |
+
+Los worktrees caían en `.claude/tmp/worktrees/<nombre>/`, así que las dos se
+disparaban con todo lo de adentro.
+
+**Evidencia directa**, mismo contenido y mismo término vetado, sola diferencia la ruta:
+
+| Ruta | Veredicto del control |
+|---|---|
+| `<repo>/nota.md` | rechaza: «terminología vetada» |
+| `<repo>/.claude/tmp/worktrees/plan-0067/nota.md` | **nada** |
+
+**Esto reemplaza la explicación del hallazgo 7.** Ahí se dijo que el control dejó
+pasar el término recién vetado porque leía el registro viejo de su copia. Es falso: el
+control **ni siquiera llegó a mirar el registro**, porque descartó la ruta antes. La
+copia sí envejece, pero eso no fue lo que dejó entrar el término, y no hay ninguna
+medición que sostenga que envejecer haya causado nada. El punto 3 de «lo que la
+medición deja para el diseño» queda cumplido; el resto de esa lista sigue vigente.
+
+**El arreglo**, igual en los dos: medir contra **la raíz del repo al que pertenece el
+archivo**, no contra la ruta entera — el primer ancestro con `.git`, que en un worktree
+es un archivo y no una carpeta. Así `<worktree>/nota.md` se revisa y
+`<worktree>/.claude/tmp/borrador.md` sigue exento, que es lo correcto: cada repo tiene
+su propia carpeta de borradores.
+
+**Verificado:**
+
+| Qué | Antes | Ahora |
+|---|---|---|
+| `detectar-terminologia-vetada` en el repo | 25 de 25 | 27 de 27 (dos casos nuevos) |
+| el mismo banco adentro de un worktree | 8 fallando | 27 de 27 |
+| `establecer-conducta` en el repo | 55 verdes | 55 verdes |
+| el mismo adentro de un worktree | reventaba con `ENOENT` | 55 verdes |
+| escribir un término vetado adentro de un worktree | pasaba en silencio | rechazado |
+
+Los dos casos nuevos se verificaron al revés: con la lógica vieja puesta a propósito,
+fallan. Un caso que pasa siempre no prueba nada.
+
+Los tres archivos se sincronizaron a `base/`, así que el arreglo viaja a todo Agente
+Desplegado que instale el plugin.
