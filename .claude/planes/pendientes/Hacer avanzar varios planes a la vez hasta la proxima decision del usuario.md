@@ -425,3 +425,43 @@ fallan. Un caso que pasa siempre no prueba nada.
 
 Los tres archivos se sincronizaron a `base/`, así que el arreglo viaja a todo Agente
 Desplegado que instale el plugin.
+
+## Segunda corrida — 10/09/2026
+
+Responde la cuestión abierta 6 (cuántos planes a la vez) subiendo de dos a **cuatro**,
+ahora con el hallazgo 6 ya arreglado: el agente de una copia puede verificar su propio
+trabajo.
+
+**Qué cambia respecto de la primera corrida.** El mecanismo: en vez de lanzar una
+sesión no interactiva de Claude Code por copia, se usan los **subagentes nativos con
+aislamiento por worktree**. Las tres trampas de permisos que costaron US$ 4,17 —
+`--allowedTools` que no habilita la escritura en `dontAsk`, el clasificador que
+rechaza `bypassPermissions` dos de cada tres veces, y la salida pelada que esconde
+las denegaciones — son todas del lanzamiento por CLI y no aplican. La objeción que la
+primera corrida le hacía al aislamiento nativo —que arma un `git worktree add` pelado
+sin `settings.local.json`, y el agente arranca sin plugins y sin señal— **no se
+sostiene en este repo**: `enabledPlugins` está duplicado en `settings.json`, que sí
+está versionado, así que los plugins llegan a la copia.
+
+**Los cuatro planes**, uno por subsistema, para que los archivos sean disjuntos y el
+único choque posible sea `PLANES.md`:
+
+| Plan | Tema | Subsistema que toca |
+|---|---|---|
+| Local-0107 | Credencial al consultar a otro Agente | comunicacion |
+| Local-0114 | Priorizar planes releva de cero | planes |
+| Local-0115 | Veintiocho decisiones con nombre de tema | decisiones |
+| Local-0099 | El repartidor pisa el `additionalContext` | conducta |
+
+El Local-0107 entra porque es el único de la primera corrida que no produjo nada
+recuperable.
+
+**Restricción a cada agente**, igual que la vez pasada: escribe solo el archivo de su
+plan y su fila en `PLANES.md`; lo que haya que asentar en otro subsistema lo anota
+adentro del plan y lo ratifica el hilo principal (Decisión Local-0060). Se agrega una
+escritura de prueba antes de gastar la corrida, que es el punto 1 de lo que la
+medición anterior dejó para el diseño.
+
+**Qué se mide:** si cuatro copias mergean como mergearon dos, cuánto cuesta la ronda
+contra los US$ 7,57 de tres corridas por CLI, cuántas decisiones abiertas produce cada
+plan, y si el control de cierre sobre el árbol integrado ahora sí dice algo.
