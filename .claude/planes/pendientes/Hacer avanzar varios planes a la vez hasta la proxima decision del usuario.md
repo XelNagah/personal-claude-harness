@@ -541,3 +541,39 @@ casos que fallan son dos. Un conteo que no corresponde a nada es la forma del co
 Local-0013: la señal deja de significar lo que dice, y cuando el número suba porque se
 rompió algo de verdad, nadie va a poder distinguirlo del ruido. Es candidato a plan
 propio, y no es de este trabajo ni de la paralelización.
+
+**10. Al limpiar las copias de los subagentes, la Herramienta gritó cuatro veces el daño
+que existe para evitar, y no había ningún daño.**
+
+`limpiar-worktree` cerró las cuatro con el mismo texto: *«faltan 502 archivo(s) en el
+`.claude/` del repo»*, seguido de *«ESTO ES EL DAÑO QUE LA HERRAMIENTA EXISTE PARA
+EVITAR. Recuperá el `.claude/` del repo antes de seguir trabajando»*. Verificado
+enseguida: `git status` limpio, los 302 archivos versionados de `.claude/` presentes, el
+árbol intacto. No faltaba nada.
+
+**La causa es una ruta que el código no conoce.** La Herramienta compara cuántos archivos
+tiene el `.claude/` del repo antes y después de borrar, y excluye de esa cuenta lo que no
+es del repo: `common/worktrees.js:24` declara `NO_SE_COPIA = new Set(['tmp',
+'.respaldo-amp'])`. Las copias que arma `preparar-worktree` caen en
+`.claude/tmp/worktrees/`, adentro de `tmp`, así que no se cuentan. **Las copias de los
+subagentes nativos caen en `.claude/worktrees/`**, que no está en esa lista: se cuentan
+como si fueran del repo, y al borrarlas la baja se lee como destrucción.
+
+Los 502 son los archivos de las cuatro copias. El conteo del `.claude/` pasó de 2313 a
+623, que son los 623 reales.
+
+**Es la misma forma del hallazgo 6, dada vuelta.** Allá una ruta con `tmp` adentro apagaba
+un control que debía revisar; acá una ruta sin `tmp` adentro enciende una alarma que no
+corresponde. Las dos veces el defecto es medir contra una ruta escrita a mano en vez de
+contra lo que la ruta significa.
+
+**Por qué es caro.** Es la alarma más fuerte que emite el repo, y salió cuatro veces
+seguidas sin que hubiera pasado nada. Una alarma que grita en falso enseña a ignorarla, y
+el día que el borrado sí vacíe el `.claude/` —el caso del conocimiento Base-0007, que es
+real y ya ocurrió— va a estar entre estas cuatro. Corresponde plan propio.
+
+**Aparte, del primer intento sobre el árbol de integración:** falló con `EPERM` al borrar
+la raíz porque la sesión tenía su directorio de trabajo adentro de esa misma copia. El
+segundo intento, ya parado afuera, salió limpio. La Herramienta avisa bien lo que ese
+error significa —«borré hasta acá», no «no borré nada»—, pero quien la invoque tiene que
+pararse afuera antes.
