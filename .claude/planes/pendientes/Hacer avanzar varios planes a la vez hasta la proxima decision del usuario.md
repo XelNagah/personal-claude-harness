@@ -465,3 +465,79 @@ medición anterior dejó para el diseño.
 **Qué se mide:** si cuatro copias mergean como mergearon dos, cuánto cuesta la ronda
 contra los US$ 7,57 de tres corridas por CLI, cuántas decisiones abiertas produce cada
 plan, y si el control de cierre sobre el árbol integrado ahora sí dice algo.
+
+### Resultado de la segunda corrida — 10/09/2026
+
+**Los cuatro produjeron y los cuatro escribieron.** Contra la primera corrida, donde de
+tres agentes uno solo llegó a escribir: acá cuatro de cuatro, sin una sola denegación de
+permiso. Las tres trampas de permisos de la primera corrida eran del lanzamiento por CLI
+y no aparecen con los subagentes nativos.
+
+| Plan | Estado al que llegó | Decisiones abiertas | Duración | Herramientas usadas |
+|---|---|---|---|---|
+| Local-0099 | `Listo` | 0 | 5 min 43 s | 35 |
+| Local-0114 | `Listo` | 0 | 8 min 42 s | 40 |
+| Local-0115 | `Análisis` | 2 | 8 min 17 s | 39 |
+| Local-0107 | `Análisis` | 1 | 12 min 33 s | 70 |
+
+Las cuatro copias cayeron en `.claude/worktrees/`, no en `.claude/tmp/worktrees/` como
+las de `preparar-worktree`. La ruta la excluye `.git/info/exclude`, que es de esta
+máquina y **no viaja**: en otro Agente Desplegado las copias de los subagentes aparecerían
+como archivos sin versionar. El arreglo del hallazgo 6 las cubre igual, porque mide contra
+la raíz del repo al que pertenece el archivo y no contra la ruta absoluta.
+
+**8. Con cuatro planes, `PLANES.md` sí da conflicto — y no por editar la misma fila.**
+Es la respuesta a la cuestión abierta 6, y corrige el hallazgo 5. Las dos primeras ramas
+se juntaron solas; la tercera dio conflicto, y el motivo es que **las filas son
+adyacentes**: la rama del plan Local-0115 tocó su fila y arrastró sin cambios la del
+Local-0114, que la rama anterior ya había movido a `Listo`. git no puede separar dos
+líneas contiguas y frena.
+
+**Frenar es el buen resultado, y lo que importa es el caso en que no hubiera frenado.**
+La resolución correcta era quedarse con la fila del Local-0114 de un lado y la del
+Local-0115 del otro. Si las dos filas hubieran estado separadas por una tercera, git las
+mergeaba limpio y la transición del Local-0114 volvía a `Nuevo` sin que nadie lo viera:
+una transición perdida en verde, que es la forma del conocimiento Local-0013.
+
+**Consecuencia para el diseño, y es la primera restricción dura sobre cuántos planes a la
+vez:** el riesgo no crece con la cantidad de planes sino con la **distancia entre sus
+filas en el registro**. Cuatro planes de códigos lejanos se juntan solos; dos de códigos
+consecutivos chocan. `avanzar-planes` puede leer esa distancia antes de agrupar, porque
+el código de cada plan ya la dice. Es un criterio de agrupamiento que no requiere el
+alcance declarado de la cuestión abierta 1.
+
+**9. La copia y el repo principal dan exactamente el mismo resultado, y el número que
+los dos informan está multiplicado por nueve.**
+
+El control de cierre sobre el árbol integrado dio `lint-harness` con 1 hallazgo —el
+desfase de versión de `amp`, 0.62.0 en disco contra 0.61.0 instalado, que es estado de
+plugins de la máquina y no lo tocó este trabajo—, `lint-planes` con los 3 planes
+envejecidos de siempre, los otros ocho lints en verde, y el banco de pruebas marcado
+**NO CORRIÓ**. Corrido a mano, el banco tarda más de diez minutos y cierra con «18
+prueba(s) fallaron: hay un control que dejó de controlar».
+
+**Corrido en el repo principal, sin una sola diferencia: 18 también.** Así que ninguna
+de las dos cosas es de trabajar en una copia, y el arreglo del hallazgo 6 sigue en pie —
+`detectar-terminologia-vetada` da sus 27 casos y `establecer-conducta` sus 55, adentro
+de la copia igual que afuera. **El árbol integrado se puede traer a `main`.**
+
+**Pero 18 no es la cantidad de casos que fallan: son dos, contados nueve veces.** El
+listado completo de los 23 bancos aparece nueve veces en la salida, y los dos casos que
+fallan son siempre los mismos:
+
+- `actualizar-plugins` — *sin el plugin instalado para ese repo, no compara nada*. Es el
+  caso que ya venía fallando, conocido y previo.
+- `lint-harness` — *un fragmento vigilado se queda sin muestras*, y en el listado resumen
+  ese banco figura directamente como **NO CORRIÓ**.
+
+**La causa está en el propio banco de `ejecutar-control-cierre`:** sus casos invocan la
+Herramienta `ejecutar-control-cierre`, que corre `ejecutar-pruebas`, que corre todos los
+bancos incluido el suyo. Cada caso que invoca la Herramienta dispara una corrida completa
+del banco, y de ahí salen las nueve repeticiones, los diez minutos y el número inflado.
+
+**Por qué importa más allá de la lentitud.** El repo cierra tareas con este control, y su
+última línea dice «18 pruebas fallaron: hay un control que dejó de controlar» cuando los
+casos que fallan son dos. Un conteo que no corresponde a nada es la forma del conocimiento
+Local-0013: la señal deja de significar lo que dice, y cuando el número suba porque se
+rompió algo de verdad, nadie va a poder distinguirlo del ruido. Es candidato a plan
+propio, y no es de este trabajo ni de la paralelización.
