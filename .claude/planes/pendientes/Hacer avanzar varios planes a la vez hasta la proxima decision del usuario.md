@@ -669,16 +669,17 @@ Nada más: el prompt de cada agente no se le pasa, lo arma ella.
    avance), `Ejecutado` y `Descartado`.
 3. **Agrupa** los que quedan en conjuntos de archivos que no se pisan, con el criterio de
    la sección siguiente. Un grupo, un agente, una copia.
-4. **Lanza** un agente por grupo con aislamiento por worktree nativo, y le entrega tres
-   cosas: el verbo que le toca según el estado de cada plan, la restricción de alcance, y
-   la instrucción de **reportar** el texto exacto de cada fila de registro en vez de
-   escribirla.
-5. **Cobra** de cada agente: los archivos de plan escritos, el texto de sus filas, sus
+4. **Lanza** un agente por grupo con aislamiento por worktree nativo, y le entrega dos
+   cosas: el verbo que le toca según el estado de cada plan y la restricción de alcance.
+   Cada agente deja su copia consistente —archivo de plan, fila de registro y lint verde—
+   con los códigos que tenga a mano, que adentro de su copia son provisorios.
+5. **Cobra** de cada agente: los archivos de plan escritos, sus filas de registro, sus
    decisiones abiertas y lo que haya propuesto asentar en otro subsistema.
 6. **Traslada** las decisiones al usuario, de a una y con su contexto, sin frenar a los
    agentes que siguen.
-7. **Integra**: junta las ramas en un árbol de integración traído al día contra `main`,
-   escribe él las filas de `PLANES.md`, verifica, y recién ahí commitea.
+7. **Integra**: junta en un árbol de integración traído al día contra `main`, **fija los
+   códigos definitivos** de las filas nuevas y las escribe él en `PLANES.md`, verifica, y
+   recién ahí commitea.
 
 **Qué devuelve.** Por plan: a qué estado llegó, sus decisiones abiertas y sus propuestas
 para asentar. Por la ronda: qué se integró, qué quedó afuera y por qué.
@@ -689,8 +690,10 @@ para asentar. Por la ronda: qué se integró, qué quedó afuera y por qué.
   Es el corte que el plan Local-0070 pide para que la conducción no se coma a la familia.
 - **No decide** lo que un plan dejó abierto, ni contesta por el usuario.
 - **No cierra** planes: cerrar exige aprobación del usuario y asienta el aprendizaje.
-- **No escribe ningún Índice de Subsistema desde un agente lanzado.** Las filas las
-  escribe el hilo principal al integrar (Decisión Local-0060).
+- **No deja que la fila que escribió un agente llegue al repo tal cual.** El agente la
+  escribe en su copia con un código provisorio; el hilo principal fija el código
+  definitivo y la escribe él al integrar. Lo que ningún agente lanzado escribe es un
+  Índice de Subsistema **del repo**: adentro de su copia, sí (Decisión Local-0060).
 - **No asienta** decisiones, conocimiento ni términos: quedan propuestos adentro del plan.
 - **No toca repos ajenos.** Allá no se controla el aislamiento, así que «un plan por agente
   a la vez» sigue valiendo y el transporte es `resolver`. Con eso queda contestada la
@@ -703,11 +706,21 @@ para asentar. Por la ronda: qué se integró, qué quedó afuera y por qué.
 agentes distintos solo si los archivos que van a escribir son disjuntos; si comparten uno,
 van al mismo agente, o uno de los dos no entra en la ronda.
 
-**Los Índices de Subsistema salen de la ecuación por diseño, no por agrupamiento.** Ningún
-agente los escribe, así que la distancia entre códigos —la mitigación que la segunda
-corrida había propuesto a partir del hallazgo 8— deja de ser un criterio. Es la diferencia
-entre esquivar la clase de choque y eliminarla: la primera obliga a mirar algo antes de
-cada ronda y falla el día que se mira mal; la segunda no tiene nada que mirar.
+**El código de un plan es provisorio adentro de la copia, y el coordinador lo fija al
+integrar.** Corregido por el usuario el 11/09/2026, contra lo que la tercera corrida
+había hecho y contra lo que este párrafo decía antes.
+
+Cada agente escribe su archivo **y su fila**, con el código que tenga a mano; en su copia
+ese número no significa nada, porque nadie más lo ve. Al integrar, el coordinador recorre
+las filas nuevas, les asigna los códigos definitivos en orden y las escribe él en
+`PLANES.md`. La clase de choque desaparece igual que si los agentes no escribieran el
+registro —el coordinador es el único que lo escribe de verdad—, pero sin el costo de que
+el plan quede incompleto en su copia: adentro del árbol de cada agente el lint da verde,
+el estado es el correcto y el documento se sostiene solo.
+
+En cambio, la mitigación que la segunda corrida había propuesto a partir del hallazgo 8
+—agrupar mirando la distancia entre códigos— sí se cae: no hay nada que mirar antes de
+lanzar, porque el conflicto ya no se evita, se resuelve al llegar y de a una fila.
 
 **Lo que queda por mirar es el alcance no registral**, y hoy se mira a ojo: mientras un
 plan escriba solamente su propio archivo, los grupos son disjuntos por construcción y
@@ -852,9 +865,9 @@ corrida—, y contar con la falsa alarma del hallazgo 10 mientras no se arregle.
 | 5 | Las dos transiciones se juntan solas, sin conflicto | **Muerto dos veces.** Corregido por el hallazgo 8, y ahora sin objeto: con el hilo principal como único escritor no hay transiciones simultáneas que juntar. Su lección —auto-mergear no es estar bien— sobrevive adentro del 8. |
 | 6 | Los controles dan rojo adentro de un worktree | **Resuelto** el 08/09/2026, verificado en los dos sentidos y sincronizado a `base/`. |
 | 7 | El agente reintrodujo un término vetado; la copia envejece | **Partido.** La explicación está refutada —el control ni llegó a mirar el registro—. El envejecimiento sí existe, y esta corrida lo midió mucho más grande: es el hallazgo 11. |
-| 8 | Con cuatro planes `PLANES.md` da conflicto por filas adyacentes | **Resuelto por diseño**, y con él **se cae la mitigación que proponía** —agrupar mirando la distancia entre códigos—: ya no hay nada que mirar. |
-| 9 | El conteo del control de cierre está multiplicado por nueve | **Vivo.** Deja la verificación por ronda a media máquina. Plan propio, no bloqueante. |
-| 10 | `limpiar-worktree` grita un daño que no existe | **Vivo.** `NO_SE_COPIA` no conoce `.claude/worktrees/`, que es justo donde caen las copias de los subagentes nativos. Plan propio. |
+| 8 | Con cuatro planes `PLANES.md` da conflicto por filas adyacentes | **Resuelto por diseño**: el código que escribe el agente en su copia es provisorio y el coordinador fija el definitivo al integrar. **Se cae la mitigación que proponía** —agrupar mirando la distancia entre códigos—: el conflicto ya no se esquiva antes de lanzar, se resuelve al llegar y de a una fila. |
+| 9 | El conteo del control de cierre está multiplicado por nueve | **Vivo, y su diagnóstico refutado.** No hay cascada del banco: el descubrimiento baja adentro de cada copia y cuenta los mismos bancos una vez por copia (medido: 164 donde hay 26, con tres copias vivas). Es el plan Local-0123. |
+| 10 | `limpiar-worktree` grita un daño que no existe | **Vivo.** `NO_SE_COPIA` no conoce `.claude/worktrees/`, que es justo donde caen las copias de los subagentes nativos. Es el plan Local-0122. Reproducido tres veces más en la tercera corrida, con el repo intacto las tres. |
 
 ## Sobreingeniería a sacar
 
