@@ -413,6 +413,20 @@ Tres, y hay un orden: la primera condiciona a la tercera, y la segunda es indepe
 
 ### DA-1 — ¿Se adopta el aislamiento por copia del mecanismo de subagentes, o se sigue con las dos Herramientas propias?
 
+> **RESPONDIDA el 11/09/2026: ninguna de las dos todavía — se mide primero.** El usuario
+> no eligió entre las dos alternativas: mandó correr la medición M3 y decidir con el
+> resultado. Lo que hay de un lado es una prohibición asentada (la Decisión Local-0080
+> prohíbe `git worktree remove`, y la referencia dice que el mecanismo nativo limpia con
+> ese comando) y del otro una objeción que se cayó (la copia nativa trajo
+> `settings.local.json` sin que nadie lo declarara). Ninguna de las dos cosas está medida
+> acá: la primera es documentación leída, la segunda es una observación sin haber visto
+> quién copió. **Hasta que M3 corra, se sigue con las dos Herramientas propias por
+> omisión**, que es lo que ya está en uso, y no por haber elegido esa alternativa.
+>
+> **M3 no se corre sobre este repo.** Lo que mide es si la limpieza nativa atraviesa un
+> enlace y vacía el destino real, y el destino real acá sería el `.claude/` del repo.
+> Va sobre un repo de prueba desechable, con un centinela del otro lado del enlace.
+
 **Contexto.** Hoy el repo arma y limpia sus copias con dos Herramientas del Agente
 Multipropósito: `preparar-worktree` (Base-0009), que crea la copia y le trae a mano lo que
 git ignora, y `limpiar-worktree` (Base-0010), que la borra sin usar `git worktree remove`
