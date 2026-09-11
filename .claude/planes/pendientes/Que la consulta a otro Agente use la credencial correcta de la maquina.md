@@ -2,6 +2,38 @@
 
 **Estado: Análisis · Creado 26-08-12 · Analizado 26-09-10.** Origen: reportado por el usuario el 12/08/2026 desde otra PC.
 
+> **CAMBIO DE RUMBO — 11/09/2026, decidido por el usuario. Este plan dejó de ser sobre
+> credenciales.**
+>
+> **Descartado: limpiar variables de entorno antes de lanzar el Agente consultado.** Las
+> variables de entorno de la máquina están para configurar la máquina. Si había una clave
+> de API vieja tirada ahí, el problema era esa clave, y se arregla borrándola. Un
+> mecanismo del repo no tiene por qué desautorizar la configuración de la máquina en la
+> que corre.
+>
+> **El problema que sí es de este mecanismo: el Agente consultado no contestó nada, y sin
+> embargo volvió un texto presentado como su respuesta.** Su CLI ni llegó a arrancar,
+> porque la clave de API no tenía crédito. El error de facturación viajó de vuelta al hilo
+> que había preguntado, con etiqueta de respuesta. El hilo lo leyó, lo dio por bueno y
+> siguió trabajando con eso.
+>
+> **El directorio inexistente, el CLI no instalado y el tiempo de espera vencido producen
+> exactamente lo mismo.** Cualquier falla de arranque vuelve como un texto que no es una
+> respuesta pero se presenta como tal. Son cuatro causas distintas con un solo defecto
+> detrás, y ninguna se arregla tocando variables de entorno.
+>
+> **Hay que construir la distinción entre «el Agente contestó esto» y «el Agente no llegó
+> a contestar».** Hoy el mecanismo devuelve las dos cosas con la misma forma. La segunda
+> tiene que llegar al hilo marcada como falla, no como contenido.
+>
+> **Se conserva la tabla de precedencia de credenciales que levantó el análisis del
+> 10/09/2026.** Dejó de ser la solución, pero sigue siendo la explicación de por qué pasó,
+> y sigue propuesta como página de conocimiento.
+>
+> **El nombre del plan quedó viejo: dice «usar la credencial correcta» y eso ya no es lo
+> que el plan hace.** Nombre propuesto: *El error de un Agente que no pudo arrancar llega
+> como si fuera su respuesta*. El código Local-0107 no cambia.
+
 ## El síntoma
 
 En otra máquina había una variable de entorno `ANTHROPIC_API_KEY` **que no se usaba para nada**, resto de alguna prueba vieja. Con esa variable presente, los Agentes invocados **contestaban que no tenían crédito** en vez de responder la consulta.
@@ -68,6 +100,11 @@ Los tres comparten el defecto de fondo (una credencial de máquina inesperada ro
 ## Decisiones abiertas
 
 ### ¿Qué universo de variables limpia el mecanismo: solo credenciales, o también selección de proveedor?
+
+> **SIN OBJETO desde el 11/09/2026: no se limpia ninguna variable.** La pregunta daba por
+> sentado que el mecanismo tenía que limpiar algo, y esa premisa se cayó — ver el CAMBIO
+> DE RUMBO al principio de este documento. Lo que sigue queda como registro de lo que se
+> analizó, no como una decisión pendiente.
 
 **Qué estábamos haciendo:** decidiendo qué variables de entorno tiene que dejar de heredar `comunicar.js` (y los otros dos call-sites) al lanzar el CLI hijo, para que una variable vieja de la máquina no le rompa la corrida a una consulta.
 
