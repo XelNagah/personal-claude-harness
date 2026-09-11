@@ -1,6 +1,6 @@
 # Hacer avanzar varios planes a la vez hasta la próxima decisión del usuario
 
-**Estado: Nuevo · Creado 26-08-27.** Origen: consulta del Agente Desplegado
+**Estado: Análisis · Creado 26-08-27.** Origen: consulta del Agente Desplegado
 *Agente-Coordinador*, que había armado un paquete propio para hacer avanzar los
 planes de otros agentes de la máquina y preguntó si eso debía subir a la Base.
 El diseño de abajo es de Javier, ratificado en esa conversación el 26/08/2026,
@@ -577,3 +577,440 @@ la raíz porque la sesión tenía su directorio de trabajo adentro de esa misma 
 segundo intento, ya parado afuera, salió limpio. La Herramienta avisa bien lo que ese
 error significa —«borré hasta acá», no «no borré nada»—, pero quien la invoque tiene que
 pararse afuera antes.
+
+## Tercera corrida — 11/09/2026
+
+En curso mientras se escribe esto: **tres agentes en paralelo**, con aislamiento por
+worktree nativo, contra los cuatro de la segunda. Este análisis lo escribió uno de esos
+tres agentes, sobre el plan que diseña el mecanismo que lo lanzó.
+
+**Qué cambia respecto de la segunda corrida.** Tres reglas nuevas, y las tres son de
+diseño, no parches de esta corrida.
+
+**a. El hilo principal se quedó con la escritura del registro.** Ningún agente toca
+`PLANES.md`: cada uno escribe solo su archivo de plan y **reporta el texto exacto de la
+fila** que corresponde; el hilo principal las escribe al integrar, en orden. Es la
+respuesta directa al hallazgo 8, y **no es una regla nueva: es la Decisión Local-0060
+aplicada**, que ya fija que escribir los registros se queda en el hilo principal. Las dos
+corridas anteriores la incumplían, y el hallazgo 8 es el precio.
+
+Contra la mitigación que la segunda corrida había anotado —agrupar mirando la distancia
+entre códigos antes de lanzar—, ésta **no necesita mirar nada**: elimina la clase entera
+de choque en vez de esquivarla. El costo es que el estado de cada plan queda viejo adentro
+de la copia hasta la integración; con un solo escritor eso no rompe nada, porque nadie lee
+ese estado para decidir. **Verificado en esta corrida:** con el encabezado del plan en
+`Análisis` y su fila todavía en `Nuevo`, `lint-planes` da verde — no compara los dos, así
+que el desfase transitorio no dispara ningún control ni obliga a inventar uno.
+
+**b. Las preguntas se trasladan de a una, en vivo.** No frenan la corrida, pero tampoco
+esperan al final: el hilo principal las lleva al usuario mientras los otros agentes siguen
+trabajando. Qué regla queda —en vivo o estrictamente al final— es la decisión abierta 2 de
+más abajo.
+
+**c. Uno de los tres agentes escribe dos planes.** Los dos planes nuevos llevan códigos
+consecutivos y habrían chocado entre sí si los escribían dos agentes distintos. Es el
+corrimiento del criterio de agrupar: **la unidad que se paraleliza no es «un plan por
+agente», es «un conjunto de archivos que no se pisan por agente»**.
+
+### Lo que esta corrida midió
+
+**11. La copia arranca vieja, y esta vez el número es grande.** El worktree de este
+análisis se armó sobre `1e5311d`, **doce commits detrás de `main`** (`80057c2`). Entre
+ellos, los cuatro merges de integración de la segunda corrida. El daño concreto: **el
+propio archivo de este plan medía 152 líneas menos adentro de la copia** —le faltaba la
+segunda corrida entera y sus hallazgos 8, 9 y 10—. Un agente al que se le pide «analizá
+este plan» y escribe sobre lo que ve borra esas 152 líneas, o le deja al merge un
+conflicto del tamaño del archivo.
+
+Esto es el fenómeno que el hallazgo 7 describió y cuya explicación el diagnóstico del
+08/09 refutó: **el envejecimiento existe y ahora está medido**; lo que no era cierto es
+que hubiera sido la causa de aquel término reintroducido. La diferencia con el hallazgo 7
+es que allá el riesgo era que un control validara contra un registro viejo, y acá es más
+simple y más grave: **el agente produce sobre un documento que ya no es el vigente**.
+
+El remedio que esta corrida usó, y que corresponde volver regla: **antes de escribir un
+archivo, comparar la versión de la copia contra la de `main`** —alcanza `git show
+main:<ruta>`, que el worktree resuelve porque comparte la base de objetos— y trabajar
+sobre la de `main`. Para un archivo no hace falta traer `main` entero a la copia; para
+integrar, sí.
+
+**12. El aislamiento nativo sí trae `settings.local.json`.** Medido en esta copia: el
+archivo está presente, con su fecha original, sin que el repo tenga ningún
+`.worktreeinclude`; `tmp/` y `.respaldo-amp/`, también ignorados, **no** están. O sea que
+la plataforma copia por sí sola la configuración local. **Esto tira abajo la objeción con
+la que la primera corrida descartó el aislamiento nativo** —«arma un `git worktree add`
+pelado, sin `settings.local.json`, y el agente de adentro arranca sin plugins y sin
+señal»— y la tira para cualquier Agente Desplegado, no solo para éste: la segunda corrida
+la había salvado con que `enabledPlugins` está duplicado en `settings.json`, que es una
+particularidad de este repo. Con esto, la salvedad sobre la Decisión Local-0035 del
+principio de este plan deja de aplicar al aislamiento nativo; sigue aplicando a un `git
+worktree add` armado a mano. ⚠️ Medido en esta máquina y en esta versión de Claude Code,
+no verificado en otra.
+
+**13. La plataforma sí contiene al agente, al menos en git.** Un comando de git compuesto
+—un `git diff` con dos commits y una ruta, encadenado— fue **rechazado** con el mensaje de
+que el agente está aislado en su worktree y que sus operaciones de git tienen que apuntar
+ahí. Es contención real, y es nueva respecto del hallazgo 2. ⚠️ **No alcanza para darlo
+por resuelto**: se midió git, no la escritura de archivos por ruta absoluta, que es lo que
+el hallazgo 2 vio fallar. Sigue siendo la capacidad 3 del plan Local-0121
+(`PermissionRequest`) la que lo cubre.
+
+## El contrato de la habilidad, definido (11/09/2026)
+
+**Qué recibe.** Un conjunto de planes —códigos explícitos, o un criterio como «los N
+primeros que devuelva `priorizar-planes`»— y un tope de cuántos agentes lanzar a la vez.
+Nada más: el prompt de cada agente no se le pasa, lo arma ella.
+
+**Qué hace**, en orden:
+
+1. **Precondiciones.** Que exista un commit desde el cual ramificar —no que el árbol esté
+   limpio, que es la regla ya fijada más arriba—, y que el estado de cada plan lo admita.
+2. **Descarta** los que no entran: `Diferido` (volver al trabajo es una decisión, no un
+   avance), `Ejecutado` y `Descartado`.
+3. **Agrupa** los que quedan en conjuntos de archivos que no se pisan, con el criterio de
+   la sección siguiente. Un grupo, un agente, una copia.
+4. **Lanza** un agente por grupo con aislamiento por worktree nativo, y le entrega tres
+   cosas: el verbo que le toca según el estado de cada plan, la restricción de alcance, y
+   la instrucción de **reportar** el texto exacto de cada fila de registro en vez de
+   escribirla.
+5. **Cobra** de cada agente: los archivos de plan escritos, el texto de sus filas, sus
+   decisiones abiertas y lo que haya propuesto asentar en otro subsistema.
+6. **Traslada** las decisiones al usuario, de a una y con su contexto, sin frenar a los
+   agentes que siguen.
+7. **Integra**: junta las ramas en un árbol de integración traído al día contra `main`,
+   escribe él las filas de `PLANES.md`, verifica, y recién ahí commitea.
+
+**Qué devuelve.** Por plan: a qué estado llegó, sus decisiones abiertas y sus propuestas
+para asentar. Por la ronda: qué se integró, qué quedó afuera y por qué.
+
+**Qué NO hace.**
+
+- **No analiza ni ejecuta ningún plan**: despacha a `analizar-plan` y a `ejecutar-plan`.
+  Es el corte que el plan Local-0070 pide para que la conducción no se coma a la familia.
+- **No decide** lo que un plan dejó abierto, ni contesta por el usuario.
+- **No cierra** planes: cerrar exige aprobación del usuario y asienta el aprendizaje.
+- **No escribe ningún Índice de Subsistema desde un agente lanzado.** Las filas las
+  escribe el hilo principal al integrar (Decisión Local-0060).
+- **No asienta** decisiones, conocimiento ni términos: quedan propuestos adentro del plan.
+- **No toca repos ajenos.** Allá no se controla el aislamiento, así que «un plan por agente
+  a la vez» sigue valiendo y el transporte es `resolver`. Con eso queda contestada la
+  cuestión abierta 3: es **una** habilidad, y el repo ajeno es un modo degradado, no un
+  caso simétrico.
+
+## Cómo agrupa
+
+**La unidad es el conjunto de archivos que no se pisan, no el plan.** Dos planes van a
+agentes distintos solo si los archivos que van a escribir son disjuntos; si comparten uno,
+van al mismo agente, o uno de los dos no entra en la ronda.
+
+**Los Índices de Subsistema salen de la ecuación por diseño, no por agrupamiento.** Ningún
+agente los escribe, así que la distancia entre códigos —la mitigación que la segunda
+corrida había propuesto a partir del hallazgo 8— deja de ser un criterio. Es la diferencia
+entre esquivar la clase de choque y eliminarla: la primera obliga a mirar algo antes de
+cada ronda y falla el día que se mira mal; la segunda no tiene nada que mirar.
+
+**Lo que queda por mirar es el alcance no registral**, y hoy se mira a ojo: mientras un
+plan escriba solamente su propio archivo, los grupos son disjuntos por construcción y
+alcanza con un plan por agente. El criterio deja de alcanzar en el momento en que un plan
+escriba código o Componentes de Subsistema, y ahí hace falta el alcance declarado y
+comparable de la cuestión abierta 1. **Ninguna de las tres corridas probó ese caso**: las
+tres usaron planes cuyos archivos eran disjuntos de entrada.
+
+## La restricción de alcance que recibe cada agente
+
+Hoy se escribe a mano en el prompt de quien lanza, así que no vive en ningún lado y se
+reescribe cada vez. Las tres salidas posibles:
+
+- **La genera la habilidad al vuelo** — se reescribe en cada versión y diverge del texto
+  que usó la corrida anterior, sin que nada compare.
+- **La toma de un lugar fijo** — el texto vive una sola vez, al lado de la habilidad, en su
+  `PLANTILLA.md`, que es el mecanismo que el repo ya tiene para los textos literales de una
+  skill. La habilidad lo pega en el prompt de cada agente que lanza.
+- **Depende de la capacidad 2 del plan Local-0121** (`SubagentStart`, que inyecta contexto
+  al subagente antes de su primer turno).
+
+**Se toma la segunda, y la tercera queda como cambio aditivo.** Motivos: la capacidad 2 es
+documentación leída y no comportamiento medido —lo declara el propio plan Local-0121, y el
+conocimiento Local-0017 ya midió tres frenos de permisos que fallaron en verde—, así que
+atar `avanzar-planes` a ella la vuelve inconstruible hasta que se mida; y `SubagentStart`
+es un hook de Claude Code, así que entregar el alcance solo por ahí rompe la paridad con
+Codex CLI que declara `AGENTS.md`. Con el texto en un lugar fijo, adoptar la capacidad 2
+después cambia **el transporte y no el texto**: es aditivo, que es lo que pide la
+Preferencia Local-0006.
+
+⚠️ **Un texto no contiene a nadie.** El hallazgo 2 midió que un agente con la restricción
+escrita en el prompt escribió igual en el repo principal, que es la forma «la recita sin
+obedecer» del conocimiento Local-0001. Decir el alcance y **hacerlo cumplir** son dos
+cosas distintas: lo segundo es la capacidad 3 del plan Local-0121, y mientras no exista,
+**el hilo principal verifica después** — antes de integrar, mira que el repo principal no
+tenga cambios sin commitear que no haya puesto él.
+
+## La integración
+
+**Dónde se junta.** En un árbol de integración propio, nunca en el repo principal; las dos
+corridas anteriores ya lo hicieron así y funcionó. **Traído al día contra `main` antes de
+juntar nada**: el hallazgo 11 midió doce commits de atraso en una sola corrida, y lo que
+envejece incluye los registros contra los que los controles validan.
+
+**Qué escribe el hilo principal, y solo él.** Las filas de `PLANES.md` de todos los planes
+de la ronda, en orden, a partir del texto que cada agente reportó. Y los Códigos: como
+nadie más escribe registros, **asignarlos es serial por construcción y la reserva de
+códigos antes de lanzar deja de hacer falta**.
+
+**Cómo se verifica.** El control de cierre sobre el árbol integrado sigue siendo lo
+correcto —dos mitades válidas pueden dar un conjunto malo, y ningún lint por rama lo ve—,
+pero **hoy no se puede correr por ronda**: el hallazgo 9 midió que tarda más de diez
+minutos y que su conteo está multiplicado por nueve. Mientras eso no se arregle, la
+verificación por ronda es: los lints de subsistema, que son rápidos; el banco de
+`detectar-terminologia-vetada`; y `lint-harness` si la ronda tocó algo que viaja. El
+control completo queda para quien cierre a mano. Arreglar el conteo es plan propio y **no
+bloquea** a `avanzar-planes`: lo que bloquearía es creerle al número.
+
+**Cuándo se commitea.** Cada agente commitea en su propia rama, adentro de su copia
+—medido en las tres corridas—. El hilo principal mergea rama por rama, escribe las filas en
+un commit propio, verifica y recién ahí lleva el árbol a `main`. Nunca durante la ronda.
+
+**Qué pasa si un agente falla.** Su rama no se mergea y la ronda no se frena. Tres formas,
+y las tres están medidas:
+
+- **No produjo nada** —el plan Local-0107 en la primera corrida—: el plan queda como
+  estaba, no hay nada que integrar, y se informa.
+- **Produjo y no pudo escribir** —el plan Local-0110 en la primera corrida—: el contenido
+  se recupera de la salida de la corrida. Con subagentes nativos este modo **no volvió a
+  aparecer** (cero denegaciones en la segunda y en la tercera), así que deja de ser un caso
+  a diseñar y pasa a ser nota histórica.
+- **Produjo algo mal**: para eso está la verificación sobre el árbol integrado.
+
+⚠️ **Antes de limpiar las copias, pararse afuera de ellas** —el `EPERM` de la segunda
+corrida—, y contar con la falsa alarma del hallazgo 10 mientras no se arregle.
+
+## Las seis cuestiones abiertas, al 11/09/2026
+
+1. **Cómo se declara el alcance de un plan para que una máquina lo compare** — **sigue
+   abierta**, y ahora se sabe cuándo hace falta: recién cuando un plan escriba algo más que
+   su propio archivo. No bloquea la primera versión.
+2. **Dónde vive `avanzar-planes`** — decisión abierta 3.
+3. **Si es una habilidad o dos, para planes propios y ajenos** — **resuelta**: una sola,
+   con el repo ajeno como modo degradado.
+4. **El límite del transporte** (`--sesion` resuelto solo para `claude`) — **sigue abierta,
+   y con consecuencia nueva**: es lo que impide que un agente ya lanzado reciba la
+   respuesta del usuario en vuelo, y por eso la cola solo puede desbloquear planes en la
+   ronda siguiente. Ver decisión abierta 2.
+5. **Que una habilidad llame a otras del mismo subsistema** — **confirmado por uso**:
+   `analizar-plan` reutiliza `amp:planificar`, y esta corrida volvió a hacerlo. Lo que no
+   tiene precedente es el **despacho condicional por estado**, y eso corresponde asentarlo
+   como decisión.
+6. **Cuántos planes a la vez** — **respondida en lo que importa, y no con un número**: el
+   riesgo no crecía con la cantidad sino con el choque en los registros (hallazgo 8), y con
+   el hilo principal como único escritor esa clase desaparece. El tope real es cuántos
+   grupos disjuntos hay. Medido: tres por CLI (escribió uno), cuatro nativos (escribieron
+   cuatro, un conflicto), tres nativos con el registro en el hilo principal. Un tope por
+   omisión de cuatro es razonable y revisable; **no hay ninguna medición de rendimiento por
+   encima de cuatro**.
+
+## Qué está medido y qué está inferido
+
+**Medido** (tres corridas, del 04/09 al 11/09/2026):
+
+- Costo y duración por CLI: tres sesiones, US$ 7,57, escribió una sola, 0/3/5 denegaciones
+  de permiso.
+- Con subagentes nativos: cuatro de cuatro escribieron, cero denegaciones, entre 5 m 43 s y
+  12 m 33 s cada uno, dos llegaron a `Listo` y dos a `Análisis`, tres decisiones abiertas en
+  total.
+- El conflicto de `PLANES.md` por filas adyacentes, y que dos filas lejanas se auto-mergean.
+- El hallazgo 6 y su arreglo: 27 de 27 y 55 de 55, adentro y afuera de la copia.
+- El conteo del control de cierre multiplicado por nueve, idéntico en la copia y en el repo
+  principal.
+- La falsa alarma de `limpiar-worktree` (502 archivos) y su causa exacta.
+- Doce commits de atraso de una copia, y 152 líneas de diferencia en el archivo a escribir.
+- Que el aislamiento nativo trae `settings.local.json` sin `.worktreeinclude`.
+- Que la plataforma rechaza un comando de git que no puede verificar que se quede adentro
+  de la copia.
+
+**Inferido, o directamente no probado:**
+
+- Que el rendimiento siga subiendo por encima de cuatro agentes. **Nadie lo midió.**
+- Que el hilo principal como único escritor escale: se probó con tres grupos, y con planes
+  cuyo único archivo compartido era el registro.
+- **Que dos planes que tocan el mismo archivo que no es un registro se comporten igual.**
+  Las tres corridas usaron planes de archivos disjuntos de entrada, así que el caso difícil
+  del arreglo 2 —dos mitades válidas que juntas están mal— **todavía no ocurrió ni una vez**.
+- Que las capacidades 2 y 3 del plan Local-0121 hagan lo que su documentación dice.
+- Que el árbol integrado esté bien: el único control que lo diría está roto (hallazgo 9).
+- Que el alcance escrito en el prompt se obedezca. Lo único medido al respecto dice que
+  **no** (hallazgo 2); la segunda y la tercera corrida no lo pusieron a prueba.
+- Que retomar un hilo con `--sesion` funcione fuera de `claude`.
+
+## Estado de los diez hallazgos
+
+| # | Hallazgo | Al 11/09/2026 |
+|---|---|---|
+| 1 | `--allowedTools` no habilita la escritura en `dontAsk` | **Muerto para el diseño.** Es del lanzamiento por CLI; con subagentes nativos hubo cero denegaciones en dos corridas. Sigue vivo como conocimiento —cuarta forma del Local-0017—, no como precondición de la habilidad. |
+| 2 | El worktree no contiene al agente de adentro | **Vivo, más chico.** Esta corrida midió que git sí está contenido; la escritura por ruta absoluta no se probó. Lo cubre la capacidad 3 del plan Local-0121. |
+| 3 | El clasificador bloquea `bypassPermissions`, y no siempre | **Muerto.** Misma causa que el 1: no hay modo de permisos que elegir al lanzar un subagente nativo. |
+| 4 | El objetivo principal quedó sin responder | **Muerto.** Lo respondieron el hallazgo 8 y esta corrida. |
+| 5 | Las dos transiciones se juntan solas, sin conflicto | **Muerto dos veces.** Corregido por el hallazgo 8, y ahora sin objeto: con el hilo principal como único escritor no hay transiciones simultáneas que juntar. Su lección —auto-mergear no es estar bien— sobrevive adentro del 8. |
+| 6 | Los controles dan rojo adentro de un worktree | **Resuelto** el 08/09/2026, verificado en los dos sentidos y sincronizado a `base/`. |
+| 7 | El agente reintrodujo un término vetado; la copia envejece | **Partido.** La explicación está refutada —el control ni llegó a mirar el registro—. El envejecimiento sí existe, y esta corrida lo midió mucho más grande: es el hallazgo 11. |
+| 8 | Con cuatro planes `PLANES.md` da conflicto por filas adyacentes | **Resuelto por diseño**, y con él **se cae la mitigación que proponía** —agrupar mirando la distancia entre códigos—: ya no hay nada que mirar. |
+| 9 | El conteo del control de cierre está multiplicado por nueve | **Vivo.** Deja la verificación por ronda a media máquina. Plan propio, no bloqueante. |
+| 10 | `limpiar-worktree` grita un daño que no existe | **Vivo.** `NO_SE_COPIA` no conoce `.claude/worktrees/`, que es justo donde caen las copias de los subagentes nativos. Plan propio. |
+
+## Sobreingeniería a sacar
+
+- **La reserva de códigos antes de lanzar (arreglo 1), y su Herramienta.** Existía porque
+  dos copias que crean una entrada eligen el mismo `máximo + 1`. Con el hilo principal como
+  único escritor de registros, **ningún agente elige un código nunca**: los asigna quien
+  escribe la fila, que es uno solo y va en orden. Y el código no vive en ningún otro lado
+  —el archivo de un plan no lo lleva en el encabezado—, así que tampoco hay nada que
+  pasarle al agente.
+- **El dedupe de preguntas equivalentes en la cola.** Medido: siete decisiones abiertas de
+  un solo plan en la primera corrida, tres de cuatro planes en la segunda. **Ninguna corrida
+  produjo dos preguntas equivalentes.** Construir el dedupe es resolver un problema que
+  todavía no se vio; leer menos de diez entradas antes de trasladarlas no necesita mecanismo.
+- **El frontmatter estructurado de la cola.** Se justificaba con que sin datos no se puede
+  ordenar, filtrar ni deduplicar. Con menos de diez entradas vaciadas dentro de la misma
+  ronda no hay nada que ordenar ni filtrar.
+- **La cola como archivo persistido aparte.** Las tres corridas la resolvieron con una
+  sección `## Decisiones abiertas` **adentro de cada plan**, y ahí la entrada ya es
+  respondible en frío por construcción: está al lado de su contexto, el plan ya está
+  indexado y su estado ya lo dice. Lo que esa forma no da es **ver de un vistazo qué
+  decisiones esperan sin abrir cincuenta planes**, y eso es un conteo, que la Pantalla de
+  bienvenida o `priorizar-planes` pueden dar. **Recomendación:** primera versión sin cola
+  persistida; se agrega si una ronda termina con decisiones sin contestar que sobrevivan a
+  la ronda. Es aditivo.
+- **`ejecutar-plan` como precondición dura.** Ver decisión abierta 1.
+
+### Alcance del trabajo, actualizado
+
+Reemplaza la lista de «Alcance del trabajo» de más arriba:
+
+- La conducción `avanzar-planes` y su despacho por estado.
+- El agrupamiento por conjuntos de archivos que no se pisan.
+- La restricción de alcance, en el `PLANTILLA.md` de la habilidad.
+- La integración: árbol al día, filas escritas por el hilo principal, verificación, commit.
+- Bancos de prueba con escenario sintético (Decisión Local-0075).
+- Si viaja: `sincronizar-base` y subir la versión del plugin.
+
+**Sale:** la reserva de códigos y su Herramienta; el dedupe y el frontmatter de la cola; la
+cola como archivo persistido; el control de cierre completo por ronda. **Queda afuera de
+la primera versión y entra después como una fila más en la tabla de despacho:**
+`ejecutar-plan` (decisión abierta 1). **Sigue afuera y sin fecha:** el alcance declarado y
+comparable (cuestión abierta 1), que no hace falta mientras un plan escriba solo su archivo.
+
+## Decisiones abiertas
+
+### 1. ¿La primera versión despacha también `Listo` a `ejecutar-plan`, o solo el tramo de análisis?
+
+**Contexto.** Este plan declara al plan Local-0043 (`ejecutar-plan`) como precondición,
+porque la tabla de despacho manda los planes `Listo` ahí. Pero el censo que abre este plan
+dice que de los 78 planes vivos de la máquina había **1 `Listo` y 65 `Nuevo`**, y que el
+embudo está en `Nuevo → Análisis → Listo`. Las tres corridas ejercitaron **solo** el tramo
+de análisis: nunca se despachó un plan a ejecución, porque el verbo no existe.
+
+- **Si entra `ejecutar-plan`:** la habilidad no se puede construir hasta que el plan
+  Local-0043 esté hecho, y ese plan está en `Nuevo` y con dos huecos propios declarados
+  —qué hace con el aprendizaje al cerrar, y cómo se comporta adentro de una copia—. El
+  trabajo se encadena y `avanzar-planes` no existe en el corto plazo.
+- **Si no entra:** la primera versión despacha `Nuevo` y `Análisis` a `analizar-plan`, y a
+  un plan `Listo` lo deja afuera diciendo por qué. Cubre 65 de los 78 planes vivos medidos
+  con cero dependencias nuevas. Cuando `ejecutar-plan` exista, **se agrega una fila a la
+  tabla de despacho**.
+
+**Recomendación: no entra en la primera versión.** El costo de esperar es real y medible; el
+costo de no esperar es una fila de tabla. Si no fuera aditivo —si meter `ejecutar-plan`
+después obligara a rehacer el despacho— la recomendación se daría vuelta, pero el despacho
+es una tabla estado → verbo, y agregarle una fila no toca las otras.
+
+### 2. ¿La cola se vacía en vivo o estrictamente al final de la ronda?
+
+**Contexto.** Lo que la habilidad promete es que **ningún plan espere al usuario**; no
+promete que al usuario no lo interrumpan. Y hay un límite duro: un agente ya lanzado **no
+puede recibir la respuesta en vuelo** —retomar un hilo con `--sesion` está resuelto solo
+para `claude`, que es la cuestión abierta 4—, así que contestar en vivo **no desbloquea al
+agente que preguntó**: desbloquea a la ronda siguiente.
+
+- **Estrictamente al final:** el usuario recibe todo junto, una sola interrupción. Con los
+  números medidos en la segunda corrida, donde las cuatro copias terminaron entre los 5 y
+  los 12 minutos, habría contestado tres decisiones de una sentada a los 13 minutos. Costo:
+  una decisión que llegó a los 2 minutos se enfría once minutos antes de que alguien la lea,
+  y para entonces el hilo principal también perdió el hilo de por qué se preguntó.
+- **En vivo:** esa decisión se contesta a los 2 minutos, con el contexto todavía caliente en
+  el hilo principal. Costo: al usuario lo interrumpen tres veces en vez de una, que es
+  exactamente el recurso escaso que este plan dice estar cuidando.
+
+**Recomendación: en vivo, y dicho explícitamente en el contrato**, con la aclaración de que
+la respuesta entra en la ronda siguiente y no en el agente que preguntó. Motivo: la entrada
+tiene que ser respondible en frío igual (Decisión Local-0073), así que enfriarla no la
+rompe; pero **el hilo principal sí se enfría**, y es el que tiene que traducir la respuesta
+a la ronda siguiente. Es una preferencia sobre la atención del usuario y no se deriva de
+nada: por eso queda abierta.
+
+### 3. ¿Dónde vive la habilidad, y cómo se llama su plugin?
+
+**Contexto.** La Decisión Local-0078 fija que lo que coordina a otros agentes no le sirve a
+todo Agente Desplegado y viaja en plugin aparte, habilitado por repo. El subsistema `planes`
+es el dueño natural del verbo, y el plan Local-0070 pide que una habilidad sea un verbo y no
+se coma a la familia. El nombre `avanzar-planes` está ratificado por Javier el 26/08/2026,
+sobre `paralelizar-planes`; el nombre del **plugin** no.
+
+- **Todo en `amp-planes`:** un Agente Desplegado que instala el subsistema de planes se
+  lleva de arriba una habilidad que lanza agentes en copias —maquinaria pesada que no va a
+  usar—. Contradice la Decisión Local-0078.
+- **Todo en un plugin propio que dependa de `amp-planes`:** el verbo y la conducción van
+  juntos, que es lo que son —la conducción sin el verbo no existe—, y solo lo instala quien
+  lo quiera.
+- **El verbo en `amp-planes` y la conducción en un plugin propio:** parte en dos algo que
+  nadie usa por separado y deja dos lugares que editar.
+
+**Recomendación: un plugin propio que dependa de `amp-planes`.** El nombre del plugin queda
+para ratificar: proponerlo pasa por `converger-terminologia`, y este análisis no acuña
+ninguno (Preferencia Base-0010).
+
+## Propuestas para asentar
+
+Nada de esto se asentó: este análisis corrió con la restricción de escribir solo este
+archivo.
+
+**Candidatas a decisión:**
+
+1. **Un agente al que se le delega producir escribe su producto, nunca un Índice de
+   Subsistema.** La Decisión Local-0060 ya fija que escribir los registros se queda en el
+   hilo principal, pero lo fija para **subagentes de recorrido, de solo lectura por
+   construcción**. Acá se delega producir, con herramientas de escritura, y el corte sigue
+   valiendo por el mismo motivo y por uno nuevo y medido: dos agentes que escriben filas
+   adyacentes del mismo registro chocan o, peor, se auto-mergean mal (hallazgo 8). Es una
+   extensión de Local-0060, no una re-decisión, y corresponde decisión propia porque cambia
+   qué se puede delegar.
+2. **Una habilidad puede despachar a otras del mismo subsistema según el estado de la
+   entrada.** Es la cuestión abierta 5: hay precedentes de reutilización
+   (`sugerir-siguiente-plan` reutiliza `priorizar-planes`, `analizar-plan` reutiliza
+   `amp:planificar`) pero ninguno de despacho condicional. Sin asentarlo, la próxima
+   habilidad que lo necesite lo vuelve a discutir.
+
+**Candidatas a página de conocimiento:**
+
+3. **Una copia arranca vieja y no lo dice.** Medido en esta corrida: doce commits de atraso,
+   y el archivo que había que escribir medía 152 líneas menos adentro de la copia que en
+   `main`. No falla: el agente lee, entiende y produce sobre un documento que ya no es el
+   vigente, y el daño aparece recién al juntar —o no aparece, si el merge sale limpio—. La
+   página lleva el remedio barato (`git show main:<ruta>` antes de escribir, que el worktree
+   resuelve porque comparte la base de objetos). Es la forma «mira una copia» del
+   conocimiento Local-0013, aplicada al documento en vez de al control.
+4. **El aislamiento nativo por worktree copia la configuración local sin
+   `.worktreeinclude`.** Medido acá: `settings.local.json` presente con su fecha original,
+   `tmp/` y `.respaldo-amp/` ausentes. Tira abajo la objeción con la que se descartó el
+   aislamiento nativo, y toca la Herramienta Base-0009 (`preparar-worktree`), que existe en
+   buena parte para eso. ⚠️ Una máquina, una versión: caduca.
+
+**Ya tienen destino y no hace falta abrirles nada acá:** el conteo multiplicado por nueve
+del control de cierre (hallazgo 9) y la falsa alarma de `limpiar-worktree` (hallazgo 10), los
+dos ya declarados candidatos a plan propio en la segunda corrida.
+
+## Por qué queda en `Análisis` y no en `Listo`
+
+`Listo` es «analizado y suficientemente definido para iniciar su ejecución». Quedan tres
+decisiones abiertas, y la primera **cambia el tamaño del trabajo**: si `ejecutar-plan` entra,
+la ejecución de este plan arranca por el plan Local-0043, que está en `Nuevo`. Lo demás
+—contrato, agrupamiento, alcance, integración— quedó definido acá. Contestadas las tres, el
+plan pasa a `Listo` sin más análisis.
