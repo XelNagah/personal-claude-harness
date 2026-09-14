@@ -38,6 +38,17 @@
           }
         ]
       }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node -e \"let f=require('fs'),p=require('path'),d=process.env.CLAUDE_PROJECT_DIR||process.cwd();while(!f.existsSync(p.join(d,'.claude'))&&p.dirname(d)!==d)d=p.dirname(d);require(p.join(d,'.claude/conducta/establecer-conducta/establecer-conducta.js'))\" establecer-conducta",
+            "statusMessage": "Estableciendo conducta"
+          }
+        ]
+      }
     ]
   }
 }
