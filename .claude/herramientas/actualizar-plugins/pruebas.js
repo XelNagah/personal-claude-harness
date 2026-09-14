@@ -47,7 +47,7 @@ const REGISTROS_DE_CASA = ['known_marketplaces.json', 'installed_plugins.json',
 // se sigue leyendo de donde esta y no hay que copiar el arbol bajado.
 const HAY_CATALOGO = fs.existsSync(path.join(CASA_REAL, 'known_marketplaces.json'));
 
-function fabricarCasa(enabledPlugins = {}) {
+function fabricarCasa(enabledPlugins = {}, desinstalar = []) {
   fs.rmSync(CASA_PRUEBA, { recursive: true, force: true });
   fs.mkdirSync(path.join(CASA_PRUEBA, '.claude', 'plugins'), { recursive: true });
   fs.writeFileSync(path.join(CASA_PRUEBA, '.claude', 'settings.json'),
@@ -55,6 +55,19 @@ function fabricarCasa(enabledPlugins = {}) {
   for (const f of REGISTROS_DE_CASA) {
     const src = path.join(CASA_REAL, f);
     if (fs.existsSync(src)) fs.copyFileSync(src, path.join(CASA_PRUEBA, '.claude', 'plugins', f));
+  }
+  // `desinstalar` saca del registro copiado las entradas de un plugin. Sin esto no hay forma de
+  // fabricar el caso «no esta instalado para este repo»: el registro se copia de la maquina real,
+  // donde el plugin puede estar instalado a nivel USUARIO — y una entrada de alcance usuario vale
+  // para todos los repos, tambien para el fabricado. El caso quedaba prometiendo un escenario que su
+  // propio andamiaje no creaba.
+  if (desinstalar.length) {
+    const reg = path.join(CASA_PRUEBA, '.claude', 'plugins', 'installed_plugins.json');
+    let j = null; try { j = JSON.parse(fs.readFileSync(reg, 'utf8')); } catch {}
+    if (j && j.plugins) {
+      for (const id of desinstalar) delete j.plugins[id];
+      fs.writeFileSync(reg, JSON.stringify(j, null, 2));
+    }
   }
   return CASA_PRUEBA;
 }
@@ -156,13 +169,32 @@ console.log('\n== LAS DOS PARTES ENTRE SÍ ==');
     (texto.match(/(Las dos partes coinciden|\d+ archivo\(s\) DE OTRA GENERACION)/) || ['(no lo informa)'])[0]);
 }
 {
-  // Si el plugin no está instalado PARA ese repo, no hay contra qué comparar y el chequeo se calla.
-  // Es lo correcto y conviene fijarlo: inventar una comparación con la versión de otro repo sería
+  // Si el plugin no esta instalado PARA ese repo, no hay contra que comparar y el chequeo se calla.
+  // Es lo correcto y conviene fijarlo: inventar una comparacion con la version de otro repo seria
   // exactamente el modo de falla que esta Herramienta existe para no cometer.
+  //
+  // Se le saca `amp` al registro copiado: si no, la entrada de alcance usuario de la maquina real
+  // vale tambien para el repo fabricado y el chequeo compara, con razon.
   armar({ 'amp@xelnagah-harness': true });
-  const { texto } = correr(REPO_PRUEBA, [], fabricarCasa());
+  const { texto } = correr(REPO_PRUEBA, [], fabricarCasa({}, ['amp@xelnagah-harness']));
+  const hablo = /DE OTRA GENERACION|Las dos partes coinciden|No se comparo|No se pudo comparar/.test(texto);
   chequear('sin el plugin instalado para ese repo, no compara nada',
-    !/DE OTRA GENERACION|Las dos partes coinciden/.test(texto), 'se calla, como debe');
+    !hablo, hablo ? 'compara igual' : 'se calla, como debe');
+}
+{
+  // El control compara ALGO. Sin este caso, el chequeo de arriba se cumple solo con que la
+  // Herramienta se calle, y quedarse sin poblacion que mirar tambien la calla — que es exactamente
+  // lo que paso entre el 30/07/2026 y el 13/09/2026: el commit que saco los scripts de la PLANTILLA
+  // le dejo cero destinos que comparar y la Herramienta contesto verde sobre una comparacion vacia
+  // durante 45 dias, para todos los repos. Un control sin poblacion no controla nada, y el unico
+  // modo de notarlo es contar lo que miro. Conocimiento `Local-0013`, primer item de su lista.
+  const { texto } = correr();
+  const m = texto.match(/Las dos partes coinciden: los ([0-9]+) archivo/);
+  const desfase = /([0-9]+) archivo[(]s[)] DE OTRA GENERACION/.exec(texto);
+  const cuantos = m ? Number(m[1]) : (desfase ? Number(desfase[1]) : 0);
+  chequear('compara una poblacion real, no un conjunto vacio',
+    cuantos > 0 && !/No se comparo ningun archivo/.test(texto),
+    /No se comparo ningun archivo/.test(texto) ? 'no comparo nada: el control se quedo sin poblacion' : `${cuantos} archivo(s) mirados`);
 }
 
 console.log('\n== CACHE HUÉRFANO Y SU LIMPIEZA ==');

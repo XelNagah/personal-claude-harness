@@ -449,41 +449,67 @@ function limpiarCache(sobra, filas) {
 // el 30/07/2026 nadie miraba las dos partes ENTRE SI. El caso medido: un repo con los archivos de la
 // generacion nueva y los plugins de la vieja, con los dos controles en verde por separado.
 //
-// Se compara contra la PLANTILLA del plugin que EFECTIVAMENTE CORRE, cuya ruta sale del propio
-// registro de instalacion (`installPath`), no de adivinar una version. Cada bloque de codigo de esa
-// plantilla declara su destino: si el archivo que hay en el repo no coincide, las dos partes estan
-// en generaciones distintas.
+// Se compara contra la carpeta `base/` del plugin que EFECTIVAMENTE CORRE, cuya ruta sale del propio
+// registro de instalacion (`installPath`), no de adivinar una version.
+//
+// ⚠️ La primera version de este control leia los bloques ```js de `PLANTILLA.md`, que era donde los
+// scripts viajaban transcriptos. El commit `0f459aa` del 30/07/2026 —«Hacer que los Componentes de
+// Subsistema viajen como archivos»— los saco de ahi, cinco commits despues de que este control
+// naciera, y le dejo la poblacion en cero: el recorrido no juntaba ningun destino, las dos listas
+// salian vacias y la Herramienta imprimia «Las dos partes coinciden» sobre una comparacion que nunca
+// ocurrio. Estuvo asi hasta el 13/09/2026, contestando verde para todos los repos sin mirar nada. Es
+// el modo de falla del conocimiento `Local-0013` (un control que valida un conjunto vacio) llegado
+// por el camino del `Local-0012` (se le cambio la forma a la fuente y su lector no se entero). Por
+// eso este control ahora CUENTA lo que comparo y se calla si no comparo nada, en vez de dar verde.
+//
+// Solo se comparan los Componentes que viajan ENTEROS: el mecanismo —lints, manifiestos, modulos
+// comunes, READMEs—. Los registros que declaran `origen: agente-desplegado` viajan solo hasta el
+// separador de su tabla, porque las filas las puebla cada repo, y compararlos aca reimplementaria el
+// detector de `amp:actualizar`, que ya resuelve con cuidado el caso de la columna propia. Lo que
+// importa para saber si las dos partes son de la misma generacion es el mecanismo, que no se ajusta
+// por repo: si el lint instalado no es el que trae el plugin que corre, estan en generaciones
+// distintas y no hay ambiguedad posible.
 function archivosDeOtraGeneracion(filas) {
   const amp = filas.find(f => /^amp@/.test(f.id));
   if (!amp) return null;
   const ent = instalado(amp.id);
   if (!ent || !ent.installPath) return null;
-  const plantilla = path.join(ent.installPath, 'skills', 'inicializar', 'PLANTILLA.md');
-  let txt; try { txt = fs.readFileSync(plantilla, 'utf8'); } catch { return null; }
+  const base = path.join(ent.installPath, 'skills', 'inicializar', 'base');
+  if (!fs.existsSync(base)) return { version: ent.version || '(sin version)', sinBase: true, comparados: 0, distintos: [], faltantes: [] };
 
-  const lineas = txt.split(/\r?\n/);
+  // El frontmatter se lee con el modulo que trae el propio plugin: es el que define hoy que es un
+  // `origen`, y el del repo puede ser justo el que este atrasado.
+  let origenDe;
+  try { ({ origenDe } = require(path.join(base, 'common', 'frontmatter.js'))); }
+  catch { origenDe = txt => (txt.match(/^origen:\s*(\S+)\s*$/m) || [])[1] || null; }
+
+  const norm = s => s.replace(/\r\n/g, '\n').replace(/\s+$/, '');
+  const leer = p => { try { return fs.readFileSync(p, 'utf8'); } catch { return null; } };
+
+  const recorrer = (rel, out) => {
+    const dir = path.join(base, rel || '.');
+    let entradas; try { entradas = fs.readdirSync(dir, { withFileTypes: true }); } catch { return out; }
+    for (const e of entradas) {
+      const r = rel ? rel + '/' + e.name : e.name;
+      if (e.isDirectory()) recorrer(r, out); else out.push(r);
+    }
+    return out;
+  };
+
   const distintos = [], faltantes = [];
-  let destino = null, dentro = false, buf = [];
-  for (const l of lineas) {
-    if (!dentro) {
-      const m = l.match(/`(\.claude\/[^`]+\.js)`/);
-      if (m) destino = m[1];
-      if (/^```js\s*$/.test(l)) { dentro = true; buf = []; }
-      continue;
-    }
-    if (/^```\s*$/.test(l)) {
-      dentro = false;
-      if (destino) {
-        const enRepo = path.join(REPO, destino);
-        const norm = s => s.replace(/\r\n/g, '\n').replace(/\s+$/, '');
-        if (!fs.existsSync(enRepo)) faltantes.push(destino);
-        else if (norm(fs.readFileSync(enRepo, 'utf8')) !== norm(buf.join('\n'))) distintos.push(destino);
-      }
-      continue;
-    }
-    buf.push(l);
+  let comparados = 0;
+  for (const rel of recorrer('', [])) {
+    const queViaja = leer(path.join(base, rel));
+    if (queViaja === null) continue;
+    // Registro del Agente Desplegado: sus filas son del repo. No es materia de este control.
+    if (rel.endsWith('.md') && origenDe(queViaja) === 'agente-desplegado') continue;
+    comparados++;
+    const enRepo = path.join(REPO, '.claude', rel);
+    if (!fs.existsSync(enRepo)) { faltantes.push('.claude/' + rel); continue; }
+    const instaladoTxt = leer(enRepo);
+    if (instaladoTxt === null || norm(instaladoTxt) !== norm(queViaja)) distintos.push('.claude/' + rel);
   }
-  return { version: ent.version || '(sin version)', distintos, faltantes };
+  return { version: ent.version || '(sin version)', comparados, distintos, faltantes };
 }
 
 function marketplaceRegistrado(marketplace) {
@@ -953,8 +979,21 @@ if (!filas.length) {
     for (const d of gen.faltantes) console.log(`  no esta:   ${d}`);
     console.log('\nSi los plugins ya estan al dia, esto se resuelve actualizando los archivos: pedir `amp:actualizar`.');
     console.log('En el repo que PUBLICA el Agente Multiproposito es lo esperable cuando hay cambios sin publicar.');
+  } else if (gen && gen.sinBase) {
+    // No se puede comparar y hay que decirlo. Callarse aca deja al repo informado al dia sin que
+    // nadie haya mirado, que es el modo de falla que este control existe para cerrar.
+    console.log('');
+    console.log(`No se pudo comparar con los archivos: el plugin que corre (${gen.version}) no trae la`);
+    console.log('carpeta de Componentes de Subsistema. Revisar a mano o reinstalar el plugin.');
+  } else if (gen && gen.comparados === 0) {
+    console.log('');
+    console.log(`No se comparo ningun archivo: el plugin que corre (${gen.version}) no trae ningun`);
+    console.log('Componente de mecanismo con el cual comparar. Es un defecto del control, no del repo.');
   } else if (gen) {
-    console.log('\nLas dos partes coinciden: los archivos del repo son los que instalaria el plugin que corre.');
+    console.log('');
+    console.log(`Las dos partes coinciden: los ${gen.comparados} archivo(s) de mecanismo del repo son`);
+    console.log('los que instalaria el plugin que corre. Los registros del Agente Desplegado no entran: sus');
+    console.log('filas son de cada repo, y los compara `amp:actualizar`.');
   }
 
   // Cache huerfano: informativo. Es de la maquina, no del repo, y no lo limpia nadie.
