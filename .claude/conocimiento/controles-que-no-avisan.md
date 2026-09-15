@@ -72,6 +72,12 @@ Medido el 01/08/2026 sobre `lint-harness`, que vigilaba cuatro fragmentos de có
 
 Las dos formas se acumulan con la 4: acá el control de divergencia **no tenía ninguna prueba**, y por eso los dos fragmentos pudieron quedarse apagados durante meses con el control de cierre en verde.
 
+**Segunda medición, 13/09/2026, sobre `actualizar-plugins`.** El chequeo de que las dos partes del Agente Multipropósito —los plugins y los archivos— sean de la misma generación leía los bloques ` ```js ` de `PLANTILLA.md`, que era donde los scripts viajaban transcriptos. El commit `0f459aa` los sacó de ahí —«Hacer que los Componentes de Subsistema viajen como archivos»— **cinco commits después de que el control naciera, el mismo día**. La población quedó en cero, y durante 45 días el control informó «las dos partes coinciden» en todos los repos sin haber abierto un solo archivo. Es la primera fila de la tabla de arriba: le migraron el patrón, y correspondía reapuntar.
+
+**Lo que este caso agrega es que la guarda de arriba no lo agarra.** Recorrer lo declarado sirve cuando hay una declaración que recorrer: `lint-harness` declara qué fragmentos vigila, así que se le puede exigir un mínimo de dos muestras por cada uno. Acá no había nada declarado — la población era lo que la plantilla tuviera adentro, y una plantilla sin bloques de código es una plantilla válida. Sin lista contra la cual contrastar, el vacío no tiene dónde notarse.
+
+**La guarda que sí funciona para esa forma es que el control cuente lo que miró y lo diga.** El arreglo le dejó tres salidas en vez de dos —comparó y coincide, comparó y difiere, no comparó nada— y la verde ahora lleva el número: «las dos partes coinciden: los 111 archivo(s) de mecanismo del repo son los que instalaría el plugin que corre». Un 0 ahí se lee de inmediato; la misma frase sin número se leyó 45 días como si dijera que estaba todo bien. El banco fija ese número por encima de cero, que es lo que convierte la cuenta en control y no en adorno.
+
 ### 7. Número envejecido
 
 Las seis anteriores son del control. Esta es de su **prueba**: el control funciona, la prueba corre y contesta en verde, pero el caso que la hacía valer dejó de reproducir el defecto. Sigue afirmando y ya no puede fallar. Es la «sin prueba» disfrazada de lo contrario — hay banco, y el banco no cubre.
