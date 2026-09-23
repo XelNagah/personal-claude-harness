@@ -147,6 +147,15 @@ caso('la configuración de hooks apunta a un lint que ya no está', 'REFS POR RU
 caso('columna declarada que la tabla no tiene', 'INDICES DECLARADOS',
   () => escribir(LOCAL, leer(LOCAL).replace(/^columnas: \[(.+)\]$/m, 'columnas: [$1, Inventada]')));
 
+// El reemplazo a medias: la descripcion nueva quedo escrita en la columna Tipo, en vez de `script`.
+caso('una segunda descripción ocupa la columna Tipo', 'VALORES FUERA DE LO PERMITIDO EN TIPO O ESTADO',
+  () => escribir(LOCAL, leer(LOCAL).replace(
+    "del mes con los totales por rubro. | script |",
+    "del mes con los totales por rubro. | Emite el resumen del mes y lo archiva. |")));
+
+caso('un Estado que no es vigente, experimental ni obsoleto', 'VALORES FUERA DE LO PERMITIDO EN TIPO O ESTADO',
+  () => escribir(IDX, leer(IDX).replace('| vigente |', '| en revisión |')));
+
 console.log('\n== CASOS MALOS: cada control se enciende ante su defecto ==');
 for (const c of casos) {
   armar();

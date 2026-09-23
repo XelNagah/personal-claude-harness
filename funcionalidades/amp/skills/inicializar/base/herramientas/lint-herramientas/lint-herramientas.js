@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 // Lint del registro de Herramientas: README por herramienta con carpeta local, herramienta en indice,
-// filas colgadas (link a subdir local inexistente), refs por ruta de lint en settings. Sin LLM, sin red.
+// filas colgadas (link a subdir local inexistente), refs por ruta de lint en settings, valores de Tipo
+// y Estado fuera de lo permitido. Sin LLM, sin red.
 // Uso: node lint-herramientas.js [<carpeta herramientas>]   (default: .claude/herramientas)
 const fs = require('fs'), path = require('path');
 
@@ -54,7 +55,11 @@ function filasDe(texto) {
 // El prefijo del codigo es el origen: un `Local-` en el Indice del Agente Multiproposito significa
 // que la fila se escribio en el archivo equivocado.
 const PREFIJO = { 'agente-multiproposito': 'Base', 'agente-desplegado': 'Local' };
-const colgadas = [], problemasNucleo = [];
+// Tipo y Estado son columnas de valores cerrados. Sin este control, una celda con cualquier texto
+// pasaba: un reemplazo a medias dejo una segunda descripcion en la columna Tipo de dos filas, y el
+// lint contesto verde durante un mes. Conocimiento `controles-que-no-avisan`.
+const PERMITIDOS = { 'Tipo': ['script', 'skill', 'mcp', 'funcion'], 'Estado': ['vigente', 'experimental', 'obsoleto'] };
+const colgadas = [], problemasNucleo = [], valoresInvalidos = [];
 const codigosVistos = new Set();
 for (const i of indices) {
   const esperado = PREFIJO[i.origen];
@@ -71,6 +76,12 @@ for (const i of indices) {
     else if (nombresVistos.has(nombre.toLowerCase())) problemasNucleo.push(`${i.nombre}: nombre duplicado "${nombre}"`);
     else nombresVistos.add(nombre.toLowerCase());
     if (!(f['Descripción'] || '').trim()) problemasNucleo.push(`${i.nombre}: ${cod} no tiene Descripción`);
+    for (const [col, validos] of Object.entries(PERMITIDOS)) {
+      if (!(col in f)) continue;                                  // la tabla no declara la columna
+      const v = f[col].replace(/`/g, '').trim();
+      if (!validos.includes(v.toLowerCase()))
+        valoresInvalidos.push(`${i.nombre}: ${cod} tiene ${col} "${v.length > 40 ? v.slice(0, 40) + '…' : v}" (permitidos: ${validos.join(', ')})`);
+    }
 
     const m = /\]\(([^)]+?)\)/.exec(f['Detalle'] || '');
     if (!m) continue;                                             // fila sin link -> no se valida ruta
@@ -130,3 +141,6 @@ if (!refsRotas.length) console.log('    (ninguna)');
 console.log(`\n[5] INDICES DECLARADOS (${problemasIndices.length}):`);
 problemasIndices.forEach(p => console.log(`    ${p}`));
 if (!problemasIndices.length) console.log(`    (${nombresIndice.size} indice(s), coherentes con el manifiesto)`);
+console.log(`\n[6] VALORES FUERA DE LO PERMITIDO EN TIPO O ESTADO (${valoresInvalidos.length}):`);
+valoresInvalidos.forEach(p => console.log(`    ${p}`));
+if (!valoresInvalidos.length) console.log('    (ninguno)');
