@@ -5,7 +5,7 @@ En `.claude/` hay una carpeta que **no es un subsistema**: `common/`. No tiene m
 Hoy tiene dos módulos:
 
 - **`frontmatter.js`** — leer el frontmatter de un `.md`: sacarle la marca de orden de bytes, dar sus campos, su `origen`, si se declara Índice, y la cabecera de su primera tabla.
-- **`indices.js`** — descubrir los Índices de un subsistema por su frontmatter y controlarlos contra lo que declaran (columnas y manifiesto). Lo requieren los ocho lints de subsistema.
+- **`indices.js`** — descubrir los Índices de un subsistema por su frontmatter y controlarlos contra lo que declaran (columnas y manifiesto). Lo requieren los nueve lints de subsistema.
 
 ## Por qué existe
 

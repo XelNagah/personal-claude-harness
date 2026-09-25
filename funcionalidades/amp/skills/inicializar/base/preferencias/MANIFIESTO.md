@@ -6,7 +6,7 @@ El registro se separa **por origen** en dos archivos que lo declaran en su front
 
 **Disparador:** el agente **no** consulta este registro a mano — ya lo tiene cargado. Se escribe cuando el usuario corrige lo mismo por segunda vez, pide que algo quede como regla o quiere copiar una Preferencia desde otro Agente Desplegado.
 
-**Skills:** `registrar-preferencia` (incorpora una regla nueva o copia una existente; compara todos los Índices, confirma el texto exacto, asigna el Código local y no pisa divergencias); instalación con `amp:inicializar`.
+**Skills:** `registrar-preferencia` (incorpora una regla nueva o copia una existente; compara todos los Índices, confirma el texto exacto, asigna el Código local y no pisa divergencias) y `adoptar-recomendadas` (muestra el catálogo de Preferencias Recomendadas y adopta las que el usuario elija); instalación con `amp:inicializar`.
 
 **Índices:** `PREFERENCIAS.md` (Agente Multipropósito) · `PREFERENCIAS-LOCAL.md` (Agente Desplegado). **Se cargan siempre.** Al cerrar una tarea que tocó preferencias, correr el lint desde la raíz del repo:
 

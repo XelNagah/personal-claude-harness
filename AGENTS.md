@@ -33,7 +33,7 @@ El repo es a la vez un **marketplace de plugins de Claude Code** (estilo Matt Po
 │   └── comunicacion/                          # registro de Agentes Multipropósito Conocidos (Aprendizaje local, no se commitea) + comunicar/ + buscar/ + lint-comunicacion/
 ├── .claude-plugin/marketplace.json            # catálogo del marketplace (10 plugins)
 └── funcionalidades/                           # cada subcarpeta = un plugin
-    ├── amp/                                   # plugin transversal: inicializar · planificar · actualizar · info; dep: los 9 amp-<sub>
+    ├── amp/                                   # plugin transversal: inicializar · planificar · actualizar · info · alto-nivel · contrastar; dep: los 9 amp-<sub>
     ├── amp-subsistemas/                       # catálogo + alta de casas + reubicación guiada del Aprendizaje
     ├── amp-preferencias/                      # preferencias por origen; alta o copia puntual con registrar-preferencia
     ├── amp-planes/                            # ciclo pendientes/ejecutados/descartados + PLANES.md + lint + hook

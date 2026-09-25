@@ -229,7 +229,7 @@ const palabrasDe = s => normalizar(s).split(/[^a-z0-9]+/).filter(Boolean);
 const esContenido = t => t.length >= 3 && !VACIAS.has(t);
 
 // Todas las filas de entrada de los registros del contraste, cada una con su tipo para nombrarla.
-// Reusa el descubrimiento de Indices de `common/indices.js` (misma copia que los ocho lints) en vez
+// Reusa el descubrimiento de Indices de `common/indices.js` (misma copia que los nueve lints) en vez
 // de reparsear tablas a mano; ubica las columnas por nombre de encabezado, nunca por posicion, para
 // que renombrar o reordenar una columna no corra el contenido (conocimiento cambiar-la-forma-de-un-registro).
 function filasDeContraste(registros) {

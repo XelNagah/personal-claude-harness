@@ -2,7 +2,7 @@
 
 Catálogo de las funcionalidades que este repo instala para armar un agente de **propósito general** — el usuario define el propósito del repo y los subsistemas se llenan con lo aprendido para lograrlo. Cada funcionalidad vive en `funcionalidades/<nombre>/`, **es un plugin de Claude Code** (listado en `.claude-plugin/marketplace.json`) y sus skills usan el **estándar abierto Agent Skills** (`SKILL.md`), legible también por Codex CLI, Cursor, Gemini CLI y Copilot (decisión 0010). Ver el README de cada una para el detalle.
 
-**Empaquetado:** un plugin transversal **`amp`** (skills `inicializar` · `planificar` · `info` · `alto-nivel` · `actualizar`) + un plugin **`amp-<sub>`** por cada uno de los nueve subsistemas. Se instala `amp` y el paquete completo entra por dependencias.
+**Empaquetado:** un plugin transversal **`amp`** (skills `inicializar` · `planificar` · `contrastar` · `info` · `alto-nivel` · `actualizar`) + un plugin **`amp-<sub>`** por cada uno de los nueve subsistemas. Se instala `amp` y el paquete completo entra por dependencias.
 
 | Funcionalidad | Qué hace | Depende de | Carpeta |
 |---------------|----------|-----------|---------|
@@ -27,7 +27,7 @@ Un plugin transporta además **subagentes**, en su carpeta `agents/`. Se disting
 
 | Funcionalidad | Plugin | Skill | Subagente |
 |---------------|--------|-------|-----------|
-| amp | `amp@xelnagah-harness` | `inicializar`, `planificar`, `contrastar`, `actualizar` | `contrastador` |
+| amp | `amp@xelnagah-harness` | `inicializar`, `planificar`, `contrastar`, `info`, `alto-nivel`, `actualizar` | `contrastador` |
 | amp-subsistemas | `amp-subsistemas@xelnagah-harness` | `agregar-subsistema`, `reubicar-aprendizaje` | `relevador-de-aprendizaje` |
 | amp-preferencias | `amp-preferencias@xelnagah-harness` | `registrar-preferencia`, `adoptar-recomendadas` | — |
 | amp-planes | `amp-planes@xelnagah-harness` | `crear-plan`, `analizar-plan`, `explicar-plan`, `priorizar-planes`, `sugerir-siguiente-plan`, `pausar-plan`, `retomar-plan`, `diferir-plan`, `cerrar-plan`, `descartar-plan` | `relevador-de-planes` |

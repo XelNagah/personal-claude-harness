@@ -1,4 +1,4 @@
-// Descubrimiento y control de los Indices de Subsistema. Unica copia del repo: la usan los ocho
+// Descubrimiento y control de los Indices de Subsistema. Unica copia del repo: la usan los nueve
 // lints de subsistema, que antes llevaban este mismo bloque copiado adentro.
 //
 // Un subsistema tiene uno o mas Indices y cada archivo se declara a si mismo en un frontmatter
@@ -104,8 +104,8 @@ function indicesDe(dirSub, nombresViejos) {
 // proposito en `preferencias`, donde no hay numeracion que lo delate: la entrada desaparecio del
 // registro y los once chequeos siguieron en verde.
 //
-// Va aca y no en un lint porque los ocho lints de subsistema ya corren esta funcion: es un solo
-// lugar para los ocho registros.
+// Va aca y no en un lint porque los nueve lints de subsistema ya corren esta funcion: es un solo
+// lugar para los nueve registros.
 
 const RE_CODIGO = /^(?:Base|Local)-\d{4}$/;
 

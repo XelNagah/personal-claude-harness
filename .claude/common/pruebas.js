@@ -1,6 +1,6 @@
-// Banco del modulo comun. Es la pieza mas apoyada del repo —la requieren los ocho lints de
+// Banco del modulo comun. Es la pieza mas apoyada del repo —la requieren los nueve lints de
 // subsistema, los dos hooks, dos Herramientas y el actualizador que viaja en el plugin—, asi que un
-// defecto aca no rompe una cosa: apaga a los trece a la vez y cada uno contesta lo que sabe
+// defecto aca no rompe una cosa: apaga a los catorce a la vez y cada uno contesta lo que sabe
 // contestar cuando no hay frontmatter, que es "no lo declara". Ninguno emite una senal.
 //
 // Por eso el banco prueba el CASO MALO de cada guarda por separado, no el modulo entero: romper

@@ -20,7 +20,7 @@ Catálogo de casas persistentes del Agente Multipropósito, separado por origen 
 | Código | Nombre | Descripción | Operación | Detalle |
 |---|---|---|---|---|
 | Base-0001 | subsistemas | Catálogo y coordinación entre casas | `agregar-subsistema`, `reubicar-aprendizaje` | [subsistemas/](./) |
-| Base-0002 | preferencias | Preferencias del usuario, las del Agente Multipropósito y las del repo | `registrar-preferencia` | [preferencias/](../preferencias/) |
+| Base-0002 | preferencias | Preferencias del usuario, las del Agente Multipropósito y las del repo | `registrar-preferencia`, `adoptar-recomendadas` | [preferencias/](../preferencias/) |
 | Base-0003 | planes | Planes y su ciclo de vida | familia por verbo (`crear-plan`…`descartar-plan`) | [planes/](../planes/) |
 | Base-0004 | conocimiento | Lo que el agente sabe y necesita reutilizar | `registrar-conocimiento`, `buscar-conocimiento` | [conocimiento/](../conocimiento/) |
 | Base-0005 | semantica | Vocabulario legítimo y relaciones vetadas | `converger-terminologia` | [semantica/](../semantica/) |

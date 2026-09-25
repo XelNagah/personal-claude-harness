@@ -16,7 +16,7 @@ Mismo harness, tres dominios. Lo que cambia es lo que se acumula adentro.
 
 ## Qué te da
 
-**Ocho subsistemas** en el `.claude/` del repo. Todos siguen el mismo patrón (ver [Cómo aprende](#cómo-aprende)) y nacen vacíos:
+**Nueve subsistemas** en el `.claude/` del repo. Todos siguen el mismo patrón (ver [Cómo aprende](#cómo-aprende)) y nacen vacíos:
 
 | Subsistema | Qué acumula |
 |------------|-------------|
@@ -28,22 +28,24 @@ Mismo harness, tres dominios. Lo que cambia es lo que se acumula adentro.
 | **decisiones** | Las decisiones estructurales, para no re-decidir ni contradecir lo ya resuelto |
 | **herramientas** | Las tools que el propósito del repo requiere (script, skill local, MCP), en un registro |
 | **conducta** | Reglas "cuando hagas X, asegurate de Y", que un hook entrega en el momento justo |
+| **comunicacion** | Comunicación en el momento con otras instalaciones del Agente Multipropósito de la misma máquina |
 
-Se distribuye como **9 plugins**: el transversal `amp` más uno por cada subsistema. Instalás `amp` y los otros ocho entran como dependencias — una instalación por repo.
+Se distribuye como **10 plugins**: el transversal `amp` más uno por cada subsistema. Instalás `amp` y los otros nueve entran como dependencias — una instalación por repo.
 
 | Plugin | Skills |
 |--------|--------|
-| `amp` | `inicializar` (arma el `.claude/` completo) · `planificar` (analiza un plan contra lo que el repo sabe) · `info` (estado) · `actualizar` (pone al día una instalación vieja) |
+| `amp` | `inicializar` (arma el `.claude/` completo) · `planificar` (analiza un plan contra lo que el repo sabe) · `actualizar` (pone al día una instalación vieja) · `info` (estado) · `alto-nivel` (vuelve a explicar la discusión desde arriba) · `contrastar` (trae lo que los registros del repo dicen sobre un material dado) |
 | `amp-subsistemas` | `agregar-subsistema`, `reubicar-aprendizaje` |
-| `amp-preferencias` | `registrar-preferencia` |
+| `amp-preferencias` | `registrar-preferencia`, `adoptar-recomendadas` |
 | `amp-planes` | familia por verbo (`crear-plan`…`descartar-plan`) |
 | `amp-conocimiento` | `registrar-conocimiento` · `buscar-conocimiento` |
 | `amp-semantica` | `converger-terminologia` |
 | `amp-decisiones` | `registrar-decision` |
 | `amp-herramientas` | `registrar-herramienta` |
 | `amp-conducta` | `registrar-regla` |
+| `amp-comunicacion` | `buscar-agentes`, `registrar-agente`, `preguntar`, `resolver` |
 
-`commits` no es un noveno subsistema: el texto del estilo vive en Preferencias y Conducta lo entrega en el momento de confirmar.
+`commits` no es un décimo subsistema: el texto del estilo vive en Preferencias y Conducta lo entrega en el momento de confirmar.
 
 ## Cómo aprende
 
@@ -129,10 +131,10 @@ El catálogo completo de funcionalidades, dependencias y nombres de skill está 
 │   └── INSTALAR.md            # manual de instalación y actualización
 ├── .claude/                   # el propio setup, aplicado a este repo
 │   ├── subsistemas/ preferencias/ planes/ conocimiento/ semantica/
-│   ├── decisiones/ herramientas/ conducta/
+│   ├── decisiones/ herramientas/ conducta/ comunicacion/
 │   └── ...                    # cada subsistema con su manifiesto, índice y lint
 ├── .claude-plugin/
-│   └── marketplace.json       # catálogo del marketplace (9 plugins)
+│   └── marketplace.json       # catálogo del marketplace (10 plugins)
 └── funcionalidades/           # cada subcarpeta = un plugin
     └── <nombre>/              # plugin.json + README + skills/<skill>/
 ```

@@ -172,7 +172,7 @@ armar();
   // Un `.md` guardado con marca de orden de bytes deja de matchear `^---`, así que el Índice pierde
   // su frontmatter y se lee como NO declarado: el manifiesto pasa a listar un Índice que "no existe
   // o no declara frontmatter", y los chequeos que dependen del `origen` dejan de correr en silencio.
-  // Este fragmento viaja idéntico a los ocho lints de subsistema, así que probarlo acá los cubre.
+  // Este fragmento viaja idéntico a los nueve lints de subsistema, así que probarlo acá los cubre.
   escribir(IDX, '\uFEFF' + leer(IDX));
   const { texto, codigo } = correr();
   const n = cuantos(texto);
