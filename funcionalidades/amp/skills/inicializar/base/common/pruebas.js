@@ -146,6 +146,21 @@ caso('una tabla explicativa dentro del Indice no se controla',
   pegadas(idx.problemasDeIndices(idxDe(COLS, COLS, undefined,
     TABLA_SANA + '\n| Caso | Antes | Ahora | Nota |\n|---|---|---|---|\n| Uno | a | b | c |\n'), MANI)).length, 0);
 
+// ORDEN ASCENDENTE POR CODIGO. Hasta el 28/09/2026 solo lo controlaba `lint-planes`, y los Indices
+// de conocimiento, herramientas y decisiones tenian filas fuera de orden con sus lints en verde:
+// el control existia, pero solo sobre el registro que ya conocia (conocimiento Local-0013).
+const desordenadas = res => res.filter(m => /fuera de orden/.test(m));
+caso('dos filas invertidas se marcan',
+  desordenadas(idx.problemasDeIndices(idxDe(COLS, COLS, undefined,
+    '| Código | Nombre |\n|---|---|\n| Local-0002 | Dos |\n| Local-0001 | Uno |\n'), MANI)).length, 1);
+// El caso bueno con las MISMAS filas en orden: sin el, un chequeo que marcara siempre pasaria.
+caso('las mismas filas en orden no se marcan',
+  desordenadas(idx.problemasDeIndices(idxDe(COLS, COLS, undefined, TABLA_SANA), MANI)).length, 0);
+// Los huecos son legitimos: retirar una entrada deja uno y el codigo no se reusa.
+caso('un hueco en la numeracion no es desorden',
+  desordenadas(idx.problemasDeIndices(idxDe(COLS, COLS, undefined,
+    '| Código | Nombre |\n|---|---|\n| Local-0001 | Uno |\n| Local-0007 | Siete |\n'), MANI)).length, 0);
+
 // CONTROL DE LONGITUD DE DESCRIPCION — avisa. La convencion de cada Indice define esa celda como
 // "una linea"; el Control es esa linea escrita como numero. Los cuatro Indices que se cargan en
 // cada arranque de cada repo instalado pagan el ancho de esa celda siempre, y hasta ahora nada lo

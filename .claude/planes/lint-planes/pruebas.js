@@ -92,19 +92,19 @@ const total = h => Object.values(h).reduce((a, b) => a + b, 0);
 const casos = [];
 const caso = (nombre, seccion, romper) => casos.push({ nombre, seccion, romper });
 
-caso('código mal formado', 'NUCLEO DEL INDICE (código, Nombre, Descripción, orden)',
+caso('código mal formado', 'NUCLEO DEL INDICE (código, Nombre, Descripción)',
   () => escribir(reg().replace('| Local-0005 |', '| 0005 |')));
-caso('prefijo que no corresponde al origen', 'NUCLEO DEL INDICE (código, Nombre, Descripción, orden)',
+caso('prefijo que no corresponde al origen', 'NUCLEO DEL INDICE (código, Nombre, Descripción)',
   () => escribir(reg().replace('| Local-0005 |', '| Base-0005 |')));
-caso('código repetido', 'NUCLEO DEL INDICE (código, Nombre, Descripción, orden)',
+caso('código repetido', 'NUCLEO DEL INDICE (código, Nombre, Descripción)',
   () => escribir(reg().replace('| Local-0006 |', '| Local-0005 |')));
-caso('Nombre vacío', 'NUCLEO DEL INDICE (código, Nombre, Descripción, orden)',
+caso('Nombre vacío', 'NUCLEO DEL INDICE (código, Nombre, Descripción)',
   () => escribir(reg().replace(/(\| Local-0007 \| )[^|]+(\|)/, '$1 $2')));
-caso('Nombre duplicado', 'NUCLEO DEL INDICE (código, Nombre, Descripción, orden)',
+caso('Nombre duplicado', 'NUCLEO DEL INDICE (código, Nombre, Descripción)',
   () => escribir(reg().replace(/(\| Local-0007 \| )[^|]+(\|)/, '$1Plan de prueba 06 $2')));
-caso('Descripción vacía', 'NUCLEO DEL INDICE (código, Nombre, Descripción, orden)',
+caso('Descripción vacía', 'NUCLEO DEL INDICE (código, Nombre, Descripción)',
   () => escribir(reg().replace(/(\| Local-0008 \| [^|]+\| )[^|]+(\|)/, '$1— $2')));
-caso('filas fuera de orden ascendente', 'NUCLEO DEL INDICE (código, Nombre, Descripción, orden)',
+caso('filas fuera de orden ascendente', 'INDICES DECLARADOS (frontmatter vs tabla vs manifiesto)',
   () => { const l = reg().split('\n'); const i = l.findIndex(x => x.startsWith('| Local-0010 '));
           const j = l.findIndex(x => x.startsWith('| Local-0011 '));
           [l[i], l[j]] = [l[j], l[i]]; escribir(l.join('\n')); });
@@ -130,7 +130,7 @@ caso('pendiente con marcador de resuelto', 'PENDIENTES CON MARCADOR DE RESUELTO 
           fs.appendFileSync(f, '\n\n## Notas de implementación\n\nHecho.\n'); });
 caso('columna declarada que la tabla no tiene', 'INDICES DECLARADOS (frontmatter vs tabla vs manifiesto)',
   () => escribir(reg().replace('| Código | Nombre |', '| Codigo | Nombre |')));
-caso('fila sin Detalle (no apunta a ningún archivo)', 'NUCLEO DEL INDICE (código, Nombre, Descripción, orden)',
+caso('fila sin Detalle (no apunta a ningún archivo)', 'NUCLEO DEL INDICE (código, Nombre, Descripción)',
   () => escribir(reg().replace(/(\| Local-0020 \|[^\n]*\| )\[[^\n]*\](\([^)]*\)) \|/, '$1 |')));
 caso('En pausa sin estado_a_retomar', 'EN PAUSA SIN estado_a_retomar VALIDO',
   () => escribir(reg().replace(/(\| Local-0015 \| [^|]+\| [^|]+\| )Nuevo /, '$1En pausa ')));
@@ -278,7 +278,7 @@ const esperadasDos = filasDelBanco();   // partir el registro en dos no cambia e
 const dos = correr();
 const n2 = /filas en registro: (\d+)/.exec(dos);
 const h2 = hallazgos(dos);
-const okDos = n2 && Number(n2[1]) === esperadasDos && (h2['NUCLEO DEL INDICE (código, Nombre, Descripción, orden)'] || 0) === 0;
+const okDos = n2 && Number(n2[1]) === esperadasDos && (h2['NUCLEO DEL INDICE (código, Nombre, Descripción)'] || 0) === 0;
 console.log(`${okDos ? 'OK  ' : 'FALLA'} dos Índices → filas: ${n2 ? n2[1] : '?'} (${esperadasDos} esperadas, sin fila fantasma del encabezado)`);
 if (!okDos) { malos++; console.log(JSON.stringify(h2)); }
 

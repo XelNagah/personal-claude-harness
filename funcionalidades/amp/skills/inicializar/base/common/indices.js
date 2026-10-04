@@ -85,26 +85,15 @@ function indicesDe(dirSub, nombresViejos) {
   return salida;
 }
 
-// Cuatro controles sobre lo declarado. [a] Las columnas, en los DOS sentidos: la declarada que la
+// Cinco controles sobre lo declarado. [a] Las columnas, en los DOS sentidos: la declarada que la
 // tabla no tiene y la que la tabla tiene sin declarar. Con un solo sentido el frontmatter puede
 // mentir por omision, y el codigo que ubica una columna por nombre —el repartidor de conducta
 // ubica Momento y Clase— deja de encontrarla sin emitir ningun error. [b] El manifiesto contra el
 // frontmatter: el manifiesto lista los Indices como texto fijo y el frontmatter es la autoridad;
 // sin compararlos, el mismo dato queda escrito en dos lugares que nada sincroniza. [c] Las filas
-// pegadas y [d] el Control de Longitud de Descripcion, los dos abajo.
-// [c] Dos filas en una sola linea. Una edicion que pierde el salto fusiona la fila siguiente dentro
-// de la celda final de la anterior: el texto queda entero y se lee normal —abrir el archivo no lo
-// delata— pero la entrada deja de existir para todo el que lea el registro por filas. Una
-// preferencia deja de aplicarse, una Herramienta deja de estar registrada, un termino deja de estar
-// vetado, y ningun control lo dice.
+// pegadas, [d] el Control de Longitud de Descripcion y [e] el orden por Codigo, los tres abajo.
 //
-// Medido el 01/08/2026: dos decisiones consecutivas del repo autor estaban asi, y los once del
-// control de cierre daban verde. Se vio de casualidad, por la numeracion correlativa —que solo ese
-// registro tiene— y recien al sumarse una decision nueva que desalineo la cuenta. Repetido a
-// proposito en `preferencias`, donde no hay numeracion que lo delate: la entrada desaparecio del
-// registro y los once chequeos siguieron en verde.
-//
-// Va aca y no en un lint porque los nueve lints de subsistema ya corren esta funcion: es un solo
+// Van aca y no en un lint porque los nueve lints de subsistema ya corren esta funcion: es un solo
 // lugar para los nueve registros.
 
 const RE_CODIGO = /^(?:Base|Local)-\d{4}$/;
@@ -204,6 +193,26 @@ function descripcionesLargas(idx) {
   return out;
 }
 
+// [e] Orden ascendente por Codigo, dentro de CADA Indice: dos Indices del mismo subsistema numeran
+// por separado. El codigo se asigna como maximo + 1, asi que una fila fuera de orden es una
+// insercion a mano en el lugar equivocado — y el que busca la entrada siguiente, o calcula el
+// maximo mirando la ultima fila, se equivoca. Los huecos NO se marcan: retirar una entrada deja uno
+// y el codigo no se reusa. Un codigo repetido tampoco es desorden: es otro defecto.
+//
+// Hasta el 28/09/2026 este control vivia solo en `lint-planes`, y conocimiento, herramientas y
+// decisiones tenian filas desordenadas con sus lints en verde: el control existia, pero solo sobre
+// el registro que ya conocia (conocimiento Local-0013).
+function filasDesordenadas(idx) {
+  const out = [];
+  let previo = null;
+  for (const f of filasDe(idx)) {
+    const n = parseInt(f.codigo.slice(-4), 10);
+    if (previo !== null && n < previo.n) out.push(`${idx.nombre}: filas fuera de orden ascendente por Código — ${previo.codigo} antes de ${f.codigo}`);
+    previo = { n, codigo: f.codigo };
+  }
+  return out;
+}
+
 // Un Indice en la forma anterior —descubierto por su nombre de siempre, sin frontmatter— se tolera
 // a proposito: hay Agentes Desplegados sin actualizar y romperles el lint no los actualiza. Pero la
 // tolerancia se dice. Sin esta linea el archivo queda afuera de `declarados` y los controles de
@@ -221,6 +230,7 @@ function problemasDeIndices(idxs, manifiestoTxt) {
     if (!ORIGENES.includes(i.origen)) out.push(`${i.nombre}: origen "${i.origen}" invalido (validos: ${ORIGENES.join(' / ')})`);
     out.push(...filasPegadas(i));
     out.push(...descripcionesLargas(i));
+    out.push(...filasDesordenadas(i));
     if (!i.columnas) continue;
     if (!i.cabecera) { out.push(`${i.nombre}: declara columnas pero no se encontro la tabla`); continue; }
     for (const c of i.columnas) if (!i.cabecera.includes(c)) out.push(`${i.nombre}: columna declarada "${c}" que la tabla no tiene`);

@@ -219,14 +219,14 @@ for (const r of rows) {
 // y repeticion, pero NO los huecos —retirar un plan deja uno y nadie vuelve a ocuparlo—.
 const PREFIJO_DE_ORIGEN = { 'agente-multiproposito': 'Base', 'agente-desplegado': 'Local' };
 const nucleoMal = sinNucleo;
-// El codigo y el orden son de CADA Indice: dos Indices del mismo subsistema numeran por separado,
-// asi que unicidad y orden se validan por archivo y no sobre la mezcla.
+// El codigo es de CADA Indice: dos Indices del mismo subsistema numeran por separado, asi que la
+// unicidad se valida por archivo y no sobre la mezcla. El orden por Codigo lo controla
+// `common/indices.js` para los nueve registros, y sale en INDICES DECLARADOS.
 for (const indice of new Set(rows.filter(r => r.conNucleo).map(r => r.indice))) {
   const filas = rows.filter(r => r.indice === indice);
   const vistosCod = new Set(), vistosNom = new Set();
   const declarado = indices.find(i => i.nombre === indice) || {};
   const esperado = PREFIJO_DE_ORIGEN[declarado.origen];
-  let previo = null;
   for (const r of filas) {
     const m = /^(Base|Local)-(\d{4})$/.exec(r.codigo);
     if (!m) { nucleoMal.push(`${indice}: ${r.ref}  codigo "${r.codigo}" mal formado (esperado Base-NNNN o Local-NNNN)`); continue; }
@@ -237,11 +237,6 @@ for (const indice of new Set(rows.filter(r => r.conNucleo).map(r => r.indice))) 
     else if (vistosNom.has(r.nombre.toLowerCase())) nucleoMal.push(`${indice}: ${r.codigo}  Nombre duplicado "${r.nombre}"`);
     else vistosNom.add(r.nombre.toLowerCase());
     if (!r.descripcion || r.descripcion === '—') nucleoMal.push(`${indice}: ${r.codigo}  sin Descripción`);
-    // Las filas van en orden ascendente por Codigo. Se comparan solo las bien formadas: un codigo
-    // roto ya tiene su hallazgo y contarlo como 0 arrastraria un segundo hallazgo prestado.
-    const n = parseInt(m[2], 10);
-    if (previo !== null && n <= previo.n) nucleoMal.push(`${indice}: filas fuera de orden ascendente por Código — ${previo.codigo} antes de ${r.codigo}`);
-    previo = { n, codigo: r.codigo };
   }
 }
 
@@ -293,7 +288,7 @@ for (const r of rows) {
 
 const secciones = [
   ['INDICES DECLARADOS (frontmatter vs tabla vs manifiesto)', problemasIndices],
-  ['NUCLEO DEL INDICE (código, Nombre, Descripción, orden)', nucleoMal],
+  ['NUCLEO DEL INDICE (código, Nombre, Descripción)', nucleoMal],
   ['ESTADOS.md AUSENTE O VACIO (no se valida el estado)', estados.size ? [] : [estPath]],
   ['ESTADO REPETIDO EN ESTADOS-LOCAL.md (el del Agente Multiproposito manda)', estadoRepetido],
   ['GRAFO DE TRANSICIONES MAL FORMADO (ESTADOS.md)', grafoMal],
