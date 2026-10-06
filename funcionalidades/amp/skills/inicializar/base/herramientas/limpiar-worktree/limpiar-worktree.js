@@ -122,11 +122,21 @@ if (enlaces.length) {
 }
 
 // --- 4. escrituras en su `.claude/` --------------------------------------------------------------
+// También las instrucciones de la raíz que git ignora: `preparar-worktree` las copió, git no sabe
+// nada de ellas, y un `AGENTS.md` corregido adentro se perdería igual que una página de `.claude/`.
+// Se anotan con su ruta desde la raíz del worktree; las de `.claude/` llevan el prefijo.
 if (!elegido.huerfano) {
-  const escrituras = wt.escriturasEnClaude(raiz, elegido.ruta);
+  const enClaude = wt.escriturasEnClaude(raiz, elegido.ruta);
+  const enRaiz = wt.escriturasEnRaiz(raiz, elegido.ruta);
+  const conClaude = r => path.join('.claude', r);
+  const escrituras = {
+    nuevos: [...enClaude.nuevos.map(conClaude), ...enRaiz.nuevos],
+    cambiados: [...enClaude.cambiados.map(conClaude), ...enRaiz.cambiados],
+    hay: enClaude.hay || enRaiz.hay,
+  };
   if (escrituras.hay) {
     const total = escrituras.nuevos.length + escrituras.cambiados.length;
-    anotar(`[ESCRITURAS] el agente escribió ${total} archivo(s) en el \`.claude/\` del worktree:`);
+    anotar(`[ESCRITURAS] el agente escribió ${total} archivo(s) que se pierden al borrar el worktree:`);
     escrituras.nuevos.slice(0, 10).forEach(r => anotar(`    nuevo:    ${r}`));
     escrituras.cambiados.slice(0, 10).forEach(r => anotar(`    cambiado: ${r}`));
     if (!forzar) {
@@ -146,13 +156,14 @@ if (!elegido.huerfano) {
       try {
         const hasta = path.join(destino, rel);
         fs.mkdirSync(path.dirname(hasta), { recursive: true });
-        fs.copyFileSync(path.join(elegido.ruta, '.claude', rel), hasta);
+        fs.copyFileSync(path.join(elegido.ruta, rel), hasta);
         guardados++;
       } catch { /* el conteo de abajo dice cuántos quedaron */ }
     }
     anotar(`    respaldados ${guardados} de ${total} en \`${path.relative(raiz, destino)}\`.`);
   } else {
-    anotar('[ESCRITURAS] ninguna: el `.claude/` del worktree está igual que el del repo.');
+    anotar('[ESCRITURAS] ninguna: el `.claude/` y las instrucciones de la raíz del worktree están '
+      + 'igual que en el repo.');
   }
 }
 

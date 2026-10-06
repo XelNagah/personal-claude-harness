@@ -4,7 +4,9 @@
 // Un `git worktree add` deja el árbol versionado y nada más. Lo que falta es justo lo que decide si
 // el agente de adentro arranca entero: `settings.local.json` no se commitea y
 // es donde vive `enabledPlugins`, así que sin copiarlo el worktree arranca SIN NINGÚN PLUGIN
-// HABILITADO y sin señal de que le falta algo. Esta Herramienta trae lo que git IGNORA — y solo
+// HABILITADO y sin señal de que le falta algo. Lo mismo con `AGENTS.md` y `CLAUDE.md` cuando el
+// repo los ignora: sin ellos arranca sin las reglas del repo. Esta Herramienta trae lo que git
+// IGNORA dentro de `.claude/` y, de la raíz, los puntos de entrada y lo que importan — y solo
 // eso: lo que está sin commitear no se copia, porque el worktree se arma desde un commit para no
 // arrastrar el trabajo a medias del repo.
 //
@@ -151,6 +153,27 @@ if (origen.total === 0) {
   }
 }
 
+// Las instrucciones de la raíz: si el repo ignora `AGENTS.md` o `CLAUDE.md`, el worktree nace sin
+// ellos y el agente de adentro arranca sin las reglas del repo, también sin señal. Se copian los
+// puntos de entrada ignorados y lo que importan con `@ruta` fuera de `.claude/`.
+const raizFaltante = wt.faltantesDeRaiz(raiz, ubicacion.ruta);
+let falladosRaiz = [];
+if (raizFaltante.ignoradas.length === 0) {
+  anotar('[RAÍZ] git no ignora ningún archivo de instrucciones — ya vienen con el árbol.');
+} else if (raizFaltante.faltan.length === 0) {
+  anotar(`[RAÍZ] ya estaban los ${raizFaltante.ignoradas.length} archivo(s) de instrucciones que git ignora.`);
+} else {
+  const { copiados, fallados } = wt.copiarFaltantes(raiz, ubicacion.ruta, raizFaltante.faltan, '');
+  falladosRaiz = fallados;
+  anotar(`[RAÍZ] copiados ${copiados.length} archivo(s) de instrucciones que git ignora: `
+    + copiados.map(r => `\`${r.replace(/\\/g, '/')}\``).join(', ') + '.');
+  anotar('    sin ellos el agente de adentro arrancaba sin las reglas del repo.');
+  if (fallados.length) {
+    anotar(`    ⚠ ${fallados.length} no se pudieron copiar:`);
+    fallados.forEach(f => anotar(`      ${f.ruta} — ${f.error}`));
+  }
+}
+
 // --- 5. verificar antes de decir que está listo -------------------------------------------------
 const hallazgos = [];
 if (!fs.existsSync(ubicacion.ruta)) hallazgos.push('el árbol no está en disco');
@@ -162,6 +185,7 @@ if (enlaces.length) {
 const registradoAhora = wt.listarWorktrees(raiz)
   .some(w => path.resolve(w.ruta) === path.resolve(ubicacion.ruta));
 if (!registradoAhora) hallazgos.push('git no registra el worktree');
+if (falladosRaiz.length) hallazgos.push(`faltan ${falladosRaiz.length} archivo(s) de instrucciones de la raíz`);
 
 anotar('');
 if (hallazgos.length) {

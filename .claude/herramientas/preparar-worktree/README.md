@@ -24,6 +24,15 @@ Trae **lo que git ignora, y solo eso**. Con `.claude/` versionado son los pocos 
 de adentro; con `.claude/` gitignoreado es el árbol entero. Es la misma operación con distinto
 tamaño.
 
+De la raíz trae **los puntos de entrada que git ignora** —`AGENTS.md`, `CLAUDE.md` y
+`CLAUDE.local.md`— **y lo que importan** con `@ruta`, siguiendo la cadena. Es la misma falla que
+`settings.local.json`: en un repo cuyo `.gitignore` excluye `AGENTS.md` y `CLAUDE.md`, el worktree
+nacía sin ellos y el agente de adentro arrancaba sin las reglas del repo, sin señal (reportado
+desde un Agente Desplegado el 06/10/2026). Lo demás que la raíz ignore —un `.env`, los logs, las
+dependencias— **no se copia**: la Herramienta trae lo que el agente necesita para arrancar entero,
+no el entorno de la aplicación. Un import que cae dentro de `.claude/` ya viene con la copia de
+arriba, y uno que sale del repo (`@~/...`) no es del repo.
+
 Lo que está **sin commitear pero no ignorado no se copia**, aunque git tampoco lo haya llevado: el
 worktree se arma desde un commit justamente para no arrastrar el trabajo a medias del repo. La
 primera versión copiaba todo lo que git no había llevado, y en este mismo repo —con seis archivos
@@ -54,5 +63,5 @@ existe en disco y git **no** lo registra como worktree, no pisa nada y sale con 
 
 ## Salida
 
-Secciones `[ÁRBOL]`, `[.claude/]` y `[VERIFICACIÓN]`. Sale con 1 si no pudo dejarlo armado y
+Secciones `[ÁRBOL]`, `[.claude/]`, `[RAÍZ]` y `[VERIFICACIÓN]`. Sale con 1 si no pudo dejarlo armado y
 completo — es una acción, no un chequeo.

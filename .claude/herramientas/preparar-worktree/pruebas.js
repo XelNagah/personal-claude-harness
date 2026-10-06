@@ -8,6 +8,8 @@
 // - **`.claude/` gitignoreado entero.** Es el otro repo posible, y ahí git no lleva NADA: sin la
 //   copia el worktree arranca con el `.claude/` vacío. Misma operación que el caso versionado, con
 //   otro tamaño.
+// - **Instrucciones de la raíz gitignoreadas.** `AGENTS.md` y `CLAUDE.md` excluidos por el
+//   `.gitignore`: se copian ellos y lo que importan, y nada más de la raíz.
 //
 // Uso: node .claude/herramientas/preparar-worktree/pruebas.js   (desde la raíz del repo)
 
@@ -100,6 +102,54 @@ const segunda = correr(['todo-copiado'], repo);
 caso('la segunda corrida sale en verde', segunda.codigo, 0);
 caso('y dice que el árbol ya estaba', /\[ÁRBOL\] ya estaba/.test(segunda.texto), true);
 caso('y que el `.claude/` ya estaba completo', /ya estaba completo/.test(segunda.texto), true);
+caso('sin instrucciones ignoradas en la raíz, lo dice', /\[RAÍZ\] git no ignora ningún/.test(segunda.texto), true);
+
+// =================================================================================================
+console.log('\n== Instrucciones de la raíz gitignoreadas: se copian los puntos de entrada y lo que importan ==');
+// El caso que reportó un Agente Desplegado: el `.gitignore` excluye `AGENTS.md` y `CLAUDE.md`, y el
+// worktree nacía sin ellos — el agente de adentro arrancaba sin las reglas del repo y sin señal.
+const repoRaiz = path.join(BANCO, 'repo-raiz');
+fs.mkdirSync(path.join(repoRaiz, 'docs'), { recursive: true });
+fs.mkdirSync(path.join(repoRaiz, '.claude'), { recursive: true });
+fs.writeFileSync(path.join(repoRaiz, '.gitignore'),
+  'AGENTS.md\nCLAUDE.md\ndocs/notas-locales.md\ndocs/no-importada.md\n.env\n');
+fs.writeFileSync(path.join(repoRaiz, 'CLAUDE.md'), '@AGENTS.md\n');
+fs.writeFileSync(path.join(repoRaiz, 'AGENTS.md'), [
+  '# Reglas',
+  '@docs/notas-locales.md',
+  '@docs/guia.md',
+  '@.claude/manifiesto.md',
+  'Escribir a alguien@ejemplo.com no es un import, y `@docs/no-importada.md` en código tampoco.',
+  '',
+].join('\n'));
+fs.writeFileSync(path.join(repoRaiz, 'docs', 'notas-locales.md'), '# Notas\n');
+fs.writeFileSync(path.join(repoRaiz, 'docs', 'no-importada.md'), '# No\n');
+fs.writeFileSync(path.join(repoRaiz, 'docs', 'guia.md'), '# Guía versionada\n');
+fs.writeFileSync(path.join(repoRaiz, '.claude', 'manifiesto.md'), '# Manifiesto\n');
+fs.writeFileSync(path.join(repoRaiz, '.env'), 'SECRETO=1\n');
+git(repoRaiz, ['init']);
+git(repoRaiz, ['config', 'user.email', 'banco@prueba.local']);
+git(repoRaiz, ['config', 'user.name', 'Banco de prueba']);
+git(repoRaiz, ['add', '-A']);
+git(repoRaiz, ['commit', '-m', 'inicial', '--no-gpg-sign']);
+
+caso('el recorrido encuentra los dos puntos de entrada y el import ignorado',
+  wt.instruccionesDeRaiz(repoRaiz).map(r => r.replace(/\\/g, '/')),
+  ['AGENTS.md', 'CLAUDE.md', 'docs/notas-locales.md']);
+
+const conInstr = correr(['con-raiz'], repoRaiz);
+const arbolRaiz = path.join(repoRaiz, '.claude', 'tmp', 'worktrees', 'con-raiz');
+caso('sale en verde', conInstr.codigo, 0);
+caso('informa los 3 copiados', /\[RAÍZ\] copiados 3 archivo/.test(conInstr.texto), true);
+caso('`AGENTS.md` está en el worktree', fs.existsSync(path.join(arbolRaiz, 'AGENTS.md')), true);
+caso('`CLAUDE.md` está en el worktree', fs.existsSync(path.join(arbolRaiz, 'CLAUDE.md')), true);
+caso('el import ignorado está', fs.existsSync(path.join(arbolRaiz, 'docs', 'notas-locales.md')), true);
+caso('lo que no es instrucción no se copia (`.env`)', fs.existsSync(path.join(arbolRaiz, '.env')), false);
+caso('un `@` dentro de código no se sigue', fs.existsSync(path.join(arbolRaiz, 'docs', 'no-importada.md')), false);
+caso('y se copió, no se enlazó', fs.lstatSync(path.join(arbolRaiz, 'AGENTS.md')).isSymbolicLink(), false);
+
+const conInstr2 = correr(['con-raiz'], repoRaiz);
+caso('la segunda corrida dice que ya estaban', /\[RAÍZ\] ya estaban los 3/.test(conInstr2.texto), true);
 
 // =================================================================================================
 console.log('\n== Casos de borde ==');

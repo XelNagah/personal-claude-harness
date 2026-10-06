@@ -136,10 +136,48 @@ const respaldos = (() => {
   const base = path.join(repo, '.claude', '.respaldo-amp');
   if (!fs.existsSync(base)) return [];
   const fecha = fs.readdirSync(base)[0];
-  const dir = path.join(base, fecha, 'worktree-con-escrituras', 'conocimiento');
+  const dir = path.join(base, fecha, 'worktree-con-escrituras', '.claude', 'conocimiento');
   return fs.existsSync(dir) ? fs.readdirSync(dir) : [];
 })();
 caso('respaldó lo escrito antes de borrar', respaldos, ['nueva.md']);
+
+// =================================================================================================
+console.log('\n== Escrituras en las instrucciones de la raíz que git ignora: frena igual ==');
+// `preparar-worktree` copia `AGENTS.md` cuando el repo lo ignora. Git no sabe nada de esa copia:
+// si el agente de adentro la corrige, solo la comparación byte a byte se entera.
+const repoRaiz = path.join(BANCO, 'repo-raiz');
+fs.mkdirSync(path.join(repoRaiz, '.claude'), { recursive: true });
+fs.writeFileSync(path.join(repoRaiz, '.gitignore'), 'AGENTS.md\n');
+fs.writeFileSync(path.join(repoRaiz, 'AGENTS.md'), '# Reglas\n');
+fs.writeFileSync(path.join(repoRaiz, '.claude', 'algo.md'), '# Algo\n');
+git(repoRaiz, ['init']);
+git(repoRaiz, ['config', 'user.email', 'banco@prueba.local']);
+git(repoRaiz, ['config', 'user.name', 'Banco de prueba']);
+git(repoRaiz, ['add', '-A']);
+git(repoRaiz, ['commit', '-m', 'inicial', '--no-gpg-sign']);
+
+correr(PREPARAR, ['raiz-intacta'], repoRaiz);
+const intacta = correr(LIMPIAR, ['raiz-intacta'], repoRaiz);
+caso('con el `AGENTS.md` copiado sin tocar, limpia en verde', intacta.codigo, 0);
+
+correr(PREPARAR, ['raiz-escrita'], repoRaiz);
+const arbol3 = path.join(repoRaiz, '.claude', 'tmp', 'worktrees', 'raiz-escrita');
+fs.writeFileSync(path.join(arbol3, 'AGENTS.md'), '# Reglas\nUna regla corregida adentro.\n');
+const frenadoRaiz = correr(LIMPIAR, ['raiz-escrita'], repoRaiz);
+caso('con el `AGENTS.md` corregido adentro, sale con 1', frenadoRaiz.codigo, 1);
+caso('y lo nombra como cambiado', /cambiado: AGENTS\.md/.test(frenadoRaiz.texto), true);
+caso('y no borra nada', fs.existsSync(arbol3), true);
+
+const forzadoRaiz = correr(LIMPIAR, ['raiz-escrita', '--forzar'], repoRaiz);
+caso('con `--forzar` sale en verde', forzadoRaiz.codigo, 0);
+const respaldoRaiz = (() => {
+  const base = path.join(repoRaiz, '.claude', '.respaldo-amp');
+  if (!fs.existsSync(base)) return null;
+  const f = path.join(base, fs.readdirSync(base)[0], 'worktree-raiz-escrita', 'AGENTS.md');
+  return fs.existsSync(f) ? fs.readFileSync(f, 'utf8') : null;
+})();
+caso('y respaldó el `AGENTS.md` corregido', respaldoRaiz, '# Reglas\nUna regla corregida adentro.\n');
+caso('el `AGENTS.md` del repo no se tocó', fs.readFileSync(path.join(repoRaiz, 'AGENTS.md'), 'utf8'), '# Reglas\n');
 
 // =================================================================================================
 console.log('\n== Casos de borde ==');

@@ -45,6 +45,12 @@ probara solo el camino feliz dejaría sin cubrir justo la condición por la que 
    versionado —lo que la otra Herramienta copió— sí se compara byte a byte, que además es el único
    camino que queda cuando `.claude/` entero está gitignoreado.
 
+   **Mira también las instrucciones de la raíz que git ignora** —`AGENTS.md`, `CLAUDE.md` y lo
+   que importan—, que `preparar-worktree` copia. Git no sabe nada de esas copias: un `AGENTS.md`
+   corregido adentro se perdería al borrar igual que una página de `.claude/`, así que también
+   frena y también se respalda. En el reporte y en el respaldo cada archivo lleva su ruta desde la
+   raíz del worktree: `.claude/conocimiento/x.md`, `AGENTS.md`.
+
 ## Verifica siempre
 
 Después de borrar compara el `.claude/` del repo contra el listado que tomó antes, chequea que el

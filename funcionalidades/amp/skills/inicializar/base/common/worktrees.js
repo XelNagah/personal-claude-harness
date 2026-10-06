@@ -215,8 +215,16 @@ function inventariarClaude(rutaRepo, opciones = {}) {
  * mientras que copiar de más se lleva el trabajo a medias sin que nadie lo vea.
  */
 function archivosIgnorados(rutaRepo, relativas) {
+  const enRepo = ignoradosEnRepo(rutaRepo, relativas.map(r => path.join('.claude', r)));
+  const set = new Set();
+  for (const r of enRepo) set.add(r.replace(/^\.claude[\\/]/, ''));
+  return set;
+}
+
+/** Lo mismo que `archivosIgnorados`, con rutas relativas a la raíz del repo y no a `.claude/`. */
+function ignoradosEnRepo(rutaRepo, relativas) {
   if (!relativas.length) return new Set();
-  const entrada = relativas.map(r => path.join('.claude', r).replace(/\\/g, '/')).join('\n');
+  const entrada = relativas.map(r => r.replace(/\\/g, '/')).join('\n');
   let salida = '';
   try {
     salida = execFileSync('git', ['check-ignore', '--stdin'], {
@@ -229,9 +237,86 @@ function archivosIgnorados(rutaRepo, relativas) {
   const set = new Set();
   for (const linea of salida.split(/\r?\n/)) {
     if (!linea.trim()) continue;
-    set.add(path.normalize(linea.trim().replace(/^\.claude[\\/]/, '')));
+    set.add(path.normalize(linea.trim()));
   }
   return set;
+}
+
+// ------------------------------------------------------- instrucciones de la raíz
+
+/**
+ * Los puntos de entrada que un agente lee al abrir el repo. `CLAUDE.local.md` es el personal de
+ * Claude Code y casi siempre está ignorado.
+ */
+const PUNTOS_DE_ENTRADA = ['AGENTS.md', 'CLAUDE.md', 'CLAUDE.local.md'];
+
+/** Profundidad de imports que sigue Claude Code; más allá no los carga, así que no hace falta copiarlos. */
+const PROFUNDIDAD_IMPORTS = 5;
+
+/** Las rutas `@ruta` de un texto, fuera de los bloques y fragmentos de código, que Claude Code no expande. */
+function importsDe(texto) {
+  const sinCodigo = texto.replace(/```[\s\S]*?```/g, '').replace(/`[^`\n]*`/g, '');
+  const rutas = [];
+  const re = /(?:^|\s)@([^\s]+)/g;
+  let m;
+  while ((m = re.exec(sinCodigo))) rutas.push(m[1]);
+  return rutas;
+}
+
+/**
+ * Los archivos de instrucciones de la raíz que git ignora: los puntos de entrada y lo que importan
+ * con `@ruta`, siguiendo la cadena. Rutas relativas a la raíz del repo.
+ *
+ * Sin ellos el worktree arranca sin las reglas del repo, igual que sin `settings.local.json`
+ * arranca sin plugins. Lo que cae dentro de `.claude/` no se devuelve: ya lo trae
+ * `faltantesEnWorktree`. Lo que cae fuera del repo (`@~/...`) tampoco: no es del repo.
+ *
+ * Se recorren también los puntos de entrada versionados, porque uno versionado puede importar uno
+ * ignorado. Solo se devuelven los ignorados.
+ */
+function instruccionesDeRaiz(rutaRepo) {
+  const raiz = path.resolve(rutaRepo);
+  const vistos = new Set();
+  let frente = PUNTOS_DE_ENTRADA.map(n => path.join(raiz, n));
+
+  for (let nivel = 0; nivel <= PROFUNDIDAD_IMPORTS && frente.length; nivel++) {
+    const siguiente = [];
+    for (const completa of frente) {
+      const rel = path.relative(raiz, completa);
+      if (!rel || rel.startsWith('..') || path.isAbsolute(rel)) continue;
+      if (rel.split(path.sep)[0] === '.claude') continue;
+      if (vistos.has(rel)) continue;
+      let st;
+      try {
+        st = fs.lstatSync(completa);
+      } catch {
+        continue;
+      }
+      if (!st.isFile()) continue;
+      vistos.add(rel);
+      let texto = '';
+      try {
+        texto = fs.readFileSync(completa, 'utf8');
+      } catch {
+        continue;
+      }
+      for (const imp of importsDe(texto)) {
+        if (imp.startsWith('~')) continue;
+        siguiente.push(path.resolve(path.dirname(completa), imp));
+      }
+    }
+    frente = siguiente;
+  }
+
+  const ignorados = ignoradosEnRepo(raiz, [...vistos]);
+  return [...vistos].filter(r => ignorados.has(path.normalize(r))).sort();
+}
+
+/** De las instrucciones de la raíz que git ignora, cuáles no están en el worktree. */
+function faltantesDeRaiz(rutaRepo, rutaWorktree) {
+  const ignoradas = instruccionesDeRaiz(rutaRepo);
+  const faltan = ignoradas.filter(r => !fs.existsSync(path.join(rutaWorktree, r)));
+  return { faltan, ignoradas };
 }
 
 /**
@@ -264,13 +349,16 @@ function faltantesEnWorktree(rutaRepo, rutaWorktree) {
   return { faltan, bytes, origen, destino, ignorados };
 }
 
-/** Copia al worktree la lista de rutas relativas a `.claude/`. Devuelve las copiadas y las que fallaron. */
-function copiarFaltantes(rutaRepo, rutaWorktree, faltan) {
+/**
+ * Copia al worktree la lista de rutas relativas a `base` —`.claude/` por omisión, `''` para la raíz
+ * del repo—. Devuelve las copiadas y las que fallaron.
+ */
+function copiarFaltantes(rutaRepo, rutaWorktree, faltan, base = '.claude') {
   const copiados = [];
   const fallados = [];
   for (const rel of faltan) {
-    const desde = path.join(rutaRepo, '.claude', rel);
-    const hasta = path.join(rutaWorktree, '.claude', rel);
+    const desde = path.join(rutaRepo, base, rel);
+    const hasta = path.join(rutaWorktree, base, rel);
     try {
       fs.mkdirSync(path.dirname(hasta), { recursive: true });
       fs.copyFileSync(desde, hasta);
@@ -350,6 +438,35 @@ function escriturasEnClaude(rutaRepo, rutaWorktree) {
   for (const rel of nuevos) cambiados.delete(rel);
   const orden = s => [...s].sort();
   return { nuevos: orden(nuevos), cambiados: orden(cambiados), hay: nuevos.size + cambiados.size > 0 };
+}
+
+/**
+ * Qué se escribió en las instrucciones de la raíz del worktree que git ignora y que se pierde al
+ * borrarlo. Rutas relativas a la raíz del repo.
+ *
+ * Es la misma pregunta que `escriturasEnClaude` le hace a lo no versionado, y se contesta igual:
+ * byte a byte, porque git no sabe nada de estos archivos. Las candidatas salen de los dos lados:
+ * el agente de adentro pudo agregar un import nuevo a un archivo ignorado.
+ */
+function escriturasEnRaiz(rutaRepo, rutaWorktree) {
+  const nuevos = [];
+  const cambiados = [];
+  const candidatas = new Set([...instruccionesDeRaiz(rutaRepo), ...instruccionesDeRaiz(rutaWorktree)]);
+  for (const rel of [...candidatas].sort()) {
+    const enArbol = path.join(rutaWorktree, rel);
+    const enRepo = path.join(rutaRepo, rel);
+    if (!fs.existsSync(enArbol)) continue;
+    if (!fs.existsSync(enRepo)) {
+      nuevos.push(rel);
+      continue;
+    }
+    try {
+      if (!fs.readFileSync(enRepo).equals(fs.readFileSync(enArbol))) cambiados.push(rel);
+    } catch {
+      cambiados.push(rel);
+    }
+  }
+  return { nuevos, cambiados, hay: nuevos.length + cambiados.length > 0 };
 }
 
 // ------------------------------------------------------------------- verificación
@@ -461,9 +578,15 @@ module.exports = {
   calcularUbicacion,
   inventariarClaude,
   archivosIgnorados,
+  ignoradosEnRepo,
+  PUNTOS_DE_ENTRADA,
+  importsDe,
+  instruccionesDeRaiz,
+  faltantesDeRaiz,
   faltantesEnWorktree,
   copiarFaltantes,
   escriturasEnClaude,
+  escriturasEnRaiz,
   enlacesEn,
   verificarBorrado,
 };
