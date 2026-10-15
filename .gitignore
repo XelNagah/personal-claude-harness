@@ -22,3 +22,6 @@ Desktop.ini
 
 # salida de corrida de probar-disparo-de-skills
 .claude/herramientas/probar-disparo-de-skills/ultima-corrida.json
+
+# Registro de comunicacion: guarda rutas absolutas de máquina (Aprendizaje local)
+.claude/comunicacion/INDICE.md
