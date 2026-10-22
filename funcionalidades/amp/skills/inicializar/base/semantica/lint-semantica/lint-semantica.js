@@ -192,11 +192,41 @@ const AUTOEXCL = [
 ];
 const excluido = p => AUTOEXCL.some(a => { const r = path.resolve(p); return r === a || r.startsWith(a + path.sep); });
 const CODE_EXT = new Set(['.js', '.json', '.ts', '.mjs', '.cjs', '.sh', '.ps1', '.yml', '.yaml']);
+// Lo que git ignora tampoco se barre: es salida de herramientas (`build/`, resultados de pruebas),
+// no texto del repo, y no se corrige —se regenera—. Pedido de un Agente Desplegado el 20/10/2026:
+// despues de correr pruebas, `build/` traia 71.515 apariciones, el lint tardaba mas de 60 s y el
+// control de cierre lo cortaba por tiempo aunque saliera con 0. Excluir por NOMBRE, como EXCLUDE,
+// no alcanza: cada repo ignora carpetas distintas, y las declara en su `.gitignore`.
+// Una sola llamada: `--directory` informa la carpeta ignorada entera sin entrar en ella.
+// Dos salvedades, y las dos evitan que el barrido se apague sin avisar:
+//  - solo se le pregunta a git si el repo que se barre ES la raiz del repo git. Adentro de otro
+//    repo —un banco de pruebas bajo `.claude/tmp/`, que el repo de afuera ignora— git contestaria
+//    con las reglas del de afuera y podaria el repo entero.
+//  - `.claude/` nunca se poda: hay Agentes Desplegados que lo ignoran entero, y es justamente lo
+//    que este lint tiene que mirar.
+// Sin git, o fuera de un repo git, no hay nada ignorado y se barre todo, como antes.
+function ignoradosPorGit(repo) {
+  const git = args => require('child_process').execFileSync('git', args,
+    { cwd: repo, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'], maxBuffer: 64 * 1024 * 1024 });
+  const mismo = (a, b) => {
+    const n = p => { try { p = fs.realpathSync.native(p); } catch {} return path.resolve(p).toLowerCase(); };
+    return n(a) === n(b);
+  };
+  try {
+    if (!mismo(git(['rev-parse', '--show-toplevel']).trim(), repo)) return new Set();
+    const salida = git(['ls-files', '-z', '--others', '--ignored', '--exclude-standard', '--directory']);
+    const claude = path.join(repo, '.claude');
+    return new Set(salida.split('\0').filter(Boolean)
+      .map(r => path.join(repo, r.replace(/\/$/, '')))
+      .filter(p => p !== claude));
+  } catch { return new Set(); }
+}
+const IGNORADOS = ignoradosPorGit(repoRoot);
 function walkRepo(dir, acc) {
   for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
     if (EXCLUDE.has(e.name)) continue;
     const full = path.join(dir, e.name);
-    if (excluido(full)) continue;
+    if (excluido(full) || IGNORADOS.has(full)) continue;
     if (e.isDirectory()) walkRepo(full, acc);
     else acc.push(full);
   }

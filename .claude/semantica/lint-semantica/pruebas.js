@@ -215,7 +215,32 @@ nota(`Una sola ${VETADO} en todo el repo de prueba.\n`);
   if (n !== 1) malos++;
 }
 
+// -- CASOS finos: lo que git ignora no se barre, salvo `.claude/` -----------
+// Pedido de un Agente Desplegado el 20/10/2026: `build/` con resultados de pruebas traia 71.515
+// apariciones y el control de cierre cortaba el lint por tiempo. Para que git conteste con las
+// reglas del banco y no con las del repo que lo corre, el banco se vuelve un repo git propio.
+// Cada caso mide las DOS mitades a la vez: la nota de la raiz tiene que seguir contando 1 —si no,
+// el barrido se apago entero y el 0 de `build/` no probaria nada—.
+console.log('\n== CASOS: lo que git ignora no se barre, salvo `.claude/` ==');
+const gitBanco = args => cp.spawnSync('git', args, { cwd: REPO_PRUEBA, encoding: 'utf8' });
+const hayGit = gitBanco(['--version']).status === 0;
+for (const [nombre, ignorar, carpeta, esperada] of [
+  ['carpeta que `.gitignore` excluye', 'build/\n', 'build', 1],
+  ['`.claude/` ignorado entero se barre igual', '.claude/\n', '.claude', 2],
+]) {
+  if (!hayGit) { console.log(`OK    ${nombre} → salteado: no hay git en esta máquina`); continue; }
+  armar();
+  gitBanco(['init', '-q']);
+  fs.writeFileSync(path.join(REPO_PRUEBA, '.gitignore'), ignorar);
+  nota(`Una ${VETADO} en la raíz del repo de prueba.\n`);
+  fs.mkdirSync(path.join(REPO_PRUEBA, carpeta), { recursive: true });
+  fs.writeFileSync(path.join(REPO_PRUEBA, carpeta, 'resultado.md'), `Otra ${VETADO} adentro de ${carpeta}/.\n`);
+  const n = hallazgos(correr())['VETADOS EN TEXTO PLANO'] || 0;
+  console.log(`${n === esperada ? 'OK  ' : 'FALLA'} ${nombre} → ${n} (${esperada} esperada${esperada === 1 ? "" : "s"})`);
+  if (n !== esperada) malos++;
+}
+
 fs.rmSync(REPO_PRUEBA, { recursive: true, force: true });
-console.log(`\ncasos: ${casos.length + 6}`);
+console.log(`\ncasos: ${casos.length + 8}`);
 console.log(malos ? `${malos} FALLARON.` : 'TODO VERDE.');
 process.exit(malos ? 1 : 0);
