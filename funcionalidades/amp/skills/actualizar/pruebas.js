@@ -193,6 +193,30 @@ function conColumnaPropia() {
     /Repo al d[ií]a: nada para actualizar/.test(texto));
 }
 {
+  // El mismo caso bueno, armado como lo arma de verdad un Agente Desplegado: la columna propia va en
+  // el MEDIO (antes de Detalle), está declarada en `columnas` del frontmatter —el lint de Índices lo
+  // exige— y tiene su línea en la lista de columnas. Medido el 23/10/2026: un repo con `Ámbito` así
+  // en decisiones/INDICE.md salía DIVERGENTE en cada corrida, porque el detector leía esos dos
+  // agregados como una convención cambiada y exigía las columnas de la Base por posición.
+  armarAlDia();
+  const t = leer('decisiones/INDICE.md').split(/\r?\n/);
+  const fm = t.findIndex(l => /^columnas:\s*\[/.test(l));
+  t[fm] = t[fm].replace(/,\s*Detalle\]/, ', Ámbito, Detalle]');
+  const est = t.findIndex(l => /^- \*\*Estado\*\*/.test(l));
+  t.splice(est + 1, 0, '- **Ámbito** — `producto` o `andamiaje`: a qué parte del repo condiciona la decisión.');
+  const cab = t.findIndex(l => /^\|\s*Código\s*\|/.test(l));
+  t[cab] = t[cab].replace(/\|\s*Detalle\s*\|\s*$/, '| Ámbito | Detalle |');
+  t[cab + 1] = t[cab + 1].trimEnd() + '---|';
+  t.splice(cab + 2, 0, '| Local-0001 | Las cotizaciones se guardan por bulto | Cada unidad se cotiza por separado | 2026-10-23 | vigente | producto | — |');
+  escribir('decisiones/INDICE.md', t.join('\n'));
+  const { texto } = correr(REPO_PRUEBA);
+  chequear('una columna propia en el medio, declarada y explicada, NO se marca',
+    !marca(texto, 'decisiones/INDICE.md'),
+    (texto.split(/\r?\n/).find(l => l.includes('decisiones/INDICE.md')) || 'ninguna línea lo nombra').trim());
+  chequear('y con ella el repo sigue informándose al día',
+    /Repo al d[ií]a: nada para actualizar/.test(texto));
+}
+{
   // Caso malo: la convención de arriba cambió Y el repo tiene una columna propia. Pisar el bloque le
   // dejaría las filas bajo una cabecera con menos columnas de las que tienen. Tiene que salir por
   // DIVERGENTE, que es bloqueante, y no por «encabezado viejo», que el flujo pisa sin preguntar.

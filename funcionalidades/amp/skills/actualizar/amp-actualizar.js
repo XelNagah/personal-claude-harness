@@ -180,6 +180,21 @@ function textoDeLaConvencion(bloque) {
   const i = ls.findIndex(l => l.trim().startsWith('|'));
   return (i === -1 ? ls : ls.slice(0, i)).join('\n').trimEnd();
 }
+// Una columna propia no deja rastro solo en la tabla: el repo la declara tambien en `columnas` del
+// frontmatter —el lint de Indices se lo exige— y la explica en la lista de columnas, con la misma
+// forma que las de la Base (`- **Ámbito** — …`). Comparar la convencion tal cual veia esos dos
+// agregados como una convencion cambiada, y el repo quedaba marcado en cada corrida sin nada que
+// hacer: medido el 23/10/2026 en un Agente Desplegado con `Ámbito` en `decisiones/INDICE.md`.
+// Se quitan solo esas dos huellas de las columnas propias; cualquier otro cambio sigue contando.
+function sinColumnasPropias(texto, propias) {
+  const esc = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return texto.split('\n')
+    .map(l => /^columnas:\s*\[/.test(l)
+      ? l.replace(/\[(.*)\]/, (_, cs) => '[' + cs.split(',').map(c => c.trim()).filter(c => !propias.includes(c)).join(', ') + ']')
+      : l)
+    .filter(l => !propias.some(c => new RegExp('^\\s*[-*]\\s+\\*\\*' + esc(c) + '\\*\\*').test(l)))
+    .join('\n');
+}
 function listarBase(rel, out) {
   const dir = path.join(BASE, rel || '.');
   if (!existe(dir)) return out;
@@ -242,8 +257,12 @@ function chequearContenido(add) {
       // El repo extendio la tabla. Si eso es lo UNICO que difiere —el texto de la convencion es el
       // mismo y las columnas de la Base siguen estando, en su orden— no hay nada que actualizar y hay
       // que callarse: marcarlo dejaria a ese repo con un hallazgo bloqueante en cada corrida, para
-      // siempre, sin nada que hacer al respecto.
-      if (textoDeLaConvencion(a) === textoDeLaConvencion(b) && deLaBase.every((c, i) => delRepo[i] === c))
+      // siempre, sin nada que hacer al respecto. «En su orden» es entre ellas: la propia puede ir en
+      // el medio (antes de `Detalle`), asi que se comparan las del repo sin las propias, no por
+      // posicion contra la cabecera entera.
+      const sinPropias = delRepo.filter(c => !propias.includes(c));
+      if (sinColumnasPropias(textoDeLaConvencion(b), propias) === textoDeLaConvencion(a)
+        && sinPropias.length === deLaBase.length && deLaBase.every((c, i) => sinPropias[i] === c))
         continue;
       // Queda algo mas que la columna: o la convencion tambien cambio, o las columnas de la Base ya
       // no estan donde estaban. Pisar el bloque le dejaria las filas bajo una cabecera con menos
