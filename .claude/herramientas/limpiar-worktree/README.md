@@ -35,8 +35,10 @@ probara solo el camino feliz dejaría sin cubrir justo la condición por la que 
    supone.
 2. **Escrituras en el `.claude/` del worktree.** Si el agente escribió ahí, **frena y no borra
    nada**: eso se pierde al borrar el árbol y puede ser Aprendizaje real. Con `--forzar` se respalda
-   en `.claude/.respaldo-amp/<fecha>/worktree-<nombre>/` antes de borrar, siguiendo el patrón que
-   el actualizador ya usa: lo que se pisa se guarda antes.
+   en `.claude/tmp/limpiar-worktree/respaldos/<fecha>/worktree-<nombre>/` antes de borrar,
+   siguiendo el patrón que el actualizador ya usa: lo que se pisa se guarda antes. Va dentro de
+   `tmp/`, en la carpeta de esta Herramienta, porque fuera de ahí los lints barren la copia y
+   repiten hallazgos que nadie puede corregir.
 
    Lo versionado se lo pregunta a **git** (`status`), nunca comparando bytes contra el repo: con
    `core.autocrlf` prendido —el valor por omisión en Windows— el checkout convierte los fines de

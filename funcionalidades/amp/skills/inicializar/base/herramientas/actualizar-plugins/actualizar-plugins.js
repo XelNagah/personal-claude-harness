@@ -806,7 +806,10 @@ function aplicar(filas) {
 // descarta entero y sus skills no existen en la sesion, sin avisar. Eso es peor que una version
 // atrasada, y no necesita red para detectarse.
 const RUTA_AVISO = path.join(REPO, '.claude', 'tmp', 'avisos', 'plugins.txt');
-const MARCA_CONSULTA = path.join(REPO, '.claude', 'tmp', 'ultima-consulta-plugins.txt');
+// La marca va en la carpeta propia de esta Herramienta dentro de `tmp/` (`herramientas/README.md`,
+// punto 5 de "Como se aplica"): la raiz de `tmp/` es de los borradores del usuario y del agente. Antes vivia suelta ahi, como
+// `tmp/ultima-consulta-plugins.txt`; esa copia vieja queda huerfana y no se lee mas.
+const MARCA_CONSULTA = path.join(REPO, '.claude', 'tmp', 'actualizar-plugins', 'ultima-consulta.txt');
 // Sin esto, abrir varias sesiones de golpe dispara una consulta al remoto por cada una. La marca es
 // SOLO de la parte cara: el aviso se rehace siempre, asi que nunca queda uno viejo dando vueltas.
 const ESPERA_ENTRE_CONSULTAS_MS = 60 * 1000;
@@ -868,7 +871,10 @@ if (AVISAR) {
         const c = estadoCatalogo(m, nombres);
         if (c.estado === 'ACTUALIZAR') publicados.push(`  ${m} — ${c.detalle}`);
       }
-      try { fs.writeFileSync(MARCA_CONSULTA, String(Date.now()), 'utf8'); } catch (e) { /* sin marca, se reconsulta */ }
+      try {
+        fs.mkdirSync(path.dirname(MARCA_CONSULTA), { recursive: true });
+        fs.writeFileSync(MARCA_CONSULTA, String(Date.now()), 'utf8');
+      } catch (e) { /* sin marca, se reconsulta */ }
       if (publicados.length) {
         lineas.push(`${publicados.length} marketplace(s) con novedades publicadas que esta maquina no bajo:`);
         lineas.push(...publicados);

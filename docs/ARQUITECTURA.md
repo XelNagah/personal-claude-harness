@@ -35,7 +35,7 @@ Una consecuencia práctica: **nunca se corre `amp:actualizar` sobre este repo**.
 | `.claude/` | **Los datos de los subsistemas de este repo**: sus planes, decisiones, conocimiento, glosario, preferencias. Más `settings.json` (hooks) e `identidad.md` (Título y Propósito). El nombre es cosmético — es la casa de datos para **todos** los agentes, no solo Claude. | (c) | todos los agentes |
 | `.codex/` | Solo `hooks.json`: los mismos tres hooks que `settings.json`, en el formato de Codex CLI. Registro doble para que los dos agentes se comporten igual. | (c) | Codex CLI |
 | `docs/` | Documentación larga para humanos: `INSTALAR.md` y este archivo. | (a) | el usuario |
-| `.gitignore` | Excluye `settings.local.json` (config de máquina), `.claude/tmp/` (temporales y traspasos) y `.claude/.respaldo-amp/` (el respaldo de un solo uso del actualizador). | — | git |
+| `.gitignore` | Excluye `settings.local.json` (config de máquina), `.claude/tmp/` (temporales y traspasos) y `.claude/.respaldo-amp/` (donde respaldaban las corridas viejas del actualizador y de `limpiar-worktree`; se conserva porque un repo puede tener carpetas de entonces). | — | git |
 | `.gitattributes` | Normalización de fin de línea. | — | git |
 | `.codex-remote-attachments/` | **Sin seguimiento y sin dueño conocido.** Viene de hace varias sesiones; nadie determinó qué es. | ? | ? |
 

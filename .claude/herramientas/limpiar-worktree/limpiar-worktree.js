@@ -148,9 +148,12 @@ if (!elegido.huerfano) {
     }
     // Con `--forzar` se respalda, siguiendo el patrón del actualizador: lo
     // que se pisa se guarda antes, porque `.claude/` suele estar fuera del control de versiones y
-    // no hay red de git abajo.
+    // no hay red de git abajo. El respaldo va en la carpeta propia de esta Herramienta dentro de
+    // `tmp/` (`herramientas/README.md`, punto 5 de «Cómo se aplica»): fuera de `tmp/`, los lints
+    // barrerían la copia y repetirían hallazgos que nadie puede corregir.
     const fecha = new Date().toISOString().slice(0, 10);
-    const destino = path.join(raiz, '.claude', '.respaldo-amp', fecha, `worktree-${path.basename(elegido.ruta)}`);
+    const destino = path.join(raiz, '.claude', 'tmp', 'limpiar-worktree', 'respaldos', fecha,
+      `worktree-${path.basename(elegido.ruta)}`);
     let guardados = 0;
     for (const rel of [...escrituras.nuevos, ...escrituras.cambiados]) {
       try {
@@ -234,7 +237,8 @@ for (const h of verificacion.hallazgos) {
 if (verificacion.perdidos.length) {
   anotar('');
   anotar('⚠ ESTO ES EL DAÑO QUE LA HERRAMIENTA EXISTE PARA EVITAR. Recuperá el `.claude/` del repo '
-    + 'antes de seguir trabajando: `git checkout -- .claude` si está versionado, o el respaldo más '
-    + 'reciente de `.claude/.respaldo-amp/` si no lo está.');
+    + 'antes de seguir trabajando: `git checkout -- .claude` si está versionado, o una copia propia '
+    + 'si no lo está. Esta Herramienta no tiene una para ofrecerte: solo respalda lo que el agente '
+    + 'escribió adentro del worktree, nunca el `.claude/` del repo.');
 }
 terminar(1);

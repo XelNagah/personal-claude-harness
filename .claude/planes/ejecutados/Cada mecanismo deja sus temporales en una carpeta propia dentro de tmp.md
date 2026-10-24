@@ -1,6 +1,6 @@
 # Cada mecanismo deja sus temporales en una carpeta propia dentro de `.claude/tmp/`
 
-**Estado: Listo · Creado 26-10-13.**
+**Estado: Ejecutado · Creado 26-10-13 · Cerrado 26-10-24.**
 
 ## Contexto
 
@@ -84,6 +84,18 @@ Fuera de los bancos de pruebas, siete mecanismos:
 **Decidido con el usuario (15/10/2026) — dónde se asienta (punto 5):** el texto de la regla va una sola vez, en `herramientas/README.md`, que viaja y es lo que lee quien registra una Herramienta; `conducta/README.md` lleva una línea que remite, sin copiar; una Decisión de este repo asienta el porqué. La `PLANTILLA.md` de `amp:inicializar` no se toca.
 
 **Hallazgo:** el texto que da `.respaldo-amp/` por exclusivo del actualizador no está solo en `amp:actualizar` (punto 4). También lo dicen `docs/ARQUITECTURA.md:38`, `limpiar-worktree/README.md:38` y los comentarios de `lint-conocimiento.js:8` y `lint-semantica.js:180`. Las exclusiones de `.respaldo-amp` en los lints, `ejecutar-pruebas`, `worktrees.js` y `.gitignore` **se quedan**: los repos consumidores pueden conservar carpetas viejas.
+
+## Notas de implementación
+
+Ejecutado el 24/10/2026, en el mismo commit que este cierre. Siguió lo planificado, con tres diferencias:
+
+- **`actualizar-plugins` necesitaba crear la carpeta.** Escribía la marca con `writeFileSync` dentro de un `try` que traga el error: al mover la marca a `tmp/actualizar-plugins/ultima-consulta.txt` sin un `mkdirSync` antes, la escritura habría fallado sin aviso y la Herramienta habría reconsultado el remoto en cada arranque. El nombre del archivo perdió el sufijo `-plugins`, que ya da la carpeta.
+- **El aviso de daño de `limpiar-worktree` (`:238`) no se podía solo reapuntar.** Ofrecía recuperar el `.claude/` desde el respaldo de `.respaldo-amp/`, pero esta Herramienta nunca respalda el `.claude/` entero, solo lo que el agente escribió en el worktree. Ahora lo dice.
+- **`amp:actualizar` pide comparar antes de borrar.** Además de dejar de atribuirse `.respaldo-amp/`, la habilidad ahora pide comparar esas carpetas contra el repo antes de ofrecer borrarlas, porque las de `limpiar-worktree` pueden traer Aprendizaje que no llegó al repo (lo que en el traspaso del 15/10 era una trampa ya pagada).
+
+Los comentarios de los dos lints se cambiaron idénticos, porque `lint-harness` vigila que no diverjan. Los comentarios del código que viaja remiten a `herramientas/README.md`, no a la Decisión Local-0081, que en otro repo no existe.
+
+**Pruebas:** tres casos nuevos —la marca en su carpeta, nada suelto en la raíz de `tmp/`, ningún `.respaldo-amp/` tras `--forzar`— fallan con el código anterior y pasan con el nuevo. `sincronizar-base --aplicar` copió 9 archivos; `amp` pasa a 0.70.0. El control de cierre estricto da verde salvo los cuatro planes envejecidos previos y la versión de `amp` en disco distinta de la instalada, que se resuelve al publicar.
 
 ## Relacionado
 

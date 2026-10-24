@@ -133,13 +133,15 @@ const forzado = correr(LIMPIAR, ['con-escrituras', '--forzar'], repo);
 caso('con `--forzar` sale en verde', forzado.codigo, 0);
 caso('y borra el árbol', fs.existsSync(arbol2), false);
 const respaldos = (() => {
-  const base = path.join(repo, '.claude', '.respaldo-amp');
+  const base = path.join(repo, '.claude', 'tmp', 'limpiar-worktree', 'respaldos');
   if (!fs.existsSync(base)) return [];
   const fecha = fs.readdirSync(base)[0];
   const dir = path.join(base, fecha, 'worktree-con-escrituras', '.claude', 'conocimiento');
   return fs.existsSync(dir) ? fs.readdirSync(dir) : [];
 })();
 caso('respaldó lo escrito antes de borrar', respaldos, ['nueva.md']);
+// Fuera de `tmp/`, los lints barren la copia y repiten hallazgos que nadie puede corregir.
+caso('y el respaldo no queda fuera de `tmp/`', fs.existsSync(path.join(repo, '.claude', '.respaldo-amp')), false);
 
 // =================================================================================================
 console.log('\n== Escrituras en las instrucciones de la raíz que git ignora: frena igual ==');
@@ -171,7 +173,7 @@ caso('y no borra nada', fs.existsSync(arbol3), true);
 const forzadoRaiz = correr(LIMPIAR, ['raiz-escrita', '--forzar'], repoRaiz);
 caso('con `--forzar` sale en verde', forzadoRaiz.codigo, 0);
 const respaldoRaiz = (() => {
-  const base = path.join(repoRaiz, '.claude', '.respaldo-amp');
+  const base = path.join(repoRaiz, '.claude', 'tmp', 'limpiar-worktree', 'respaldos');
   if (!fs.existsSync(base)) return null;
   const f = path.join(base, fs.readdirSync(base)[0], 'worktree-raiz-escrita', 'AGENTS.md');
   return fs.existsSync(f) ? fs.readFileSync(f, 'utf8') : null;

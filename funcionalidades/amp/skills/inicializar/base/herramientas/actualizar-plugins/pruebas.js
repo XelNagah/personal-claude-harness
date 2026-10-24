@@ -306,6 +306,16 @@ console.log('\n== MODO DE SEGUNDO PLANO (--avisar) ==');
     chequear('no imprime nada: su salida no la mira nadie', !texto.trim(), texto.slice(0, 50) || '(silencio)');
     chequear('  …y sale 0', codigo === 0, `código ${codigo}`);
     chequear('deja el aviso en el buzón', fs.existsSync(buzon), buzon);
+    // La marca de la última consulta va en la carpeta propia de la Herramienta, no suelta en la raíz
+    // de `tmp/`. Sin red declarada no se consulta, y entonces no hay marca que buscar.
+    if (process.env.AMP_SIN_RED !== '1') {
+      const tmpAviso = path.join(repoAviso, '.claude', 'tmp');
+      chequear('deja la marca de consulta en `tmp/actualizar-plugins/`',
+        fs.existsSync(path.join(tmpAviso, 'actualizar-plugins', 'ultima-consulta.txt')));
+      chequear('  …y nada suelto en la raíz de `tmp/`',
+        fs.readdirSync(tmpAviso).every(n => fs.statSync(path.join(tmpAviso, n)).isDirectory()),
+        fs.readdirSync(tmpAviso).join(', '));
+    }
     const aviso = fs.existsSync(buzon) ? fs.readFileSync(buzon, 'utf8') : '';
     // El orden importa: lo que deja al plugin sin cargar va ANTES que una versión atrasada.
     chequear('  …y pone primero lo que rompe', /NO CARGAN/.test(aviso.split('\n')[1] || ''),

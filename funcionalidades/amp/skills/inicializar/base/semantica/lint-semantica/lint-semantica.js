@@ -177,8 +177,9 @@ for (const r of rows) for (const p of splitTerms(r.propuestos)) propuestos.push(
 
 // [5] apariciones de vetados en el repo (barrido recursivo desde la raiz)
 // Reusa walk()+EXCLUDE de lint-conocimiento. Dos grupos: prosa (accion inmediata) y codigo (informativo).
-// '.respaldo-amp' son copias congeladas de .claude/ que dejaron corridas viejas del actualizador:
-// sus hallazgos ya no se pueden corregir y duplican el diagnostico real. No se barren.
+// '.respaldo-amp' son copias que dejaron corridas viejas del actualizador y de limpiar-worktree,
+// que hoy respaldan en otro lado: sus hallazgos ya no se pueden corregir y duplican el
+// diagnostico real. No se barren.
 // 'tmp' es material de trabajo descartable (handoffs, notas, borradores) que el propio harness
 // gitignorea: sus hallazgos no se corrigen, se borra la carpeta. Excluye por NOMBRE, en
 // cualquier nivel del repo, no solo `.claude/tmp/`.

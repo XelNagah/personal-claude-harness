@@ -80,6 +80,7 @@ Es el único momento donde **entregar algo le cuesta al usuario un turno complet
 - **Cuesta tiempo en cada evento.** Alrededor de 65 ms por disparo, dominados por arrancar el intérprete (conocimiento `latencia-hooks`). Una regla `Ejecutar` o `Controlar` suma además lo que tarde su programa.
 - **Fuera de Claude Code hay degradaciones**, documentadas por momento en [`MOMENTOS.md`](MOMENTOS.md). La principal: en Codex, frenar una acción todavía no funciona y la regla degrada a aviso.
 - **Un aviso de un trabajo en segundo plano llega tarde, y llega igual.** Lo que se averigua después del arranque —hoy, el chequeo de plugins— queda en el Buzón de Avisos Generales (`.claude/tmp/avisos/`) y se entrega en el turno siguiente, una sola vez.
+- **Los temporales de un control van en su carpeta de `.claude/tmp/`.** La regla está en `herramientas/README.md`, punto 5.
 
 ## Lo que no cubre
 

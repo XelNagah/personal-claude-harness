@@ -12,6 +12,7 @@ Las **Herramientas** del repo son la maquinaria con que se construye y se mantie
 2. Marcar `Estado`; los `obsoleto` se pueden depurar.
 3. ⚠️ **Refs por ruta:** una tool referenciada por ruta en `settings.local.json`/`settings.json` (regla de permiso), en `.gitignore` o en un hook NO se mueve/renombra alegremente — rompe el match por prefijo exacto y se pierde la pre-autorización (en headless, denegación directa). Antes de mover, grep su ruta; si aparece, actualizar la referencia en el mismo paso.
 4. **Al cerrar** una tarea que tocó Herramientas, correr el lint: `node .claude/herramientas/lint-herramientas/lint-herramientas.js` (README por herramienta local, registro completo, filas colgadas, refs por ruta de lint en settings).
+5. **Temporales:** un mecanismo que escribe archivos de trabajo —marcas, respaldos, avisos, copias— los deja en una carpeta propia dentro de `.claude/tmp/`, nunca sueltos en la raíz de `tmp/` ni fuera de ella. Cada carpeta tiene un dueño declarado: un mecanismo, o varios que comparten un contrato asentado (como `tmp/avisos/`). El nombre por omisión es el del mecanismo: `tmp/limpiar-worktree/`. La raíz de `tmp/` queda para los borradores del usuario y del agente. Fuera de `tmp/`, los lints barren esos archivos como si fueran del repo y repiten hallazgos que nadie puede corregir.
 
 Planes, conocimiento u otros subsistemas pueden referenciar una Herramienta por su ruta explicando cómo usarla en su contexto.
 
