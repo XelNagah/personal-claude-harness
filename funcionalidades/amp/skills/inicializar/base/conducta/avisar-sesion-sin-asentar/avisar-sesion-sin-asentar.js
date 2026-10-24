@@ -27,9 +27,10 @@
 // Las escrituras siguen participando, pero SOLO DEL LADO DE CALLARSE: escribir un registro es prueba
 // de que ya se asento.
 //
-// EL CORTE DEL PISO ES PROVISORIO, a calibrar con el uso — misma situacion declarada que
-// `BYTES_POR_TOKEN` en `avisar-contexto-pesado`. Se mide en BYTES de la transcripcion, no en tokens
-// estimados, para no duplicar esa constante en dos archivos que despues divergen. El riesgo se
+// EL CORTE DEL PISO ES PROVISORIO, a calibrar con el uso. Se mide en BYTES de la transcripcion, y
+// esos bytes no son contexto: el archivo guarda ademas los registros de la API y los avisos de los
+// hooks de cada turno (medido en `avisar-contexto-pesado`, que por eso lee el usage). El piso cuenta
+// actividad de la sesion, no tokens. El riesgo se
 // acomoda a proposito del lado seguro: un aviso de mas cuesta un turno; uno de menos pierde el
 // conocimiento y hay que volver a averiguarlo.
 // ⚠️ Este repo es el peor banco para calibrarlo: aca escribir el Producto ES escribir subsistemas.

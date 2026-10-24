@@ -20,7 +20,7 @@ Control del momento `al cerrar tarea`: mira la transcripción de la sesión y de
 
 **Qué es una casa de subsistema:** un directorio de `.claude/` con su `MANIFIESTO.md`. Se descubre así y no leyendo el catálogo porque lo que importa es la carpeta que existe en disco, no la fila que la declara; y vale igual para las casas que suma el Propósito.
 
-**El corte del piso es PROVISORIO** (`--piso`, default 200000 bytes), a calibrar con el uso — misma situación declarada que `BYTES_POR_TOKEN` en `avisar-contexto-pesado`. Se mide en bytes y no en tokens estimados para no duplicar esa constante en dos archivos que después divergen. El riesgo se acomoda a propósito del lado seguro: un aviso de más cuesta un turno; uno de menos pierde el conocimiento y hay que volver a averiguarlo.
+**El corte del piso es PROVISORIO** (`--piso`, default 200000 bytes), a calibrar con el uso. Se mide en bytes de la transcripción, y esos bytes no son contexto: el archivo guarda además los registros de la API y los avisos de los hooks de cada turno —lo midió `avisar-contexto-pesado`, que por eso lee el `usage`—. El piso cuenta actividad de la sesión, no tokens. El riesgo se acomoda a propósito del lado seguro: un aviso de más cuesta un turno; uno de menos pierde el conocimiento y hay que volver a averiguarlo.
 
 ⚠️ **Este repo es el peor banco para calibrar ese corte**: acá escribir el Producto **es** escribir subsistemas, cosa que en un Agente Desplegado cualquiera no pasa.
 
