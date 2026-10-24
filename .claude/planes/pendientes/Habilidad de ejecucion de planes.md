@@ -1,6 +1,6 @@
 # Habilidad de ejecución de planes
 
-**Estado: Nuevo · Creado 26-07-22.** Idea de Javier el 26-07-22, al ver esta misma sesión ejecutar el handoff de propagación de manifiestos de punta a punta a mano.
+**Estado: Análisis · Creado 26-07-22.** Idea de Javier el 26-07-22, al ver esta misma sesión ejecutar el handoff de propagación de manifiestos de punta a punta a mano.
 
 ## Qué se pide
 
@@ -67,3 +67,42 @@ worktree aislado, que en julio no estaba sobre la mesa.
 Este plan es **precondición** de [Hacer avanzar varios planes a la vez hasta la
 próxima decisión del usuario](Hacer%20avanzar%20varios%20planes%20a%20la%20vez%20hasta%20la%20proxima%20decision%20del%20usuario.md)
 (Local-0119), que lo invoca desde su despacho por estado.
+
+## Análisis del 22/10/2026: por qué los agentes se saltan el flujo al ejecutar
+
+Javier notó que, al ejecutar planes, los agentes no contrastan ni usan las
+habilidades de registro. Las causas son tres, y cada una ya estaba asentada por
+separado:
+
+- **El verbo no existe** (este plan): cada ejecución arma su propio flujo, y en
+  el improvisado no figuran ni el contraste ni el registro.
+- **El Contraste automático lee el pedido, no el plan** (plan Local-0118): ante
+  «ejecutá el plan X» compara las palabras del pedido, no el cuerpo del plan.
+- **Una habilidad no se invoca sola por existir** (plan Local-0095, ejecutado):
+  medido que la `description` no dispara; lo que disparó fue el hook repartidor.
+
+### Lo acordado (ratificado por Javier el 22/10/2026)
+
+1. **La habilidad y una regla que la dispare, las dos.** Se descartó la regla
+   sola: describe el flujo pero no lo pone en marcha (conocimiento Local-0001,
+   *Modos de falla ante reglas escritas*), y es lo que ya hay hoy sin efecto.
+   - **Primer paso de `ejecutar-plan`: contrastar el archivo del plan**,
+     delegando en el subagente `contrastador` con el plan entero, no con el
+     pedido. Resuelve el caso de la ejecución sin esperar al plan Local-0118.
+   - **Regla `Inyectar` en el momento `cada turno`**: cuando el pedido nombra un
+     plan `Listo` o `En curso`, recuerda ejecutarlo con `ejecutar-plan`.
+2. **Lo aprendido al ejecutar se anota en el plan y lo distribuye el cierre.**
+   `ejecutar-plan` escribe lo que descubre en una sección del archivo del plan,
+   «Lo aprendido al ejecutar», sin registrarlo. `cerrar-plan` —y también
+   `descartar-plan`, porque «este camino no funciona» sigue valiendo— la lee y
+   la reparte con `registrar-conocimiento`, `registrar-decision` o la que
+   corresponda. Se eligió sobre asentar durante la ejecución porque respeta el
+   corte ejecutar/cerrar, sobrevive si el cierre ocurre en otra sesión y junta
+   las ratificaciones en un solo momento, después de la revisión. Hoy
+   `cerrar-plan` no asienta nada: hay que modificarlo.
+
+### Lo que sigue abierto antes de `Listo`
+
+- Cómo detecta la regla que el pedido «nombra un plan»: código, nombre del
+  archivo o ruta. La condición tiene que evaluarla la máquina sin juicio.
+- Cómo se comporta dentro de un worktree aislado (pendiente desde el 26/08/2026).
