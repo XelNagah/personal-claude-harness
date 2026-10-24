@@ -178,3 +178,9 @@ Corresponde solo si la decisión 1 sale por la alternativa A. Va al Índice del 
 Las tres decisiones de arriba. Con la 1 y la 2 resueltas el trabajo es mecánico y está enumerado; la 3 se puede diferir a una segunda tanda sin bloquear la primera.
 
 ⚠️ Al abrir este plan, `lint-harness/pruebas.js` estaba siendo editado por otra sesión: no se tocó a propósito. Verificado el 05/09/2026 — el archivo está en su forma actual y el relevamiento de arriba lo incluye.
+
+---
+
+## Nota del 15/10/2026: dónde caen los bancos
+
+Al fijar el directorio de los bancos, aplicar la Decisión Local-0081 (Cada carpeta de `.claude/tmp/` tiene un dueño declarado): no dejarlos sueltos en la raíz de `tmp/`, sino en una carpeta con dueño —por ejemplo `tmp/pruebas/`, con `common/banco.js` como dueño—. El plan Local-0125 dejó los bancos afuera a propósito para que el lugar se fije acá una sola vez.

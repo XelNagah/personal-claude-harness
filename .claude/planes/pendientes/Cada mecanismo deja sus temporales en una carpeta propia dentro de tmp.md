@@ -1,6 +1,6 @@
 # Cada mecanismo deja sus temporales en una carpeta propia dentro de `.claude/tmp/`
 
-**Estado: Nuevo · Creado 26-10-13.**
+**Estado: Listo · Creado 26-10-13.**
 
 ## Contexto
 
@@ -31,15 +31,59 @@ Hoy los temporales de los mecanismos conviven de tres formas:
 
 ## Trabajo
 
-1. Relevar todo lo que escribe en `.claude/tmp/` o fuera de él (hoy, una docena de scripts
-   bajo `.claude/`, sin contar los bancos de pruebas).
-2. Mover `ultima-consulta-plugins.txt` a `tmp/actualizar-plugins/`.
-3. Mover el respaldo de `limpiar-worktree` a `tmp/limpiar-worktree/respaldos/<fecha>/`, y
-   ajustar el mensaje que lo nombra (`limpiar-worktree.js:238`) y su banco.
-4. Corregir en `amp:actualizar` el texto que da por sentado que `.respaldo-amp/` solo viene de
-   corridas viejas.
-5. Asentar la convención donde la lean quienes escriben mecanismos nuevos (a definir en el
-   análisis: README de herramientas, de conducta, o la plantilla de `amp:inicializar`).
+Acordado en el análisis del 15/10/2026 (ver más abajo). La regla quedó asentada en la Decisión
+Local-0081 (Cada carpeta de `.claude/tmp/` tiene un dueño declarado).
+
+1. ~~Relevar todo lo que escribe temporales~~ — hecho en el análisis.
+2. Mover `ultima-consulta-plugins.txt` a `tmp/actualizar-plugins/` (`actualizar-plugins.js:809`
+   y su banco). El archivo viejo de la raíz queda huérfano y es inofensivo: la primera corrida
+   vuelve a consultar una vez.
+3. Mover el respaldo de `limpiar-worktree` a `tmp/limpiar-worktree/respaldos/<fecha>/`
+   (`limpiar-worktree.js:153`), y ajustar el mensaje (`:238`), su README (`:38`) y su banco
+   (`pruebas.js:136` y `:174`).
+4. Corregir el texto que da `.respaldo-amp/` por exclusivo del actualizador: `amp:actualizar`
+   (`SKILL.md:177`), `docs/ARQUITECTURA.md:38` y los comentarios de `lint-conocimiento.js:8` y
+   `lint-semantica.js:180`. **No quitar** las exclusiones de `.respaldo-amp` (lints,
+   `ejecutar-pruebas`, `worktrees.js`, `.gitignore`): los repos consumidores pueden tener
+   carpetas viejas.
+5. Escribir la regla, con estos textos ya aprobados por el usuario:
+   - En `.claude/herramientas/README.md`, punto 5 nuevo de «Cómo se aplica»:
+     > 5. **Temporales:** un mecanismo que escribe archivos de trabajo —marcas, respaldos, avisos, copias— los deja en una carpeta propia dentro de `.claude/tmp/`, nunca sueltos en la raíz de `tmp/` ni fuera de ella. Cada carpeta tiene un dueño declarado: un mecanismo, o varios que comparten un contrato asentado (como `tmp/avisos/`). El nombre por omisión es el del mecanismo: `tmp/limpiar-worktree/`. La raíz de `tmp/` queda para los borradores del usuario y del agente. Fuera de `tmp/`, los lints barren esos archivos como si fueran del repo y repiten hallazgos que nadie puede corregir.
+   - En `.claude/conducta/README.md`, ítem nuevo en la lista del Buzón (línea 82):
+     > - **Los temporales de un control van en su carpeta de `.claude/tmp/`.** La regla está en `herramientas/README.md`, punto 5.
+6. Correr `sincronizar-base --aplicar` (los dos README, `limpiar-worktree`, `actualizar-plugins`
+   y los lints viajan en `base/`) y cerrar con
+   `ejecutar-control-cierre.js --estricto` en verde.
+
+**Fuera de este plan:** los bancos de pruebas. Decidido con el usuario el 15/10/2026: ya están
+dentro de `tmp/` y los lints no los barren; su lugar lo fija el plan Local-0110 al crear el
+directorio único por corrida, aplicando esta regla.
+
+## Análisis (15/10/2026)
+
+### Relevamiento: quién escribe temporales (punto 1)
+
+Fuera de los bancos de pruebas, siete mecanismos:
+
+| Mecanismo | Dónde escribe hoy | Situación |
+|---|---|---|
+| `avisar-contexto-pesado` | `tmp/avisar-contexto-pesado/` | carpeta propia, con su nombre |
+| `avisar-sesion-sin-asentar` | `tmp/avisar-sesion-sin-asentar/` | carpeta propia, con su nombre |
+| `establecer-conducta` | `tmp/contraste-automatico/` | carpeta propia, **con el nombre de la función, no del mecanismo** |
+| `establecer-conducta`, `actualizar-plugins` | `tmp/avisos/` | compartida, con contrato asentado (Decisión Local-0051) |
+| `preparar-worktree`, `limpiar-worktree` (vía `common/worktrees.js`) | `tmp/worktrees/` | compartida por las dos del ciclo, con el nombre de lo que guarda |
+| `actualizar-plugins` | `tmp/ultima-consulta-plugins.txt` | **suelto en la raíz** |
+| `limpiar-worktree --forzar` | `.claude/.respaldo-amp/` | **fuera de `tmp/`** |
+
+`amp:actualizar` ya no escribe en el repo: respalda en el temporal del sistema (`inicializar/PLANTILLA.md:178`).
+
+**Hallazgo:** la frase «es lo que ya hacen las cinco carpetas existentes» no es exacta. Dos de las cinco no llevan el nombre de un mecanismo: `contraste-automatico/` lleva el de una función de `establecer-conducta`, y `worktrees/` la comparten dos Herramientas. Ninguna de las dos es un problema —cada una tiene dueño claro—, pero la convención tiene que poder describirlas sin mudarlas.
+
+**Decidido con el usuario (15/10/2026) — la regla es por dueño, no por nombre:** cada carpeta de `tmp/` tiene un dueño declarado, que es un mecanismo o varios con un contrato asentado. El nombre por omisión es el del mecanismo. Las cinco carpetas existentes cumplen sin mudarse, y las dos que se corrigen quedan `tmp/actualizar-plugins/` y `tmp/limpiar-worktree/respaldos/<fecha>/`. Descartada la regla estricta por nombre: obligaba a renombrar `contraste-automatico/` y `worktrees/`, o a llenarla de excepciones desde el primer día.
+
+**Decidido con el usuario (15/10/2026) — dónde se asienta (punto 5):** el texto de la regla va una sola vez, en `herramientas/README.md`, que viaja y es lo que lee quien registra una Herramienta; `conducta/README.md` lleva una línea que remite, sin copiar; una Decisión de este repo asienta el porqué. La `PLANTILLA.md` de `amp:inicializar` no se toca.
+
+**Hallazgo:** el texto que da `.respaldo-amp/` por exclusivo del actualizador no está solo en `amp:actualizar` (punto 4). También lo dicen `docs/ARQUITECTURA.md:38`, `limpiar-worktree/README.md:38` y los comentarios de `lint-conocimiento.js:8` y `lint-semantica.js:180`. Las exclusiones de `.respaldo-amp` en los lints, `ejecutar-pruebas`, `worktrees.js` y `.gitignore` **se quedan**: los repos consumidores pueden conservar carpetas viejas.
 
 ## Relacionado
 
