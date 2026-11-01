@@ -4,11 +4,14 @@
 // las paginas de detalle (refs rotas y huerfanas) y la cadena de importacion que las deja
 // siempre en contexto. Sin LLM, sin red.
 // NO detecta contradicciones semanticas (eso es la capa semantica, a pedido).
-// Uso: node lint-preferencias.js [<carpeta .claude>]   (default: .claude)
+// Uso: node lint-preferencias.js [<carpeta .claude>] [--estricto]   (default: .claude)
 const fs = require('fs'), path = require('path');
 
 const { ORIGENES, indicesDe, problemasDeIndices } = require('../../common/indices.js');
-const claudeDir = path.resolve(process.argv[2] || '.claude');
+// La ruta es el primer argumento que NO sea una opción: con `--estricto` primero, tomarlo por
+// carpeta dejaba al lint mirando un directorio que no existe.
+const args = process.argv.slice(2);
+const claudeDir = path.resolve(args.find(a => !a.startsWith('--')) || '.claude');
 const dirPref = path.join(claudeDir, 'preferencias');
 const problems = [];
 
@@ -129,5 +132,12 @@ if (!entradas.length) {
 
 console.log(`== LINT PREFERENCIAS: ${dirPref} ==`);
 console.log(`hallazgos: ${problems.length}\n`);
+console.log(`[PROBLEMAS] (${problems.length}):`);
 if (!problems.length) console.log('    (ok)');
 else problems.forEach(p => console.log(`    [x] ${p}`));
+
+// Contrato de salida: 0 si el lint corrió, con o sin hallazgos. Los hallazgos son los totales `(N)`
+// de arriba, que es lo que cuentan la Pantalla de bienvenida y el control de cierre. Con `--estricto`
+// sale con 1 si alguno no es cero, para la verificación que solo mira el código de salida.
+const total = problems.length;
+if (args.includes('--estricto') && total > 0) process.exitCode = 1;

@@ -1,10 +1,13 @@
 #!/usr/bin/env node
 // Lint del registro de decisiones: numeracion, links de detalle, huerfanos, reemplazos. Sin LLM, sin red.
-// Uso: node lint-decisiones.js [<carpeta>]   (default: .claude/decisiones)
+// Uso: node lint-decisiones.js [<carpeta>] [--estricto]   (default: .claude/decisiones)
 const fs = require('fs'), path = require('path');
 
 const { indicesDe, problemasDeIndices } = require('../../common/indices.js');
-const root = path.resolve(process.argv[2] || '.claude/decisiones');
+// La ruta es el primer argumento que NO sea una opción: con `--estricto` primero, tomarlo por
+// carpeta dejaba al lint mirando un directorio que no existe.
+const args = process.argv.slice(2);
+const root = path.resolve(args.find(a => !a.startsWith('--')) || '.claude/decisiones');
 const indices = indicesDe(root, ['INDICE.md']);
 const maniPath = path.join(root, 'MANIFIESTO.md');
 const problemasIndices = problemasDeIndices(indices, fs.existsSync(maniPath) ? fs.readFileSync(maniPath, 'utf8') : null);
@@ -148,3 +151,9 @@ if (!nombresMal.length) console.log('    (ninguno)');
 console.log(`\n[6] INDICES DECLARADOS (${problemasIndices.length}):`);
 problemasIndices.forEach(p => console.log(`    ${p}`));
 if (!problemasIndices.length) console.log(`    (${nombresIndice.size} indice(s), coherentes con el manifiesto)`);
+
+// Contrato de salida: 0 si el lint corrió, con o sin hallazgos. Los hallazgos son los totales `(N)`
+// de arriba, que es lo que cuentan la Pantalla de bienvenida y el control de cierre. Con `--estricto`
+// sale con 1 si alguno no es cero, para la verificación que solo mira el código de salida.
+const total = gaps.length + refsRotas.length + huerfanos.length + supRotas.length + nombresMal.length + problemasIndices.length;
+if (args.includes('--estricto') && total > 0) process.exitCode = 1;

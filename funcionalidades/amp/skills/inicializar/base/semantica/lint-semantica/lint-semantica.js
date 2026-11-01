@@ -3,7 +3,7 @@
 // detalle, huerfanos, colisiones/contradicciones termino<->vetado, propuestos pendientes y apariciones
 // de vetados en el repo. El veto es sobre la relacion termino->significado: el lint marca por termino,
 // el agente juzga el significado al leer la marca. Sin LLM, sin red.
-// Uso: node lint-semantica.js [<carpeta>]   (default: .claude/semantica)
+// Uso: node lint-semantica.js [<carpeta>] [--estricto]   (default: .claude/semantica)
 const fs = require('fs'), path = require('path');
 
 const { indicesDe, problemasDeIndices } = require('../../common/indices.js');
@@ -12,7 +12,10 @@ const { indicesDe, problemasDeIndices } = require('../../common/indices.js');
 // invertidas que este lint no exigia y que ningun archivo documentaba: un repo que poblara su
 // registro sin ellas dejaba al control leyendo un registro vacio, en verde y sin frenar nada.
 const { filasVetadas } = require('../../common/terminos-vetados.js');
-const root = path.resolve(process.argv[2] || '.claude/semantica');
+// La ruta es el primer argumento que NO sea una opción: con `--estricto` primero, tomarlo por
+// carpeta dejaba al lint mirando un directorio que no existe.
+const args = process.argv.slice(2);
+const root = path.resolve(args.find(a => !a.startsWith('--')) || '.claude/semantica');
 // Los dos registros se descubren por frontmatter y se distinguen por sus COLUMNAS declaradas, que
 // es lo que dice cual es cual: aca la division no es por origen sino por funcion. Si el frontmatter
 // no esta todavia, se cae a los nombres de siempre.
@@ -333,3 +336,9 @@ if (!apariciones.prosa.length) console.log('    (ninguna)');
 console.log('  codigo/nombres (refactor manual, cuidado con refs por ruta):');
 apariciones.codigo.forEach(([f, t, w]) => console.log(`    ${f}  "${t}"${w ? '  [' + w + ']' : ''}`));
 if (!apariciones.codigo.length) console.log('    (ninguna)');
+
+// Contrato de salida: 0 si el lint corrió, con o sin hallazgos. Los hallazgos son los totales `(N)`
+// de arriba, que es lo que cuentan la Pantalla de bienvenida y el control de cierre. Con `--estricto`
+// sale con 1 si alguno no es cero, para la verificación que solo mira el código de salida.
+const total = refsRotas.length + huerfanos.length + colisionesAlias.length + contradicciones.length + propuestos.length + problemasIndices.length;
+if (args.includes('--estricto') && total > 0) process.exitCode = 1;

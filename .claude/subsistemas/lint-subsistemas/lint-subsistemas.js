@@ -5,7 +5,10 @@ const path = require('path');
 
 const { indicesDe, problemasDeIndices } = require('../../common/indices.js');
 
-const claude = path.resolve(process.argv[2] || '.claude');
+// La ruta es el primer argumento que NO sea una opción: con `--estricto` primero, tomarlo por
+// carpeta dejaba al lint mirando un directorio que no existe.
+const args = process.argv.slice(2);
+const claude = path.resolve(args.find(a => !a.startsWith('--')) || '.claude');
 const dirCatalogo = path.join(claude, 'subsistemas');
 const ignorar = new Set(['skills', 'tmp']);
 const errores = [];
@@ -97,3 +100,9 @@ console.log(`subsistemas: ${filas.length} | casas: ${casas.length}`);
 console.log(`\n[CATALOGO vs DISCO] (${errores.length}):`);
 if (errores.length) errores.forEach(e => console.log(`    ${e}`));
 else console.log('    (ninguno)');
+
+// Contrato de salida: 0 si el lint corrió, con o sin hallazgos. Los hallazgos son los totales `(N)`
+// de arriba, que es lo que cuentan la Pantalla de bienvenida y el control de cierre. Con `--estricto`
+// sale con 1 si alguno no es cero, para la verificación que solo mira el código de salida.
+const total = errores.length;
+if (args.includes('--estricto') && total > 0) process.exitCode = 1;

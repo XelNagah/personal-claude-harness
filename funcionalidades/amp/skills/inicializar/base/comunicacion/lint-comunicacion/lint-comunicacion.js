@@ -2,7 +2,7 @@
 // Lint del subsistema `comunicacion`: integridad del Índice de Agentes Multipropósito Conocidos.
 // Controla la forma del Índice (origen y columnas contra el manifiesto), nombres únicos y no vacíos,
 // que cada Directorio exista y contenga un `.claude/`, y que el CLI sea uno soportado. Sin LLM, sin red.
-// Uso: node lint-comunicacion.js [<carpeta>]   (default: .claude/comunicacion)
+// Uso: node lint-comunicacion.js [<carpeta>] [--estricto]   (default: .claude/comunicacion)
 //
 // El Índice es Aprendizaje local: guarda rutas de máquina y NO se commitea. Un Índice ausente es
 // válido —puede no existir en un Agente Desplegado— y no genera hallazgos; en este repo, que publica
@@ -12,7 +12,10 @@ const fs = require('fs'), path = require('path');
 const { indicesDe, problemasDeIndices } = require('../../common/indices.js');
 const { CLIS_SOPORTADOS, leerIndice } = require('../indice.js');
 
-const root = path.resolve(process.argv[2] || '.claude/comunicacion');
+// La ruta es el primer argumento que NO sea una opción: con `--estricto` primero, tomarlo por
+// carpeta dejaba al lint mirando un directorio que no existe.
+const args = process.argv.slice(2);
+const root = path.resolve(args.find(a => !a.startsWith('--')) || '.claude/comunicacion');
 const indicePath = path.join(root, 'INDICE.md');
 
 // [forma del Índice] solo si el archivo existe: `problemasDeIndices` marca un índice listado en el
@@ -72,3 +75,9 @@ if (!clisMal.length) console.log('    (ninguno)');
 console.log(`\n[4] FORMA DEL INDICE (${problemasIndices.length}):`);
 problemasIndices.forEach(p => console.log(`    ${p}`));
 if (!problemasIndices.length) console.log(`    (${indices.length} índice(s), coherentes con el manifiesto)`);
+
+// Contrato de salida: 0 si el lint corrió, con o sin hallazgos. Los hallazgos son los totales `(N)`
+// de arriba, que es lo que cuentan la Pantalla de bienvenida y el control de cierre. Con `--estricto`
+// sale con 1 si alguno no es cero, para la verificación que solo mira el código de salida.
+const total = nombresMal.length + dirsMal.length + clisMal.length + problemasIndices.length;
+if (args.includes('--estricto') && total > 0) process.exitCode = 1;

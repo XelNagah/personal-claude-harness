@@ -2,11 +2,14 @@
 // Lint del registro de Herramientas: README por herramienta con carpeta local, herramienta en indice,
 // filas colgadas (link a subdir local inexistente), refs por ruta de lint en settings, valores de Tipo
 // y Estado fuera de lo permitido. Sin LLM, sin red.
-// Uso: node lint-herramientas.js [<carpeta herramientas>]   (default: .claude/herramientas)
+// Uso: node lint-herramientas.js [<carpeta herramientas>] [--estricto]   (default: .claude/herramientas)
 const fs = require('fs'), path = require('path');
 
 const { indicesDe, problemasDeIndices } = require('../../common/indices.js');
-const root = path.resolve(process.argv[2] || '.claude/herramientas');
+// La ruta es el primer argumento que NO sea una opción: con `--estricto` primero, tomarlo por
+// carpeta dejaba al lint mirando un directorio que no existe.
+const args = process.argv.slice(2);
+const root = path.resolve(args.find(a => !a.startsWith('--')) || '.claude/herramientas');
 // El registro se reparte entre uno o dos Indices (uno por origen): las filas salen de todos.
 const indices = indicesDe(root, ['INDICE.md']);
 const maniPath = path.join(root, 'MANIFIESTO.md');
@@ -144,3 +147,9 @@ if (!problemasIndices.length) console.log(`    (${nombresIndice.size} indice(s),
 console.log(`\n[6] VALORES FUERA DE LO PERMITIDO EN TIPO O ESTADO (${valoresInvalidos.length}):`);
 valoresInvalidos.forEach(p => console.log(`    ${p}`));
 if (!valoresInvalidos.length) console.log('    (ninguno)');
+
+// Contrato de salida: 0 si el lint corrió, con o sin hallazgos. Los hallazgos son los totales `(N)`
+// de arriba, que es lo que cuentan la Pantalla de bienvenida y el control de cierre. Con `--estricto`
+// sale con 1 si alguno no es cero, para la verificación que solo mira el código de salida.
+const total = sinReadme.length + fueraIndice.length + colgadas.length + refsRotas.length + problemasIndices.length + valoresInvalidos.length;
+if (args.includes('--estricto') && total > 0) process.exitCode = 1;

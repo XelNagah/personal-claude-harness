@@ -339,6 +339,28 @@ const pausaOk = hallazgos(correr());
 console.log(`${total(pausaOk) === 0 ? 'OK  ' : 'FALLA'} En pausa con estado_a_retomar válido → ${total(pausaOk)} hallazgos`);
 if (total(pausaOk) !== 0) { malos++; console.log(JSON.stringify(pausaOk)); }
 
+// -- el código de salida: 0 siempre, y 1 con `--estricto` si hay hallazgos ------
+// Una verificación que solo mira el código de salida daba por bueno un lint con hallazgos: el
+// código distinto de cero está reservado para decir que el lint se rompió. Se prueban las dos
+// mitades del contrato, y que la opción no se lea como carpeta.
+console.log('\n== CODIGO DE SALIDA: 0 siempre; 1 con --estricto y hallazgos ==');
+{
+  const salir = (...extra) => cp.spawnSync('node', [LINT, ...extra], { encoding: 'utf8' }).status;
+  const salidas = [];
+  armar();
+  casos[0].romper();
+  salidas.push(['con hallazgos y sin --estricto sale con 0', salir(BANCO), 0]);
+  salidas.push(['con hallazgos y --estricto sale con 1', salir(BANCO, '--estricto'), 1]);
+  salidas.push(['con --estricto antes de la ruta lee la misma carpeta', salir('--estricto', BANCO), 1]);
+  armar();
+  salidas.push(['sin hallazgos y --estricto sale con 0', salir(BANCO, '--estricto'), 0]);
+  for (const [nombre, obtenido, esperado] of salidas) {
+    const ok = obtenido === esperado;
+    if (!ok) malos++;
+    console.log(`${ok ? 'OK  ' : 'FALLA'} ${nombre}  → ${obtenido}${ok ? '' : `  (esperado ${esperado})`}`);
+  }
+}
+
 fs.rmSync(BANCO, { recursive: true, force: true });
 console.log(`\n${malos === 0 ? 'TODO OK' : malos + ' FALLAS'}`);
 process.exit(malos ? 1 : 0);

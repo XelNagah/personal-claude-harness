@@ -1,10 +1,13 @@
 #!/usr/bin/env node
 // Lint de la base de conocimiento: refs rotas, indice incompleto, huerfanos. Sin LLM, sin red.
-// Uso: node lint-conocimiento.js [<carpeta>]   (default: .claude/conocimiento)
+// Uso: node lint-conocimiento.js [<carpeta>] [--estricto]   (default: .claude/conocimiento)
 const fs = require('fs'), path = require('path');
 
 const { indicesDe, problemasDeIndices } = require('../../common/indices.js');
-const root = path.resolve(process.argv[2] || '.claude/conocimiento');
+// La ruta es el primer argumento que NO sea una opción: con `--estricto` primero, tomarlo por
+// carpeta dejaba al lint mirando un directorio que no existe.
+const args = process.argv.slice(2);
+const root = path.resolve(args.find(a => !a.startsWith('--')) || '.claude/conocimiento');
 // '.respaldo-amp' son copias que dejaron corridas viejas del actualizador y de limpiar-worktree,
 // que hoy respaldan en otro lado: sus hallazgos ya no se pueden corregir y duplican el
 // diagnostico real. No se barren.
@@ -190,3 +193,9 @@ if (!orphans.length) console.log('    (ninguno)');
 console.log(`\n[4] INDICES DECLARADOS (${problemasIndices.length}):`);
 problemasIndices.forEach(p => console.log(`    ${p}`));
 if (!problemasIndices.length) console.log(`    (${idxSub.length} indice(s) de subsistema, coherentes con el manifiesto)`);
+
+// Contrato de salida: 0 si el lint corrió, con o sin hallazgos. Los hallazgos son los totales `(N)`
+// de arriba, que es lo que cuentan la Pantalla de bienvenida y el control de cierre. Con `--estricto`
+// sale con 1 si alguno no es cero, para la verificación que solo mira el código de salida.
+const total = broken.length + gaps.length + orphans.length + problemasIndices.length;
+if (args.includes('--estricto') && total > 0) process.exitCode = 1;

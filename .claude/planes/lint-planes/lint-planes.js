@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Lint del ciclo de planes: carpeta<->registro, sueltos, resueltos sin mover, cierres a medias, activos envejecidos. Sin LLM, sin red.
 // Estados y su mapeo (carpeta, terminal) se leen de ESTADOS.md: fuente de verdad configurable, no hardcodeada.
-// Uso: node lint-planes.js [<carpeta>] [--quiet] [--dias N]   (default: .claude/planes, N=30)
+// Uso: node lint-planes.js [<carpeta>] [--quiet] [--dias N] [--estricto]   (default: .claude/planes, N=30)
 const fs = require('fs'), path = require('path');
 
 const { indicesDe, problemasDeIndices } = require('../../common/indices.js');
@@ -315,3 +315,8 @@ for (const [titulo, items] of secciones) {
   items.forEach(i => console.log(`    ${i}`));
   if (!quiet && !items.length) console.log('    (ninguno)');
 }
+
+// Contrato de salida: 0 si el lint corrió, con o sin hallazgos. Los hallazgos son los totales `(N)`
+// de arriba, que es lo que cuentan la Pantalla de bienvenida y el control de cierre. Con `--estricto`
+// sale con 1 si alguno no es cero, para la verificación que solo mira el código de salida.
+if (args.includes('--estricto') && total > 0) process.exitCode = 1;

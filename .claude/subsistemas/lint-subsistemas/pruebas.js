@@ -184,7 +184,29 @@ armar();
   if (!ok) malos++;
 }
 
+// -- el código de salida: 0 siempre, y 1 con `--estricto` si hay hallazgos ------
+// Una verificación que solo mira el código de salida daba por bueno un lint con hallazgos: el
+// código distinto de cero está reservado para decir que el lint se rompió. Se prueban las dos
+// mitades del contrato, y que la opción no se lea como carpeta.
+console.log('\n== CODIGO DE SALIDA: 0 siempre; 1 con --estricto y hallazgos ==');
+{
+  const salir = (...extra) => cp.spawnSync('node', [LINT, ...extra], { encoding: 'utf8' }).status;
+  const salidas = [];
+  armar();
+  casos[0].romper();
+  salidas.push(['con hallazgos y sin --estricto sale con 0', salir(CLAUDE), 0]);
+  salidas.push(['con hallazgos y --estricto sale con 1', salir(CLAUDE, '--estricto'), 1]);
+  salidas.push(['con --estricto antes de la ruta lee la misma carpeta', salir('--estricto', CLAUDE), 1]);
+  armar();
+  salidas.push(['sin hallazgos y --estricto sale con 0', salir(CLAUDE, '--estricto'), 0]);
+  for (const [nombre, obtenido, esperado] of salidas) {
+    const ok = obtenido === esperado;
+    if (!ok) malos++;
+    console.log(`${ok ? 'OK  ' : 'FALLA'} ${nombre}  → ${obtenido}${ok ? '' : `  (esperado ${esperado})`}`);
+  }
+}
+
 fs.rmSync(REPO_PRUEBA, { recursive: true, force: true });
-console.log(`\ncasos: ${casos.length + 3}`);
+console.log(`\ncasos: ${casos.length + 7}`);
 console.log(malos ? `${malos} FALLARON.` : 'TODO VERDE.');
 process.exit(malos ? 1 : 0);
