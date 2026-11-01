@@ -92,7 +92,7 @@ function listarWorktrees(rutaRepo) {
 function rutaVersionadaMasLarga(rutaRepo) {
   let archivos;
   try {
-    archivos = git(rutaRepo, ['ls-files']).split(/\r?\n/).filter(Boolean);
+    archivos = git(rutaRepo, ['ls-files', '-z']).split('\0').filter(Boolean);
   } catch {
     return { ruta: '', largo: 0 };
   }
@@ -393,16 +393,22 @@ function escriturasEnClaude(rutaRepo, rutaWorktree) {
   const cambiados = new Set();
 
   // (a) lo versionado, según git
+  // Con `-z` git entrega las rutas tal cual, separadas por NUL. Sin él cita las que no son ASCII
+  // (`".claude/planes/Reconciliaci\303\263n.md"`): la ruta citada no coincidía con la del disco, el
+  // archivo caía en la comparación byte a byte de abajo y `autocrlf` lo hacía ver cambiado. En un
+  // repo en español es lo normal, no un caso raro: medido el 31/10/2026, 14 rutas citadas en un repo.
   let versionados = new Set();
   try {
-    const lista = git(rutaWorktree, ['ls-files', '--', '.claude']).split(/\r?\n/).filter(Boolean);
+    const lista = git(rutaWorktree, ['ls-files', '-z', '--', '.claude']).split('\0').filter(Boolean);
     versionados = new Set(lista.map(r => path.normalize(r.replace(/^\.claude[\\/]/, ''))));
-    const estado = git(rutaWorktree, ['status', '--porcelain', '--untracked-files=all', '--', '.claude']);
-    for (const linea of estado.split(/\r?\n/)) {
-      if (!linea.trim()) continue;
-      const marca = linea.slice(0, 2);
-      const ruta = linea.slice(3).replace(/^"|"$/g, '');
-      const rel = path.normalize(ruta.replace(/^\.claude[\\/]/, ''));
+    const entradas = git(rutaWorktree, ['status', '--porcelain', '-z', '--untracked-files=all', '--', '.claude']).split('\0');
+    for (let i = 0; i < entradas.length; i++) {
+      const entrada = entradas[i];
+      if (!entrada) continue;
+      const marca = entrada.slice(0, 2);
+      // Un renombre o una copia trae después la ruta de origen como entrada aparte: se la saltea.
+      if (/[RC]/.test(marca)) i++;
+      const rel = path.normalize(entrada.slice(3).replace(/^\.claude[\\/]/, ''));
       if (rel.split(path.sep)[0] === 'tmp') continue;
       if (marca.includes('?')) nuevos.add(rel);
       else cambiados.add(rel);

@@ -182,6 +182,40 @@ caso('y respaldó el `AGENTS.md` corregido', respaldoRaiz, '# Reglas\nUna regla 
 caso('el `AGENTS.md` del repo no se tocó', fs.readFileSync(path.join(repoRaiz, 'AGENTS.md'), 'utf8'), '# Reglas\n');
 
 // =================================================================================================
+console.log('\n== Un archivo versionado con acento en el nombre, con `core.autocrlf` prendido ==');
+// Git cita las rutas que no son ASCII, así que la lista de versionados no las reconocía y las mandaba
+// a la comparación byte a byte. Con `autocrlf` el checkout del worktree escribe CRLF donde el repo
+// tiene LF: el archivo salía cambiado sin que nadie lo tocara, y la limpieza frenaba siempre. Pasó al
+// actualizar la flota a la Base 0.71.0 (31/10/2026), y hubo que forzarla.
+const repoAcento = path.join(BANCO, 'repo-acento');
+const PAGINA = 'Reconciliación fina.md';
+fs.mkdirSync(path.join(repoAcento, '.claude', 'planes'), { recursive: true });
+fs.writeFileSync(path.join(repoAcento, '.gitignore'), '.claude/tmp/\n');
+fs.writeFileSync(path.join(repoAcento, '.claude', 'planes', PAGINA), '# Plan\nUna línea.\n');
+git(repoAcento, ['init']);
+git(repoAcento, ['config', 'user.email', 'banco@prueba.local']);
+git(repoAcento, ['config', 'user.name', 'Banco de prueba']);
+git(repoAcento, ['config', 'core.autocrlf', 'true']);
+git(repoAcento, ['config', 'core.quotepath', 'true']);
+git(repoAcento, ['add', '-A']);
+git(repoAcento, ['commit', '-m', 'inicial', '--no-gpg-sign']);
+
+correr(PREPARAR, ['acento-intacto'], repoAcento);
+const arbol4 = path.join(repoAcento, '.claude', 'tmp', 'worktrees', 'acento-intacto');
+// Sin la conversión el escenario no ejercita nada: el caso de abajo pasaría en verde igual.
+caso('el checkout del worktree convirtió los fines de línea',
+  fs.readFileSync(path.join(arbol4, '.claude', 'planes', PAGINA), 'utf8').includes('\r\n'), true);
+caso('sin tocarlo, limpia en verde', correr(LIMPIAR, ['acento-intacto'], repoAcento).codigo, 0);
+
+correr(PREPARAR, ['acento-escrito'], repoAcento);
+const arbol5 = path.join(repoAcento, '.claude', 'tmp', 'worktrees', 'acento-escrito');
+fs.appendFileSync(path.join(arbol5, '.claude', 'planes', PAGINA), 'Una línea agregada adentro.\r\n');
+const acentoEscrito = correr(LIMPIAR, ['acento-escrito'], repoAcento);
+caso('editado adentro, sale con 1', acentoEscrito.codigo, 1);
+caso('y lo nombra con su acento, sin escapar', /cambiado: .*Reconciliación fina\.md/.test(acentoEscrito.texto), true);
+correr(LIMPIAR, ['acento-escrito', '--forzar'], repoAcento);
+
+// =================================================================================================
 console.log('\n== Casos de borde ==');
 const inexistente = correr(LIMPIAR, ['no-existe'], repo);
 caso('un nombre que no existe sale con 1', inexistente.codigo, 1);
