@@ -16,4 +16,4 @@ Las **Herramientas** del repo son la maquinaria con que se construye y se mantie
 
 Planes, conocimiento u otros subsistemas pueden referenciar una Herramienta por su ruta explicando cómo usarla en su contexto.
 
-Relacionado: [[flujo-planes]], [[base-conocimiento]].
+Relacionado: [README de planes](../planes/README.md), [README de conocimiento](../conocimiento/README.md).

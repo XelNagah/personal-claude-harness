@@ -11,4 +11,4 @@ Las decisiones **estructurales al propósito del repo** se asientan en `.claude/
 3. **Simple** → una fila, Detalle en `—`. **Compleja** (contexto, alternativas, consecuencias) → fila + página `NNNN-nombre.md`. El código es `Local-NNNN`, **el mayor del registro más uno** —nunca la cantidad de filas más uno—, y un código retirado deja un hueco que no se reusa. El nombre del archivo de detalle conserva el número sin prefijo: es un nombre corto legible, no el código.
 4. **Al cerrar** una tarea que registró decisiones, correr el lint: `node .claude/decisiones/lint-decisiones/lint-decisiones.js` (numeración, links de detalle, huérfanos, superseded).
 
-Relacionado: [[flujo-planes]] (consultar/registrar decisiones al cerrar planes).
+Relacionado: [README de planes](../planes/README.md) (consultar/registrar decisiones al cerrar planes).

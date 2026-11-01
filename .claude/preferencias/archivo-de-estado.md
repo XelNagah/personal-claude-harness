@@ -10,4 +10,4 @@ En tareas exploratorias multi-variable (benchmarks, comparaciones, análisis de 
 2. Ubicación: si la exploración responde a un plan, sección `## Estado` dentro del plan; si es ad-hoc, `conocimiento/<tema>/estado.md` (al cerrar, destilar a conocimiento o borrar).
 3. Al retomar (nueva sesión, otra máquina, post-`/clear`): leer el archivo antes que nada.
 
-Relacionado: [[flujo-planes]].
+Relacionado: [README de planes](../planes/README.md).

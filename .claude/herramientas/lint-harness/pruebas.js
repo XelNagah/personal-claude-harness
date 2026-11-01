@@ -181,6 +181,11 @@ caso('lo que viaja hace require de un módulo que no viaja', 'LO QUE VIAJA APUNT
   () => fs.rmSync(path.join(REPO_PRUEBA, BASE_INST, 'conducta/alcance-al-escribir.js'), { force: true }),
   'alcance-al-escribir.js');
 
+// La forma con que se enlazaban las memorias retiradas. [9b] no la ve, porque busca `](ruta.md)`.
+caso('lo que viaja enlaza con doble corchete a una memoria retirada', 'ENLACES DE DOBLE CORCHETE EN LO QUE VIAJA (memoria retirada: no resuelven)',
+  () => fs.appendFileSync(path.join(REPO_PRUEBA, BASE_INST, 'conocimiento/INDICE.md'), '\nRelacionado: [[flujo-planes]].\n'),
+  '[[flujo-planes]]');
+
 caso('funcionalidad en REGISTRO sin carpeta en disco', 'FANTASMAS (catalogadas pero sin carpeta)',
   () => fs.rmSync(path.join(REPO_PRUEBA, 'funcionalidades/amp-conducta'), { recursive: true, force: true }));
 
@@ -344,6 +349,16 @@ fs.appendFileSync(path.join(REPO_PRUEBA, BASE_INST, 'conocimiento/INDICE.md'),
   const h = hallazgos(correr());
   const n = h['LO QUE VIAJA APUNTA A ALGO QUE NO VIAJA (enlaces y require)'] || 0;
   console.log(`${n === 0 ? 'OK  ' : 'FALLA'} enlace https a un .md → ${n} hallazgos`);
+  if (n !== 0) malos++;
+}
+
+// -- CASO BUENO fino: una clase POSIX en un bloque de código no es un enlace ----
+console.log('\n== CASO BUENO: `[[:alpha:]]` en un bloque de código no cuenta ==');
+armar();
+fs.appendFileSync(path.join(REPO_PRUEBA, BASE_INST, 'conocimiento/INDICE.md'), "\n```bash\ngrep '[[:alpha:]]' x\n```\n");
+{
+  const n = hallazgos(correr())['ENLACES DE DOBLE CORCHETE EN LO QUE VIAJA (memoria retirada: no resuelven)'] || 0;
+  console.log(`${n === 0 ? 'OK  ' : 'FALLA'} clase POSIX → ${n} hallazgos`);
   if (n !== 0) malos++;
 }
 

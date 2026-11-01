@@ -4,7 +4,8 @@
 // tamaño de los MANIFIESTO.md de subsistema (dec. 0017: breves, siempre en contexto) y su estructura
 // minima (dec. 0019 + 0023: campos obligatorios incl. Skills + coherencia carga<->@INDICE), citas a
 // decisiones del harness en archivos distribuibles (dec. 0024), enlaces de lo que viaja a algo que
-// se queda en este repo, terminologia vetada en el texto que viaja (funcionalidades/: lo que se
+// se queda en este repo, enlaces `[[...]]` de la memoria retirada en lo que viaja, terminologia
+// vetada en el texto que viaja (funcionalidades/: lo que se
 // escribe en cada Agente con Propósito) y la marca de orden de bytes (U+FEFF) suelta en cualquier
 // archivo del repo. Sin LLM, sin red.
 // Uso: node lint-harness.js [--quiet]   (correr desde la raiz del repo del harness)
@@ -617,6 +618,22 @@ for (const baseDir of basesDeInstalacion) {
   }
 }
 
+// -- [9c] enlaces de doble corchete en lo que viaja ----------------------
+// `[[nombre]]` es la forma con que se enlazaban las memorias de `memoria/`, que se retiró. Ningún
+// lector de markdown la resuelve y el nombre apunta a una memoria que ya no existe en ningún repo:
+// quien la sigue no llega a nada. [9b] no la ve porque busca `](ruta.md)`. Lo encontró la flota al
+// actualizarse a la Base 0.71.0 (31/10/2026): siete enlaces en cinco archivos, con este repo en verde.
+// El `:` excluido al principio deja afuera las clases POSIX (`[[:alpha:]]`) de los bloques de código.
+const dobleCorchete = /\[\[([^\]\n:][^\]\n]*)\]\]/g;
+const enlacesDobleCorchete = [];
+for (const baseDir of basesDeInstalacion) {
+  for (const r of listarArchivos(baseDir, '', [])) {
+    if (!r.endsWith('.md')) continue;
+    const nombres = [...fs.readFileSync(path.join(baseDir, r), 'utf8').matchAll(dobleCorchete)].map(m => m[1]);
+    if (nombres.length) enlacesDobleCorchete.push(`${r}  — ${[...new Set(nombres)].map(n => '[[' + n + ']]').join(', ')}: forma de la memoria retirada, no resuelve`);
+  }
+}
+
 // -- [10] terminologia vetada en el Producto ------------------------------
 // El Producto (funcionalidades/) es lo que viaja: un termino vetado en .claude/ lo lee el autor,
 // uno en una PLANTILLA lo hereda cada Agente con Propósito que se inicialice. Por eso el hallazgo
@@ -807,6 +824,7 @@ const secciones = [
   ['MANIFIESTOS SIN CAMPOS MINIMOS (dec. 0019)', manifiestosSinCampos],
   ['CITAS A DECISIONES DEL HARNESS EN DISTRIBUIBLES (dec. 0024)', refsDecision],
   ['LO QUE VIAJA APUNTA A ALGO QUE NO VIAJA (enlaces y require)', enlacesRotos],
+  ['ENLACES DE DOBLE CORCHETE EN LO QUE VIAJA (memoria retirada: no resuelven)', enlacesDobleCorchete],
   ['TERMINOLOGIA VETADA EN EL TEXTO QUE VIAJA (funcionalidades/)', vetadoEnProducto],
   ['MARCA DE ORDEN DE BYTES (U+FEFF) EN ARCHIVOS DEL REPO', marcaDeOrden],
 ];

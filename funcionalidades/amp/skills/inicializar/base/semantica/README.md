@@ -17,4 +17,4 @@ El subsistema `semántica` mantiene la coherencia semántica del dominio en el t
 2. Concepto **simple** → una fila del glosario. Concepto **complejo** → fila + página de detalle enlazada.
 3. **Al cerrar** una tarea que tocó semántica, correr el lint: `node .claude/semantica/lint-semantica/lint-semantica.js` (links de detalle, huérfanos, colisiones, propuestos pendientes, apariciones de vetados en el repo).
 
-Relacionado: [[flujo-planes]] (consultar la semántica al planificar/analizar), [[terminologia-canonica]] (la ratificación no vale hasta bajarla al texto).
+Relacionado: [README de planes](../planes/README.md) (consultar la semántica al planificar/analizar). Ratificar un término no alcanza: no vale hasta bajarlo al texto.

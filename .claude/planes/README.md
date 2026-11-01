@@ -19,4 +19,4 @@ Importante: borrar el archivo de `pendientes/` al moverlo — no duplicar. Un pl
 
 **Partir un plan a medias:** cuando un plan queda `En curso` con el núcleo hecho pero un cacho pendiente, **partirlo** en vez de arrastrarlo. Cerrar como `Ejecutado` el alcance ya logrado (con sus `## Notas de implementación`) y **desprender el resto como plan nuevo** — `Nuevo` si se retoma pronto, `Diferido` si la espera es a propósito (p. ej. dejar correr una medición unas sesiones) — con `Origen` apuntando al cerrado y la condición de reanudación anotada si es Diferido. Mantiene el registro honesto (`Ejecutado` = ejecutado de verdad, `En curso` = de verdad ejecutándose) y evita planes zombis que dicen "en curso" mientras en realidad esperan. Aplica igual cuando un plan cubre dos mitades separables aunque ninguna esté a medias: cerrar la resuelta, desprender la otra.
 
-Relacionado: [[archivo-de-estado]] (estado vivo de una exploración dentro del plan).
+Relacionado: [archivo de estado](../preferencias/archivo-de-estado.md) (estado vivo de una exploración dentro del plan).
