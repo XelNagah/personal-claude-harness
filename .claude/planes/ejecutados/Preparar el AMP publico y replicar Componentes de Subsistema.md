@@ -1,6 +1,6 @@
 # Preparar el AMP público y replicar Componentes de Subsistema
 
-**Estado: En curso · Creado 03/08/2026.**
+**Estado: Ejecutado · Creado 03/08/2026 · Cerrado 26-11-12.**
 
 > El nombre del plan se conserva porque es su identidad estable. En el cuerpo, «replicar» se reemplaza por la acción concreta: copiar o llevar Componentes entre Agentes Desplegados e incorporarlos en el destino.
 
@@ -383,3 +383,15 @@ Hecho en la misma sesión, y con esto el tercer punto del §6 queda cumplido sal
 - Copiar decisiones o planes entre repos por defecto.
 - Agregar un tercer origen a todos los Índices antes de que un caso real lo exija.
 - Fusionar instalación del Producto y copia de Aprendizaje en un solo mecanismo.
+
+## Notas de implementación
+
+Cerrado el 12/11/2026, después de contrastar cada sección del Trabajo con el estado del repo. El núcleo —una Base pública sin criterio personal, y ese criterio copiable entre Agentes Desplegados— está hecho; el resto ya tenía plan propio o pasa a uno nuevo.
+
+- **Secciones 1 a 3: hechas.** Decisiones Local-0053, Local-0054 y Local-0055 ratificadas; defectos de las habilidades corregidos; la Base sin elecciones personales, verificado con la instalación limpia del 04/08/2026.
+- **Sección 4, copiar una preferencia entre agentes: hecha**, dentro de `registrar-preferencia`, y superada por `adoptar-recomendadas` con `sincronizar-recomendadas`. **Llevar reglas de conducta al catálogo: no hecho**, con el alcance sin decidir desde el 05/08/2026; pasa al plan Local-0126 (El catálogo de recomendadas ofrece preferencias pero no reglas de conducta).
+- **Sección 5, reconciliar planes y decisiones: se suelta** a sus planes propios Local-0034, Local-0067, Local-0068 y Local-0115.
+- **Sección 6, flujos deterministas: parcial.** `--estricto` en `ejecutar-control-cierre` está hecho (commit `72a2445`). La salida estructurada para automatización no se hizo, y no se abre plan mientras no haya quien la vaya a usar.
+- **Sección 7, medir el efecto de Conducta: se suelta** a los planes Local-0027 y Local-0089. Queda registrado que después de este plan se sumaron reglas de conducta sin esa medición, que la sección pedía como condición.
+- **Sección 8, reevaluar la complejidad: se suelta** al plan Local-0031.
+- **Terminología:** absorbida por el plan Local-0091 (Bajar Deriva Semántica al texto y al nombre del registro).

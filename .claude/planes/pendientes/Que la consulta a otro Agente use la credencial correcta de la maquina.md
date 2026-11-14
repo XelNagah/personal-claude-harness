@@ -127,3 +127,11 @@ Configurar las credenciales de la máquina del usuario. El plan es sobre **con q
 ## Propuestas para asentar
 
 - **Conocimiento** (candidato a **Base**, `agente-multiproposito`, porque describe un mecanismo del CLI `claude` que usa cualquier instalación del harness, no algo propio del Propósito de este repo): una página con la tabla de precedencia de autenticación verificada arriba (las 7 fuentes, en orden, con la particularidad de `ANTHROPIC_API_KEY` en modo `-p`) y el hallazgo de la reproducción (`is_error` sí se enciende ante una falla de autenticación, pero el texto del error se imprime primero bajo el rótulo de "Respuesta de"). Le sirve a cualquier Agente Desplegado que dispare un CLI hijo de forma no interactiva, no solo a `comunicacion`.
+
+## Evidencia del análisis de un mes de conversaciones (13/11/2026)
+
+Lo trae el plan Local-0129 (plan maestro), arreglo 5. Informe: `D:\Proyectos\analisis\como-uso-claude\.claude\conocimiento\analisis-2026-11\agentes-que-no-usan-lo-guardado.md`. Dos casos más de «el Agente no llegó a contestar y vuelve algo presentado como su respuesta»:
+
+- **El aviso de cierre del consultado pisa la respuesta.** `comunicar.js` devuelve solo el último mensaje del consultado. Si a ese Agente le salta su propio aviso de cierre («sesión sin asentar»), contesta el aviso en un turno más y la respuesta real se pierde sin señal. Pasó el 13/11/2026 consultando a `como-uso-claude`, y antes en los repos Trámites y Agente Coordinador. Arreglo: que el aviso de cierre no actúe en una corrida no interactiva, o devolver el turno completo.
+- **En modo `preguntar` el consultado no puede leer el material que se le pasa.** Se le deniega `Read` fuera de su carpeta (y `Bash`/`PowerShell`); el 13/11/2026 no pudo leer el handoff que se le indicó y contestó con lo que decía el pedido. Las denegaciones sí vuelven en la respuesta.
+- **En modo automático el modo `resolver` no se puede lanzar:** el clasificador de permisos lo bloqueó sin motivo, y hubo que pasar a aprobación manual.

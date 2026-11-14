@@ -1,6 +1,6 @@
 # Barrer la terminología vetada del Producto
 
-**Estado: En curso · Creado 26-07-26.** Origen: sesión de `planificar` sobre el rework de memoria (26/07/2026). Javier: *"es que confunde que sigas llamándole harness. Referite con terminología del repo"*. Al medir el alcance apareció un segundo frente, más grande.
+**Estado: Ejecutado · Creado 26-07-26 · Cerrado 26-11-12.** Origen: sesión de `planificar` sobre el rework de memoria (26/07/2026). Javier: *"es que confunde que sigas llamándole harness. Referite con terminología del repo"*. Al medir el alcance apareció un segundo frente, más grande.
 
 ## Frente A — el Producto nunca se barrió
 
@@ -175,3 +175,12 @@ Auditado abriendo lo que cada pendiente cita.
 - `Nombres y distribucion de las skills del harness` — dueño del renombre del marketplace, que es la población 2.
 - `Sacar la duplicacion entre el Producto y el Agente instalado` — mientras la Plantilla y `.claude/` sean dos originales, el barrido hay que hacerlo dos veces.
 - `Publicar el harness en ingles` — el nombre en inglés (*Multipurpose Agent*) arrastra la misma discusión.
+
+## Notas de implementación
+
+Cerrado el 12/11/2026, después de contrastar cada frente con el estado del repo. Lo que justificaba el plan —lo que viaja— está resuelto; el resto se reparte.
+
+- **Frente A1, que el control falle ante vetados en lo que viaja: hecho.** `lint-harness` lo controla en su chequeo 10 y hoy da 0 hallazgos en texto plano; las 128 apariciones en código e identificadores las informa sin fallar.
+- **Frente C, la regla de conducta al escribir: hecho** el 26/07/2026. Los arreglos posteriores vinieron con el plan Local-0109 (El lector del registro de vetados está escrito dos veces y el control falla en verde) y los commits `1e5311d` y `3155fc8`.
+- **Frente B, el alias «harness»: hecho en lo que viaja, no en este repo.** `PLANTILLA.md` conserva una sola línea, que es un identificador. En el texto de este repo el alias creció (`decisiones/INDICE.md` pasó de 27 a 30 líneas) y ningún commit desde el 20/08/2026 lo barrió. Pasa, con las tres cosas que quedaron a decidir, al plan Local-0079 (Ordenar la nomenclatura del harness).
+- **Frente A2, que los demás lints cubran la raíz: sin criterio, y no se abre plan.** Medido el 12/11/2026: `lint-planes` no nombra la raíz, `lint-conducta` la nombra una vez y los de preferencias, decisiones y conocimiento entre cuatro y cinco veces. Si eso es cobertura real no se verificó.

@@ -1,6 +1,6 @@
 # El Contraste automático no lee los archivos que se le pasan y se queda con las palabras del pedido
 
-**Estado: En curso · Creado 26-08-26.** Origen: [Que las habilidades se disparen solas al plantear un tema](../ejecutados/Que%20las%20habilidades%20se%20disparen%20solas%20al%20plantear%20un%20tema.md) (Local-0095), que dejó esto como seguimiento aparte al cerrar. Lo detectó el usuario al ver que una sesión que arrancó leyendo un handoff trabajó sin haber consultado ningún registro — *«Que ni bien se arranque a laburar se contraste con la sabiduría del repo en lugar de trabajar a ciegas»*.
+**Estado: Ejecutado · Creado 26-08-26 · Cerrado 26-11-12.** Origen: [Que las habilidades se disparen solas al plantear un tema](../ejecutados/Que%20las%20habilidades%20se%20disparen%20solas%20al%20plantear%20un%20tema.md) (Local-0095), que dejó esto como seguimiento aparte al cerrar. Lo detectó el usuario al ver que una sesión que arrancó leyendo un handoff trabajó sin haber consultado ningún registro — *«Que ni bien se arranque a laburar se contraste con la sabiduría del repo en lugar de trabajar a ciegas»*.
 
 ## El problema
 
@@ -340,5 +340,14 @@ El Contraste automático es determinista: la calidad de la selección se prueba 
 ## Planes relacionados
 
 - [Que las habilidades se disparen solas al plantear un tema](../ejecutados/Que%20las%20habilidades%20se%20disparen%20solas%20al%20plantear%20un%20tema.md) (Local-0095) — construyó el Contraste automático y dejó esto abierto.
-- [Chequear el plan escrito contra la sabiduría del repo](Chequear%20el%20plan%20escrito%20contra%20la%20sabiduria%20del%20repo.md) (Local-0022) — el otro lado: chequear el texto que el agente produce, no el que lee.
-- [Por que las preferencias cargadas no se aplican](Por%20que%20las%20preferencias%20cargadas%20no%20se%20aplican.md) (Local-0089) — el mismo eje sobre material que ya está en contexto y no se aplica.
+- [Chequear el plan escrito contra la sabiduría del repo](../pendientes/Chequear%20el%20plan%20escrito%20contra%20la%20sabiduria%20del%20repo.md) (Local-0022) — el otro lado: chequear el texto que el agente produce, no el que lee.
+- [Por que las preferencias cargadas no se aplican](../pendientes/Por%20que%20las%20preferencias%20cargadas%20no%20se%20aplican.md) (Local-0089) — el mismo eje sobre material que ya está en contexto y no se aplica.
+
+## Notas de implementación
+
+Cerrado el 12/11/2026: lo que el título promete está construido. Un archivo que el mensaje nombra ya se lee y sus citas se inyectan.
+
+- **Paso 1, el hook: hecho** (commit `32f0459`). `establecer-conducta.js` sigue la ruta que nombra el mensaje, extrae las citas con su tipo delante, suma planes al alcance y calla 20 turnos lo ya entregado.
+- **Paso 2, la habilidad `contrastar` y el subagente `contrastador`: hecho y medido** (commit `eb8f1ff`): 97,2% de ahorro de contexto, 137 s.
+- **Que `contrastar` se dispare sola: medido, no funciona** (0 de 2), así que deja de ser camino.
+- **Lo que queda pasa al plan Local-0128** (El material que el agente abre sin que el mensaje lo nombre no se contrasta): elegir entre colgarlo del hook, resolverlo en el handoff o dejarlo a demanda, y rehacer el caso `contrastar-02` del banco. El plan Local-0043 cubre la ejecución de un plan y el Local-0121 nombra este hueco como candidato, pero ninguno cubre el arranque desde un handoff sin citas.

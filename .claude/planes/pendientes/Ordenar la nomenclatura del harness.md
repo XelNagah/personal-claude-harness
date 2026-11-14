@@ -82,9 +82,19 @@ Ratificado y asentado el 28/07/2026 en `TERMINOLOGIA-FARLOPA.md`: las etiquetas 
 
 ⚠️ Al medir, `grep -i` con patrones acentuados devuelve cero en silencio en Git Bash: enumerar variantes sin `-i` (conocimiento [grep y acentos en Windows](../../conocimiento/grep-y-acentos-en-windows.md)).
 
+## Heredado del plan Local-0073 al cerrarse (12/11/2026)
+
+El plan Local-0073 (Barrer la terminología vetada del Producto) dejó limpio lo que viaja, pero no el alias «harness» usado en lugar de «Agente Multipropósito» en el texto de este repo. Medido el 12/11/2026: `decisiones/INDICE.md` 30 líneas (eran 27 el 12/08), `REGISTRO.md` 12, `docs/` 12, `README.md` 7, `GLOSARIO.md` 5 y `AGENTS.md` 3. Pasan a este plan las tres cosas que quedaron sin decidir:
+
+- separar en el glosario el alias del uso genérico de «harness», que hoy lista sin distinguir;
+- un control contra la reincidencia;
+- el orden del barrido.
+
+No es un reemplazo a ciegas: el plan de origen distingue tres grupos de apariciones y deja afuera los registros históricos.
+
 ## Cruces
 
 - **[Partir los índices por origen y pasar preferencias a tabla](Partir%20los%20indices%20por%20origen%20y%20pasar%20preferencias%20a%20tabla.md)** — el plan de estructura. **No** depende de este.
 - **[Revisar la nomenclatura de los subsistemas](Revisar%20la%20nomenclatura%20de%20los%20subsistemas.md)** — mismo eje; conviene absorberlo o cerrarlo contra este.
 - **[Criterio de pertenencia al glosario](Criterio%20de%20pertenencia%20al%20glosario.md)** — el criterio que zanja qué entra al glosario y qué es castellano corriente.
-- **[Barrer la terminologia vetada del Producto](Barrer%20la%20terminologia%20vetada%20del%20Producto.md)** — el barrido de este plan alcanza también al Producto.
+- **[Barrer la terminologia vetada del Producto](../ejecutados/Barrer%20la%20terminologia%20vetada%20del%20Producto.md)** — el barrido de este plan alcanza también al Producto.

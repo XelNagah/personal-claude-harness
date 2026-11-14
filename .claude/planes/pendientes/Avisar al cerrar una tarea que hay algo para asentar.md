@@ -270,3 +270,10 @@ patrones (dominio código, contra el propósito general), sus archivos de reglas
 contexto, sin origen ni control), su comando de orquestación (encadena agentes que deciden y se pasan
 traspasos, contra el corte ya decidido de que el subagente trae evidencia y no juzga) y su
 persistencia entre sesiones (crea un archivo por día con un molde vacío que nadie llena).
+
+## Evidencia del análisis de un mes de conversaciones (13/11/2026)
+
+Lo trae el plan Local-0129 (plan maestro), arreglos 3 y 6. Informe: `D:\Proyectos\analisis\como-uso-claude\.claude\conocimiento\analisis-2026-11\agentes-que-no-usan-lo-guardado.md`.
+
+- **Altas en registros hechas a mano: 43 % (34 de 79).** El agente escribe la fila sin la habilidad `registrar-*` que corresponde. Este plan avisa al cerrar; queda abierto si además hay que avisar o frenar **en el momento del alta**.
+- **La señal «sesión sin asentar» mide mal.** Mide el tamaño del archivo de la transcripción y lo presenta como «KB de conversación». Saltó en 123 de 197 sesiones, casi siempre con uno o dos prompts; la conversación es, en la mediana, el 14 % de lo que informa. Se vio en vivo el 13/11/2026: 675 KB en una sesión recién limpiada con `/clear` y un solo intercambio. Arreglo: medir la conversación, no el archivo, y fijar el corte que este plan dejó provisorio.

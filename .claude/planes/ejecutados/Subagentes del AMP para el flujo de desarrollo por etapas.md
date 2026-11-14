@@ -1,6 +1,6 @@
 # Plan: Subagentes del AMP para el flujo de desarrollo por etapas
 
-**Estado: En curso · Creado 26-08-06.** Mudado desde el repo `como-uso-claude` (su Local-0003) el 26-08-06, con el contenido íntegro salvo ajustes de terminología vetada en este repo («gate de terminología» → «Control de terminología», «pieza» → «componente», «artefactos» → «archivos», «artefacto definido, no prosa suelta» → «resultado definido, no texto suelto»); las rutas relativas a `conocimiento/` referencian aquel repo.
+**Estado: Ejecutado · Creado 26-08-06 · Cerrado 26-11-12.** Mudado desde el repo `como-uso-claude` (su Local-0003) el 26-08-06, con el contenido íntegro salvo ajustes de terminología vetada en este repo («gate de terminología» → «Control de terminología», «pieza» → «componente», «artefactos» → «archivos», «artefacto definido, no prosa suelta» → «resultado definido, no texto suelto»); las rutas relativas a `conocimiento/` referencian aquel repo.
 
 Definir subagentes propios y **distribuirlos por el harness** a los repos AMP, para armar el flujo de desarrollo por etapas: diseño → crítica → desarrollo → tests → revisión de código → seguridad.
 
@@ -231,3 +231,10 @@ Dos cosas, pedidas desde el repo `como-uso-claude` después de que el usuario ra
 - Los cuatro tipos aparecen listados como disponibles en un AMP de código, y **no** en uno de análisis.
 - `code-reviewer` intenta escribir en una prueba y **falla** por `tools` acotadas — si no puede fallar, la prueba no prueba nada.
 - La medición del paso 4 arroja un número real de tokens del hilo principal, no una estimación.
+
+## Notas de implementación
+
+Cerrado el 12/11/2026 por la Familia 1; la Familia 2 y el flujo por etapas se desprenden.
+
+- **Familia 1, agentes de subsistema: hecha.** Cinco subagentes viajan con sus plugins: `amp-semantica/agents/buscador-de-terminologia.md`, `amp-conocimiento/agents/buscador-de-conocimiento.md`, `amp-planes/agents/relevador-de-planes.md`, `amp-subsistemas/agents/relevador-de-aprendizaje.md` y `amp/agents/contrastador.md`. Medidos con ahorros de contexto del 84, 94 y 89% (conocimiento Local-0018). El candidato `amp:planificar` lo cubrió el `contrastador` (commits `32f0459` y `eb8f1ff`), cosa que este plan no había registrado. `registrar-conocimiento` quedó sin subagente: el plan ya lo daba como el que menos gana.
+- **Familia 2 y el flujo por etapas: no hechos.** Ningún commit desde el 20/08/2026 los toca y ninguna decisión los descartó; la Decisión Local-0078 fija cómo se distribuirían. Pasan, en Diferido, al plan Local-0127 (Los cuatro subagentes de código y el flujo por etapas siguen sin construir).

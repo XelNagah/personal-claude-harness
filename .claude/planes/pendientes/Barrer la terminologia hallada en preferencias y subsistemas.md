@@ -126,7 +126,7 @@ No es solo vocabulario: son referencias colgadas. Se arreglan sin ratificar nada
 ## Cruces con otros planes
 
 - **`Ordenar la nomenclatura del harness`** — resuelve `registro`, `Entrada`, `Registro volátil` y cómo se escribe `Agente Desplegado`. El punto 2 de acá (`consumidor`) toca la misma familia de conceptos: conviene resolverlos juntos o, al menos, no antes que aquél.
-- **`Barrer la terminologia vetada del Producto`** (En curso) — barre en `funcionalidades/` los términos **ya** vetados. Este plan corre río abajo: primero se vetan los nuevos acá, después ese barrido los alcanza. Todo lo que se vete en los puntos 1 a 5 le suma trabajo.
+- **`Barrer la terminologia vetada del Producto`** (Ejecutado) — barre en `funcionalidades/` los términos **ya** vetados. Este plan corre río abajo: primero se vetan los nuevos acá, después ese barrido los alcanza. Todo lo que se vete en los puntos 1 a 5 le suma trabajo.
 - **`Partir los indices por origen y pasar preferencias a tabla`** — reescribe `PREFERENCIAS.md` entero. Si se ejecuta primero, el punto 4 (`harness`) se resuelve de paso.
 
 ## Abiertos
