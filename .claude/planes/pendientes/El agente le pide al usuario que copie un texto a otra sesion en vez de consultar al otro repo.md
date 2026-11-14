@@ -1,6 +1,6 @@
 # El agente le pide al usuario que copie un texto a otra sesión en vez de consultar al otro repo
 
-**Estado: Nuevo · Creado 26-11-13.** Origen: plan Local-0129 (plan maestro), arreglo 4 del análisis de un mes de conversaciones. Informe: `D:\Proyectos\analisis\como-uso-claude\.claude\conocimiento\analisis-2026-11\agentes-que-no-usan-lo-guardado.md`.
+**Estado: Análisis · Creado 26-11-13 · Analizado 26-11-14.** Origen: plan Local-0129 (plan maestro), arreglo 4 del análisis de un mes de conversaciones. Informe: `D:\Proyectos\analisis\como-uso-claude\.claude\conocimiento\analisis-2026-11\agentes-que-no-usan-lo-guardado.md`.
 
 ## El problema
 
@@ -22,3 +22,34 @@ Por qué pasa (inferencia del análisis, sin medir):
 - plan Local-0107 (Que la consulta a otro Agente use la credencial correcta de la máquina): mismo subsistema; van en el mismo grupo de trabajo.
 - Decisión Local-0065: el modo es la habilidad; cualquier disparo nuevo tiene que elegir entre `preguntar` y `resolver`, no mezclarlos.
 - Este repo publica el mecanismo y mantiene su Índice de comunicación sin filas: la fila agregada el 13/11/2026 para consultar a `como-uso-claude` no se commitea.
+
+## Análisis del 14/11/2026
+
+Lo hizo un subagente de solo lectura, junto con el plan Local-0107 (mismo grupo de trabajo), coordinado desde el plan Local-0129. Trae evidencia; no decidió nada. El mecanismo de `comunicar.js` y sus fallas están en la sección del 14/11/2026 del plan Local-0107.
+
+### Lo verificado
+
+- El banco de `probar-disparo-de-skills` tiene `preguntar-01/02` y `resolver-01/02`, todos con frases del usuario (`banco.json:47-68`). Ningún caso mide la intención del agente a mitad de una tarea, que es lo que este plan pide.
+- **Contradicción interna:** `preguntar/SKILL.md:10` dice que `resolver` «la elige el usuario tipeándola», pero la `description` de `resolver` se dispara sola.
+- El aviso de Índice vacío iría en `mostrar-pantalla-bienvenida.js:45`, en `conducta/`, que también tocan los grupos A y D. Este repo mantiene su Índice de comunicación sin filas a propósito, así que acá el aviso saldría siempre.
+- No hay término del glosario para «handoff» ni para «intermediario». Términos que aplican: el término del glosario Local-0037 (Agente Multipropósito Conocido) y el Local-0038 (Modo de Comunicación). Al redactar, cuidado con los términos vetados Local-0049 (`empujar`) y Local-0043 (`transcript`).
+
+### Orden
+
+Va después del plan Local-0107: disparar la comunicación más seguido sobre un mecanismo que pierde respuestas multiplica el daño.
+
+### Archivos
+
+Las habilidades en `funcionalidades/amp-comunicacion/skills/{preguntar,resolver,buscar-agentes}/SKILL.md` viajan por el plugin (hoy 0.3.0) y hay que subirle la versión. Según lo que se elija: una regla en `conducta/INDICE.md`, la Pantalla de bienvenida y `herramientas/probar-disparo-de-skills/banco.json`.
+
+### Riesgos
+
+- Una regla de «no hacer de intermediario» puede chocar con la Preferencia Base-0014 (Entregar un handoff cuando el trabajo pasa a otro agente ahora), que pide entregar un handoff cuando el usuario lo pide.
+- La Herramienta Local-0012 mide lo instalado: hay que publicar antes de medir.
+
+### Decisiones abiertas
+
+1. ¿Cómo se dispara por intención: ampliando la `description` de `preguntar` (por ejemplo, «…o al estar por pedirle al usuario que abra otra sesión y pegue un texto»), con una regla de conducta (cruza con el plan Local-0130), o las dos?
+2. ¿Dónde se avisa que el Índice de comunicación está vacío: en la Pantalla de bienvenida («agentes conocidos: 0 — corré buscar-agentes») o al terminar `amp:inicializar`?
+3. ¿Cómo se unifica con `consultar-agente` del Agente Coordinador: el Coordinador migra a `amp-comunicacion` y se adopta su `--stream`, conviven, o queda fuera de este grupo?
+4. ¿Se corrige ya la contradicción de `preguntar/SKILL.md:10`?

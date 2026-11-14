@@ -1,6 +1,6 @@
 # Que la consulta a otro Agente use la credencial correcta de la máquina
 
-**Estado: Análisis · Creado 26-08-12 · Analizado 26-09-10.** Origen: reportado por el usuario el 12/08/2026 desde otra PC.
+**Estado: Análisis · Creado 26-08-12 · Analizado 26-09-10 · Reanalizado 26-11-14.** Origen: reportado por el usuario el 12/08/2026 desde otra PC.
 
 > **CAMBIO DE RUMBO — 11/09/2026, decidido por el usuario. Este plan dejó de ser sobre
 > credenciales.**
@@ -135,3 +135,42 @@ Lo trae el plan Local-0129 (plan maestro), arreglo 5. Informe: `D:\Proyectos\ana
 - **El aviso de cierre del consultado pisa la respuesta.** `comunicar.js` devuelve solo el último mensaje del consultado. Si a ese Agente le salta su propio aviso de cierre («sesión sin asentar»), contesta el aviso en un turno más y la respuesta real se pierde sin señal. Pasó el 13/11/2026 consultando a `como-uso-claude`, y antes en los repos Trámites y Agente Coordinador. Arreglo: que el aviso de cierre no actúe en una corrida no interactiva, o devolver el turno completo.
 - **En modo `preguntar` el consultado no puede leer el material que se le pasa.** Se le deniega `Read` fuera de su carpeta (y `Bash`/`PowerShell`); el 13/11/2026 no pudo leer el handoff que se le indicó y contestó con lo que decía el pedido. Las denegaciones sí vuelven en la respuesta.
 - **En modo automático el modo `resolver` no se puede lanzar:** el clasificador de permisos lo bloqueó sin motivo, y hubo que pasar a aprobación manual.
+
+## Reanálisis del 14/11/2026
+
+Lo hizo un subagente de solo lectura, junto con el plan Local-0132 (mismo grupo de trabajo, mismos archivos), coordinado desde el plan Local-0129. Trae evidencia; no decidió nada.
+
+### Lo que este plan tiene y lo que no
+
+- Desde el 11/09 el problema dejó de ser la credencial: es que «el Agente no llegó a contestar» vuelve con la misma forma que una respuesta. La decisión de qué variables limpiar quedó sin objeto.
+- Siguen pendientes: el renombre propuesto (*El error de un Agente que no pudo arrancar llega como si fuera su respuesta*) y la página de conocimiento Base con la tabla de credenciales.
+- **Los tres casos del 13/11 están anotados como evidencia, pero sin alcance ni decisión.** El arreglo 5 del plan Local-0129 («que la comunicación no pierda la respuesta») hoy no es trabajo de ningún plan.
+- El nombre del plan y su fila en `PLANES.md` siguen diciendo «credencial».
+
+### Mecanismo actual (verificado)
+
+- `comunicar.js:79-108` arma el comando: `claude -p --output-format json`; en `preguntar`, `dontAsk`, `--allowedTools mcp__*` y `--disallowedTools Write,Edit,NotebookEdit,Bash` (`:86-88`); en `resolver`, `--permission-mode auto` (`:90`); `--sesion` pasa a `--resume`, y sin ella `--session-id <uuid>` (`:95-96`); codex, `exec --json` (`:100`).
+- **Devuelve solo `j.result`** (`:118`): el último mensaje. En codex, `--json` emite varias líneas y cae a «salida no estructurada» (`:125-126`; inferido, no probado).
+- Lanza con `spawnSync` sin `env`, `shell: true`, sin tope salvo `--tope` (`:182-190`).
+- **Primero imprime el rótulo «Respuesta de» y el texto** (`:207-208`) y recién después las advertencias de `is_error` y de salida no estructurada (`:217-218`): un error sale rotulado como respuesta.
+- **Cadena que pierde la respuesta:** el control de conducta Base-0012 (`avisar-sesion-sin-asentar.js`) solo se saltea con `stop_hook_active` (`:165`) y una marca por sesión (`:185`); no distingue una corrida no interactiva. Su `decision: block` le da al consultado un turno más, y ese turno pasa a ser `result`. (El código está verificado; la cadena la atribuye el informe.)
+- Pruebas: `lint-comunicacion/pruebas.js:160-240`. No cubren la respuesta pisada, ni que un error se distinga de una respuesta, ni la salida de codex.
+- El Agente Coordinador ya devuelve el turno completo con `--stream` (`--output-format stream-json --verbose`, `Agente-Coordinador/.claude/skills/consultar-agente/SKILL.md:65`).
+- El conocimiento Local-0017 no dice que `result` sea solo el último mensaje.
+
+### Choque no previsto
+
+Que el aviso de cierre no actúe en una consulta toca `conducta/avisar-sesion-sin-asentar/`, que es del grupo D (plan Local-0111). El plan Local-0129 solo listaba el choque entre A y D.
+
+### Orden conveniente (inferido)
+
+Primero este plan, que arregla el mecanismo; después el plan Local-0132. Disparar la comunicación más seguido sobre un mecanismo que pierde respuestas multiplica el daño.
+
+### Decisiones abiertas
+
+1. ¿Cómo no perder la respuesta: (a) que el aviso de cierre no actúe en una consulta (por ejemplo, `comunicar.js` le pasa una variable de entorno y el control sale con 0; choca con el grupo D), (b) devolver el turno completo con `stream-json`, o (c) las dos?
+2. ¿El arreglo 5 amplía este plan, renombrado, o va a un plan hijo nuevo del plan Local-0129?
+3. ¿Cómo se muestra una falla de arranque: sin rótulo de respuesta («no contestó: error 401»), o con el rótulo y la advertencia arriba?
+4. ¿Leer fuera de la carpeta: una bandera `--leer <ruta>` que pase `--add-dir` solo para ese material, que el consultante pegue el contenido, o nada?
+5. ¿Que el modo automático bloquee `resolver` es problema del Agente Multipropósito? Investigar primero de quién es el clasificador que frena, o documentarlo como límite en el `SKILL.md`.
+6. ¿Se asienta ya la página de conocimiento con la tabla de credenciales, sumándole que `result` es solo el último mensaje?

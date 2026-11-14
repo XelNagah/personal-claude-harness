@@ -1,6 +1,6 @@
 # Avisar al cerrar una tarea que hay algo para asentar
 
-**Estado: Listo · Creado 26-08-20.** Sale del análisis del repo ajeno
+**Estado: Análisis · Creado 26-08-20 · Vuelve de Listo a Análisis 26-11-14.** Sale del análisis del repo ajeno
 [everything-claude-code](https://github.com/worldflowai/everything-claude-code) (WorldFlowAI, 1.4k
 estrellas al 20/08/2026), pedido por Javier para tomar ideas. De las cuatro que salieron, es la única
 que cierra un hueco que este repo ya tenía asentado por escrito.
@@ -277,3 +277,48 @@ Lo trae el plan Local-0129 (plan maestro), arreglos 3 y 6. Informe: `D:\Proyecto
 
 - **Altas en registros hechas a mano: 43 % (34 de 79).** El agente escribe la fila sin la habilidad `registrar-*` que corresponde. Este plan avisa al cerrar; queda abierto si además hay que avisar o frenar **en el momento del alta**.
 - **La señal «sesión sin asentar» mide mal.** Mide el tamaño del archivo de la transcripción y lo presenta como «KB de conversación». Saltó en 123 de 197 sesiones, casi siempre con uno o dos prompts; la conversación es, en la mediana, el 14 % de lo que informa. Se vio en vivo el 13/11/2026: 675 KB en una sesión recién limpiada con `/clear` y un solo intercambio. Arreglo: medir la conversación, no el archivo, y fijar el corte que este plan dejó provisorio.
+
+## Vuelve a Análisis — 14/11/2026
+
+Lo analizó un subagente de solo lectura, coordinado desde el plan Local-0129. Trae evidencia; no decidió nada. **El plan estaba en `Listo` para su diseño original, pero no para lo que el plan Local-0129 le sumó**: la sección del 13/11 solo anota los arreglos 3 y 6, y los dos chocan con lo ya cerrado.
+
+- **Arreglo 6 (medir la conversación y no el archivo)** contradice el diseño cerrado del piso por tamaño de archivo (este plan, sección del piso).
+- **Arreglo 3 (avisar o frenar al dar un alta sin su habilidad)** es otro momento (`al escribir`) y otra clase de regla, que este plan no tiene.
+
+### Mecanismo actual (verificado)
+
+- Hook `Stop` (`.claude/settings.json:38-43`) al repartidor. Reglas del momento en `conducta/INDICE.md`: la Base-0009 (`Inyectar`, l.38) y la Base-0012 (`Controlar`, l.41), que corre `avisar-sesion-sin-asentar.js --piso 200000`.
+- **Tamaño:** `fs.statSync(transcript_path).size` (l.169) contra 200000 bytes (l.54, l.170). El texto dice «KB de conversación» (l.196-198), aunque el comentario de l.30-33 admite que esos bytes no son contexto.
+- **«Asentó»:** recorre las herramientas usadas (l.121-153). Cuenta una habilidad `registrar-*`, `converger-terminologia` o `agregar-subsistema` (l.89, l.135); un `Write`/`Edit`/`MultiEdit`/`apply_patch` sobre un `.md` de una casa con `MANIFIESTO.md`, salvo `tmp/` (l.77-84, l.137-142); o un comando de consola con marca de escritura que menciona esa ruta (l.100, l.144-148).
+- **Las altas a mano no se detectan: callan el aviso.** Editar un Índice con `Edit` cuenta como asentar (l.138).
+- El momento `al escribir` es `PreToolUse` con matcher `Write|Edit` (`settings.json:29`): no ve `sed -i` ni heredocs por consola.
+- Pruebas: `pruebas.js`, 27 casos, con piso de prueba de 5000 bytes (l.42). Ninguno prueba «primer turno grande».
+- Errata: el comentario de l.38 dice «clase `Cloquear`»; quedó viejo tras la Decisión Local-0079.
+- El commit `a2db32d` arregló el control hermano `avisar-contexto-pesado` (ahora lee `message.usage`), pero en este solo retocó el comentario.
+
+### El aviso salta en el primer turno: no es por el `/clear`
+
+Verificado el 14/11/2026 sobre la transcripción de la sesión: el archivo tiene un solo `sessionId` y el `/clear` está en su línea 10, con 8 KB acumulados. Lo que pesa es lo que el CLI escribe al arrancar: con el primer pedido ya son 289 KB (instrucciones 131 KB, lista de habilidades 64 KB, herramientas y MCP unos 42 KB), y antes de la primera respuesta suma 659 KB. El `usage` del primer turno da unos 85.000 tokens, casi todo contexto fijo. **Con el piso de 200 KB, en este repo el aviso sale siempre en el primer turno.** La hipótesis de que medía lo previo al `/clear` quedó refutada.
+
+### Choques
+
+- Grupo A (plan Local-0130): los dos escriben `conducta/INDICE.md` y su copia en `base/`; si el arreglo 3 se hace acá, comparten además el momento `al escribir`.
+- Grupo C (planes Local-0107 y Local-0132): para que la consulta a otro agente no pierda la respuesta, la opción más directa es que este aviso no actúe en una corrida no interactiva. Toca este mismo control.
+
+### Archivos
+
+Viajan en la Base: `conducta/avisar-sesion-sin-asentar/{avisar-sesion-sin-asentar.js, pruebas.js, README.md}`, `conducta/INDICE.md` si cambia el piso o el texto, y para el arreglo 3 un control nuevo `al escribir` con su regla, quizás con `settings.json` si se amplía el matcher. Subir la versión de `amp`.
+
+### Riesgos
+
+- Medir con `usage` tiene el mismo piso fijo de unos 85.000 tokens: hay que medir la diferencia contra el primer turno, o contar lo que escribieron usuario y asistente.
+- Arreglo 3: las habilidades de alta también escriben con `Edit` (hay que saber si se está dentro de su flujo); el lint y las actualizaciones legítimas también tocan los Índices; las escrituras por consola no pasan por `PreToolUse Write|Edit`.
+
+### Decisiones abiertas
+
+1. ¿Los arreglos 3 y 6 se quedan en este plan, o el 3 pasa a un plan propio (control `al escribir`)?
+2. ¿Qué mide el piso: (a) la diferencia de `usage` contra el primer turno (por ejemplo, avisar si pasó de 85.000 a más de 125.000 tokens), (b) los bytes de texto de usuario y asistente (por ejemplo, más de 30 KB), o (c) una cantidad mínima de pedidos? Este plan ya descartó contar pedidos como medida única.
+3. Arreglo 3: ¿frenar o avisar? Frenar choca con la Decisión Local-0079; avisar sigue a las Decisiones Local-0038 y Local-0052.
+4. ¿Cómo se decide que un alta está dentro del flujo de su habilidad: hubo una habilidad `registrar-*` antes en la sesión, o se miran solo filas nuevas con código nuevo?
+5. ¿El aviso de cierre sigue callándose ante un alta hecha a mano, o avisa además que se hizo sin la habilidad?
+6. ¿Quién se encarga de que el aviso no actúe en las corridas de consulta: el grupo C en `comunicar.js`, o este plan detectando la corrida no interactiva?

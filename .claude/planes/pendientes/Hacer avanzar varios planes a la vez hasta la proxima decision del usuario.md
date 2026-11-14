@@ -1027,3 +1027,12 @@ decisiones abiertas, y la primera **cambia el tamaño del trabajo**: si `ejecuta
 la ejecución de este plan arranca por el plan Local-0043, que está en `Nuevo`. Lo demás
 —contrato, agrupamiento, alcance, integración— quedó definido acá. Contestadas las tres, el
 plan pasa a `Listo` sin más análisis.
+
+## Pedido del usuario del 14/11/2026: que sea la forma estándar de trabajar, con página de decisiones legible en el celular
+
+Mientras se coordinaba a mano el plan Local-0129 (cuarta corrida a mano de este diseño), el usuario pidió que esta forma de trabajar sea **la forma estándar del Agente Multipropósito**, y la describió así: el coordinador le da un plan a cada subagente en su propia copia del repo, junta todas las preguntas que traen en **una página de decisiones en HTML** —con contexto de cada cosa, la opción que el coordinador elegiría y por qué, y siempre un «Otro»—, se la presenta al usuario para que decida, y al final integra al repo principal lo que funcionó. Coincide con el contrato de esta habilidad; lo que el plan no tenía son dos cosas:
+
+- **La superficie de la cola de decisiones es la página de decisiones.** Hoy vive en el repo Agente Coordinador (`paquetes/gestion-planes-agentes/buzon/PLANTILLA-superficie.html`, con su README), no en el Agente Multipropósito. Por eso el agente de esta sesión no la encontró al buscar en este repo, y el usuario creía que ya era una habilidad del Agente Multipropósito. Formato ya validado con uso real: recomendación arriba de las opciones, opción recomendada marcada, «Otro» con campo libre en cada ficha, análisis largo plegado al final, y un botón que arma un código copiable (`#01=A #02=Otro`) para pegar en el chat.
+- **La página tiene que poder verse desde el celular.** El paquete del Coordinador la arma local y la abre en el navegador de la PC; el usuario decide muchas veces desde el teléfono. El 14/11/2026 se resolvió publicándola como página privada de claude.ai (la del grupo A del plan Local-0129). Queda a decidir si esa es la forma estándar o una alternativa.
+
+Esto suma a las decisiones abiertas de este plan: dónde vive la plantilla (subirla a la Base junto con esta habilidad), y cómo se entrega la página (archivo local, página publicada, o las dos). El término «página de decisiones» es como lo dice el usuario y no está en el glosario: ratificarlo o elegir otro antes de construir (Preferencia Base-0010).

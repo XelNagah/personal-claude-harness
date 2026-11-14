@@ -1,6 +1,6 @@
 # El contraste automático no trae los planes ni las fichas que tocan el pedido
 
-**Estado: Nuevo · Creado 26-11-13.** Origen: plan Local-0129 (plan maestro), arreglo 2 del análisis de un mes de conversaciones. Informe: `D:\Proyectos\analisis\como-uso-claude\.claude\conocimiento\analisis-2026-11\agentes-que-no-usan-lo-guardado.md`.
+**Estado: Análisis · Creado 26-11-13 · Analizado 26-11-14.** Origen: plan Local-0129 (plan maestro), arreglo 2 del análisis de un mes de conversaciones. Informe: `D:\Proyectos\analisis\como-uso-claude\.claude\conocimiento\analisis-2026-11\agentes-que-no-usan-lo-guardado.md`.
 
 ## El problema
 
@@ -22,3 +22,49 @@ Casos (Impresión 3D):
 
 - plan Local-0128 (El material que el agente abre sin que el mensaje lo nombre no se contrasta): vecino, pero sobre qué material entra al contraste, no sobre qué registros devuelve.
 - plan Local-0121 (Reemplazar por capacidades nativas de hooks lo que el Agente Multipropósito construyó a mano): puede cambiar cómo se construye.
+
+## Análisis del 14/11/2026
+
+Lo hizo un subagente de solo lectura, coordinado desde el plan Local-0129. Trae evidencia; no decidió nada.
+
+### Mecanismo actual (verificado)
+
+- Entra por UserPromptSubmit (`.claude/settings.json:17-25`) al repartidor `establecer-conducta.js`, y solo contrasta en `cada turno` (`:654`). Lee `data.prompt` (`:462-464`).
+- **Puntaje:** glosario, Terminología Farlopa y decisiones (`REGISTROS_PUNTAJE`, `:203-207`). Idf calculado sobre esas filas, Nombre con peso 3 y Descripción con peso 1, `UMBRAL = 7.0`, `TOPE = 3` (`:274`, `:280-310`).
+- **Citas:** esos tres registros más `PLANES.md` (`:208-210`), del mensaje y del archivo apuntado (máximo 3 archivos y 200 KB, `:356-358`).
+- **Memoria:** una fila entregada se calla 20 turnos (`:424`, `:492-495`), solo dentro de la sesión.
+- Conocimiento, preferencias y Herramientas no entran por ningún camino (`:201-202`, `:315-317`).
+- Pruebas: `conducta/establecer-conducta/pruebas.js`, 52 chequeos, con registros sintéticos (`:62-107`). Ninguno de latencia ni de corpus chico.
+
+### Por qué trae siempre la misma decisión
+
+- **Verificado:** en Contabilidad el corpus del puntaje tiene 11 filas (9 de glosario, 0 vetadas, 2 decisiones), y las marcas de `Contabilidad/.claude/tmp/contraste-automatico/` muestran `decisiones/INDICE.md#Local-0002` en dos de cinco sesiones.
+- **Inferido con una simulación** que reimplementa la fórmula (no corre el hook): con 11 filas, una palabra que aparece en una sola pesa unos 2,0, así que una palabra del Nombre más una de la Descripción ya pasan 7,0. «Cuánto pagué de servicios este mes» trae la Decisión Local-0002 de Contabilidad (12,0). «Registrá la factura de AySA» no trae nada porque los planes no están en el puntaje.
+- **Conclusión inferida:** el umbral se calibró con unas 166 filas (las de este repo) y no se adapta al tamaño del corpus del repo desplegado. Además, la memoria de 20 turnos no impide que la misma fila vuelva en cada sesión nueva.
+- Corrección al informe: el informe dice que trae planes por coincidencia; el código los trae solo por cita.
+
+### Latencia
+
+El plan Local-0118 midió +2 a +6 ms sobre unos 150 ms que el hook ya costaba (fila 230 de ese plan). El hook entero ya pasa el tope de 100 ms del conocimiento Local-0005.
+
+### Superposición con el plan Local-0128
+
+El borde está claro: el plan Local-0128 decide qué material entra al contraste; este, qué registros devuelve. Se cruzan solo si este suma el contenido de páginas de conocimiento, que empuja hacia el modelo de documentos.
+
+### Término sin ratificar: «ficha»
+
+No está en el glosario y es ambiguo: en Herramientas es la carpeta de una herramienta; en el informe es una página del dominio («la ficha del filamento»). Hay que ratificar el término o elegir otro antes de construir (Preferencia Base-0010).
+
+### Archivos y choques
+
+`establecer-conducta.js`, `pruebas.js` y `README.md`, que viajan en la Base. La fila del término del glosario Local-0036 (Contraste automático) y quizás una decisión que precise la Decisión Local-0062: registros canónicos, con texto aprobado. Choque seguro con el grupo D (mismo repartidor) y probable con el A.
+
+### Decisiones abiertas
+
+1. ¿El umbral se ajusta al tamaño del corpus, o queda fijo?
+2. ¿Los planes entran al puntaje: con su propio umbral, mezclados, o solo por cita como hoy?
+3. ¿Solo planes vivos, o también ejecutados?
+4. ¿Qué es una «ficha» y entra: fila de Índice (ya cargada), filas de subíndices de carpeta, o contenido de la página (zona del plan Local-0128)?
+5. ¿Memoria solo por sesión, o entre sesiones con caducidad en días?
+6. ¿Decisión nueva que precise la Decisión Local-0062, o solo reescribir la definición del término del glosario Local-0036?
+7. ¿Qué se hace con la latencia ya pasada: aceptarla, bajarla antes de agregar alcance, o esperar al plan Local-0121?

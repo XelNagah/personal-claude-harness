@@ -22,10 +22,10 @@ Informe completo: `D:\Proyectos\analisis\como-uso-claude\.claude\conocimiento\an
 
 | Orden | Plan | Arreglo del informe | Grupo | Estado |
 |---|---|---|---|---|
-| 1 | plan Local-0130 (Las reglas que viven dentro de una habilidad no se cumplen cuando la habilidad no se invoca) | 1 | A | Nuevo |
-| 2 | plan Local-0131 (El contraste automático no trae los planes ni las fichas que tocan el pedido) | 2 | B | Nuevo |
-| 3 | plan Local-0111 (Avisar al cerrar una tarea que hay algo para asentar) | 3 y 6 | D | Listo |
-| 4 | plan Local-0132 (El agente le pide al usuario que copie un texto a otra sesión en vez de consultar al otro repo) | 4 | C | Nuevo |
+| 1 | plan Local-0130 (Las reglas que viven dentro de una habilidad no se cumplen cuando la habilidad no se invoca) | 1 | A | Análisis |
+| 2 | plan Local-0131 (El contraste automático no trae los planes ni las fichas que tocan el pedido) | 2 | B | Análisis |
+| 3 | plan Local-0111 (Avisar al cerrar una tarea que hay algo para asentar) | 3 y 6 | D | Análisis |
+| 4 | plan Local-0132 (El agente le pide al usuario que copie un texto a otra sesión en vez de consultar al otro repo) | 4 | C | Análisis |
 | 5 | plan Local-0107 (Que la consulta a otro Agente use la credencial correcta de la máquina) | 5 | C | Análisis |
 
 Fuera de este plan, a propósito:
@@ -46,3 +46,15 @@ Fuera de este plan, a propósito:
 ## Último paso: medir de nuevo
 
 Cuando cierren los hijos y hayan pasado al menos dos semanas de uso, pedirle al Agente *Cómo uso Claude Code* (habilidad `preguntar` o `resolver`) que repita el mismo análisis con su Herramienta `condensar-sesiones` y compare las tasas. Sin esta medición no se sabe si los arreglos sirvieron.
+
+## Estado
+
+**14/11/2026 — ronda de análisis hecha, construcción sin empezar.**
+
+- Commit `aeb2af3` con los planes, para que las copias de trabajo los vean.
+- Cuatro subagentes de solo lectura analizaron los cuatro grupos en paralelo (sin copias del repo: analizar no escribe). Lo que encontraron quedó escrito en cada plan hijo, en su sección del 14/11/2026, y los cinco hijos pasaron a `Análisis`. El plan Local-0111 volvió de `Listo`, porque no cubría los arreglos 3 y 6.
+- **Choque nuevo, no previsto arriba:** C y D también se tocan. Para que la comunicación no pierda la respuesta, lo más directo es que el aviso de cierre (`conducta/avisar-sesion-sin-asentar/`, del grupo D) no actúe en una corrida no interactiva. Además, B toca el mismo repartidor que A y D.
+- **Página de decisiones del grupo A**, con 5 fichas: `.claude/tmp/decisiones-grupo-a-2026-11-14.html`, armada con la plantilla del Agente Coordinador y publicada como página privada para verla en el celular (https://claude.ai/artifact/KJVcJgiaSeML2Dhn569wzV). El usuario la está contestando; la respuesta llega como un código `#01=A #02=…` pegado en el chat.
+- Faltan las páginas de los grupos B (7 decisiones), C (10, entre los planes Local-0107 y Local-0132) y D (6). Las preguntas ya están escritas en cada plan hijo.
+- Se descubrió que lo que hace este coordinador a mano es el diseño del plan Local-0119 (`avanzar-planes`), que todavía no existe; el usuario pidió que sea la forma estándar. Quedó anotado allá.
+- Pendiente aparte: el informe de `como-uso-claude` sigue sin commitear en ese repo.
