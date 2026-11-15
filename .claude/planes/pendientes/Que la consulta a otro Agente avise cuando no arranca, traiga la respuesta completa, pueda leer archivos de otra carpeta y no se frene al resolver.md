@@ -1,6 +1,6 @@
-# Que la consulta a otro Agente use la credencial correcta de la máquina
+# Que la consulta a otro Agente avise cuando no arranca, traiga la respuesta completa, pueda leer archivos de otra carpeta y no se frene al resolver
 
-**Estado: Análisis · Creado 26-08-12 · Analizado 26-09-10 · Reanalizado 26-11-14.** Origen: reportado por el usuario el 12/08/2026 desde otra PC.
+**Estado: Listo · Creado 26-08-12 · Analizado 26-09-10 · Reanalizado 26-11-14 · Decidido y renombrado 26-11-15.** Origen: reportado por el usuario el 12/08/2026 desde otra PC.
 
 > **CAMBIO DE RUMBO — 11/09/2026, decidido por el usuario. Este plan dejó de ser sobre
 > credenciales.**
@@ -174,3 +174,14 @@ Primero este plan, que arregla el mecanismo; después el plan Local-0132. Dispar
 4. ¿Leer fuera de la carpeta: una bandera `--leer <ruta>` que pase `--add-dir` solo para ese material, que el consultante pegue el contenido, o nada?
 5. ¿Que el modo automático bloquee `resolver` es problema del Agente Multipropósito? Investigar primero de quién es el clasificador que frena, o documentarlo como límite en el `SKILL.md`.
 6. ¿Se asienta ya la página de conocimiento con la tabla de credenciales, sumándole que `result` es solo el último mensaje?
+
+### Respuestas del usuario a la página de decisiones — 15/11/2026
+
+Página única de tres temas (`.claude/tmp/decisiones-tres-temas-2026-11-14.html`), pestaña «Consultas a otro repo», fichas 1 a 6. El plan no recomendaba; el usuario eligió la recomendación del subagente en las seis.
+
+- **#1 = B. La consulta devuelve el turno completo del consultado** (salida por mensajes, `stream-json`), no solo su último mensaje. El aviso de cierre del consultado no se toca desde acá. Además, el plan Local-0111 (aviso de cierre) hace que el aviso se calle ante una marca que pone `comunicar.js` (su #5 = C): las dos medidas van juntas, una de respaldo de la otra.
+- **#2 = A. Este plan se amplía y se renombra.** Cubre la falla de arranque, la respuesta pisada, la lectura fuera de la carpeta y `resolver` bloqueado. El nombre nuevo se ratifica antes de cambiarlo.
+- **#3 = A. Cuando el consultado no arranca, el hilo ve la falla sin el rótulo de respuesta**, por ejemplo: «"Contabilidad" no contestó: error 401, la clave de API no es válida».
+- **#4 = A. Opción `--leer <ruta>` en el modo preguntar**, que usa `--add-dir`. Queda por probar si se puede acotar a un solo archivo o abre la carpeta entera.
+- **#5 = A. Antes de anotarlo como límite, se investiga qué control frena a `resolver` en el modo automático de permisos.**
+- **#6 = A. Se asienta ya la página de conocimiento** sobre qué credencial usa el agente consultado y qué devuelve la consulta, con la tabla de las fuentes de credencial y marcada como que caduca. Al construir se decide si es del Agente Multipropósito o de este repo.

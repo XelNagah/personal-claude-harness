@@ -1,6 +1,6 @@
 # Las reglas que viven dentro de una habilidad no se cumplen cuando la habilidad no se invoca
 
-**Estado: Análisis · Creado 26-11-13 · Analizado 26-11-14.** Origen: plan Local-0129 (plan maestro), arreglo 1 del análisis de un mes de conversaciones —el de mayor impacto—. Informe: `D:\Proyectos\analisis\como-uso-claude\.claude\conocimiento\analisis-2026-11\agentes-que-no-usan-lo-guardado.md`.
+**Estado: Listo · Creado 26-11-13 · Analizado 26-11-14.** Origen: plan Local-0129 (plan maestro), arreglo 1 del análisis de un mes de conversaciones —el de mayor impacto—. Informe: `D:\Proyectos\analisis\como-uso-claude\.claude\conocimiento\analisis-2026-11\agentes-que-no-usan-lo-guardado.md`.
 
 ## El problema
 
@@ -13,9 +13,11 @@ Lo que **no** es la causa: el listado de habilidades no recorta las descripcione
 ## Lo que hay que resolver
 
 1. **Inventario.** Qué reglas de «en el momento X, hacé Y» viven hoy dentro de los `SKILL.md` de la Base (y cuáles en los repos desplegados, como ejemplo) que deberían cumplirse aunque la habilidad no se invoque.
-2. **Criterio de corte.** Qué regla sube a conducta y cuál se queda en la habilidad. Una regla cargada siempre se recita (conocimiento Local-0001): no todo puede subir.
-3. **Entrega.** Cada regla elegida como regla de conducta con su momento y su clase (Decisión Local-0021), con `registrar-regla`.
-4. **Medición.** Antes y después, con la Herramienta Local-0012 `probar-disparo-de-skills` o el banco del plan Local-0027.
+2. **Criterio de corte.** Qué regla sube a conducta y cuál se queda en la habilidad. No todo puede subir: cada regla del momento `cada turno` se paga en todos los turnos, y el peso de ese bloque hoy no lo mide nadie (ver «Lo verificado»; decisión #04).
+3. **Entrega.** Cada regla elegida como regla de conducta con su momento y su clase (Decisión Local-0021). Las locales, con `registrar-regla`; las de la Base, editando `.claude/conducta/INDICE.md` y copiando con `sincronizar-base --aplicar`.
+4. **Medición.** Con la medición final del plan Local-0129 (decisión #05).
+
+**Definido el 14/11/2026:** el alcance de arriba se lee junto con las respuestas a las decisiones #01 a #05, al final de este documento.
 
 ## Cruces
 
@@ -73,4 +75,10 @@ Con el grupo D (plan Local-0111): los dos escriben en `conducta/INDICE.md` y en 
 - **#02 y #04 = «Otro», en forma de pregunta.** Siguen abiertas:
   - #02: «¿El problema con A no es que el agente puede ignorarla? Por eso empezamos a usar hooks.» La aclaración pendiente es que las dos opciones se entregan por hook. Ninguna obliga a cumplir; lo que cambia es qué tan cerca de la acción llega el texto.
   - #04: «Tiene que poder obtener todo lo que necesite.» La aclaración pendiente es que el tope mide solo el texto que se entrega solo en cada turno. No limita lo que el agente consulta cuando lo necesita.
-- **#02 = A, decidido después de la aclaración.** Las reglas se entregan en cada turno, por el mismo hook que ya existe, con la condición escrita en el texto. Las que la medición final muestre que se siguen ignorando, y que se puedan detectar sin juicio (por ejemplo `git mv`), pasan después a un momento propio o a un control que frene. Queda abierta solo la #04.
+- **#02 = A, decidido después de la aclaración.** Las reglas se entregan en cada turno, por el mismo hook que ya existe, con la condición escrita en el texto. Las que la medición final muestre que se siguen ignorando, y que se puedan detectar sin juicio (por ejemplo `git mv`), pasan después a un momento propio o a un control que frene.
+- **#04 = A, decidido después de la aclaración.** `medir-contexto` mide el texto que el repartidor entrega solo en el momento `cada turno` y avisa cuando pasa un tope. No bloquea nada. El usuario puso una condición: **el mecanismo tiene que quedar documentado de modo que, cuando el aviso aparezca, se entienda qué está pasando sin reconstruirlo**. Eso obliga a tres cosas al construir:
+  1. **El aviso se explica solo.** Dice qué midió (el texto de las reglas del momento `cada turno`, el de la Base y el del repo por separado), cuánto dio, cuál es el tope y qué hacer: pasar a un momento más específico la regla que se pueda detectar sin juicio, o recortar su texto. Ejemplo de forma: «El texto que se entrega en cada turno mide 6,1 KB y el tope es 5 KB (Base 3,8 KB · repo 2,3 KB). No limita lo que el agente consulta: solo lo que recibe sin pedirlo. Para bajarlo, mover a otro momento o acortar una regla».
+  2. **La ficha de `medir-contexto` y el `README.md` de conducta explican el mecanismo**: qué cuenta, qué deja afuera (preferencias, Índices y páginas que el agente abre a demanda), por qué existe el tope (cada regla se paga en todos los turnos, y un bloque pesado diluye a las demás) y de dónde salió el número.
+  3. **El número del tope queda escrito en un solo lugar**, el código de `medir-contexto`, y la documentación remite a él en vez de copiarlo (conocimiento Base-0001, Evitar el mismo dato escrito en varios lugares).
+
+  Corrección de una aclaración dada en la conversación: se justificó el tope diciendo que una regla en un bloque largo «se recita pero no se obedece». Eso no es lo que dice el conocimiento Local-0001 (ver «Lo verificado»): ese fallo no se observó en reglas re-inyectadas. El motivo del tope es el peso del bloque, que hoy nadie mide.

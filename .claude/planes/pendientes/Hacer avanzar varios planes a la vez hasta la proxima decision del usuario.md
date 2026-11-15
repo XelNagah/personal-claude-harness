@@ -1036,3 +1036,8 @@ Mientras se coordinaba a mano el plan Local-0129 (cuarta corrida a mano de este 
 - **La página tiene que poder verse desde el celular.** El paquete del Coordinador la arma local y la abre en el navegador de la PC; el usuario decide muchas veces desde el teléfono. El 14/11/2026 se resolvió publicándola como página privada de claude.ai (la del grupo A del plan Local-0129). Queda a decidir si esa es la forma estándar o una alternativa.
 
 Esto suma a las decisiones abiertas de este plan: dónde vive la plantilla (subirla a la Base junto con esta habilidad), y cómo se entrega la página (archivo local, página publicada, o las dos). El término «página de decisiones» es como lo dice el usuario y no está en el glosario: ratificarlo o elegir otro antes de construir (Preferencia Base-0010).
+
+**Dos pedidos más del usuario, el mismo 14/11/2026, al armar la página de tres planes a la vez:**
+
+- **Una sola página con pestañas, no una por plan.** Con varios planes esperando decisiones, va una página con una pestaña por tema, un contador por pestaña y un solo botón de copiar que junta todas las respuestas. Se armó así la del 14/11 (`.claude/tmp/decisiones-tres-temas-2026-11-14.html`, publicada como página privada). El script de la plantilla no se tocó: se le agregó otro aparte para las pestañas.
+- **Cada tema y cada ficha se nombran con palabras que el usuario reconozca, nunca con rótulos internos del agente.** «Grupo B» o «#03» no le dicen nada. La pestaña lleva el nombre de lo que se arregla («Aviso al cerrar») y el código copiable lleva ese nombre corto (`#cierre-2=A`).

@@ -1,6 +1,6 @@
 # El agente le pide al usuario que copie un texto a otra sesión en vez de consultar al otro repo
 
-**Estado: Análisis · Creado 26-11-13 · Analizado 26-11-14.** Origen: plan Local-0129 (plan maestro), arreglo 4 del análisis de un mes de conversaciones. Informe: `D:\Proyectos\analisis\como-uso-claude\.claude\conocimiento\analisis-2026-11\agentes-que-no-usan-lo-guardado.md`.
+**Estado: Listo · Creado 26-11-13 · Analizado 26-11-14 · Decidido 26-11-15.** Origen: plan Local-0129 (plan maestro), arreglo 4 del análisis de un mes de conversaciones. Informe: `D:\Proyectos\analisis\como-uso-claude\.claude\conocimiento\analisis-2026-11\agentes-que-no-usan-lo-guardado.md`.
 
 ## El problema
 
@@ -19,7 +19,7 @@ Por qué pasa (inferencia del análisis, sin medir):
 
 ## Cruces
 
-- plan Local-0107 (Que la consulta a otro Agente use la credencial correcta de la máquina): mismo subsistema; van en el mismo grupo de trabajo.
+- plan Local-0107 (Que la consulta a otro Agente avise cuando no arranca, traiga la respuesta completa, pueda leer archivos de otra carpeta y no se frene al resolver): mismo subsistema; van en el mismo grupo de trabajo.
 - Decisión Local-0065: el modo es la habilidad; cualquier disparo nuevo tiene que elegir entre `preguntar` y `resolver`, no mezclarlos.
 - Este repo publica el mecanismo y mantiene su Índice de comunicación sin filas: la fila agregada el 13/11/2026 para consultar a `como-uso-claude` no se commitea.
 
@@ -53,3 +53,12 @@ Las habilidades en `funcionalidades/amp-comunicacion/skills/{preguntar,resolver,
 2. ¿Dónde se avisa que el Índice de comunicación está vacío: en la Pantalla de bienvenida («agentes conocidos: 0 — corré buscar-agentes») o al terminar `amp:inicializar`?
 3. ¿Cómo se unifica con `consultar-agente` del Agente Coordinador: el Coordinador migra a `amp-comunicacion` y se adopta su `--stream`, conviven, o queda fuera de este grupo?
 4. ¿Se corrige ya la contradicción de `preguntar/SKILL.md:10`?
+
+### Respuestas del usuario a la página de decisiones — 15/11/2026
+
+Página única de tres temas (`.claude/tmp/decisiones-tres-temas-2026-11-14.html`), pestaña «Consultas a otro repo», fichas 7 a 10. El plan no recomendaba; el usuario eligió la recomendación del subagente en las cuatro.
+
+- **#7 = C. Las dos medidas: se amplía la descripción de `preguntar` y se suma una regla de conducta**, una de respaldo de la otra. La regla sigue lo decidido para las reglas en el plan Local-0130: momento `cada turno`, condición en el texto, y cuenta para el tope medido del texto de cada turno.
+- **#8 = B. El aviso de que no hay otras instalaciones registradas sale una vez, al terminar `amp:inicializar`**, y sugiere `buscar-agentes`.
+- **#9 = C. La habilidad propia del Agente Coordinador queda fuera de este plan.** Acá solo se toma la idea del turno completo (plan Local-0107, #1). Su migración va a un plan propio, después.
+- **#10 = A. Se corrige ya `preguntar`** para que diga lo mismo que la descripción de `resolver`: «Para pedirle que haga algo está la habilidad resolver, que se usa cuando el usuario pidió que el otro repo quede modificado».

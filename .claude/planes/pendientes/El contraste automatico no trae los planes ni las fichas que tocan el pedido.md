@@ -1,6 +1,6 @@
 # El contraste automático no trae los planes ni las fichas que tocan el pedido
 
-**Estado: Análisis · Creado 26-11-13 · Analizado 26-11-14.** Origen: plan Local-0129 (plan maestro), arreglo 2 del análisis de un mes de conversaciones. Informe: `D:\Proyectos\analisis\como-uso-claude\.claude\conocimiento\analisis-2026-11\agentes-que-no-usan-lo-guardado.md`.
+**Estado: Listo · Creado 26-11-13 · Analizado 26-11-14 · Decidido 26-11-15.** Origen: plan Local-0129 (plan maestro), arreglo 2 del análisis de un mes de conversaciones. Informe: `D:\Proyectos\analisis\como-uso-claude\.claude\conocimiento\analisis-2026-11\agentes-que-no-usan-lo-guardado.md`.
 
 ## El problema
 
@@ -68,3 +68,15 @@ No está en el glosario y es ambiguo: en Herramientas es la carpeta de una herra
 5. ¿Memoria solo por sesión, o entre sesiones con caducidad en días?
 6. ¿Decisión nueva que precise la Decisión Local-0062, o solo reescribir la definición del término del glosario Local-0036?
 7. ¿Qué se hace con la latencia ya pasada: aceptarla, bajarla antes de agregar alcance, o esperar al plan Local-0121?
+
+### Respuestas del usuario a la página de decisiones — 15/11/2026
+
+Página única de tres temas (`.claude/tmp/decisiones-tres-temas-2026-11-14.html`), pestaña «Aviso de lo ya guardado». El plan no recomendaba en ninguna; las recomendaciones las puso el subagente que armó las fichas, y el usuario eligió la recomendada en las siete.
+
+- **#1 = A. El umbral se ajusta a la cantidad de filas de cada repo.** Primer paso: confirmar la causa corriendo el programa real sobre Contabilidad, porque salió de una simulación que copia la fórmula. La fórmula de ajuste se elige al construir.
+- **#2 = A. Los planes entran con su propio umbral**, comparados aparte contra las filas de `PLANES.md`. El puntaje del glosario y las decisiones no cambia. Cómo se reparte el tope de 3 filas se define al construir. Límite anotado: se compara la fila del plan, no su cuerpo.
+- **#3 = A. Solo los planes vivos**, no los ejecutados ni los descartados.
+- **#4 = B. De las páginas de conocimiento se comparan las filas de los índices de carpeta.** El nombre «ficha» no está ratificado: queda para `converger-terminologia`, aparte de este plan.
+- **#5 = A. Una fila entregada se calla solo dentro de la misma sesión**, como hoy. La repetición entre sesiones se ataca con el umbral de la #1.
+- **#6 = A. El nuevo alcance se asienta en una decisión nueva que precisa la Decisión Local-0062, y se reescribe la definición del término Local-0036 del glosario (Contraste automático).** Los dos textos se le muestran al usuario antes de escribirlos (Preferencia Base-0003). Los escribe el coordinador, no un subagente (Decisión Local-0060).
+- **#7 = A. Se acepta la demora que ya existe y se mide lo nuevo.** Se mide antes y después de sumar los planes; el límite propio de lo agregado se fija al construir.

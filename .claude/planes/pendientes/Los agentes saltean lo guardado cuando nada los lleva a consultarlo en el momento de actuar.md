@@ -26,7 +26,7 @@ Informe completo: `D:\Proyectos\analisis\como-uso-claude\.claude\conocimiento\an
 | 2 | plan Local-0131 (El contraste automático no trae los planes ni las fichas que tocan el pedido) | 2 | B | Análisis |
 | 3 | plan Local-0111 (Avisar al cerrar una tarea que hay algo para asentar) | 3 y 6 | D | Análisis |
 | 4 | plan Local-0132 (El agente le pide al usuario que copie un texto a otra sesión en vez de consultar al otro repo) | 4 | C | Análisis |
-| 5 | plan Local-0107 (Que la consulta a otro Agente use la credencial correcta de la máquina) | 5 | C | Análisis |
+| 5 | plan Local-0107 (Que la consulta a otro Agente avise cuando no arranca, traiga la respuesta completa, pueda leer archivos de otra carpeta y no se frene al resolver) | 5 | C | Análisis |
 
 Fuera de este plan, a propósito:
 - Arreglo 7 (depurar registros viejos o contradictorios): difuso; lo rozan el plan Local-0124 y el plan Local-0006.
@@ -48,6 +48,17 @@ Fuera de este plan, a propósito:
 Cuando cierren los hijos y hayan pasado al menos dos semanas de uso, pedirle al Agente *Cómo uso Claude Code* (habilidad `preguntar` o `resolver`) que repita el mismo análisis con su Herramienta `condensar-sesiones` y compare las tasas. Sin esta medición no se sabe si los arreglos sirvieron.
 
 ## Estado
+
+**15/11/2026 — decisiones tomadas, construcción sin empezar.**
+
+- El grupo A (plan Local-0130) quedó decidido el 14/11; la #04 fue A, con la condición de documentar el mecanismo del tope para que el aviso se entienda solo.
+- B, C y D se decidieron en **una sola página con pestañas** (`.claude/tmp/decisiones-tres-temas-2026-11-14.html`, https://claude.ai/artifact/ERoJTmKvHcykuxUih7fFbY), a pedido del usuario, con nombres que reconoce: «Aviso de lo ya guardado» (B), «Consultas a otro repo» (C) y «Aviso al cerrar» (D). Eligió la recomendada en las 22 fichas. Las respuestas están en cada plan hijo, sección «Respuestas del usuario a la página de decisiones — 15/11/2026».
+- En `Listo` los cinco hijos: planes Local-0130, Local-0131, Local-0132, Local-0111 y Local-0107. Este último se renombró el 15/11 con el nombre que ratificó el usuario, que dice lo que resuelve y no el problema.
+- El choque C↔D se resolvió con las dos medidas: la consulta devuelve el turno completo (plan Local-0107) y el aviso de cierre se calla ante una marca que pone `comunicar.js` (plan Local-0111).
+- Al construir, quedan para el coordinador (no para un subagente, Decisión Local-0060): la decisión nueva que precisa la Decisión Local-0062 y la definición del Contraste automático en el glosario (plan Local-0131, #6), con el texto exacto mostrado antes.
+- **Pendientes que no son construcción**, pedidos por el usuario el 15/11:
+  - Renombrar los planes Local-0130, Local-0131 y Local-0132 para que su nombre diga lo que resuelven y no el problema, como ya se hizo con el plan Local-0107. Proponer cada nombre y esperar la ratificación.
+  - Candidata a preferencia: «el nombre de un plan dice lo que resuelve, no el problema». Es la segunda corrección del usuario en esa línea (la primera fue pedir nombres que él reconozca en la página de decisiones). Proponerla con `registrar-preferencia`, mostrando el texto exacto.
 
 **14/11/2026 — ronda de análisis hecha, construcción sin empezar.**
 

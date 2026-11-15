@@ -1,6 +1,6 @@
 # Avisar al cerrar una tarea que hay algo para asentar
 
-**Estado: Análisis · Creado 26-08-20 · Vuelve de Listo a Análisis 26-11-14.** Sale del análisis del repo ajeno
+**Estado: Listo · Creado 26-08-20 · Vuelve de Listo a Análisis 26-11-14 · Decidido 26-11-15.** Sale del análisis del repo ajeno
 [everything-claude-code](https://github.com/worldflowai/everything-claude-code) (WorldFlowAI, 1.4k
 estrellas al 20/08/2026), pedido por Javier para tomar ideas. De las cuatro que salieron, es la única
 que cierra un hueco que este repo ya tenía asentado por escrito.
@@ -322,3 +322,13 @@ Viajan en la Base: `conducta/avisar-sesion-sin-asentar/{avisar-sesion-sin-asenta
 4. ¿Cómo se decide que un alta está dentro del flujo de su habilidad: hubo una habilidad `registrar-*` antes en la sesión, o se miran solo filas nuevas con código nuevo?
 5. ¿El aviso de cierre sigue callándose ante un alta hecha a mano, o avisa además que se hizo sin la habilidad?
 6. ¿Quién se encarga de que el aviso no actúe en las corridas de consulta: el grupo C en `comunicar.js`, o este plan detectando la corrida no interactiva?
+
+### Respuestas del usuario a la página de decisiones — 15/11/2026
+
+Página única de tres temas (`.claude/tmp/decisiones-tres-temas-2026-11-14.html`), pestaña «Aviso al cerrar». La decisión abierta 1 (si el arreglo de las altas a mano se queda en este plan) no se volvió a preguntar: ya la contestó el usuario en el plan Local-0130 (#03 = B), y se queda acá. El plan no recomendaba; el usuario eligió la recomendación del subagente en las cinco.
+
+- **#1 = B. El piso mide solo lo que escribieron el usuario y el agente**, sin instrucciones ni resultados de herramientas. Reemplaza el piso por tamaño del archivo de la transcripción. El corte (30 KB en el ejemplo) es provisorio y se calibra al construir.
+- **#2 = A. Ante un alta hecha a mano, el control avisa y no frena** (Decisiones Local-0038 y Local-0052; no choca con la Decisión Local-0079).
+- **#3 = C. Un alta es «a mano» con las dos pistas juntas:** aparece una fila nueva con código nuevo y en la sesión no se invocó la habilidad de alta de ese registro. Corregir una fila vieja no avisa.
+- **#4 = C. El aviso de cierre solo cuenta lo que el control del momento no vio.** Un alta a mano con la herramienta de edición avisa al escribir y no vuelve a avisar al cerrar. Una escritura por consola (`sed -i`, heredoc), que el momento `al escribir` no ve, avisa al cerrar.
+- **#5 = C. Repartido:** este plan hace que el aviso se calle cuando viene una marca, y lo prueba. El plan Local-0107 pone la marca en `comunicar.js`. Va junto con la #1 = B de ese plan (devolver el turno completo): las dos medidas se respaldan.
