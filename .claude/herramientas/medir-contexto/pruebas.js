@@ -212,8 +212,86 @@ console.log('\n== UN REPO SIN `base/` NO INVENTA UN NÚMERO ==');
     `${ampDe(texto)} KB con total ${kbDe(texto)} KB`);
 }
 
+// -- el texto que se entrega en cada turno --------------------------------
+// Segunda medicion. Se apaga sola de tres formas: leer otro momento u otra clase (cuenta de mas),
+// perder las reglas del repo por leer un solo Indice (cuenta de menos, sin senal), o contestar 0 KB
+// cuando no hay registro. Cada caso enciende una sola.
+const indiceReglas = (origen, filas) => `---\nindice: Reglas\norigen: ${origen}\n` +
+  'columnas: [Código, Nombre, Descripción, Momento, Clase, Contenido, Estado, Detalle]\n---\n\n# Reglas\n\n' +
+  '| Código | Nombre | Descripción | Momento | Clase | Contenido | Estado | Detalle |\n' +
+  '|---|---|---|---|---|---|---|---|\n' +
+  filas.map(f => `| ${f.cod} | n | d | ${f.mom} | ${f.cla} | ${f.con} | ${f.est || 'vigente'} | — |`).join('\n') + '\n';
+const turnoDe = t => {
+  const m = t.match(/cada turno\s+([\d.]+) KB\s+de ([\d.]+) KB\s+\(Base ([\d.]+) · repo ([\d.]+)\)/);
+  return m ? { total: +m[1], tope: +m[2], base: +m[3], repo: +m[4] } : null;
+};
+const correrHook = repo => {
+  const r = cp.spawnSync('node', [TOOL, '--hook', repo], { encoding: 'utf8' });
+  try { return JSON.parse(r.stdout).systemMessage || ''; } catch { return ''; }
+};
+
+console.log('\n== CADA TURNO: CUENTA SOLO LAS «INYECTAR» VIGENTES DE ESE MOMENTO, DE LOS DOS ÍNDICES ==');
+{
+  const kbx = n => 'x'.repeat(n * 1024);
+  const repo = armar('turno', {
+    'AGENTS.md': '# Entrada\n',
+    '.claude/conducta/INDICE.md': indiceReglas('agente-multiproposito', [
+      { cod: 'Base-0001', mom: 'cada turno', cla: 'Inyectar', con: kbx(1) },
+      { cod: 'Base-0002', mom: 'al escribir', cla: 'Inyectar', con: kbx(3) },      // otro momento
+      { cod: 'Base-0003', mom: 'cada turno', cla: 'Controlar', con: kbx(3) },      // otra clase
+      { cod: 'Base-0004', mom: 'cada turno', cla: 'Inyectar', con: kbx(3), est: 'obsoleto' },
+    ]),
+    '.claude/conducta/INDICE-LOCAL.md': indiceReglas('agente-desplegado', [
+      { cod: 'Local-0001', mom: 'cada turno', cla: 'Inyectar', con: kbx(2) },
+    ]),
+  });
+  const t = turnoDe(correr(repo).texto);
+  chequear('mide el texto de cada turno', !!t, t ? `${t.total} KB` : 'no halló la línea');
+  chequear('  …la Base cuenta solo su «Inyectar» vigente de cada turno', t && t.base === 1.0, t && `Base ${t.base} KB (esperado 1.0)`);
+  chequear('  …y las reglas del repo cuentan aparte', t && t.repo === 2.0, t && `repo ${t.repo} KB (esperado 2.0)`);
+  chequear('  …dentro del tope, el modo hook lo deja en la línea sin aviso',
+    /cada turno [\d.]+ KB de [\d.]+/.test(correrHook(repo)) && !/⚠ El texto/.test(correrHook(repo)));
+}
+
+console.log('\n== CADA TURNO: PASAR EL TOPE AVISA CON UN TEXTO QUE SE EXPLICA SOLO ==');
+{
+  // El tamaño se deriva del tope que informa la Herramienta: un número absoluto acá se apagaría el
+  // día que el tope suba.
+  const sonda = armar('turno-sonda', { 'AGENTS.md': '# E\n', '.claude/conducta/INDICE.md': indiceReglas('agente-multiproposito', []) });
+  const tope = (turnoDe(correr(sonda).texto) || {}).tope;
+  if (!(tope > 0)) chequear('no se pudo leer el tope de cada turno', false);
+  const repo = armar('turno-pesado', {
+    'AGENTS.md': '# Entrada\n',
+    '.claude/conducta/INDICE.md': indiceReglas('agente-multiproposito', [
+      { cod: 'Base-0001', mom: 'cada turno', cla: 'Inyectar', con: 'b'.repeat(Math.ceil(tope) * 1024) }]),
+    '.claude/conducta/INDICE-LOCAL.md': indiceReglas('agente-desplegado', [
+      { cod: 'Local-0001', mom: 'cada turno', cla: 'Inyectar', con: 'r'.repeat(1024) }]),
+  });
+  const { texto, codigo } = correr(repo);
+  chequear('avisa cuando el bloque de cada turno pasa el tope', /CADA TURNO PASA EL TOPE/.test(texto));
+  chequear('  …y sigue reportando sin fallar', codigo === 0, `codigo ${codigo}`);
+  const msg = correrHook(repo);
+  // El aviso tiene que decir qué midió, cuánto, el tope, Base y repo por separado, que no limita lo
+  // que se consulta, y qué hacer. Falta una y el que lo lea tiene que reconstruir el mecanismo.
+  chequear('  …el aviso del arranque dice qué midió', /momento «cada turno»/.test(msg));
+  chequear('  …cuánto dio y el tope', /mide [\d,]+ KB y el tope es [\d,]+ KB/.test(msg));
+  chequear('  …Base y repo por separado', /Base [\d,]+ KB · repo 1,0 KB/.test(msg), msg.slice(0, 160));
+  chequear('  …que no limita lo que se consulta', /No limita lo que el agente consulta/.test(msg));
+  chequear('  …y qué hacer', /momento más específico/.test(msg) && /acortar/.test(msg));
+}
+
+console.log('\n== CADA TURNO: SIN REGISTRO DE REGLAS LO DICE ==');
+{
+  const repo = armar('turno-sin-registro', { 'AGENTS.md': '# Entrada\n' });
+  const { texto } = correr(repo);
+  chequear('no informa 0 KB cuando no hay registro de reglas',
+    /no se encontró el registro de reglas/.test(texto) && !turnoDe(texto));
+  chequear('  …y en modo hook tampoco', /no se encontró el registro de reglas/.test(correrHook(repo)));
+}
+
 for (const n of ['liviano', 'sonda', 'sonda2', 'pesado', 'aprendio', 'importa', 'vacio', 'ajeno',
-                 'manda', 'cableado', 'sin-cableado', 'propio', 'sin-base']) {
+                 'manda', 'cableado', 'sin-cableado', 'propio', 'sin-base',
+                 'turno', 'turno-sonda', 'turno-pesado', 'turno-sin-registro']) {
   fs.rmSync(path.join(BASE_TMP, 'repo-prueba-' + n), { recursive: true, force: true });
 }
 

@@ -1,16 +1,16 @@
 # medir-contexto
 
-Herramienta del Agente Desplegado (este repo). Mide **el texto que se carga en cada arranque de sesión**, lo reparte en tres categorías y compara contra un tope **solo la primera**: lo que aporta el Agente Multipropósito.
+Herramienta del Agente Desplegado (este repo). Mide **el texto que se carga en cada arranque de sesión**, lo reparte en tres categorías y compara contra un tope **solo la primera**: lo que aporta el Agente Multipropósito. Mide aparte, con su propio tope, **el texto que se entrega en cada turno** (ver «La segunda medición»).
 
 ```bash
-node .claude/herramientas/medir-contexto/medir-contexto.js [rutaRepo]
+node .claude/herramientas/medir-contexto/medir-contexto.js [--hook] [rutaRepo]
 ```
 
 ## Qué mide
 
 Lo que entra al contexto sin que nadie lo pida: arranca por `CLAUDE.md` y `AGENTS.md` y sigue las líneas `@ruta`, que son importaciones. Hoy eso es el punto de entrada, los `MANIFIESTO.md` de cada subsistema, y los Índices que esos manifiestos importan.
 
-Los registros que se consultan a demanda —planes, semántica, decisiones, conducta— **no cuentan**, justamente porque no se cargan.
+Los registros que se consultan a demanda —planes, semántica, decisiones, conducta— **no cuentan**, justamente porque no se cargan. Lo que el repartidor de conducta entrega en cada turno es otra medición, más abajo.
 
 Reporta y no falla: sale 0 siempre. Describe el estado del repo, y pasar el tope es información, no error.
 
@@ -56,10 +56,34 @@ No es una alarma que haya que apagar: es el momento de decidir a mano entre dos 
 - **Subirlo**, porque el Agente Multipropósito legítimamente creció y lo que manda vale su costo.
 - **Recortar.** El primer lugar donde mirar son las celdas de `Descripción` de los Índices cargados, que son de una línea por convención y tienden a crecer a párrafo. El desarrollo va en la página, y lo que sale de la celda deja de estar cargado. El desglose que imprime la Herramienta está ordenado por peso para eso.
 
+## La segunda medición: el texto que se entrega en cada turno
+
+Aparte de lo que se carga al arrancar, la Herramienta mide **el texto que el repartidor de conducta (`.claude/conducta/establecer-conducta/`) le entrega al agente en el momento `cada turno`** sin que nadie lo pida, y lo compara contra un tope propio.
+
+**Qué cuenta.** Las reglas de clase `Inyectar`, en estado `vigente` y del momento `cada turno`, de los dos Índices de reglas (`conducta/INDICE.md` e `INDICE-LOCAL.md`): el mismo filtro que usa el repartidor. Cada regla pesa lo que el repartidor emite de ella, la línea `- <Contenido>`. Informa la Base y el repo por separado.
+
+**Qué deja afuera.** Todo lo que el agente consulta cuando lo necesita —las preferencias, los Índices, las páginas que abre a demanda—, el encabezado fijo del bloque, y lo que el repartidor suma a veces en ese momento sin ser una regla fija: el contraste con los registros y los avisos del Buzón. El tope **no limita lo que el agente puede obtener**: solo lo que recibe sin pedirlo.
+
+**Por qué hay tope.** Cada regla de ese momento se paga en todos los turnos, y un bloque pesado diluye a las demás reglas que van en él. Desde que las reglas que hacían falta para operar los subsistemas pasaron de las habilidades a este momento (plan Local-0130), el bloque es el camino natural para cualquier regla nueva, y sin un número crece sin que nadie lo note. No es que una regla en un bloque largo «se recite sin obedecerse»: eso no se observó en reglas re-inyectadas (conocimiento Local-0001, Modos de falla ante reglas escritas). El motivo es el peso.
+
+**El tope es sobre el total**, no sobre la Base sola como el del arranque: al agente le llega un solo bloque, y lo que diluye es el bloque entero, venga de donde venga cada regla. Por eso Base y repo salen por separado: para que se vea a quién le toca bajarlo.
+
+**El número y de dónde salió** están escritos en un solo lugar, la constante `TOPE_CADA_TURNO` del código de esta Herramienta, con su fecha y su cálculo en el comentario de al lado. Esta ficha no lo copia a propósito (conocimiento Base-0001, Evitar el mismo dato escrito en varios lugares).
+
+**Dónde se ve.** En la línea que la regla de conducta Local-0001 (Informar el peso del contexto al arrancar) muestra al abrir la sesión: dentro del tope, como `cada turno X KB de Y`; pasado, como un aviso entero en su propia línea, que dice qué midió, cuánto dio, Base y repo por separado, el tope y qué hacer. Sin el flag `--hook`, la Herramienta imprime además cuánto pesa cada regla, ordenadas de mayor a menor. No bloquea nada y sale 0 igual.
+
+**Qué hacer cuando lo pase.** Mirar las reglas más pesadas del desglose y elegir:
+
+- **Pasar a un momento más específico** la regla que se pueda detectar sin juicio —por ejemplo, la que pide algo antes de un `git mv`—, para que se entregue solo cuando hace falta y no en todos los turnos.
+- **Acortar su texto**, dejando lo necesario para obedecer.
+- **Subir el tope**, si el bloque creció legítimamente; eso se decide acá, en la constante, con su motivo al lado.
+
+Si no encuentra el registro de reglas, lo dice en vez de informar 0 KB.
+
 ## Pruebas
 
 ```bash
 node .claude/herramientas/medir-contexto/pruebas.js
 ```
 
-Diecinueve casos sobre repos de prueba armados en `.claude/tmp/`, nunca sobre el repo real: afirmar algo del repo real metería un número absoluto adentro de la prueba, que envejece igual que adentro de un registro. Cubren el caso bueno y el malo del tope, **que un repo que aprendió mucho no lo encienda**, que se sigan las líneas `@`, que un repo sin punto de entrada lo diga en vez de informar 0 KB, que se mida el repo que se le pasa y no el propio, el reparto en las tres categorías, y el bloque de cableado: que cuente, que no se lleve lo que viene después, y que su ausencia se avise.
+Treinta y dos casos sobre repos de prueba armados en `.claude/tmp/`, nunca sobre el repo real: afirmar algo del repo real metería un número absoluto adentro de la prueba, que envejece igual que adentro de un registro. Cubren el caso bueno y el malo del tope, **que un repo que aprendió mucho no lo encienda**, que se sigan las líneas `@`, que un repo sin punto de entrada lo diga en vez de informar 0 KB, que se mida el repo que se le pasa y no el propio, el reparto en las tres categorías, el bloque de cableado: que cuente, que no se lleve lo que viene después, y que su ausencia se avise; y la medición de cada turno: que cuente solo las reglas que el repartidor entrega, las del repo aparte, que el aviso diga todo lo que tiene que decir, y que la falta del registro se diga.

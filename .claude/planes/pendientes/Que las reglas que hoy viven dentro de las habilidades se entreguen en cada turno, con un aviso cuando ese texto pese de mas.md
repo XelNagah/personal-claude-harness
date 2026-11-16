@@ -82,3 +82,37 @@ Con el grupo D (plan Local-0111): los dos escriben en `conducta/INDICE.md` y en 
   3. **El número del tope queda escrito en un solo lugar**, el código de `medir-contexto`, y la documentación remite a él en vez de copiarlo (conocimiento Base-0001, Evitar el mismo dato escrito en varios lugares).
 
   Corrección de una aclaración dada en la conversación: se justificó el tope diciendo que una regla en un bloque largo «se recita pero no se obedece». Eso no es lo que dice el conocimiento Local-0001 (ver «Lo verificado»): ese fallo no se observó en reglas re-inyectadas. El motivo del tope es el peso del bloque, que hoy nadie mide.
+
+## Construcción — 16/11/2026
+
+Rama `a-reglas`. Construido según las respuestas del usuario del 14/11/2026.
+
+### Lo hecho
+
+- **Reglas a la Base** (`.claude/conducta/INDICE.md`, momento `cada turno`, clase `Inyectar`, condición escrita en el texto), copiadas a `base/` con `sincronizar-base --aplicar`:
+  - regla de conducta Base-0013 (Actualizar las referencias por ruta al mover o renombrar un archivo), que vivía en `registrar-herramienta` y se generalizó a cualquier archivo del repo.
+  - regla de conducta Base-0014 (Cerrar el plan que ya se hizo apenas se detecta), que vivía en la descripción de `cerrar-plan`.
+  - La de `converger-terminologia` **no** se sumó como fila nueva: se agregó una oración a la regla de conducta Base-0003 (No acuñar terminología del dominio), que ya decía lo mismo sin nombrar la habilidad. Dos reglas sobre el mismo disparo en el mismo bloque habrían pesado más y dicho lo mismo dos veces.
+- **Fuera de este plan, como estaba decidido:** contrastar (planes Local-0128 y Local-0131), consultar al otro repo (plan Local-0132), los gustos del autor de `planificar` (plan Local-0126), el Código «mayor más uno» (mecánica, corresponde a un control) y el control de altas a mano (grupo D, plan Local-0111).
+- **Medición de `cada turno`** en `medir-contexto`: cuenta las reglas `Inyectar` vigentes del momento, de los dos Índices, como las emite el repartidor; Base y repo por separado; tope sobre el total en la constante `TOPE_CADA_TURNO`, único lugar donde está el número y su origen. Al arrancar se ve en la línea de la regla de conducta Local-0001 (Informar el peso del contexto al arrancar): `cada turno X KB de Y` dentro del tope, y un aviso entero que se explica solo cuando lo pasa. No bloquea. Sin registro de reglas lo dice en vez de informar 0 KB.
+- **Documentación del mecanismo:** sección «La segunda medición» en la ficha de `medir-contexto` y sección sobre el tope en `.claude/conducta/README.md` (que viaja: por eso nombra la Herramienta y la constante sin enlazarlas, y no copia el número).
+- **Pruebas:** 13 casos nuevos en `medir-contexto/pruebas.js` (32 en total).
+
+### Medido hoy
+
+El bloque de `cada turno` mide 2,0 KB (Base 2,0 · repo 0,0), contra el tope que fija la constante.
+
+### Lo que no se hizo
+
+- Los `SKILL.md` de origen conservan su texto: siguen siendo el flujo de la habilidad cuando corre. Sacarlo cambiaría el contenido de tres plugins y obligaría a subirles la versión, que en esta tanda la sube el coordinador una sola vez.
+- La fila de Herramienta Local-0009 (medir-contexto) en `herramientas/INDICE-LOCAL.md` no se tocó (este grupo no escribe en otros Índices): queda propuesta para el coordinador.
+- La medición del efecto es la final del plan Local-0129 (decisión #05).
+
+### Cómo verificarlo
+
+```bash
+node .claude/herramientas/medir-contexto/medir-contexto.js          # sección «TEXTO QUE SE ENTREGA EN CADA TURNO»
+node .claude/herramientas/medir-contexto/medir-contexto.js --hook   # la línea del arranque
+node .claude/herramientas/medir-contexto/pruebas.js
+echo '{"hook_event_name":"UserPromptSubmit","prompt":"hola"}' | node .claude/conducta/establecer-conducta/establecer-conducta.js
+```

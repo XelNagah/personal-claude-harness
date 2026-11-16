@@ -1,5 +1,7 @@
 #!/usr/bin/env node
-// Mide el texto que un repo carga en CADA arranque de sesion y lo compara contra un tope.
+// Mide el texto que un repo carga en CADA arranque de sesion y lo compara contra un tope. Mide
+// aparte, con su propio tope, el texto que el repartidor de conducta entrega en CADA TURNO (mas
+// abajo, `TOPE_CADA_TURNO`).
 //
 // Por que es una Herramienta de ESTE repo y no algo que viaje: el tope lo fija el Agente
 // Multiproposito y decidir si sube es potestad de aca. Un Agente Desplegado no puede moverlo —el
@@ -43,6 +45,8 @@
 //            Sin el flag, el informe completo con el desglose por archivo.
 const fs = require('fs'), path = require('path');
 const { basesDeInstalacion } = require('../../common/bases-de-instalacion.js');
+const { indicesDe } = require('../../common/indices.js');
+const { celdasDe, esSeparadora } = require('../../common/frontmatter.js');
 
 const TOPE = 35 * 1024;
 // El encabezado del bloque que `amp:inicializar` escribe en el punto de entrada. Es lo unico del
@@ -50,6 +54,30 @@ const TOPE = 35 * 1024;
 // asi que sin esto quedaria fuera del numero controlado, y es la parte que crece cada vez que se
 // suma un subsistema.
 const CABLEADO = '## Subsistemas';
+
+// -- el texto que se entrega en cada turno -------------------------------
+// Segunda medicion, independiente de la de arriba: el texto que el repartidor de conducta le entrega
+// al agente en el momento `cada turno` sin que nadie lo pida — las reglas `Inyectar` vigentes de ese
+// momento, de los dos Indices de reglas. No cuenta lo que el agente consulta cuando lo necesita
+// (preferencias, Indices, paginas), ni lo que el repartidor suma a veces en ese momento y que no es
+// una regla fija: el contraste con los registros y los avisos del Buzon.
+//
+// Por que hay tope: cada regla de ese momento se paga en TODOS los turnos, y un bloque que crece
+// diluye a las demas reglas del mismo bloque. Desde que las reglas que hacian falta para operar los
+// subsistemas pasaron de las habilidades a este momento (plan Local-0130), el bloque es el camino
+// natural para cualquier regla nueva, y sin un numero crece sin que nadie lo note.
+//
+// El tope es sobre el TOTAL —Base mas repo—, no sobre la Base sola como el de arriba: al agente le
+// llega un solo bloque y el peso que diluye es el del bloque entero, venga de donde venga cada regla.
+// Por eso el aviso informa las dos partes por separado: para que se vea a quien le toca bajarlo.
+//
+// De donde sale el numero: se fijo el 16/11/2026, con el bloque en 2,0 KB (Base 2,0 · repo 0,0)
+// recien migradas las reglas de las habilidades —siete reglas, ~0,3 KB cada una—, dejando 3 KB de
+// margen: unas diez reglas mas del largo de las que hay, para la Base y el repo juntos. Como el de arriba, NO sale de un limite del modelo: es una disciplina auto-impuesta, y
+// lo que aporta es que haya un numero. ESTE ES EL UNICO LUGAR DONDE ESTA ESCRITO: la ficha y el
+// README de conducta remiten aca en vez de copiarlo (conocimiento Base-0001).
+const TOPE_CADA_TURNO = 5 * 1024;
+const MOMENTO_CADA_TURNO = 'cada turno';
 
 const args = process.argv.slice(2);
 const modoHook = args.includes('--hook');
@@ -114,6 +142,44 @@ function bytesDelCableado(txt) {
   return Buffer.byteLength(lineas.slice(i, fin).join('\n'));
 }
 
+// Las reglas que el repartidor entrega en `cada turno`, con el filtro que el usa: clase `Inyectar`,
+// estado `vigente`, momento `cada turno` y Contenido no vacio. Las columnas se ubican por nombre,
+// nunca por posicion (conocimiento `cambiar-la-forma-de-un-registro`). Cada regla se cuenta como
+// el repartidor la emite —una linea `- <Contenido>`—; el encabezado fijo del bloque no se cuenta.
+// Devuelve null si no hay ningun Indice de reglas: cero reglas porque no se encontro el registro no
+// es un bloque liviano, y contestar 0 KB ahi es el control validando un conjunto vacio.
+function reglasDeCadaTurno(raiz) {
+  const idxs = indicesDe(path.join(raiz, '.claude', 'conducta'), ['INDICE.md']);
+  if (!idxs.length) return null;
+  const sinAcento = s => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
+  const reglas = [];
+  for (const idx of idxs) {
+    const cab = (idx.cabecera || []).map(sinAcento);
+    const col = n => cab.indexOf(n);
+    const iCod = col('codigo'), iMom = col('momento'), iCla = col('clase'), iCon = col('contenido'), iEst = col('estado');
+    if (iMom < 0 || iCla < 0 || iCon < 0 || iEst < 0) continue;
+    const deBase = idx.origen === 'agente-multiproposito';
+    for (const linea of idx.texto.split(/\r?\n/)) {
+      const c = celdasDe(linea);
+      if (!c || esSeparadora(c) || sinAcento(c[iMom]) === 'momento') continue;
+      if (sinAcento(c[iMom]) !== MOMENTO_CADA_TURNO || sinAcento(c[iCla]) !== 'inyectar') continue;
+      if (sinAcento(c[iEst]) !== 'vigente' || !(c[iCon] || '').trim()) continue;
+      reglas.push({ codigo: iCod >= 0 ? c[iCod] : '?', deBase, bytes: Buffer.byteLength(`- ${c[iCon].trim()}\n`) });
+    }
+  }
+  return reglas;
+}
+
+// El aviso de `cada turno`, armado para leerse solo: que midio, cuanto dio, Base y repo por
+// separado, el tope, que no limita lo que el agente consulta, y que hacer. Null si no paso el tope.
+function avisoCadaTurno(m) {
+  if (!m || m.total <= TOPE_CADA_TURNO) return null;
+  return `El texto que se entrega en cada turno (las reglas «Inyectar» del momento «cada turno») mide ` +
+    `${kbc(m.total)} KB y el tope es ${kbc(TOPE_CADA_TURNO)} KB (Base ${kbc(m.base)} KB · repo ${kbc(m.repo)} KB). ` +
+    `No limita lo que el agente consulta: solo lo que recibe sin pedirlo. Para bajarlo, pasar a un ` +
+    `momento más específico la regla que se pueda detectar sin juicio, o acortar su texto.`;
+}
+
 const bases = basesDeInstalacion(repo);
 // «afuera» es el punto de entrada, no cualquier archivo sin contraparte: un Indice que el repo se
 // invento bajo `.claude/` tampoco viaja, y es suyo entero — cuenta como este repo, no como afuera.
@@ -130,6 +196,15 @@ const amp = archivos.reduce((a, f) => a + (f.viajan || 0), 0) + cableado;
 const afuera = archivos.filter(f => f.puntoDeEntrada).reduce((a, f) => a + f.bytes - f.cableado, 0);
 const propio = total - amp - afuera;
 const kb = n => (n / 1024).toFixed(1);
+// Con coma decimal: el aviso de `cada turno` es una frase para leer, no una columna.
+const kbc = n => kb(n).replace('.', ',');
+
+const reglasTurno = reglasDeCadaTurno(repo);
+const turno = reglasTurno && {
+  base: reglasTurno.filter(r => r.deBase).reduce((a, r) => a + r.bytes, 0),
+  repo: reglasTurno.filter(r => !r.deBase).reduce((a, r) => a + r.bytes, 0),
+};
+if (turno) turno.total = turno.base + turno.repo;
 
 // En modo hook: una linea sola. Se emite SIEMPRE, tambien dentro del tope — un aviso que solo
 // aparece cuando ya es tarde no deja ver que el margen se estaba comiendo.
@@ -140,7 +215,12 @@ if (modoHook) {
       (amp > TOPE ? ` — PASA EL TOPE por ${kb(amp - TOPE)} KB` : ` (libre ${kb(TOPE - amp)} KB)`) +
       `  ·  este repo ${kb(propio)} KB` +
       (cableado ? '' : '  ·  ⚠ sin hallar el bloque de cableado en el punto de entrada');
-  process.stdout.write(JSON.stringify({ systemMessage: linea }));
+  // La medicion de `cada turno` va en la misma linea mientras esta dentro del tope —para que se vea
+  // el margen comiendose—, y como aviso entero, en su propia linea, cuando lo pasa.
+  const aviso = avisoCadaTurno(turno);
+  const lineaTurno = !turno ? '  ·  cada turno: no se encontró el registro de reglas de conducta'
+    : aviso ? '' : `  ·  cada turno ${kb(turno.total)} KB de ${kb(TOPE_CADA_TURNO)}`;
+  process.stdout.write(JSON.stringify({ systemMessage: linea + lineaTurno + (aviso ? '\n⚠ ' + aviso : '') }));
   process.exit(0);
 }
 
@@ -174,3 +254,17 @@ const libre = TOPE - amp;
 console.log(libre >= 0
   ? `\nDENTRO DEL TOPE por ${kb(libre)} KB.`
   : `\nPASA EL TOPE por ${kb(-libre)} KB: decidir entre subirlo o recortar lo que este repo manda (arriba, columna «viaja»).`);
+
+// La segunda medicion: el texto de las reglas del momento `cada turno`. Se rotula aparte porque es
+// otra cosa que lo de arriba —eso se carga una vez al arrancar, esto se paga en cada turno—.
+console.log('\n== TEXTO QUE SE ENTREGA EN CADA TURNO ==');
+if (!turno) {
+  console.log('no se encontró el registro de reglas de conducta (.claude/conducta/): no hay nada que medir.');
+} else {
+  console.log(`  cada turno  ${kb(turno.total).padStart(6)} KB   de ${kb(TOPE_CADA_TURNO)} KB   (Base ${kb(turno.base)} · repo ${kb(turno.repo)})`);
+  for (const r of [...reglasTurno].sort((a, b) => b.bytes - a.bytes))
+    console.log(`    ${kb(r.bytes).padStart(6)} KB    ${r.codigo}${r.deBase ? '' : '  (repo)'}`);
+  const aviso = avisoCadaTurno(turno);
+  console.log(aviso ? `\nCADA TURNO PASA EL TOPE. ${aviso}`
+                    : `\nCADA TURNO DENTRO DEL TOPE por ${kb(TOPE_CADA_TURNO - turno.total)} KB.`);
+}
