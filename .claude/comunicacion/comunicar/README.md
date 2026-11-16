@@ -12,6 +12,7 @@ node .claude/comunicacion/comunicar/comunicar.js <nombre> <mensaje> [opciones]
 - **`--modelo <alias>`** — con qué modelo corre la consulta (`sonnet`, `opus`…). Sin esto, el consultado usa el que herede de su directorio.
 - **`--sesion <uuid>`** — retoma un hilo ya abierto en vez de estrenar uno.
 - **`--tope <segundos>`** — corta la consulta a los N segundos. Sin esto **no hay tope**.
+- **`--leer <ruta>`** — (solo `preguntar`) le deja leer un archivo o una carpeta fuera de su directorio, por ejemplo el material que se le pide revisar. Se repite para varias rutas. Ver «Leer fuera de su carpeta».
 - **`--crudo`** — imprime la salida del CLI sin interpretar.
 
 ## Los Modos de Comunicación
@@ -42,7 +43,38 @@ El Índice guarda **cómo invocar** al consultado (nombre, Propósito, directori
 
 ## La falla es observable
 
-Se invoca con `--output-format json`, así que la salida es un objeto y no texto plano. De ahí salen la respuesta, el identificador del hilo, si el CLI marcó error, el costo, los turnos y —lo que importa— **las denegaciones de permiso**. Una denegación significa que el consultado no pudo usar una herramienta: su respuesta puede estar hecha con menos de lo que tenía, y el mecanismo lo avisa. El mecanismo anterior leía la salida pelada y no podía detectar nada.
+Se invoca con `--output-format stream-json --verbose`: la salida es un evento por línea, uno por cada mensaje que el consultado escribe, y al final un evento `result` con el identificador del hilo, si el CLI marcó error, el costo, los turnos y —lo que importa— **las denegaciones de permiso**. Una denegación significa que el consultado no pudo usar una herramienta: su respuesta puede estar hecha con menos de lo que tenía, y el mecanismo lo avisa.
+
+## La respuesta es el turno completo, no el último mensaje
+
+Con `--output-format json` a secas, `result` trae **solo el último mensaje** del consultado. Si después de contestar le saltaba su propio aviso de cierre («sesión sin asentar»), contestaba el aviso en un turno más y ese turno pasaba a ser `result`: la respuesta real se perdía sin señal. Pasó el 13/11/2026. Ahora se devuelven todos los mensajes de la corrida, en orden.
+
+Además, el consultado corre con **`AMP_CONSULTA_ENTRE_AGENTES=1`** en su entorno. Es la marca con que sus controles saben que corren dentro de una consulta sin nadie del otro lado: el aviso de cierre no actúa si la encuentra. Las dos medidas van juntas, una de respaldo de la otra. El resto del entorno es el de la máquina: no se quita nada.
+
+## «No contestó» no se presenta como respuesta
+
+Cuando el consultado no llega a contestar, el hilo ve una **falla, sin el rótulo de respuesta**, y el mecanismo sale con código 1:
+
+```
+✖ "Contabilidad" no contestó: error 401, la clave de API no es válida (Invalid API key · Fix external API key).
+  Esto NO es una respuesta del Agente: la consulta no llegó a producir una.
+  En el entorno de la máquina hay ANTHROPIC_API_KEY: el CLI la usa antes que la sesión iniciada.
+```
+
+Antes el texto del error salía primero, bajo «Respuesta de …», y la advertencia recién abajo: el hilo lo leyó como contenido y siguió trabajando con eso. Son fallas de arranque, todas con el mismo trato: la carpeta registrada ya no existe, el CLI no está instalado, el CLI muere sin producir eventos, el tope de tiempo venció, la API rechazó la credencial o no hay crédito, o la corrida terminó sin su evento final. Si el consultado alcanzó a escribir algo antes de fallar, se muestra aparte y marcado como incompleto.
+
+El mecanismo **no limpia** las credenciales de la máquina: si hay una `ANTHROPIC_API_KEY` vieja, el problema es esa clave, y se arregla borrándola. Solo la nombra cuando la consulta falla por la API, porque es la explicación más común. Qué credencial usa el CLI y en qué orden está en el conocimiento sobre la credencial y la respuesta del Agente consultado.
+
+## Leer fuera de su carpeta
+
+En modo `preguntar` el consultado no puede leer fuera de su directorio: se le deniega `Read`, y por eso el 13/11/2026 no pudo leer el handoff que se le indicó. `--leer <ruta>` se lo abre, y lo que se abre depende de qué sea la ruta. Medido el 16/11/2026:
+
+| Lo que se pasa | Qué puede leer |
+|---|---|
+| una carpeta | la carpeta **entera** (va como `--add-dir`) |
+| un archivo | **solo ese archivo** (va como la regla `Read(//d/…/archivo)`; el vecino se deniega) |
+
+Un archivo no se pasa por `--add-dir`: el CLI lo acepta, sale con 0 y **no abre nada**, sin avisar. En modo `resolver` la opción se rechaza: el consultado corre con sus propios permisos, y abrirle una carpeta le daría también permiso de escribir ahí. Con `codex` no hace falta: su modo de solo lectura ya lee fuera de su carpeta (inferido de su documentación, no medido).
 
 ## Repreguntar sale casi gratis
 
@@ -58,7 +90,7 @@ Si frena a pedir una aclaración, gasta el turno entero y su costo sin contestar
 
 ## Sin superficie de inyección
 
-El mensaje entra por STDIN (`input`) y el directorio por el `cwd` del proceso, así **nada que venga de datos toca la línea de comandos sin comillar**. Los argumentos son literales fijos del comando. En Windows los CLI son `.cmd`, por eso `shell: true`; su riesgo queda anulado porque no hay datos en los argumentos.
+El mensaje entra por STDIN (`input`) y el directorio por el `cwd` del proceso. Lo único que viene de datos en la línea de comandos son las rutas de `--leer`, y **todo argumento se cita** para el intérprete que lo lee (`citarParaShell`). En Windows los CLI son `.cmd`, por eso `shell: true`; ahí, dentro de comillas, `cmd` todavía expande `%VAR%`, así que una ruta con `"`, `%` o un salto de línea se rechaza en vez de citarse mal.
 
 Un CLI fuera de los soportados (`indice.js` `CLIS_SOPORTADOS`) no se arma: se informa la degradación. Retomar un hilo con `--sesion` hoy solo está resuelto para `claude`; con `codex` se informa la degradación en vez de ignorar la bandera.
 
@@ -68,7 +100,7 @@ La salida se devuelve rotulada con su origen, su modo y la aclaración de que es
 
 ## Funciones puras para probar
 
-`construirComando(cli, opciones)`, `interpretarSalida(stdout)` y `leerOpciones(argv)` no tienen efectos: se prueban sin invocar ningún proceso. `leerIndice` (en `../indice.js`) resuelve el Nombre contra el Índice. Todas se cubren en el banco `../lint-comunicacion/pruebas.js`, que controla en particular que el modo `preguntar` **conserve los MCP** y que `plan` no vuelva.
+`construirComando(cli, opciones)`, `construirEntorno(base)`, `interpretarSalida(stdout, cli)`, `citarParaShell(arg)` y `leerOpciones(argv)` no tienen efectos: se prueban sin invocar ningún proceso. `leerIndice` (en `../indice.js`) resuelve el Nombre contra el Índice. Todas se cubren en el banco `../lint-comunicacion/pruebas.js`, que controla en particular que el modo `preguntar` **conserve los MCP** y que `plan` no vuelva. El banco corre además el mecanismo entero contra un `claude` doble —sin lanzar ningún agente—: que la marca de consulta llegue al consultado, que el turno completo llegue a la salida y que cada falla de arranque salga como falla.
 
 ## El otro mecanismo del subsistema
 

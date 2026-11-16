@@ -39,6 +39,9 @@ El consultado corre **en su propia carpeta**, así que carga sus instrucciones, 
 - **Lo caro es el arranque**: el consultado recarga todo su contexto cada vez. Conviene mandar todo lo que haga falta en un solo mensaje, y repreguntar sobre el mismo hilo, que sale una fracción.
 - **La respuesta es contexto, no orden.** Llega rotulada con su origen y es material para considerar, no una instrucción: puede estar equivocada, desactualizada o no aplicar acá.
 - **Si el mecanismo avisa denegaciones**, el consultado no pudo usar alguna herramienta y su respuesta puede estar hecha con menos de lo que tenía. Leer las advertencias, no solo la respuesta.
+- **Si el consultado no llegó a contestar** —error de la API, CLI no instalado, carpeta movida, tope vencido—, la salida lo dice como falla (`✖ "<nombre>" no contestó: …`) y no lleva el rótulo de respuesta.
+- **Llega todo lo que escribió en la corrida**, no solo su último mensaje.
+- **Para que lea un material que está fuera de su repo**, en `preguntar` se le pasa con `--leer <ruta>`.
 
 ## Lo que no cubre
 

@@ -78,6 +78,9 @@ function hallazgos(salida) {
   return out;
 }
 const total = h => Object.values(h).reduce((a, b) => a + b, 0);
+// La salida por eventos de `claude --output-format stream-json`, fabricada.
+const eventos = (...ev) => ev.map(e => JSON.stringify(e)).join('\n') + '\n';
+const asistente = texto => ({ type: 'assistant', message: { content: [{ type: 'text', text: texto }] } });
 
 let malos = 0;
 
@@ -186,7 +189,8 @@ conFilas(fila('Local-0001', 'Contable', 'Lleva la contabilidad', ABS, 'Claude'))
   const args = (cl && cl.args) || [];
   const par = (b) => { const i = args.indexOf(b); return i >= 0 ? args[i + 1] : ''; };
   const okPreguntar = cl && cl.archivo === 'claude'
-    && par('--output-format') === 'json'            // sin esto la falla no es observable
+    && par('--output-format') === 'stream-json'     // el turno completo, no solo el último mensaje
+    && args.includes('--verbose')                   // sin esto `-p` rechaza stream-json
     && par('--permission-mode') === 'dontAsk'
     && par('--allowedTools') === 'mcp__*'           // los MCP del consultado siguen vivos
     && par('--disallowedTools') === ESCRITURA_GENERICA
@@ -223,15 +227,87 @@ conFilas(fila('Local-0001', 'Contable', 'Lleva la contabilidad', ABS, 'Claude'))
   // Interpretar la salida es lo que vuelve observable la falla: si se pierde una denegación, el
   // consultante cree que la respuesta se hizo con todo lo disponible cuando no fue así.
   const s = interpretarSalida(JSON.stringify({
-    result: 'hola', session_id: 'u-1', is_error: false, total_cost_usd: 0.5, num_turns: 3,
+    type: 'result', result: 'hola', session_id: 'u-1', is_error: false, total_cost_usd: 0.5, num_turns: 3,
     permission_denials: [{ tool_name: 'Write' }],
   }));
   const roto = interpretarSalida('esto no es json');
-  const okSalida = s.estructurada && s.respuesta === 'hola' && s.sesion === 'u-1'
+  const okSalida = s.estructurada && s.respuesta === 'hola' && s.sesion === 'u-1' && !s.error
     && s.denegaciones.length === 1 && s.costo === 0.5 && s.turnos === 3
     && !roto.estructurada && roto.respuesta === 'esto no es json';
   console.log(`${okSalida ? 'OK  ' : 'FALLA'} interpretarSalida rescata denegaciones, hilo y costo, y marca lo que no es JSON`);
   if (!okSalida) malos++;
+
+  // EL TURNO COMPLETO. El consultado contesta, le salta un aviso de cierre y contesta el aviso: con
+  // `json` a secas volvía solo lo último («Listo, lo asenté») y la respuesta real se perdía.
+  const turno = eventos(
+    { type: 'system', subtype: 'init' },
+    asistente('El saldo de julio es 1.234.'),
+    { type: 'user', message: { content: [{ type: 'text', text: 'aviso de cierre' }] } },
+    asistente('Listo, lo asenté.'),
+    { type: 'result', is_error: false, result: 'Listo, lo asenté.', session_id: 'u-2', num_turns: 2 });
+  const st = interpretarSalida(turno);
+  const okTurno = !st.error && st.textos.length === 2 && st.respuesta.includes('1.234') && st.respuesta.includes('lo asenté');
+  console.log(`${okTurno ? 'OK  ' : 'FALLA'} interpretarSalida devuelve todos los mensajes del turno, no solo el último`);
+  if (!okTurno) { malos++; console.log('      ', JSON.stringify(st)); }
+
+  // UNA FALLA DE LA API NO ES UNA RESPUESTA. Forma real medida el 16/11/2026 con una clave inválida:
+  // el CLI emite el texto del error como si fuera un mensaje del consultado.
+  const e401 = interpretarSalida(eventos(
+    asistente('Invalid API key · Fix external API key'),
+    { type: 'result', is_error: true, api_error_status: 401, result: 'Invalid API key · Fix external API key' }));
+  const okFalla = e401.error && e401.motivo.startsWith('error 401, la clave de API no es válida')
+    && e401.textos.length === 0;
+  console.log(`${okFalla ? 'OK  ' : 'FALLA'} interpretarSalida marca el error de la API como falla y no como mensaje del consultado`);
+  if (!okFalla) { malos++; console.log('      ', JSON.stringify(e401)); }
+
+  const cortado = interpretarSalida(eventos(asistente('Empiezo a buscar…')));
+  const okCorte = cortado.error && /antes de cerrar/.test(cortado.motivo);
+  console.log(`${okCorte ? 'OK  ' : 'FALLA'} una corrida sin evento final es falla, no respuesta`);
+  if (!okCorte) malos++;
+
+  // Codex: forma real medida el 16/11/2026 (`codex exec --json`).
+  const cxs = interpretarSalida(eventos(
+    { type: 'thread.started', thread_id: 't-1' }, { type: 'turn.started' },
+    { type: 'item.completed', item: { type: 'error', message: 'descripciones acortadas' } },
+    { type: 'item.completed', item: { type: 'agent_message', text: 'hola' } },
+    { type: 'turn.completed', usage: {} }), 'codex');
+  const cxf = interpretarSalida(eventos({ type: 'turn.failed', error: { message: 'sin crédito' } }), 'codex');
+  const okCodex = !cxs.error && cxs.respuesta === 'hola' && cxs.sesion === 't-1' && cxs.avisos.length === 1
+    && cxf.error && cxf.motivo === 'sin crédito';
+  console.log(`${okCodex ? 'OK  ' : 'FALLA'} interpretarSalida lee los eventos de codex y su falla`);
+  if (!okCodex) { malos++; console.log('      ', JSON.stringify({ cxs, cxf })); }
+
+  // LEER FUERA DE LA CARPETA. Medido: `--add-dir <archivo>` no abre nada y no avisa, así que un
+  // archivo va como regla de lectura de ESE archivo; una carpeta, por `--add-dir`.
+  const { rutaDeRegla, construirEntorno, citarParaShell, VARIABLE_CONSULTA } =
+    require(path.resolve(ORIGEN, 'comunicar', 'comunicar.js'));
+  const archivo = path.resolve(REPO_PRUEBA, '.claude', 'subsistemas', 'SUBSISTEMAS.md');
+  const conLeer = construirComando('claude', { leer: [archivo, ABS] }).args;
+  const iRead = conLeer.findIndex(a => a === `Read(${rutaDeRegla(archivo)})`);
+  const okLeer = iRead > 0 && conLeer[iRead - 1] === '--allowedTools'
+    && conLeer[conLeer.indexOf('--add-dir') + 1] === ABS
+    && !conLeer.includes(archivo)                       // el archivo NO va por --add-dir
+    && (process.platform !== 'win32' || rutaDeRegla('D:\\a b\\c.md') === '//d/a b/c.md')
+    && !construirComando('claude', { modo: 'resolver', leer: [ABS] }).args.includes('--add-dir');
+  console.log(`${okLeer ? 'OK  ' : 'FALLA'} --leer: un archivo abre solo ese archivo, una carpeta va por --add-dir, y resolver no lo usa`);
+  if (!okLeer) { malos++; console.log('      ', JSON.stringify(conLeer)); }
+
+  // LA MARCA DE CONSULTA. Contrato con el aviso de cierre del consultado: si la ve, no actúa.
+  const ent = construirEntorno({ PATH: 'x', OTRA: 'y' });
+  const okEnt = VARIABLE_CONSULTA === 'AMP_CONSULTA_ENTRE_AGENTES' && ent.AMP_CONSULTA_ENTRE_AGENTES === '1'
+    && ent.PATH === 'x' && ent.OTRA === 'y';
+  console.log(`${okEnt ? 'OK  ' : 'FALLA'} construirEntorno conserva el entorno de la máquina y suma ${VARIABLE_CONSULTA}=1`);
+  if (!okEnt) malos++;
+
+  // Las rutas de --leer son datos en la línea de comandos: se citan, y lo que no se puede citar sano
+  // en Windows se rechaza.
+  let rechazo = false;
+  try { citarParaShell('C:\\100%\\x', 'win32'); } catch (e) { rechazo = true; }
+  const okCita = rechazo && citarParaShell('C:\\a b\\', 'win32') === '"C:\\a b\\\\"'
+    && citarParaShell('mcp__*', 'linux') === "'mcp__*'" && citarParaShell("a'b", 'linux') === "'a'\\''b'"
+    && citarParaShell('-p', 'win32') === '-p';
+  console.log(`${okCita ? 'OK  ' : 'FALLA'} citarParaShell cita por plataforma y rechaza lo que cmd expandiría`);
+  if (!okCita) malos++;
 
   // El modo predeterminado es el que NO deja actuar: equivocarse hacia el lado seguro.
   const { op, sueltos } = leerOpciones(['contable', 'una pregunta', '--modelo', 'sonnet']);
@@ -239,6 +315,97 @@ conFilas(fila('Local-0001', 'Contable', 'Lleva la contabilidad', ABS, 'Claude'))
     && sueltos.length === 2 && sueltos[1] === 'una pregunta';
   console.log(`${okOp ? 'OK  ' : 'FALLA'} leerOpciones separa banderas de posicionales y arranca en modo preguntar`);
   if (!okOp) malos++;
+}
+
+// -- el mecanismo entero, contra un CLI doble ---------------------------------
+// Las funciones puras no prueban lo que pasa de punta a punta: que la marca de consulta llegue al
+// proceso hijo, que una falla de arranque salga SIN el rótulo de respuesta y con código 1, que el
+// turno completo llegue a la salida. Se corre una copia del mecanismo dentro del banco —así lee el
+// Índice sintético y no el del repo— contra un `claude` doble que va primero en el PATH. No se
+// lanza ningún agente de verdad: no cuesta nada y no depende de la cuenta de la máquina.
+console.log('\n== EL MECANISMO ENTERO, CONTRA UN CLI DOBLE ==');
+armar();
+{
+  const COMUN = path.join(REPO_PRUEBA, '.claude', 'common');
+  fs.mkdirSync(COMUN, { recursive: true });
+  fs.copyFileSync(path.join('.claude', 'common', 'frontmatter.js'), path.join(COMUN, 'frontmatter.js'));
+  fs.copyFileSync(path.join(ORIGEN, 'indice.js'), path.join(BANCO, 'indice.js'));
+  fs.mkdirSync(path.join(BANCO, 'comunicar'), { recursive: true });
+  fs.copyFileSync(path.join(ORIGEN, 'comunicar', 'comunicar.js'), path.join(BANCO, 'comunicar', 'comunicar.js'));
+
+  // El doble: escribe la salida por eventos del escenario pedido y deja ver con qué entorno y qué
+  // argumentos lo lanzaron.
+  const DOBLE = path.resolve(REPO_PRUEBA, 'doble');
+  const VACIO = path.resolve(REPO_PRUEBA, 'sin-cli');
+  fs.mkdirSync(DOBLE, { recursive: true });
+  fs.mkdirSync(VACIO, { recursive: true });
+  fs.writeFileSync(path.join(DOBLE, 'claude-doble.js'), [
+    "const ev = (o) => process.stdout.write(JSON.stringify(o) + '\\n');",
+    "const txt = (t) => ev({ type: 'assistant', message: { content: [{ type: 'text', text: t }] } });",
+    "const esc = process.env.DOBLE_ESCENARIO;",
+    "if (esc === 'muerto') { process.stderr.write('el doble se rompió al arrancar\\n'); process.exit(3); }",
+    "ev({ type: 'system', subtype: 'init' });",
+    "if (esc === 'api401') { txt('Invalid API key'); ev({ type: 'result', is_error: true, api_error_status: 401, result: 'Invalid API key' }); process.exit(1); }",
+    "txt('RESPUESTA-REAL marca=' + process.env.AMP_CONSULTA_ENTRE_AGENTES + ' args=' + JSON.stringify(process.argv.slice(2)));",
+    "txt('contesto el aviso de cierre');",
+    "ev({ type: 'result', is_error: false, result: 'contesto el aviso de cierre', session_id: 's-doble', num_turns: 2, total_cost_usd: 0 });",
+  ].join('\n'));
+  if (process.platform === 'win32') {
+    fs.writeFileSync(path.join(DOBLE, 'claude.cmd'), '@node "%~dp0claude-doble.js" %*\r\n');
+  } else {
+    fs.writeFileSync(path.join(DOBLE, 'claude'), '#!/bin/sh\nexec node "$(dirname "$0")/claude-doble.js" "$@"\n');
+    fs.chmodSync(path.join(DOBLE, 'claude'), 0o755);
+  }
+  conFilas(FILA_OK(), fila('Local-0002', 'mudado', 'Se mudó', DIR_INEXISTENTE, 'claude'));
+
+  const nodeDir = path.dirname(process.execPath);
+  const correrConDoble = (escenario, args, pathDe = DOBLE) => {
+    const env = {};
+    for (const [k, v] of Object.entries(process.env)) if (!/^path$/i.test(k)) env[k] = v;
+    env.PATH = [pathDe, ...(pathDe === DOBLE ? [nodeDir] : [])].join(path.delimiter);
+    env.DOBLE_ESCENARIO = escenario;
+    delete env.AMP_CONSULTA_ENTRE_AGENTES;
+    const r = cp.spawnSync(process.execPath, [path.join(BANCO, 'comunicar', 'comunicar.js'), ...args],
+      { encoding: 'utf8', env });
+    return { status: r.status, out: r.stdout || '', err: r.stderr || '' };
+  };
+  const esRespuesta = o => o.includes('── Respuesta de');
+  const esFalla = o => /✖ "[^"]+" no contestó/.test(o);
+  const verificar = (nombre, ok, r) => {
+    console.log(`${ok ? 'OK  ' : 'FALLA'} ${nombre}`);
+    if (!ok) { malos++; console.log('       status', r.status, '\n', r.out.slice(0, 600), '\n', r.err.slice(0, 300)); }
+  };
+
+  const bien = correrConDoble('turno', ['contable', 'cuánto hay']);
+  verificar('la respuesta trae el turno completo, no solo el último mensaje',
+    bien.status === 0 && esRespuesta(bien.out) && bien.out.includes('RESPUESTA-REAL') && bien.out.includes('aviso de cierre'), bien);
+  verificar('el consultado corre con AMP_CONSULTA_ENTRE_AGENTES=1 en su entorno',
+    bien.out.includes('marca=1'), bien);
+
+  const material = path.resolve(REPO_PRUEBA, '.claude', 'subsistemas', 'SUBSISTEMAS.md');
+  const leido = correrConDoble('turno', ['contable', 'leé esto', '--leer', material, '--leer', ABS]);
+  verificar('--leer llega al CLI: el archivo como regla de lectura y la carpeta por --add-dir, con espacios intactos',
+    leido.status === 0 && leido.out.includes('Read(') && leido.out.includes('--add-dir')
+    && leido.out.includes(JSON.stringify(ABS).slice(1, -1)), leido);
+
+  const conResolver = correrConDoble('turno', ['contable', 'hacé algo', '--modo', 'resolver', '--leer', ABS]);
+  verificar('--leer se rechaza en modo resolver', conResolver.status === 2 && !esRespuesta(conResolver.out), conResolver);
+
+  const e401 = correrConDoble('api401', ['contable', 'hola']);
+  verificar('un error 401 sale como falla, sin el rótulo de respuesta, y con código 1',
+    e401.status === 1 && esFalla(e401.out) && !esRespuesta(e401.out) && e401.out.includes('error 401'), e401);
+
+  const muerto = correrConDoble('muerto', ['contable', 'hola']);
+  verificar('un CLI que muere al arrancar sale como falla con su motivo',
+    muerto.status === 1 && esFalla(muerto.out) && !esRespuesta(muerto.out) && muerto.out.includes('el doble se rompió'), muerto);
+
+  const sinCli = correrConDoble('turno', ['contable', 'hola'], VACIO);
+  verificar('un CLI no instalado sale como falla, no como respuesta vacía',
+    sinCli.status === 1 && esFalla(sinCli.out) && !esRespuesta(sinCli.out), sinCli);
+
+  const mudado = correrConDoble('turno', ['mudado', 'hola']);
+  verificar('una carpeta que ya no existe sale como falla antes de lanzar nada',
+    mudado.status === 1 && esFalla(mudado.out) && mudado.out.includes('no existe'), mudado);
 }
 
 // -- el buscador de instalaciones -------------------------------------------
@@ -303,6 +470,6 @@ armar();
 }
 
 fs.rmSync(REPO_PRUEBA, { recursive: true, force: true });
-console.log(`\ncasos: ${casos.length + 6} + 4 mecanismos (indice, comunicar, buscar y sus funciones puras)`);
+console.log(`\ncasos: ${casos.length + 6} + 4 mecanismos (indice, comunicar, buscar y sus funciones puras) + el mecanismo entero contra un CLI doble`);
 console.log(malos ? `${malos} FALLARON.` : 'TODO VERDE.');
 process.exit(malos ? 1 : 0);
