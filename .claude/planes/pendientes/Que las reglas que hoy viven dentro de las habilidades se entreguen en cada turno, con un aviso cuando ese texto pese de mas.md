@@ -1,4 +1,4 @@
-# Las reglas que viven dentro de una habilidad no se cumplen cuando la habilidad no se invoca
+# Que las reglas que hoy viven dentro de las habilidades se entreguen en cada turno, con un aviso cuando ese texto pese de más
 
 **Estado: Listo · Creado 26-11-13 · Analizado 26-11-14.** Origen: plan Local-0129 (plan maestro), arreglo 1 del análisis de un mes de conversaciones —el de mayor impacto—. Informe: `D:\Proyectos\analisis\como-uso-claude\.claude\conocimiento\analisis-2026-11\agentes-que-no-usan-lo-guardado.md`.
 

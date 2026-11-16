@@ -1,4 +1,4 @@
-# El agente le pide al usuario que copie un texto a otra sesión en vez de consultar al otro repo
+# Que el agente consulte al otro repo por su cuenta en vez de pedirle al usuario que copie un texto a otra sesión
 
 **Estado: Listo · Creado 26-11-13 · Analizado 26-11-14 · Decidido 26-11-15.** Origen: plan Local-0129 (plan maestro), arreglo 4 del análisis de un mes de conversaciones. Informe: `D:\Proyectos\analisis\como-uso-claude\.claude\conocimiento\analisis-2026-11\agentes-que-no-usan-lo-guardado.md`.
 

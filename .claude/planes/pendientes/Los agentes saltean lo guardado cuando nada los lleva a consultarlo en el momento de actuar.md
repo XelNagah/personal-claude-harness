@@ -22,10 +22,10 @@ Informe completo: `D:\Proyectos\analisis\como-uso-claude\.claude\conocimiento\an
 
 | Orden | Plan | Arreglo del informe | Grupo | Estado |
 |---|---|---|---|---|
-| 1 | plan Local-0130 (Las reglas que viven dentro de una habilidad no se cumplen cuando la habilidad no se invoca) | 1 | A | Análisis |
-| 2 | plan Local-0131 (El contraste automático no trae los planes ni las fichas que tocan el pedido) | 2 | B | Análisis |
+| 1 | plan Local-0130 (Que las reglas que hoy viven dentro de las habilidades se entreguen en cada turno, con un aviso cuando ese texto pese de más) | 1 | A | Análisis |
+| 2 | plan Local-0131 (Que el Contraste automático traiga también los planes vivos y las páginas de conocimiento que tocan el pedido, sin repetirse en los repos chicos) | 2 | B | Análisis |
 | 3 | plan Local-0111 (Avisar al cerrar una tarea que hay algo para asentar) | 3 y 6 | D | Análisis |
-| 4 | plan Local-0132 (El agente le pide al usuario que copie un texto a otra sesión en vez de consultar al otro repo) | 4 | C | Análisis |
+| 4 | plan Local-0132 (Que el agente consulte al otro repo por su cuenta en vez de pedirle al usuario que copie un texto a otra sesión) | 4 | C | Análisis |
 | 5 | plan Local-0107 (Que la consulta a otro Agente avise cuando no arranca, traiga la respuesta completa, pueda leer archivos de otra carpeta y no se frene al resolver) | 5 | C | Análisis |
 
 Fuera de este plan, a propósito:

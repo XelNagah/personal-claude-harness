@@ -1,4 +1,4 @@
-# El contraste automático no trae los planes ni las fichas que tocan el pedido
+# Que el Contraste automático traiga también los planes vivos y las páginas de conocimiento que tocan el pedido, sin repetirse en los repos chicos
 
 **Estado: Listo · Creado 26-11-13 · Analizado 26-11-14 · Decidido 26-11-15.** Origen: plan Local-0129 (plan maestro), arreglo 2 del análisis de un mes de conversaciones. Informe: `D:\Proyectos\analisis\como-uso-claude\.claude\conocimiento\analisis-2026-11\agentes-que-no-usan-lo-guardado.md`.
 
