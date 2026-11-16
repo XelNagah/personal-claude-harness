@@ -82,6 +82,18 @@ Es el único momento donde **entregar algo le cuesta al usuario un turno complet
 - **Un aviso de un trabajo en segundo plano llega tarde, y llega igual.** Lo que se averigua después del arranque —hoy, el chequeo de plugins— queda en el Buzón de Avisos Generales (`.claude/tmp/avisos/`) y se entrega en el turno siguiente, una sola vez.
 - **Los temporales de un control van en su carpeta de `.claude/tmp/`.** La regla está en `herramientas/README.md`, punto 5.
 
+## El texto de `cada turno` tiene un tope de peso, y pasarlo solo avisa
+
+Las reglas `Inyectar` del momento `cada turno` llegan juntas, en un solo bloque, antes de **cada** respuesta del agente. Ahí viven también las reglas que hacen falta para operar los subsistemas y que antes estaban escritas dentro de las habilidades: una regla dentro de una habilidad solo actúa si la habilidad se dispara, y en este momento actúa siempre, con la condición escrita en su texto («Antes de mover o renombrar…», «Si detectás que un plan…»).
+
+El costo es que **cada regla de ese momento se paga en todos los turnos**, y un bloque pesado diluye a las demás reglas que van en él. Por eso el peso del bloque se mide y tiene un tope:
+
+- **Qué se mide.** El texto de las reglas `Inyectar` vigentes de `cada turno`, de los dos Índices, como las emite el repartidor; la parte del Agente Multipropósito y la del repo, por separado. El tope es sobre las dos juntas, porque al agente le llega un solo bloque.
+- **Qué queda afuera.** Todo lo que el agente consulta cuando lo necesita —preferencias, Índices, páginas— y lo que el repartidor suma a veces sin ser una regla fija: el contraste con los registros y los avisos del Buzón. El tope no limita lo que el agente puede obtener: solo lo que recibe sin pedirlo.
+- **Quién lo mide.** La Herramienta `medir-contexto` del repo que publica el Agente Multipropósito, que es donde se decide qué reglas trae la Base. No viaja a los Agentes Desplegados. El número del tope y de dónde salió están escritos **solo** en su código (la constante `TOPE_CADA_TURNO`); este README no lo copia, para que no queden dos números que diverjan.
+- **Qué pasa al pasarlo.** Nada se bloquea. Aparece un aviso al arrancar la sesión que dice qué midió, cuánto dio, cuánto es de la Base y cuánto del repo, el tope y qué hacer.
+- **Qué hacer.** Pasar a un momento más específico la regla que se pueda detectar sin juicio —una que pida algo antes de un `git mv`, por ejemplo—, o acortar su texto. Subir el tope es la tercera salida, y se decide en ese código, con su motivo al lado.
+
 ## Lo que no cubre
 
 - **No inventa momentos nuevos desde el registro.** Declarar uno en `MOMENTOS-LOCAL.md` deja sus reglas en estado `pendiente` hasta que el repartidor lo contemple, que es código del Agente Multipropósito.
