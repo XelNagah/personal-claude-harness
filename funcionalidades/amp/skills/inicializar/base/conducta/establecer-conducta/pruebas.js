@@ -112,7 +112,46 @@ escribirRegistro('planes/PLANES.md',
   + '| Código | Nombre | Descripción | Estado | Fecha de creación | Fecha de cierre | Origen | Detalle |\n'
   + '|---|---|---|---|---|---|---|---|\n'
   + '| Local-0041 | Cambiar el envase del líquido de prueba | Dato de prueba: el envase actual no entra en la heladera y hay que reemplazarlo. | Nuevo | 26-01-03 | — | — | — |\n'
-  + '| Local-0042 | Cambiar la cerradura del galpón | Dato de prueba: la cerradura se trabó dos veces y conviene reemplazarla antes del invierno. | Nuevo | 26-01-04 | — | — | — |\n');
+  + '| Local-0042 | Cambiar la cerradura del galpón | Dato de prueba: la cerradura se trabó dos veces y conviene reemplazarla antes del invierno. | Nuevo | 26-01-04 | — | — | — |\n'
+  // Un plan CERRADO: por cita se trae igual (nombra la fila exacta), por puntaje no (plan Local-0131).
+  + '| Local-0043 | Arreglar la bomba del aljibe | Dato de prueba: la bomba del aljibe perdía agua por el sello y se cambió. | Ejecutado | 26-01-05 | 26-01-09 | — | — |\n');
+
+// -- RELLENO: el tamaño del corpus es parte del escenario ------------------------------------------
+// Desde el plan Local-0131 el umbral del puntaje se ajusta a la cantidad de filas de cada corpus: con
+// cinco filas casi nada pasa, porque en un corpus así el idf no distingue una palabra rara de una
+// corriente. Un banco con cinco filas probaria entonces el caso degenerado y no el normal, así que cada
+// corpus recibe filas de relleno hasta un tamaño de repo en uso. Cada fila de relleno nombra una cosa
+// distinta que ningún mensaje de este banco menciona, y comparten entre ellas las palabras de la
+// descripción, que así pesan poco.
+const COSAS = ['alfajor', 'bandoneón', 'cántaro', 'dintel', 'empanada', 'farol', 'guitarra', 'hornero',
+  'jacarandá', 'lapacho', 'ñandú', 'ombú', 'palenque', 'quincho', 'rancho', 'sulky', 'tapera', 'vizcacha',
+  'yerba', 'zorzal', 'boleadora', 'chasque', 'chamamé', 'escarapela', 'facón', 'horquilla', 'junco',
+  'mburucuyá', 'nogal', 'payador', 'recado', 'tropilla', 'ceibo', 'espinillo', 'malambo'];
+const agregarFilas = (rel, filas) => fs.appendFileSync(path.join(REPO, '.claude', rel), filas.join(''), 'utf8');
+const relleno = (desde, cuantas, fila) => COSAS.slice(0, cuantas).map((cosa, i) =>
+  fila(`Local-${String(desde + i).padStart(4, '0')}`, cosa));
+agregarFilas('decisiones/INDICE.md', relleno(100, 30, (cod, cosa) =>
+  `| ${cod} | El ${cosa} se anota aparte | Dato de relleno del banco: el ${cosa} no aparece en ningún mensaje. | 2026-01-03 | vigente | — |\n`));
+agregarFilas('planes/PLANES.md', relleno(200, 20, (cod, cosa) =>
+  `| ${cod} | Revisar el ${cosa} del campo | Dato de relleno del banco: el ${cosa} no aparece en ningún mensaje. | Nuevo | 26-01-06 | — | — | — |\n`));
+
+// -- conocimiento: dos Índices de carpeta ---------------------------------------------------------
+// Los Índices RAÍZ de conocimiento cargan siempre y no entran al contraste; los de carpeta sí, por
+// puntaje. Uno es una tabla `Nombre | Descripción | Detalle` y el otro una lista con un enlace por
+// renglón, las dos formas que tienen en los repos en uso. El de lista delega una carpeta más honda,
+// que solo se encuentra siguiendo su enlace.
+const dirConocimiento = path.join(REPO, '.claude', 'conocimiento');
+fs.mkdirSync(path.join(dirConocimiento, 'herramientas-del-galpon'), { recursive: true });
+fs.writeFileSync(path.join(dirConocimiento, 'herramientas-del-galpon', 'INDICE.md'),
+  '# Herramientas del galpón\n\n| Nombre | Descripción | Detalle |\n|---|---|---|\n'
+  + '| La amoladora angular necesita el disco de corte fino | Dato de prueba: con el disco grueso se recalienta y frena. | [amoladora.md](amoladora.md) |\n'
+  + relleno(300, 15, (cod, cosa) => `| El ${cosa} del galpón | Dato de relleno del banco: el ${cosa} no aparece en ningún mensaje. | — |\n`).join(''), 'utf8');
+fs.mkdirSync(path.join(dirConocimiento, 'recetas', 'conservas'), { recursive: true });
+fs.writeFileSync(path.join(dirConocimiento, 'recetas', 'INDICE.md'),
+  '# Recetas\n\n- [Dulce de membrillo en olla de cobre](membrillo.md) — dato de prueba: el cobre no se lava con lavandina.\n'
+  + '- Las conservas tienen su propio índice: [conservas/INDICE.md](conservas/INDICE.md)\n', 'utf8');
+fs.writeFileSync(path.join(dirConocimiento, 'recetas', 'conservas', 'INDICE.md'),
+  '# Conservas\n\n- [Escabeche de pimientos al vinagre de manzana](escabeche.md) — dato de prueba: se esteriliza el frasco hirviéndolo.\n', 'utf8');
 
 const HOOK = path.join(REPO, '.claude', 'conducta', 'establecer-conducta', 'establecer-conducta.js');
 const MD = path.join(REPO, 'caso-de-prueba-que-no-existe.md').replace(/\\/g, '/');
@@ -461,6 +500,78 @@ console.log('\n== memoria de sesión: la misma fila no se repite dentro de la ve
 // Que sin `session_id` la memoria NO se aplique lo prueba el caso de determinismo de más arriba: sin
 // sesión, el mismo mensaje repetido devuelve exactamente las mismas filas. Es la degradación buscada
 // —compartir una marca entre sesiones distintas callaría filas que nadie vio—, no un olvido.
+
+console.log('\n== planes vivos y páginas de conocimiento también entran por puntaje (plan Local-0131) ==');
+// Antes los planes solo llegaban si el mensaje los citaba, y las páginas de conocimiento que no tienen
+// fila en un Índice raíz no llegaban nunca: el agente volvía a preguntar lo que el plan o la página ya
+// decían. Cada corpus se compara aparte, con su propio umbral.
+{
+  const c = contrasteDe('hay que cambiar la cerradura del galpón antes del invierno');
+  chequear('un plan vivo que el mensaje toca llega sin que lo citen', /- plan Local-0042 /.test(c),
+    /- plan Local-0042 /.test(c) ? 'presente' : 'ausente');
+}
+{
+  const c = contrasteDe('se rompió otra vez la bomba del aljibe y pierde agua por el sello');
+  chequear('un plan cerrado no llega por puntaje, aunque el mensaje lo toque de lleno', !c.includes('Local-0043'),
+    c.includes('Local-0043') ? 'lo trajo' : 'callado');
+  const cita = contrasteDe('Seguimos con el plan Local-0043');
+  chequear('  …pero citado sí llega: la cita nombra la fila exacta', /- plan Local-0043 /.test(cita));
+}
+{
+  // Los Nombres de los planes son oraciones largas: una sola palabra compartida es casualidad.
+  const c = contrasteDe('¿y la cerradura?');
+  chequear('una sola palabra en común no trae un plan', !c.includes('Local-0042'),
+    c.includes('Local-0042') ? 'lo trajo' : 'callado');
+}
+{
+  const c = contrasteDe('la amoladora angular se frena, ¿qué disco le pongo?');
+  chequear('una fila de un Índice de carpeta en tabla llega como página de conocimiento',
+    /- página de conocimiento \(La amoladora angular/.test(c), c.includes('amoladora') ? 'presente' : 'ausente');
+  chequear('  …con la página a abrir como detalle', c.includes('Detalle: conocimiento/herramientas-del-galpon/amoladora.md'));
+}
+{
+  const c = contrasteDe('voy a hacer dulce de membrillo en la olla de cobre');
+  chequear('un renglón de un Índice de carpeta en lista también llega',
+    c.includes('Dulce de membrillo') && c.includes('conocimiento/recetas/membrillo.md'));
+  const hondo = contrasteDe('cómo hago el escabeche de pimientos al vinagre');
+  chequear('  …y un Índice más hondo se encuentra siguiendo el enlace del de su carpeta',
+    hondo.includes('Escabeche de pimientos'), hondo.includes('Escabeche') ? 'presente' : 'no lo encontró');
+}
+{
+  const c = contrasteDe('quiero que los planes guarden la prioridad; además hay que cambiar la cerradura del galpón '
+    + 'antes del invierno, y la amoladora angular se frena con el disco grueso');
+  const filasDelBloque = (bloqueDelContraste(c).match(/^- /gm) || []).length;
+  chequear('el tope se reparte: un turno que toca los tres corpus trae uno de cada uno',
+    c.includes('Local-0011') && /- plan Local-0042 /.test(c) && c.includes('página de conocimiento'),
+    `${filasDelBloque} filas`);
+  chequear('  …sin pasar el tope de 3', filasDelBloque === 3, `${filasDelBloque} filas`);
+}
+
+console.log('\n== corpus chico: el umbral sube cuando hay pocas filas (plan Local-0131) ==');
+// Medido con el programa real en un repo de 11 filas: dos palabras de todos los días en el Nombre de una
+// Decisión («mes», «servicios») ya pasaban el umbral fijo, y la misma fila llegaba en 54 de 300 mensajes.
+// Se arma un corpus de esa forma —9 términos, 0 vetados, 2 Decisiones— y después se restituye el normal.
+{
+  const rel = ['semantica/GLOSARIO.md', 'semantica/TERMINOLOGIA-FARLOPA.md', 'decisiones/INDICE.md'];
+  const guardados = rel.map(r => fs.readFileSync(path.join(REPO, '.claude', r), 'utf8'));
+  const cabecera = t => t.slice(0, t.indexOf('\n', t.indexOf('|---')) + 1);   // todo hasta el separador
+  try {
+    fs.writeFileSync(path.join(REPO, '.claude', rel[0]), cabecera(guardados[0]) + relleno(500, 9, (cod, cosa) =>
+      `| ${cod} | ${cosa} | Dato de relleno del banco: el ${cosa} no aparece en ningún mensaje. | — | — | — |\n`).join(''), 'utf8');
+    fs.writeFileSync(path.join(REPO, '.claude', rel[1]), cabecera(guardados[1]), 'utf8');
+    fs.writeFileSync(path.join(REPO, '.claude', rel[2]), cabecera(guardados[2])
+      + '| Local-0001 | El resumen de gastos del galpón se fecha al cierre del mes de las compras | Dato de prueba: el resumen lleva el último día del mes. | 2026-01-01 | vigente | — |\n'
+      + '| Local-0002 | Las boletas se guardan escaneadas | Dato de prueba: el papel se tira después de escanearlo. | 2026-01-02 | vigente | — |\n', 'utf8');
+    const corriente = contrasteDe('cuánto gasté de compras este mes');
+    chequear('con 11 filas, dos palabras corrientes del Nombre ya no traen la Decisión', !corriente.includes('Local-0001'),
+      corriente.includes('Local-0001') ? 'la trajo (con el umbral fijo pasaba con 11,95)' : 'callado');
+    const tema = contrasteDe('¿con qué fecha va el resumen de gastos del galpón?');
+    chequear('  …y un mensaje que es el tema de la Decisión la sigue trayendo', tema.includes('Local-0001'),
+      tema.includes('Local-0001') ? 'presente' : 'ausente');
+  } finally {
+    rel.forEach((r, i) => fs.writeFileSync(path.join(REPO, '.claude', r), guardados[i], 'utf8'));
+  }
+}
 
 console.log('\n== `al cerrar tarea`: el momento donde CALLAR ES EL DEFAULT ==');
 // Es el unico momento donde emitir CONTINUA la conversacion en vez de dejar una nota, asi que el

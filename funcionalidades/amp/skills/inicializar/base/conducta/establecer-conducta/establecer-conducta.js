@@ -189,17 +189,18 @@ function construir(momento) {
 // No agrega clase a CLASES.md: es mecanica interna que escribe en `additionalContext`, como el Buzon.
 //
 // DOS CAMINOS con alcances distintos, porque tienen precisiones distintas (plan Local-0118):
-//   - PUNTAJE, sobre el mensaje del usuario. Alcance: glosario, Terminologia Farlopa y decisiones —
-//     los dos registros que no cargan siempre y que las skills de contraste ya leen—. Esta calibrado
-//     para un mensaje de 16 palabras y NO se traslada a un documento entero: medido, con un handoff
-//     pasan 124 de 166 filas y la primera es una que no viene al caso, o sea mide largo y no
-//     relevancia.
-//   - CITAS, exactas, sobre el mensaje Y sobre el material que el mensaje apunta. Alcance: los tres
-//     anteriores mas planes. La Preferencia Base-0016 obliga a citar cada codigo con su tipo delante
-//     y los documentos del repo la cumplen (un handoff cita 9 codigos), asi que extraerlas no adivina
-//     nada. Planes entra porque su ruido era de la formula, no de la cita, y es justo lo que se lee
-//     al retomar un trabajo. Conocimiento no entra en ninguno de los dos: su Indice ya carga siempre,
-//     y traer una fila que ya esta en contexto gasta presupuesto sin agregar nada.
+//   - PUNTAJE, sobre el mensaje del usuario. Alcance: TRES corpus, cada uno con su propio idf y su
+//     propio umbral (plan Local-0131): glosario + Terminologia Farlopa + decisiones; los planes VIVOS;
+//     y las filas de los Indices de carpeta de conocimiento. Esta calibrado para un mensaje de 16
+//     palabras y NO se traslada a un documento entero: medido, con un handoff pasan 124 de 166 filas
+//     y la primera es una que no viene al caso, o sea mide largo y no relevancia.
+//   - CITAS, exactas, sobre el mensaje Y sobre el material que el mensaje apunta. Alcance:
+//     glosario, Terminologia Farlopa, decisiones y planes (vivos o cerrados: la cita nombra la fila
+//     exacta). La Preferencia Base-0016 obliga a citar cada codigo con su tipo delante y los
+//     documentos del repo la cumplen (un handoff cita 9 codigos), asi que extraerlas no adivina nada.
+//   Los Indices RAIZ de conocimiento no entran por ningun camino: cargan siempre, y traer una fila que
+//   ya esta en contexto gasta presupuesto sin agregar nada. Los de carpeta si entran por puntaje,
+//   porque no cargan y es donde quedan las paginas que el agente no abre si nada se las nombra.
 const REGISTROS_PUNTAJE = [
   { dir: 'semantica', archivo: 'GLOSARIO.md', tipo: 'término del glosario' },
   { dir: 'semantica', archivo: 'TERMINOLOGIA-FARLOPA.md', tipo: 'relación vetada (Terminología Farlopa)' },
@@ -221,10 +222,13 @@ const VACIAS = new Set(('a al ante bajo con contra de desde en entre hacia hasta
 // Normaliza SIN acentos para tolerar que el usuario los omita —los omite seguido— al escribir su
 // mensaje. Ojo: fusiona homografos (`termino` verbo con `término` sustantivo), lo que a veces suma
 // una fila de baja relevancia detras de la correcta; el tope duro la contiene.
+// Los acentos se sacan con UNA expresion regular sobre el rango de las marcas combinantes, armada con
+// `fromCodePoint` para no escribir barras invertidas. Antes se recorria caracter por caracter: daba lo
+// mismo —verificado sobre 143 KB de registros— pero costaba 3,5 ms contra 0,6 en un proceso recien
+// arrancado, y sumar planes y conocimiento al puntaje multiplico el texto que se normaliza.
 const RANGO_ACENTOS = [0x300, 0x36f];
-const normalizar = s => Array.from(String(s == null ? '' : s).normalize('NFD'))
-  .filter(ch => { const c = ch.codePointAt(0); return c < RANGO_ACENTOS[0] || c > RANGO_ACENTOS[1]; })
-  .join('').toLowerCase();
+const MARCAS_DE_ACENTO = new RegExp('[' + String.fromCodePoint(RANGO_ACENTOS[0]) + '-' + String.fromCodePoint(RANGO_ACENTOS[1]) + ']', 'g');
+const normalizar = s => String(s == null ? '' : s).normalize('NFD').replace(MARCAS_DE_ACENTO, '').toLowerCase();
 const palabrasDe = s => normalizar(s).split(/[^a-z0-9]+/).filter(Boolean);
 const esContenido = t => t.length >= 3 && !VACIAS.has(t);
 
@@ -246,6 +250,7 @@ function filasDeContraste(registros) {
       const cab = idx.cabecera || [];
       const col = n => cab.findIndex(c => normalizar(c) === n);
       const iCod = col('codigo'), iNom = col('nombre'), iDes = col('descripcion'), iDet = col('detalle');
+      const iEst = col('estado');   // solo planes la usa: separa los vivos de los cerrados
       if (iNom < 0 || iDes < 0) continue;
       for (const linea of idx.texto.split('\n')) {
         const celdas = celdasDe(linea);
@@ -259,7 +264,7 @@ function filasDeContraste(registros) {
         // el codigo.
         const registro = dir + '/' + idx.nombre;
         filas.push({ tipo, codigo, nombre, descripcion, registro, clave: registro + '#' + codigo,
-          detalle: iDet >= 0 ? (celdas[iDet] || '') : '' });
+          detalle: iDet >= 0 ? (celdas[iDet] || '') : '', estado: iEst >= 0 ? (celdas[iEst] || '') : '' });
       }
     }
   }
@@ -273,22 +278,210 @@ function filasDeContraste(registros) {
 // es gratis porque esto es determinista: no hace falta una sesion real para medir que fila elige.
 const PESO_NOMBRE = 3, PESO_DESCRIPCION = 1, UMBRAL = 7.0, TOPE = 3;
 
-// Devuelve las filas del alcance del PUNTAJE que superan el umbral, ordenadas. Sin topear: el tope
-// se aplica una sola vez al final, ya mezclado con las citas y ya filtrado por la memoria.
-// El idf se calcula SOLO sobre las filas del puntaje: sumar las de planes al corpus le correria el
-// peso a cada palabra y descalibraria un umbral que se midio con un banco de 38 casos.
-function porPuntaje(prompt, todas) {
+// -- el umbral se ajusta a la cantidad de filas del corpus (plan Local-0131) ------------------------
+// El 7,0 se calibro sobre un corpus de 166 filas. En uno chico el idf deja de discriminar: una palabra
+// queda en UNA sola fila por falta de filas, no por ser rara, y pesa el maximo. Medido con el programa
+// real sobre un repo en uso de 11 filas y 300 mensajes reales de su usuario: el contraste disparo en 59,
+// y en 54 trajo la misma Decision, porque «mes», «servicios» y «fecha» estan cada una en una sola fila
+// y dos de ellas en el Nombre ya suman 11,95. Con 166 filas esas palabras de todos los dias aparecen
+// en muchas filas y casi no pesan.
+//
+// La correccion: el umbral se multiplica por cuanto menos pesa la palabra mas rara del corpus que en
+// el de referencia —ln(166/1,5) / ln(N/1,5)—, nunca por menos de 1. Con un TECHO: nunca se exige mas
+// que tres palabras del Nombre que no esten en ninguna otra fila, o un repo recien instalado, con
+// cinco filas, no dispararia nunca. Numeros: 166 filas -> 7,0 · 60 -> 8,9 · 23 -> 12,1 · 11 -> 16,5 ·
+// 5 -> 10,8 (el techo). Un corpus mas grande que la referencia se queda en 7,0.
+const FILAS_DE_REFERENCIA = 166;
+const PALABRAS_DEL_TECHO = 3;
+const idfMaximo = n => Math.log(Math.max(n, 2) / 1.5);   // el de una palabra que esta en una sola fila
+function umbralPara(n) {
+  const ajustado = UMBRAL * Math.max(1, idfMaximo(FILAS_DE_REFERENCIA) / idfMaximo(n));
+  const techo = PALABRAS_DEL_TECHO * PESO_NOMBRE * idfMaximo(n);
+  return Math.max(UMBRAL, Math.min(ajustado, techo));
+}
+
+// -- planes vivos -----------------------------------------------------------
+// Por puntaje entran SOLO los planes vivos: uno cerrado ya no cambia lo que el agente tiene que hacer,
+// y trae ruido. Que estado es terminal no se adivina: lo dicen `ESTADOS.md` y `ESTADOS-LOCAL.md`, que
+// es la fuente de verdad del subsistema planes. Sin ellos legibles, los dos terminales de siempre.
+function estadosTerminales() {
+  const terminales = new Set();
+  for (const n of ['ESTADOS.md', 'ESTADOS-LOCAL.md']) {
+    let txt = ''; try { txt = fs.readFileSync(path.join(repoRoot, '.claude', 'planes', n), 'utf8'); } catch (e) { continue; }
+    let iEst = -1, iTer = -1;
+    for (const linea of txt.split('\n')) {
+      const celdas = celdasDe(linea);
+      if (!celdas) { iEst = iTer = -1; continue; }
+      if (esSeparadora(celdas)) continue;
+      const norm = celdas.map(c => normalizar(c).replace(/[*`]/g, '').trim());
+      if (norm.includes('estado') && norm.includes('terminal')) { iEst = norm.indexOf('estado'); iTer = norm.indexOf('terminal'); continue; }
+      if (iEst < 0) continue;
+      if (/^si$/.test(norm[iTer] || '')) terminales.add(norm[iEst]);
+    }
+  }
+  if (!terminales.size) { terminales.add('ejecutado'); terminales.add('descartado'); }
+  return terminales;
+}
+function planesVivos(todas) {
+  const terminales = estadosTerminales();
+  // Una fila sin estado no se da por viva: con la columna ausente no se sabe, y adivinar trae cerrados.
+  return todas.filter(f => f.registro === 'planes/PLANES.md' && f.estado
+    && !terminales.has(normalizar(f.estado).replace(/[*`]/g, '').trim()));
+}
+
+// -- conocimiento: las filas de los Indices de carpeta -----------------------------
+// Los Indices raiz de conocimiento cargan siempre; los de una carpeta con su propio `INDICE.md` (una
+// pagina por filamento, por estudio, por analisis) NO cargan, y ahi quedan las paginas que el agente
+// no abre si nada se las nombra. No tienen forma fija: hay tablas `Nombre | Descripcion | Detalle`,
+// tablas con otras columnas y listas con un enlace por renglon. Se lee lo comun a todas: cada fila de
+// una tabla y cada renglon de lista que enlaza a algo. El peso del Nombre se gana con una columna que
+// se llame `Nombre` o con el texto del enlace del renglon: una tabla con otras columnas (fecha, comida,
+// plato) muestra su primera celda con texto como nombre, pero puntua la fila entera como descripcion,
+// porque esa celda es un dato corriente y no el tema de la pagina.
+const TIPO_CONOCIMIENTO = 'página de conocimiento';
+const TOPE_INDICES_DE_CARPETA = 40, TOPE_BYTES_INDICE = 200 * 1024;
+const LARGO_DESCRIPCION_ENTREGADA = 300;   // una fila de tabla ancha puede pesar un parrafo entero
+const ENLACE = /\[([^\]]*)\]\(([^)]+)\)/;
+const ENLACES_A_INDICE = /\]\(([^)]*INDICE[^)/\\]*\.md)\)/gi;
+const ES_INDICE = /^INDICE.*\.md$/i;
+const sinMarcas = s => String(s).replace(/!?\[([^\]]*)\]\([^)]*\)/g, '$1').replace(/\*\*|__|<[^>]+>/g, '').trim();
+// Una celda con texto: tiene al menos una palabra de tres letras (no una fecha, un numero ni un tilde).
+// Se mira el texto crudo, sin normalizar: corre sobre cada celda de cada tabla y normalizar cuesta.
+const tieneTexto = s => /\p{L}{3}/u.test(String(s));
+
+// Que Indices de carpeta hay. NO se recorre el disco entero: una carpeta de conocimiento puede tener
+// cientos de subcarpetas (estudios con sus adjuntos) y recorrerlas cuesta milisegundos en cada turno.
+// Se toman dos fuentes baratas: el `INDICE*.md` de cada carpeta de primer nivel, y los que esos nombran
+// por enlace, que es como el subsistema delega una carpeta mas honda (el lint de conocimiento obliga al
+// padre a nombrarla). Los Indices raiz no se leen: cargan siempre, y leerlos solo para seguir sus
+// enlaces costaba un milisegundo por turno para hallar lo que el primer nivel ya da. Una carpeta honda
+// que solo nombra el raiz queda afuera. Devuelve cada uno ya leido.
+function indicesDeCarpeta() {
+  const raiz = path.join(repoRoot, '.claude', 'conocimiento');
+  const hallados = [], vistos = new Set();
+  const leer = archivo => {
+    try { if (fs.statSync(archivo).size > TOPE_BYTES_INDICE) return ''; return fs.readFileSync(archivo, 'utf8'); } catch (e) { return ''; }
+  };
+  const porSeguir = [];
+  const agregar = archivo => {
+    const abs = path.resolve(archivo);
+    if (vistos.has(abs) || hallados.length >= TOPE_INDICES_DE_CARPETA) return;
+    if (abs !== raiz && !abs.startsWith(raiz + path.sep)) return;   // nada de afuera de conocimiento
+    vistos.add(abs);
+    const texto = leer(abs);
+    if (!texto) return;
+    porSeguir.push({ archivo: abs, texto });
+    if (path.dirname(abs) !== raiz) hallados.push({ archivo: abs, texto });
+  };
+  let entradas = []; try { entradas = fs.readdirSync(raiz, { withFileTypes: true }); } catch (e) { return []; }
+  for (const e of entradas) {
+    if (!e.isDirectory()) continue;
+    let dentro = []; try { dentro = fs.readdirSync(path.join(raiz, e.name)); } catch (err) { continue; }
+    for (const n of dentro) if (ES_INDICE.test(n)) agregar(path.join(raiz, e.name, n));
+  }
+  for (let i = 0; i < porSeguir.length; i++) {
+    const { archivo, texto } = porSeguir[i];
+    for (const m of texto.matchAll(ENLACES_A_INDICE)) {
+      let destino = m[1].split('#')[0].trim();
+      try { destino = decodeURI(destino); } catch (e) { /* un % suelto: queda como esta */ }
+      agregar(path.resolve(path.dirname(archivo), destino));
+    }
+  }
+  return hallados;
+}
+
+function filasDeConocimiento() {
+  const filas = [];
+  const base = path.join(repoRoot, '.claude');
+  const relClaude = p => path.relative(base, p).replace(/\\/g, '/');
+  for (const { archivo, texto } of indicesDeCarpeta()) {
+    const registro = relClaude(archivo), dir = path.dirname(archivo);
+    // La clave va sin espacios: la marca de la memoria separa clave y turno por el espacio.
+    const clave = nombre => (registro + '#' + nombre.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, '-').slice(0, 60)).replace(/\s/g, '_');
+    const detalleDe = (txt) => {
+      const m = ENLACE.exec(txt || '');
+      if (!m || /^[a-z][a-z0-9+.-]*:/i.test(m[2])) return registro;
+      let destino = m[2].split('#')[0].trim();
+      try { destino = decodeURI(destino); } catch (e) { /* un % suelto: queda como esta */ }
+      return destino ? relClaude(path.resolve(dir, destino)) : registro;
+    };
+    const sumar = (nombre, descripcion, conEnlace, sinPesoDeNombre) => {
+      // Se puntua lo mismo que se entrega: una fila de tabla ancha (un estudio con su hallazgo entero)
+      // que entrara completa ganaria por largo, no por relevancia, y pagaria normalizarla en cada turno.
+      nombre = sinMarcas(nombre); descripcion = sinMarcas(descripcion);
+      if (descripcion.length > LARGO_DESCRIPCION_ENTREGADA)
+        descripcion = descripcion.slice(0, LARGO_DESCRIPCION_ENTREGADA).trimEnd() + '…';
+      if (!nombre || !tieneTexto(nombre)) return;
+      filas.push({ tipo: TIPO_CONOCIMIENTO, codigo: '', nombre, descripcion, registro, clave: clave(nombre),
+        detalle: detalleDe(conEnlace), estado: '', sinPesoDeNombre: !!sinPesoDeNombre });
+    };
+    let cab = null;
+    for (const linea of texto.split('\n')) {
+      const celdas = celdasDe(linea);
+      if (!celdas) {
+        cab = null;
+        // Renglon de lista que enlaza a algo: el texto del enlace (o la ruta) es el nombre.
+        const item = /^\s*(?:[-*+]|\d+[.)])\s+(.*)$/.exec(linea);
+        if (!item) continue;
+        const enlace = ENLACE.exec(item[1]);
+        const ruta = enlace ? null : /`([^`]+\.[a-z0-9]+)`/i.exec(item[1]);
+        if (!enlace && !ruta) continue;
+        const nombre = enlace ? (enlace[1] || path.basename(enlace[2]))
+          : path.basename(ruta[1]).replace(/\.[a-z0-9]+$/i, '');
+        sumar(nombre, item[1].replace((enlace || ruta)[0], ' ').replace(/^[\s—–:-]+/, ''),
+          enlace ? item[1] : `[ruta](${encodeURI(ruta[1])})`);
+        continue;
+      }
+      if (esSeparadora(celdas)) continue;
+      if (!cab) { cab = celdas.map(c => normalizar(sinMarcas(c))); continue; }
+      const iNom = cab.indexOf('nombre');
+      const i = iNom >= 0 ? iNom : celdas.findIndex(tieneTexto);
+      if (i < 0) continue;
+      const resto = celdas.filter((c, j) => j !== i && tieneTexto(c)).join(' · ');
+      sumar(celdas[i], iNom >= 0 ? resto : celdas[i] + ' · ' + resto, celdas.join(' '), iNom < 0);
+    }
+  }
+  return filas;
+}
+
+// Planes y conocimiento piden ADEMAS dos palabras del mensaje en la fila. Sus Nombres son oraciones
+// largas («Que la consulta a otro Agente avise cuando no arranca…») llenas de palabras corrientes, y una
+// sola compartida es casualidad: medido sobre 77 mensajes reales del repo que publica el Agente
+// Multiproposito, «resolver», «también» o «handoff» solas traian un plan que no venia al caso. El glosario y las decisiones no cambian: sus
+// Nombres son terminos cortos, donde una palabra rara SI es el tema.
+const MINIMO_DE_PALABRAS_EN_ORACIONES = 2;
+
+// A igual puntaje decide el codigo; las filas de conocimiento no tienen, y desempatan por nombre.
+const desempate = (a, b) => (a.codigo || a.nombre).localeCompare(b.codigo || b.nombre);
+
+// -- reparto del tope entre los corpus ------------------------------------
+// Cada corpus tiene su umbral, asi que los puntajes no se comparan crudos: se comparan en VECES SU
+// UMBRAL. Primero entra lo mejor de cada corpus que tenga algo, y recien despues el resto, todo por
+// veces su umbral. Asi un turno que toca una Decision y un plan trae los dos en vez de tres variantes
+// de lo mismo; y cuando solo pega un corpus, se comporta como antes: hasta tres filas de ese.
+function repartir(listas, cupo) {
+  if (cupo <= 0) return [];
+  const porVeces = (a, b) => b.veces - a.veces || desempate(a.fila, b.fila);
+  const primeras = listas.filter(l => l.length).map(l => l[0]).sort(porVeces);
+  const resto = listas.flatMap(l => l.slice(1)).sort(porVeces);
+  return primeras.concat(resto).slice(0, cupo).map(c => c.fila);
+}
+
+// Devuelve las filas del corpus que superan SU umbral, con cuantas veces lo superan, ordenadas. Sin
+// topear: el tope se aplica una sola vez al final, ya mezclado con las citas y ya filtrado por la
+// memoria. El idf se calcula SOLO sobre las filas del corpus que se le pasa: mezclar corpus le
+// correria el peso a cada palabra —los planes, con sus nombres largos, le bajarian el peso a las
+// palabras del glosario— y descalibraria el umbral de cada uno.
+function porPuntaje(prompt, filas, minimoDePalabras = 1) {
   const mensaje = new Set(palabrasDe(prompt).filter(esContenido));
   if (!mensaje.size) return [];
-  const alcance = new Set(REGISTROS_PUNTAJE.map(r => r.dir + '/' + r.archivo));
-  const filas = todas.filter(f => alcance.has(f.registro));
   if (!filas.length) return [];
 
   // idf sobre el corpus (Nombre + Descripcion de cada fila): cuantas filas contienen la palabra.
   // Rara en el registro => mucho peso; comun => poco. El `+0.5` evita dividir por cero.
-  const N = filas.length, df = Object.create(null);
+  const N = filas.length, df = Object.create(null), umbral = umbralPara(N);
   const conjuntos = filas.map(f => {
-    const nom = new Set(palabrasDe(f.nombre).filter(esContenido));
+    const nom = f.sinPesoDeNombre ? new Set() : new Set(palabrasDe(f.nombre).filter(esContenido));
     const des = new Set(palabrasDe(f.descripcion).filter(esContenido));
     for (const t of new Set([...nom, ...des])) df[t] = (df[t] || 0) + 1;
     return { nom, des };
@@ -298,15 +491,15 @@ function porPuntaje(prompt, todas) {
   const candidatos = [];
   for (let i = 0; i < filas.length; i++) {
     const { nom, des } = conjuntos[i];
-    let puntaje = 0;
+    let puntaje = 0, palabras = 0;
     for (const t of mensaje) {
-      if (nom.has(t)) puntaje += idf(t) * PESO_NOMBRE;
-      else if (des.has(t)) puntaje += idf(t) * PESO_DESCRIPCION;
+      if (nom.has(t)) { puntaje += idf(t) * PESO_NOMBRE; palabras++; }
+      else if (des.has(t)) { puntaje += idf(t) * PESO_DESCRIPCION; palabras++; }
     }
-    if (puntaje >= UMBRAL) candidatos.push({ fila: filas[i], puntaje });
+    if (puntaje >= umbral && palabras >= minimoDePalabras) candidatos.push({ fila: filas[i], puntaje, veces: puntaje / umbral });
   }
-  candidatos.sort((a, b) => b.puntaje - a.puntaje || a.fila.codigo.localeCompare(b.fila.codigo));
-  return candidatos.map(c => c.fila);
+  candidatos.sort((a, b) => b.puntaje - a.puntaje || desempate(a.fila, b.fila));
+  return candidatos;
 }
 
 // -- citas: el codigo de una Entrada con su tipo delante ------------------
@@ -468,7 +661,11 @@ function contrastar(data) {
   memoria.turno++;
 
   const filas = filasDeContraste(REGISTROS_CITAS);
-  if (!filas.length) { escribirMemoria(sesion, memoria); return ''; }
+  // Las de conocimiento solo entran por puntaje: sin palabras de contenido en el mensaje no hace falta
+  // ni leerlas, y un mensaje que solo cita codigos no paga ese costo.
+  const hayPalabras = palabrasDe(prompt).some(esContenido);
+  const conocimiento = hayPalabras ? filasDeConocimiento() : [];
+  if (!filas.length && !conocimiento.length) { escribirMemoria(sesion, memoria); return ''; }
   const porClave = new Map(filas.map(f => [f.clave, f]));
 
   const candidatos = [], yaEsta = new Set();
@@ -478,21 +675,32 @@ function contrastar(data) {
     yaEsta.add(clave); candidatos.push(f);
   };
   const ordenar = mapa => [...mapa.values()].sort((a, b) => b.veces - a.veces || a.orden - b.orden);
+  // MEMORIA: una fila entregada se calla dentro de la ventana. Se aplica ANTES del tope, que es lo que
+  // hace que las 3 del turno sean 3 NUEVAS.
+  const libre = f => {
+    const t = memoria.entregadas.get(f.clave);
+    return t === undefined || (memoria.turno - t) >= VENTANA_MEMORIA;
+  };
 
   // 1. CITAS, primero las del mensaje del usuario —es lo que esta pidiendo ahora— y despues las del
   //    material que apunta. Son exactas: no hay formula, ni umbral, ni nada que calibrar.
   for (const c of ordenar(citasDe(prompt))) sumar(c.clave);
   for (const abs of archivosApuntados(prompt)) for (const c of ordenar(citasDe(leerApuntado(abs)))) sumar(c.clave);
+  const nuevas = candidatos.filter(libre).slice(0, TOPE);
 
-  // 2. PUNTAJE sobre el mensaje, donde esta calibrado. Va DETRAS de las citas: si las citas llenan el
-  //    tope es porque el texto nombro esas Entradas, y eso no hay que adivinarlo.
-  for (const f of porPuntaje(prompt, filas)) sumar(f.clave);
-
-  // 3. MEMORIA y recien despues el tope, que es lo que hace que las 3 del turno sean 3 NUEVAS.
-  const nuevas = candidatos.filter(f => {
-    const t = memoria.entregadas.get(f.clave);
-    return t === undefined || (memoria.turno - t) >= VENTANA_MEMORIA;
-  }).slice(0, TOPE);
+  // 2. PUNTAJE sobre el mensaje, donde esta calibrado, con los tres corpus por separado. Va DETRAS de
+  //    las citas: si las citas llenan el tope es porque el texto nombro esas Entradas, y eso no hay
+  //    que adivinarlo. Lo que queda del tope se reparte entre los corpus (ver `repartir`).
+  if (hayPalabras && nuevas.length < TOPE) {
+    const alcance = new Set(REGISTROS_PUNTAJE.map(r => r.dir + '/' + r.archivo));
+    const corpus = [
+      { filas: filas.filter(f => alcance.has(f.registro)), minimo: 1 },
+      { filas: planesVivos(filas), minimo: MINIMO_DE_PALABRAS_EN_ORACIONES },
+      { filas: conocimiento, minimo: MINIMO_DE_PALABRAS_EN_ORACIONES },
+    ];
+    const listas = corpus.map(c => porPuntaje(prompt, c.filas, c.minimo).filter(x => libre(x.fila) && !yaEsta.has(x.fila.clave)));
+    nuevas.push(...repartir(listas, TOPE - nuevas.length));
+  }
 
   for (const f of nuevas) memoria.entregadas.set(f.clave, memoria.turno);
   escribirMemoria(sesion, memoria);
@@ -500,7 +708,10 @@ function contrastar(data) {
 
   const lineas = nuevas.map(fila => {
     const det = fila.detalle && fila.detalle !== '—' ? ` Detalle: ${fila.detalle}` : '';
-    return `- ${fila.tipo} ${fila.codigo} (${fila.nombre}): ${fila.descripcion}${det}`;
+    // La fila de un Indice de carpeta ya viene recortada; la de una Decision o un termino ES su
+    // contenido y va entera.
+    const des = fila.descripcion;
+    return `- ${fila.tipo}${fila.codigo ? ' ' + fila.codigo : ''} (${fila.nombre})${des ? ': ' + des : '.'}${det}`;
   });
   return 'Contraste con la sabiduría del repo — lo que estás mirando toca estos registros ' +
     '(candidatos para contrastar tu respuesta, no veredictos):\n' + lineas.join('\n');
