@@ -58,6 +58,13 @@
       "por_que": "La trampa que separa los dos Modos de Comunicacion: la frase dice hacer, pero no escribe nada. Si dispara resolver, este caso falla, asi que cubre las dos direcciones con una sola sesion."
     },
     {
+      "id": "preguntar-03",
+      "consulta": "antes de seguir necesito saber que formato de fecha usa el repo de contabilidad. si queres abro una sesion alla, le pego lo que me digas y te traigo la respuesta",
+      "skill": "preguntar",
+      "debe_disparar": true,
+      "por_que": "El caso del 13/11/2026 visto del otro lado: el agente iba a pedirle al usuario que haga de intermediario entre dos sesiones. Lo correcto es preguntarle al otro repo directamente. Mide la ampliacion de la description por la intencion, no por la frase preguntale."
+    },
+    {
       "id": "resolver-01",
       "consulta": "pedile al contable que registre el pago del alquiler de agosto",
       "skill": "resolver",

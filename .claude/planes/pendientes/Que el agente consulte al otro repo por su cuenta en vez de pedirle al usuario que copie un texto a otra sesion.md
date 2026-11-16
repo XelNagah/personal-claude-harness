@@ -62,3 +62,13 @@ Página única de tres temas (`.claude/tmp/decisiones-tres-temas-2026-11-14.html
 - **#8 = B. El aviso de que no hay otras instalaciones registradas sale una vez, al terminar `amp:inicializar`**, y sugiere `buscar-agentes`.
 - **#9 = C. La habilidad propia del Agente Coordinador queda fuera de este plan.** Acá solo se toma la idea del turno completo (plan Local-0107, #1). Su migración va a un plan propio, después.
 - **#10 = A. Se corrige ya `preguntar`** para que diga lo mismo que la descripción de `resolver`: «Para pedirle que haga algo está la habilidad resolver, que se usa cuando el usuario pidió que el otro repo quede modificado».
+
+## Construcción — 16/11/2026
+
+Construido en la rama `c-repo` (grupo C del plan Local-0129), después del plan Local-0107 como pedía el orden.
+
+- **#7 (descripción + regla) — la descripción, hecha; la regla, redactada.** La `description` de `preguntar` suma el disparo por intención: «cuando el agente está por pedirle al usuario que abra una sesión en otro repo, le pegue un texto y traiga lo que contesta». El cuerpo suma la sección «No pedirle al usuario que haga de intermediario», que deja a salvo el handoff de la Preferencia Base-0014 (pasar trabajo a otra sesión no es traer una respuesta). La fila de la regla de conducta (`cada turno`, `Inyectar`) **no se agregó**: el grupo A está tocando `conducta/INDICE.md`; el texto lo agrega el coordinador.
+- **#8 (aviso al terminar `amp:inicializar`) — hecho.** El paso «Reportar» avisa una vez, si `.claude/comunicacion/INDICE.md` quedó sin filas, y sugiere `buscar-agentes`.
+- **#9 — fuera de este plan**, como se decidió.
+- **#10 (corregir `preguntar`) — hecho.** Ya no dice que `resolver` «la elige el usuario tipeándola»: dice que se usa cuando el usuario pidió que el otro repo quede modificado.
+- **Medir con la Herramienta Local-0012** — preparado, no medido: el banco suma `preguntar-03`, la consulta del caso del 13/11 vista del lado del usuario que se ofrece de intermediario. Esa Herramienta mide lo instalado, así que hay que publicar `amp-comunicacion` con versión nueva antes de correrla (`--id=preguntar-03`).
