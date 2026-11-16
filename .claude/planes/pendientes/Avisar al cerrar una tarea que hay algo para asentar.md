@@ -332,3 +332,43 @@ Página única de tres temas (`.claude/tmp/decisiones-tres-temas-2026-11-14.html
 - **#3 = C. Un alta es «a mano» con las dos pistas juntas:** aparece una fila nueva con código nuevo y en la sesión no se invocó la habilidad de alta de ese registro. Corregir una fila vieja no avisa.
 - **#4 = C. El aviso de cierre solo cuenta lo que el control del momento no vio.** Un alta a mano con la herramienta de edición avisa al escribir y no vuelve a avisar al cerrar. Una escritura por consola (`sed -i`, heredoc), que el momento `al escribir` no ve, avisa al cerrar.
 - **#5 = C. Repartido:** este plan hace que el aviso se calle cuando viene una marca, y lo prueba. El plan Local-0107 pone la marca en `comunicar.js`. Va junto con la #1 = B de ese plan (devolver el turno completo): las dos medidas se respaldan.
+
+## Construcción — 16/11/2026
+
+Construido en el worktree `d-cierre` (rama `d-cierre`), commits `0a8a54b` y `58594cf`. Responde a las cinco respuestas del 15/11/2026.
+
+### Lo hecho
+
+- **#1 = B — el piso mide la conversación.** `avisar-sesion-sin-asentar.js` suma solo el texto que escribieron el usuario (incluido lo que encoló mientras el agente trabajaba, que no reaparece como mensaje) y el agente. Quedan fuera instrucciones, adjuntos, entradas y resultados de herramientas, el pensamiento del modelo, comandos locales y sus salidas, y los avisos de tareas en segundo plano. Se mide **desde el último `/clear`**, y la revisión de qué se asentó también.
+- **#2 = A y #3 = C — el control de altas a mano.** Nuevo `conducta/avisar-alta-a-mano/` para el momento `al escribir`: avisa y no frena cuando una escritura (`Write`, `Edit`, `MultiEdit`, `apply_patch`) agrega a un Índice una fila con un Código que no tenía y en la sesión no se invocó ninguna habilidad de ese subsistema. Las habilidades salen de la columna `Operación` del catálogo de subsistemas. **Queda sin enganchar:** falta su fila en `conducta/INDICE.md`, que agrega el coordinador.
+- **#4 = C — el cierre cuenta solo lo que el momento no vio.** Un alta con la herramienta de edición sigue contando como asentar al cerrar (ya la avisó el control nuevo). Un alta por consola con Código nuevo y sin la habilidad de su subsistema avisa al cerrar, con su propio texto, aunque la sesión sea corta. Para saber si el Código es nuevo se compara contra el Índice del último commit; sin git o sin versionar, no avisa.
+- **#5 = C — consultas entre agentes.** Con `AMP_CONSULTA_ENTRE_AGENTES=1` el control sale mudo, sin bloquear y sin gastar la marca de la sesión. `comunicar.js` no se tocó: la variable la pone el grupo C.
+- El criterio compartido de «alta a mano» vive en `conducta/altas-a-mano.js`. `common/indices.js` exporta además `filasDe`, para leer las filas igual que los nueve lints.
+- **Defecto encontrado de paso:** el control tomaba el **primer** `.claude/<casa>/` de la ruta y descartaba toda ruta con `/tmp/`, así que lo escrito dentro de un worktree (`.claude/tmp/worktrees/<nombre>/.claude/…`) nunca contaba como asentar. Ahora toma el último segmento y mide los borradores contra la raíz del repo del archivo, con `alcance-al-escribir.js`.
+- La regla Base-0012 de conducta cambió solo su Contenido: `--piso 200000` pasó a `--piso 15000`.
+
+### Mediciones
+
+- **Primer cierre de las cinco sesiones más recientes de este repo:** archivo de 666 a 727 KB; conversación de 1,4 a 3,3 KB.
+- **Simulación de cada cierre de las 256 transcripciones de la máquina con al menos un cierre** (18 repos):
+
+| Medida | Sesiones donde avisa | Con 0 o 1 pedidos | Pedidos al avisar (mediana) |
+|---|---|---|---|
+| Archivo ≥ 200 KB (la anterior) | 190 | 184 | 1 |
+| Conversación ≥ 12 KB | 38 | 6 | 6 |
+| **Conversación ≥ 15 KB (elegida)** | **18** | **1** | **8** |
+| Conversación ≥ 20 KB | 7 | 0 | 11 |
+| Conversación ≥ 30 KB | 0 | 0 | — |
+
+- El ejemplo de 30 KB **no avisaría nunca**: de las 66 sesiones que no asentaron nada, la más larga tiene 27 KB de conversación. Las que asentaron lo hicieron temprano (mediana 3 KB, 90 % antes de 10 KB). Se eligió 15 KB por el lado seguro que el plan pide. Sigue siendo **provisorio**.
+- La conversación es en la mediana el **0,4 %** del archivo (el análisis del 13/11 había dado 14 % con otra forma de medir).
+- Costo: 14 ms para decidir sobre una transcripción de 3,2 MB; el control de altas a mano tarda unos 55 ms en total, casi todo el arranque de Node, y lee la transcripción solo cuando hay un Código nuevo.
+- Pruebas: 40 casos el aviso de cierre (antes 27), 17 el control nuevo, y el banco del repartidor sigue en 55 verdes.
+
+### Lo que no se hizo
+
+- **La fila de la regla del control nuevo** en `conducta/INDICE.md`: la agrega el coordinador (el texto va en el informe del grupo D).
+- **La versión de `amp`** no se subió: la sube el coordinador al final.
+- **La pregunta de si el aviso alcanza a las preferencias** (el texto de la regla Base-0009) sigue abierta: no se tocó el texto de la regla.
+- **No se midió cuántas de las 34 altas a mano del análisis del 13/11 caza el control nuevo**: hace falta el estado del Índice antes de cada escritura, que la transcripción no guarda.
+- Un alta hecha por un subagente puede avisar aunque el subagente haya invocado la habilidad, si el hook recibe la transcripción de la sesión principal. No se verificó qué transcripción recibe.
