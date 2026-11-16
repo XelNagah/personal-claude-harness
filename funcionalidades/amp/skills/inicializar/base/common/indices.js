@@ -256,5 +256,5 @@ function problemasDeIndices(idxs, manifiestoTxt) {
 
 module.exports = {
   ORIGENES, ETIQUETA_ORIGEN, LARGO_MAX_DESCRIPCION, LARGO_MAX_DESCRIPCION_OPERATIVA, LARGO_MAX_POR_INDICE,
-  indicesDe, problemasDeIndices,
+  indicesDe, problemasDeIndices, filasDe,
 };
