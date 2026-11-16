@@ -22,11 +22,11 @@ Informe completo: `D:\Proyectos\analisis\como-uso-claude\.claude\conocimiento\an
 
 | Orden | Plan | Arreglo del informe | Grupo | Estado |
 |---|---|---|---|---|
-| 1 | plan Local-0130 (Que las reglas que hoy viven dentro de las habilidades se entreguen en cada turno, con un aviso cuando ese texto pese de más) | 1 | A | Análisis |
-| 2 | plan Local-0131 (Que el Contraste automático traiga también los planes vivos y las páginas de conocimiento que tocan el pedido, sin repetirse en los repos chicos) | 2 | B | Análisis |
-| 3 | plan Local-0111 (Avisar al cerrar una tarea que hay algo para asentar) | 3 y 6 | D | Análisis |
-| 4 | plan Local-0132 (Que el agente consulte al otro repo por su cuenta en vez de pedirle al usuario que copie un texto a otra sesión) | 4 | C | Análisis |
-| 5 | plan Local-0107 (Que la consulta a otro Agente avise cuando no arranca, traiga la respuesta completa, pueda leer archivos de otra carpeta y no se frene al resolver) | 5 | C | Análisis |
+| 1 | plan Local-0130 (Que las reglas que hoy viven dentro de las habilidades se entreguen en cada turno, con un aviso cuando ese texto pese de más) | 1 | A | En curso |
+| 2 | plan Local-0131 (Que el Contraste automático traiga también los planes vivos y las páginas de conocimiento que tocan el pedido, sin repetirse en los repos chicos) | 2 | B | En curso |
+| 3 | plan Local-0111 (Avisar al cerrar una tarea que hay algo para asentar) | 3 y 6 | D | En curso |
+| 4 | plan Local-0132 (Que el agente consulte al otro repo por su cuenta en vez de pedirle al usuario que copie un texto a otra sesión) | 4 | C | En curso |
+| 5 | plan Local-0107 (Que la consulta a otro Agente avise cuando no arranca, traiga la respuesta completa, pueda leer archivos de otra carpeta y no se frene al resolver) | 5 | C | En curso |
 
 Fuera de este plan, a propósito:
 - Arreglo 7 (depurar registros viejos o contradictorios): difuso; lo rozan el plan Local-0124 y el plan Local-0006.
@@ -48,6 +48,11 @@ Fuera de este plan, a propósito:
 Cuando cierren los hijos y hayan pasado al menos dos semanas de uso, pedirle al Agente *Cómo uso Claude Code* (habilidad `preguntar` o `resolver`) que repita el mismo análisis con su Herramienta `condensar-sesiones` y compare las tasas. Sin esta medición no se sabe si los arreglos sirvieron.
 
 ## Estado
+
+**16/11/2026 — construcción lanzada.**
+
+- Hechos los dos pendientes que no eran construcción (commit `c8f1cf1`): los planes Local-0130, Local-0131 y Local-0132 se renombraron con lo que resuelven, y la convención del Nombre en `PLANES.md`, su copia que viaja y `crear-plan` pasó a pedir lo que el plan resuelve, no el problema. El usuario eligió cambiar la convención en vez de sumar una preferencia que la contradijera; `amp` subió a 0.75.0 y `amp-planes` a 0.13.0.
+- Los cinco hijos pasan a `En curso`. Cuatro copias del repo, una por grupo, cada una con un subagente: A (plan Local-0130), B (plan Local-0131), C (planes Local-0107 y Local-0132) y D (plan Local-0111). Se integran de a uno a `main`.
 
 **15/11/2026 — decisiones tomadas, construcción sin empezar.**
 

@@ -1,6 +1,6 @@
 # Avisar al cerrar una tarea que hay algo para asentar
 
-**Estado: Listo · Creado 26-08-20 · Vuelve de Listo a Análisis 26-11-14 · Decidido 26-11-15.** Sale del análisis del repo ajeno
+**Estado: En curso · Construcción desde 26-11-16 · Creado 26-08-20 · Vuelve de Listo a Análisis 26-11-14 · Decidido 26-11-15.** Sale del análisis del repo ajeno
 [everything-claude-code](https://github.com/worldflowai/everything-claude-code) (WorldFlowAI, 1.4k
 estrellas al 20/08/2026), pedido por Javier para tomar ideas. De las cuatro que salieron, es la única
 que cierra un hueco que este repo ya tenía asentado por escrito.

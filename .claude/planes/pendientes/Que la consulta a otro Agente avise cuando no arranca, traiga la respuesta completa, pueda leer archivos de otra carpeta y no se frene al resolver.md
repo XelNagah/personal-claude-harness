@@ -1,6 +1,6 @@
 # Que la consulta a otro Agente avise cuando no arranca, traiga la respuesta completa, pueda leer archivos de otra carpeta y no se frene al resolver
 
-**Estado: Listo · Creado 26-08-12 · Analizado 26-09-10 · Reanalizado 26-11-14 · Decidido y renombrado 26-11-15.** Origen: reportado por el usuario el 12/08/2026 desde otra PC.
+**Estado: En curso · Construcción desde 26-11-16 · Creado 26-08-12 · Analizado 26-09-10 · Reanalizado 26-11-14 · Decidido y renombrado 26-11-15.** Origen: reportado por el usuario el 12/08/2026 desde otra PC.
 
 > **CAMBIO DE RUMBO — 11/09/2026, decidido por el usuario. Este plan dejó de ser sobre
 > credenciales.**
