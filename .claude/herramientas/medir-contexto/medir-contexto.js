@@ -24,7 +24,9 @@
 // archivos— y dejando unos 4 KB de margen. Subio a 52 KB el 01/08/2026, con el mismo criterio.
 // Bajo a 35 KB el 10/08/2026 al pasar a medir solo el Agente Multiproposito: 31,0 medidos mas ~4 KB
 // de margen, que alcanza para un subsistema nuevo completo —su manifiesto mas su Indice, del orden
-// de 3 a 4 KB— y avisa al segundo.
+// de 3 a 4 KB— y avisa al segundo. Subio a 40 KB el 17/11/2026, con el mismo criterio: 36,9 medidos
+// mas ~3 KB de margen. El margen anterior lo consumio crecimiento legitimo —el subsistema comunicacion,
+// las Herramientas de copias de trabajo y tres paginas de conocimiento Base—, no celdas infladas.
 // No sale de un limite del modelo ni de ningun calculo: es
 // una disciplina auto-impuesta. Lo que aporta el control es QUE HAYA UN NUMERO, no
 // cual sea: el contexto siempre cargado no lo vigila nadie y crece de a poco —cada Indice liviano
@@ -48,7 +50,7 @@ const { basesDeInstalacion } = require('../../common/bases-de-instalacion.js');
 const { indicesDe } = require('../../common/indices.js');
 const { celdasDe, esSeparadora } = require('../../common/frontmatter.js');
 
-const TOPE = 35 * 1024;
+const TOPE = 40 * 1024;
 // El encabezado del bloque que `amp:inicializar` escribe en el punto de entrada. Es lo unico del
 // Agente Multiproposito que no viaja como archivo —se fusiona adentro del que el repo ya tenia—,
 // asi que sin esto quedaria fuera del numero controlado, y es la parte que crece cada vez que se
@@ -67,9 +69,11 @@ const CABLEADO = '## Subsistemas';
 // subsistemas pasaron de las habilidades a este momento (plan Local-0130), el bloque es el camino
 // natural para cualquier regla nueva, y sin un numero crece sin que nadie lo note.
 //
-// El tope es sobre el TOTAL —Base mas repo—, no sobre la Base sola como el de arriba: al agente le
-// llega un solo bloque y el peso que diluye es el del bloque entero, venga de donde venga cada regla.
-// Por eso el aviso informa las dos partes por separado: para que se vea a quien le toca bajarlo.
+// El tope es sobre la BASE sola, igual que el de arriba (Decision Local-0067): esta Herramienta no
+// viaja, asi que el aviso solo lo ve quien publica, y lo unico que quien publica decide son las reglas
+// de la Base. Las del repo se informan como dato, sin veredicto: un repo que necesita sus reglas no
+// tiene que recibir un aviso cada vez que suma una. Lo decidio el usuario el 17/11/2026; el 16/11 se
+// habia fijado sobre el total, con el argumento de que al agente le llega un solo bloque.
 //
 // De donde sale el numero: se fijo el 16/11/2026, con el bloque en 2,0 KB (Base 2,0 · repo 0,0)
 // recien migradas las reglas de las habilidades —siete reglas, ~0,3 KB cada una—, dejando 3 KB de
@@ -173,11 +177,12 @@ function reglasDeCadaTurno(raiz) {
 // El aviso de `cada turno`, armado para leerse solo: que midio, cuanto dio, Base y repo por
 // separado, el tope, que no limita lo que el agente consulta, y que hacer. Null si no paso el tope.
 function avisoCadaTurno(m) {
-  if (!m || m.total <= TOPE_CADA_TURNO) return null;
-  return `El texto que se entrega en cada turno (las reglas «Inyectar» del momento «cada turno») mide ` +
-    `${kbc(m.total)} KB y el tope es ${kbc(TOPE_CADA_TURNO)} KB (Base ${kbc(m.base)} KB · repo ${kbc(m.repo)} KB). ` +
+  if (!m || m.base <= TOPE_CADA_TURNO) return null;
+  return `El texto que el Agente Multipropósito entrega en cada turno (sus reglas «Inyectar» del momento «cada turno») mide ` +
+    `${kbc(m.base)} KB y el tope es ${kbc(TOPE_CADA_TURNO)} KB (Base ${kbc(m.base)} KB · repo ${kbc(m.repo)} KB; ` +
+    `lo del repo se informa y no cuenta para el tope). ` +
     `No limita lo que el agente consulta: solo lo que recibe sin pedirlo. Para bajarlo, pasar a un ` +
-    `momento más específico la regla que se pueda detectar sin juicio, o acortar su texto.`;
+    `momento más específico la regla de la Base que se pueda detectar sin juicio, o acortar su texto.`;
 }
 
 const bases = basesDeInstalacion(repo);
@@ -219,7 +224,8 @@ if (modoHook) {
   // el margen comiendose—, y como aviso entero, en su propia linea, cuando lo pasa.
   const aviso = avisoCadaTurno(turno);
   const lineaTurno = !turno ? '  ·  cada turno: no se encontró el registro de reglas de conducta'
-    : aviso ? '' : `  ·  cada turno ${kb(turno.total)} KB de ${kb(TOPE_CADA_TURNO)}`;
+    : aviso ? '' : `  ·  cada turno ${kb(turno.base)} KB de ${kb(TOPE_CADA_TURNO)}` +
+                   (turno.repo ? ` (+ repo ${kb(turno.repo)} KB)` : '');
   process.stdout.write(JSON.stringify({ systemMessage: linea + lineaTurno + (aviso ? '\n⚠ ' + aviso : '') }));
   process.exit(0);
 }
@@ -266,5 +272,5 @@ if (!turno) {
     console.log(`    ${kb(r.bytes).padStart(6)} KB    ${r.codigo}${r.deBase ? '' : '  (repo)'}`);
   const aviso = avisoCadaTurno(turno);
   console.log(aviso ? `\nCADA TURNO PASA EL TOPE. ${aviso}`
-                    : `\nCADA TURNO DENTRO DEL TOPE por ${kb(TOPE_CADA_TURNO - turno.total)} KB.`);
+                    : `\nCADA TURNO DENTRO DEL TOPE por ${kb(TOPE_CADA_TURNO - turno.base)} KB (el tope mide solo la Base).`);
 }

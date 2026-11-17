@@ -280,6 +280,25 @@ console.log('\n== CADA TURNO: PASAR EL TOPE AVISA CON UN TEXTO QUE SE EXPLICA SO
   chequear('  …y qué hacer', /momento más específico/.test(msg) && /acortar/.test(msg));
 }
 
+console.log('\n== CADA TURNO: LAS REGLAS DEL REPO NO ENCIENDEN EL TOPE ==');
+{
+  // El tope mide solo la Base. Si volviera a medir el total, un repo que suma reglas propias vería el
+  // aviso por algo que quien publica no decide: este caso da rojo.
+  const sonda = armar('turno-sonda-repo', { 'AGENTS.md': '# E\n', '.claude/conducta/INDICE.md': indiceReglas('agente-multiproposito', []) });
+  const tope = (turnoDe(correr(sonda).texto) || {}).tope;
+  if (!(tope > 0)) chequear('no se pudo leer el tope de cada turno', false);
+  const repo = armar('turno-repo-pesado', {
+    'AGENTS.md': '# Entrada\n',
+    '.claude/conducta/INDICE.md': indiceReglas('agente-multiproposito', [
+      { cod: 'Base-0001', mom: 'cada turno', cla: 'Inyectar', con: 'b'.repeat(1024) }]),
+    '.claude/conducta/INDICE-LOCAL.md': indiceReglas('agente-desplegado', [
+      { cod: 'Local-0001', mom: 'cada turno', cla: 'Inyectar', con: 'r'.repeat(Math.ceil(tope * 2) * 1024) }]),
+  });
+  const { texto } = correr(repo);
+  chequear('un repo con reglas propias que pasan el tope no recibe aviso', !/CADA TURNO PASA EL TOPE/.test(texto));
+  chequear('  …y en el arranque las informa como dato', /\(\+ repo [\d.]+ KB\)/.test(correrHook(repo)) && !/⚠ El texto/.test(correrHook(repo)));
+}
+
 console.log('\n== CADA TURNO: SIN REGISTRO DE REGLAS LO DICE ==');
 {
   const repo = armar('turno-sin-registro', { 'AGENTS.md': '# Entrada\n' });
