@@ -99,7 +99,16 @@ escribirRegistro('decisiones/INDICE.md',
   + 'columnas: [Código, Nombre, Descripción, Fecha, Estado, Detalle]\ndescripcion: qué se decidió y por qué\n---\n\n'
   + '# Decisiones del proyecto\n\n| Código | Nombre | Descripción | Fecha | Estado | Detalle |\n|---|---|---|---|---|---|\n'
   + '| Local-0011 | Los planes guardan su prioridad en el registro | Cada plan guarda la prioridad que se le asignó, en una columna del registro de planes. | 2026-01-01 | vigente | — |\n'
-  + '| Local-0012 | Los lints corren solos al terminar una tarea | Los lints de subsistema corren solos al cerrar cada tarea, sin que nadie los invoque. | 2026-01-02 | vigente | — |\n');
+  + '| Local-0012 | Los lints corren solos al terminar una tarea | Los lints de subsistema corren solos al cerrar cada tarea, sin que nadie los invoque. | 2026-01-02 | vigente | — |\n'
+  // Corte relativo (plan Local-0133). Las cuatro primeras tienen `goteras`, `techo` y `tejas` en el
+  // Nombre y puntúan igual: con el tope de 3 viejo, una quedaba afuera. La quinta tiene `techo` y
+  // `tejas` pero no `goteras`: pasa el umbral (unos 11,4 contra 10,3) y queda por debajo del 70 % de las
+  // otras (unos 17,8), que es justo lo que el corte relativo tiene que dejar afuera.
+  + '| Local-0013 | Las goteras del techo se tapan cambiando las tejas | Dato de prueba. | 2026-01-03 | vigente | — |\n'
+  + '| Local-0014 | Las tejas rotas por goteras del techo se guardan de repuesto | Dato de prueba. | 2026-01-03 | vigente | — |\n'
+  + '| Local-0015 | El techo de tejas se revisa por goteras después de cada granizo | Dato de prueba. | 2026-01-03 | vigente | — |\n'
+  + '| Local-0016 | Las tejas nuevas para las goteras del techo se compran en el corralón | Dato de prueba. | 2026-01-03 | vigente | — |\n'
+  + '| Local-0017 | La canaleta del techo junta las hojas que caen de las tejas | Dato de prueba. | 2026-01-03 | vigente | 0017-canaleta.md |\n');
 // El registro de planes también se fabrica, y por el mismo motivo que los otros tres: es Aprendizaje
 // de cada repo, así que esperar filas de acá sería el escenario prestado que prohíbe la Decisión
 // `Local-0072`. Entró al alcance del contraste por la vía de las CITAS —un documento que dice «el plan
@@ -150,6 +159,12 @@ fs.mkdirSync(path.join(dirConocimiento, 'recetas', 'conservas'), { recursive: tr
 fs.writeFileSync(path.join(dirConocimiento, 'recetas', 'INDICE.md'),
   '# Recetas\n\n- [Dulce de membrillo en olla de cobre](membrillo.md) — dato de prueba: el cobre no se lava con lavandina.\n'
   + '- Las conservas tienen su propio índice: [conservas/INDICE.md](conservas/INDICE.md)\n', 'utf8');
+// Tercera forma: una tabla sin columna `Nombre` (fecha, tipo, evento), con archivos que llevan paréntesis
+// en el nombre. La fila tiene que llegar con el comienzo de su texto como nombre y la ruta entera.
+fs.mkdirSync(path.join(dirConocimiento, 'mantenimiento'), { recursive: true });
+fs.writeFileSync(path.join(dirConocimiento, 'mantenimiento', 'INDICE.md'),
+  '# Mantenimiento\n\n| Fecha | Tipo | Evento | Archivo |\n|---|---|---|---|\n'
+  + '| 2026-10-21 | falla | La bomba de agua del tanque pierde por el sello | [ficha](2026-10-21 - Bomba que pierde (a revisar).md) |\n', 'utf8');
 fs.writeFileSync(path.join(dirConocimiento, 'recetas', 'conservas', 'INDICE.md'),
   '# Conservas\n\n- [Escabeche de pimientos al vinagre de manzana](escabeche.md) — dato de prueba: se esteriliza el frasco hirviéndolo.\n', 'utf8');
 
@@ -374,10 +389,22 @@ const bloqueDelContraste = (ctx) => {
   chequear('«…la llamaría capa de instalación» trae la relación vetada `capa de instalación`=fase (Local-0022)',
     c.includes(H) && c.includes('Local-0022'), c.includes('Local-0022') ? 'presente' : 'ausente');
   chequear('  …nombrada como relación vetada (Terminología Farlopa)', c.includes('Terminología Farlopa'));
-  // Tope duro: nunca más de tres filas, aunque peguen muchas. Se cuentan los renglones de candidato,
-  // que empiezan con «- » dentro del bloque del contraste.
-  const candidatas = (bloqueDelContraste(c).match(/^- /gm) || []).length;
-  chequear('  …y respeta el tope duro de 3 filas', candidatas > 0 && candidatas <= 3, `${candidatas} filas`);
+  // La fila llega liviana: tipo, código y Nombre, sin la Descripción (plan Local-0133).
+  chequear('  …liviana: sin su Descripción', !c.includes('la carpeta que viaja adentro del plugin'),
+    c.includes('la carpeta que viaja adentro del plugin') ? 'trajo la Descripción' : 'sin Descripción');
+}
+
+// Sin tope fijo, con corte relativo (plan Local-0133). Se cuentan los renglones de candidato, que
+// empiezan con «- » dentro del bloque del contraste.
+{
+  const c = contrasteDe('hay goteras en el techo y se rompieron las tejas');
+  const llegan = ['Local-0013', 'Local-0014', 'Local-0015', 'Local-0016'].filter(cod => c.includes(cod));
+  chequear('cuatro filas que puntúan igual llegan las cuatro: no hay tope de 3', llegan.length === 4,
+    `${llegan.length} de 4`);
+  chequear('  …y la que pasa el umbral pero queda bajo el 70 % de la mejor no llega', !c.includes('Local-0017'),
+    c.includes('Local-0017') ? 'la trajo' : 'cortada');
+  const citada = contrasteDe(`mirá la ${'Decisión'} Local-0017`);
+  chequear('  …citada sí llega, con su página de detalle', citada.includes('Local-0017') && citada.includes('Detalle: 0017-canaleta.md'));
 }
 
 // Precisión primero: la mayoría de los turnos NO inyecta nada. Un saludo y una consulta fáctica que solo
@@ -487,8 +514,7 @@ console.log('\n== memoria de sesión: la misma fila no se repite dentro de la ve
   chequear('  …y la segunda, en la misma sesión, ya no la repite', !dos.includes('Local-0041'),
     dos.includes('Local-0041') ? 'la repitió' : 'callada');
 }
-// Callar libera presupuesto: con el tope lleno de repeticiones, la cuarta fila nunca entraba. Al
-// callar las tres primeras, el turno siguiente trae las que quedaban afuera.
+// El mismo mensaje repetido en la sesión no vuelve a traer lo que ya entregó.
 {
   const S = 'banco-memoria-2';
   const msg = 'a la carpeta que viaja adentro del plugin la llamaría capa de instalación';
@@ -530,6 +556,14 @@ console.log('\n== planes vivos y páginas de conocimiento también entran por pu
   chequear('  …con la página a abrir como detalle', c.includes('Detalle: conocimiento/herramientas-del-galpon/amoladora.md'));
 }
 {
+  const c = contrasteDe('otra falla: la bomba de agua del tanque pierde por el sello');
+  chequear('una fila de una tabla sin columna Nombre llega con el comienzo de su texto como nombre',
+    /- página de conocimiento \(falla · La bomba de agua del tanque/.test(c),
+    (/- página de conocimiento \([^)]*/.exec(c) || ['ausente'])[0]);
+  chequear('  …y una ruta con paréntesis llega entera',
+    c.includes('Detalle: conocimiento/mantenimiento/2026-10-21 - Bomba que pierde (a revisar).md'));
+}
+{
   const c = contrasteDe('voy a hacer dulce de membrillo en la olla de cobre');
   chequear('un renglón de un Índice de carpeta en lista también llega',
     c.includes('Dulce de membrillo') && c.includes('conocimiento/recetas/membrillo.md'));
@@ -541,10 +575,11 @@ console.log('\n== planes vivos y páginas de conocimiento también entran por pu
   const c = contrasteDe('quiero que los planes guarden la prioridad; además hay que cambiar la cerradura del galpón '
     + 'antes del invierno, y la amoladora angular se frena con el disco grueso');
   const filasDelBloque = (bloqueDelContraste(c).match(/^- /gm) || []).length;
-  chequear('el tope se reparte: un turno que toca los tres corpus trae uno de cada uno',
+  chequear('un turno que toca los tres corpus trae lo mejor de cada uno',
     c.includes('Local-0011') && /- plan Local-0042 /.test(c) && c.includes('página de conocimiento'),
     `${filasDelBloque} filas`);
-  chequear('  …sin pasar el tope de 3', filasDelBloque === 3, `${filasDelBloque} filas`);
+  chequear('  …y el plan llega sin el enlace a su archivo (el código alcanza)',
+    /- plan Local-0042 \(Cambiar la cerradura del galpón\)\.$/m.test(c));
 }
 
 console.log('\n== corpus chico: el umbral sube cuando hay pocas filas (plan Local-0131) ==');

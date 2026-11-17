@@ -88,7 +88,7 @@ Las reglas `Inyectar` del momento `cada turno` llegan juntas, en un solo bloque,
 
 El costo es que **cada regla de ese momento se paga en todos los turnos**, y un bloque pesado diluye a las demás reglas que van en él. Por eso el peso del bloque se mide y tiene un tope:
 
-- **Qué se mide.** El texto de las reglas `Inyectar` vigentes de `cada turno`, de los dos Índices, como las emite el repartidor; la parte del Agente Multipropósito y la del repo, por separado. El tope es sobre las dos juntas, porque al agente le llega un solo bloque.
+- **Qué se mide.** El texto de las reglas `Inyectar` vigentes de `cada turno`, de los dos Índices, como las emite el repartidor; la parte del Agente Multipropósito y la del repo, por separado. El tope es sobre la parte del Agente Multipropósito: es la única que decide quien publica. La del repo se informa como dato, sin aviso.
 - **Qué queda afuera.** Todo lo que el agente consulta cuando lo necesita —preferencias, Índices, páginas— y lo que el repartidor suma a veces sin ser una regla fija: el contraste con los registros y los avisos del Buzón. El tope no limita lo que el agente puede obtener: solo lo que recibe sin pedirlo.
 - **Quién lo mide.** La Herramienta `medir-contexto` del repo que publica el Agente Multipropósito, que es donde se decide qué reglas trae la Base. No viaja a los Agentes Desplegados. El número del tope y de dónde salió están escritos **solo** en su código (la constante `TOPE_CADA_TURNO`); este README no lo copia, para que no queden dos números que diverjan.
 - **Qué pasa al pasarlo.** Nada se bloquea. Aparece un aviso al arrancar la sesión que dice qué midió, cuánto dio, cuánto es de la Base y cuánto del repo, el tope y qué hacer.

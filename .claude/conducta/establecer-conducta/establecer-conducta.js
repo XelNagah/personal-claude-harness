@@ -272,11 +272,21 @@ function filasDeContraste(registros) {
 }
 
 // Precision primero (acordado con el usuario, ver el plan): puntaje idf con el `Nombre` pesado mas
-// que la `Descripcion`, umbral alto y tope duro bajo. Una palabra que aparece en el Nombre de muchas
-// filas pesa poco (idf baja); una discriminante (`prioridad`, `capa`) pesa mucho. La mayoria de los
-// turnos no supera el umbral y no inyecta nada. El umbral se calibra con el banco `pruebas.js`, que
-// es gratis porque esto es determinista: no hace falta una sesion real para medir que fila elige.
-const PESO_NOMBRE = 3, PESO_DESCRIPCION = 1, UMBRAL = 7.0, TOPE = 3;
+// que la `Descripcion` y umbral alto. Una palabra que aparece en el Nombre de muchas filas pesa poco
+// (idf baja); una discriminante (`prioridad`, `capa`) pesa mucho. La mayoria de los turnos no supera
+// el umbral y no inyecta nada. El umbral se calibra con el banco `pruebas.js`, que es gratis porque
+// esto es determinista: no hace falta una sesion real para medir que fila elige.
+//
+// SIN TOPE FIJO DE FILAS (plan Local-0133). Hasta ahi entraban las 3 mejores: si un pedido necesitaba
+// cuatro filas, la cuarta no llegaba. Sacar el tope a secas no sirve: el puntaje SUMA palabra por
+// palabra, y un mensaje largo junta coincidencias casuales con casi cualquier fila —medido en el repo
+// que publica el Agente Multiproposito, un mensaje trajo 124 filas, la mayoria sin relacion—. El corte
+// es RELATIVO: de cada corpus entra toda fila con al menos CORTE_RELATIVO del puntaje de la mejor. Lo
+// que compite con lo mas relevante llega entero; lo que puntua muy por debajo es coincidencia. Medido
+// sobre mensajes reales de cuatro repos: maximo 14 filas por turno en el grande, entre 5 y 8 en los chicos.
+// Y como cada fila llega sin su Descripcion (el agente abre las que necesite), el aviso pesa menos que
+// con el tope de 3.
+const PESO_NOMBRE = 3, PESO_DESCRIPCION = 1, UMBRAL = 7.0, CORTE_RELATIVO = 0.7;
 
 // -- el umbral se ajusta a la cantidad de filas del corpus (plan Local-0131) ------------------------
 // El 7,0 se calibro sobre un corpus de 166 filas. En uno chico el idf deja de discriminar: una palabra
@@ -335,16 +345,22 @@ function planesVivos(todas) {
 // no abre si nada se las nombra. No tienen forma fija: hay tablas `Nombre | Descripcion | Detalle`,
 // tablas con otras columnas y listas con un enlace por renglon. Se lee lo comun a todas: cada fila de
 // una tabla y cada renglon de lista que enlaza a algo. El peso del Nombre se gana con una columna que
-// se llame `Nombre` o con el texto del enlace del renglon: una tabla con otras columnas (fecha, comida,
-// plato) muestra su primera celda con texto como nombre, pero puntua la fila entera como descripcion,
-// porque esa celda es un dato corriente y no el tema de la pagina.
+// se llame `Nombre` o con el texto del enlace del renglon: una tabla con otras columnas (fecha, tipo,
+// evento) puntua la fila entera como descripcion, sin peso de nombre, porque su primera celda con texto
+// es un dato corriente y no el tema de la pagina. Como nombre muestra el comienzo de la fila
+// («falla · La bomba de agua pierde por el sello…»), no esa celda sola: la fila llega sin su Descripcion, y
+// «falla» o «compra» solos no le dicen al agente de que pagina se trata.
 const TIPO_CONOCIMIENTO = 'página de conocimiento';
 const TOPE_INDICES_DE_CARPETA = 40, TOPE_BYTES_INDICE = 200 * 1024;
 const LARGO_DESCRIPCION_ENTREGADA = 300;   // una fila de tabla ancha puede pesar un parrafo entero
-const ENLACE = /\[([^\]]*)\]\(([^)]+)\)/;
+const LARGO_NOMBRE_SIN_COLUMNA = 80;       // el comienzo de la fila que hace de nombre cuando no hay `Nombre`
+// La ruta de un enlace admite un nivel de parentesis: hay repos cuyos archivos se llaman
+// «2026-10-21 - Bomba que pierde (a revisar).md», y cortar en el primer `)` entregaba una ruta que no abre.
+const ENLACE = /\[([^\]]*)\]\(((?:[^()]|\([^()]*\))+)\)/;
 const ENLACES_A_INDICE = /\]\(([^)]*INDICE[^)/\\]*\.md)\)/gi;
 const ES_INDICE = /^INDICE.*\.md$/i;
-const sinMarcas = s => String(s).replace(/!?\[([^\]]*)\]\([^)]*\)/g, '$1').replace(/\*\*|__|<[^>]+>/g, '').trim();
+const sinMarcas = s => String(s).replace(/!?\[([^\]]*)\]\((?:[^()]|\([^()]*\))*\)/g, '$1').replace(/\*\*|__|<[^>]+>/g, '').trim();
+const comienzo = (s, largo) => s.length > largo ? s.slice(0, largo).replace(/\s+\S*$/, '').replace(/[\s·,;:—-]+$/, '') + '…' : s;
 // Una celda con texto: tiene al menos una palabra de tres letras (no una fecha, un numero ni un tilde).
 // Se mira el texto crudo, sin normalizar: corre sobre cada celda de cada tabla y normalizar cuesta.
 const tieneTexto = s => /\p{L}{3}/u.test(String(s));
@@ -438,7 +454,9 @@ function filasDeConocimiento() {
       const i = iNom >= 0 ? iNom : celdas.findIndex(tieneTexto);
       if (i < 0) continue;
       const resto = celdas.filter((c, j) => j !== i && tieneTexto(c)).join(' · ');
-      sumar(celdas[i], iNom >= 0 ? resto : celdas[i] + ' · ' + resto, celdas.join(' '), iNom < 0);
+      if (iNom >= 0) { sumar(celdas[i], resto, celdas.join(' '), false); continue; }
+      const fila = sinMarcas(celdas[i] + ' · ' + resto);
+      sumar(comienzo(fila, LARGO_NOMBRE_SIN_COLUMNA), fila, celdas.join(' '), true);
     }
   }
   return filas;
@@ -454,22 +472,21 @@ const MINIMO_DE_PALABRAS_EN_ORACIONES = 2;
 // A igual puntaje decide el codigo; las filas de conocimiento no tienen, y desempatan por nombre.
 const desempate = (a, b) => (a.codigo || a.nombre).localeCompare(b.codigo || b.nombre);
 
-// -- reparto del tope entre los corpus ------------------------------------
-// Cada corpus tiene su umbral, asi que los puntajes no se comparan crudos: se comparan en VECES SU
-// UMBRAL. Primero entra lo mejor de cada corpus que tenga algo, y recien despues el resto, todo por
-// veces su umbral. Asi un turno que toca una Decision y un plan trae los dos en vez de tres variantes
-// de lo mismo; y cuando solo pega un corpus, se comporta como antes: hasta tres filas de ese.
-function repartir(listas, cupo) {
-  if (cupo <= 0) return [];
+// -- corte relativo y orden entre los corpus ------------------------------
+// De cada corpus quedan las filas con al menos CORTE_RELATIVO del puntaje de su mejor fila. El corte
+// se toma dentro de cada corpus, nunca entre corpus: cada uno tiene su umbral, y un plan fuerte no
+// tiene que dejar afuera a la Decision mas fuerte del turno. Para ordenar la salida los puntajes se
+// comparan en VECES SU UMBRAL: primero lo mejor de cada corpus que tenga algo, despues el resto.
+function juntar(listas) {
   const porVeces = (a, b) => b.veces - a.veces || desempate(a.fila, b.fila);
-  const primeras = listas.filter(l => l.length).map(l => l[0]).sort(porVeces);
-  const resto = listas.flatMap(l => l.slice(1)).sort(porVeces);
-  return primeras.concat(resto).slice(0, cupo).map(c => c.fila);
+  const cortadas = listas.map(l => l.filter(x => x.puntaje >= CORTE_RELATIVO * l[0].puntaje));
+  const primeras = cortadas.filter(l => l.length).map(l => l[0]).sort(porVeces);
+  const resto = cortadas.flatMap(l => l.slice(1)).sort(porVeces);
+  return primeras.concat(resto).map(c => c.fila);
 }
 
 // Devuelve las filas del corpus que superan SU umbral, con cuantas veces lo superan, ordenadas. Sin
-// topear: el tope se aplica una sola vez al final, ya mezclado con las citas y ya filtrado por la
-// memoria. El idf se calcula SOLO sobre las filas del corpus que se le pasa: mezclar corpus le
+// cortar: el corte relativo lo aplica `juntar`, despues de filtrar por la memoria. El idf se calcula SOLO sobre las filas del corpus que se le pasa: mezclar corpus le
 // correria el peso a cada palabra —los planes, con sus nombres largos, le bajarian el peso a las
 // palabras del glosario— y descalibraria el umbral de cada uno.
 function porPuntaje(prompt, filas, minimoDePalabras = 1) {
@@ -675,8 +692,8 @@ function contrastar(data) {
     yaEsta.add(clave); candidatos.push(f);
   };
   const ordenar = mapa => [...mapa.values()].sort((a, b) => b.veces - a.veces || a.orden - b.orden);
-  // MEMORIA: una fila entregada se calla dentro de la ventana. Se aplica ANTES del tope, que es lo que
-  // hace que las 3 del turno sean 3 NUEVAS.
+  // MEMORIA: una fila entregada se calla dentro de la ventana. Se aplica ANTES del corte relativo, asi
+  // que la mejor de un corpus es la mejor de las que el agente todavia no recibio.
   const libre = f => {
     const t = memoria.entregadas.get(f.clave);
     return t === undefined || (memoria.turno - t) >= VENTANA_MEMORIA;
@@ -686,12 +703,13 @@ function contrastar(data) {
   //    material que apunta. Son exactas: no hay formula, ni umbral, ni nada que calibrar.
   for (const c of ordenar(citasDe(prompt))) sumar(c.clave);
   for (const abs of archivosApuntados(prompt)) for (const c of ordenar(citasDe(leerApuntado(abs)))) sumar(c.clave);
-  const nuevas = candidatos.filter(libre).slice(0, TOPE);
+  //    Entran todas: el texto nombro esas Entradas, y como cada fila llega sin su Descripcion, un
+  //    handoff que cita veinte pesa unos 3 KB.
+  const nuevas = candidatos.filter(libre);
 
-  // 2. PUNTAJE sobre el mensaje, donde esta calibrado, con los tres corpus por separado. Va DETRAS de
-  //    las citas: si las citas llenan el tope es porque el texto nombro esas Entradas, y eso no hay
-  //    que adivinarlo. Lo que queda del tope se reparte entre los corpus (ver `repartir`).
-  if (hayPalabras && nuevas.length < TOPE) {
+  // 2. PUNTAJE sobre el mensaje, donde esta calibrado, con los tres corpus por separado y el corte
+  //    relativo dentro de cada uno (ver `juntar`). Va DETRAS de las citas, que son exactas.
+  if (hayPalabras) {
     const alcance = new Set(REGISTROS_PUNTAJE.map(r => r.dir + '/' + r.archivo));
     const corpus = [
       { filas: filas.filter(f => alcance.has(f.registro)), minimo: 1 },
@@ -699,22 +717,25 @@ function contrastar(data) {
       { filas: conocimiento, minimo: MINIMO_DE_PALABRAS_EN_ORACIONES },
     ];
     const listas = corpus.map(c => porPuntaje(prompt, c.filas, c.minimo).filter(x => libre(x.fila) && !yaEsta.has(x.fila.clave)));
-    nuevas.push(...repartir(listas, TOPE - nuevas.length));
+    nuevas.push(...juntar(listas));
   }
 
   for (const f of nuevas) memoria.entregadas.set(f.clave, memoria.turno);
   escribirMemoria(sesion, memoria);
   if (!nuevas.length) return '';
 
+  // Cada fila llega LIVIANA: tipo, codigo y Nombre, sin la Descripcion. El agente abre las que
+  // necesite. El detalle va solo donde hace falta para encontrarla: una pagina de conocimiento no tiene
+  // codigo, y una Decision con pagina propia la nombra ahi. El de un plan no: es su archivo, cuyo nombre
+  // repite el Nombre y duplicaba el peso del renglon; con el codigo se lo encuentra en `PLANES.md`.
   const lineas = nuevas.map(fila => {
-    const det = fila.detalle && fila.detalle !== '—' ? ` Detalle: ${fila.detalle}` : '';
-    // La fila de un Indice de carpeta ya viene recortada; la de una Decision o un termino ES su
-    // contenido y va entera.
-    const des = fila.descripcion;
-    return `- ${fila.tipo}${fila.codigo ? ' ' + fila.codigo : ''} (${fila.nombre})${des ? ': ' + des : '.'}${det}`;
+    const conDetalle = fila.detalle && fila.detalle !== '—' && fila.registro !== 'planes/PLANES.md';
+    return `- ${fila.tipo}${fila.codigo ? ' ' + fila.codigo : ''} (${fila.nombre}).${conDetalle ? ' Detalle: ' + fila.detalle : ''}`;
   });
   return 'Contraste con la sabiduría del repo — lo que estás mirando toca estos registros ' +
-    '(candidatos para contrastar tu respuesta, no veredictos):\n' + lineas.join('\n');
+    '(candidatos para contrastar tu respuesta, no veredictos; abrí las que necesites: decisiones en ' +
+    '`.claude/decisiones/INDICE.md`, planes en `.claude/planes/PLANES.md`, términos en `.claude/semantica/`):\n' +
+    lineas.join('\n');
 }
 
 // -- ejecutar la Herramienta de una regla y devolver su stdout ----------
