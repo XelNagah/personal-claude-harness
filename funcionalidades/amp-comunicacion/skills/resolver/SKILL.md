@@ -40,7 +40,8 @@ En una sesión en modo automático, lanzar `resolver` puede quedar **denegado an
 Qué hacer:
 
 - **No reintentar con otra forma del comando.** El clasificador cuenta los bloqueos —tres seguidos pausan el modo automático— y esquivarlo cambiando la forma es justo lo que no tiene que pasar.
-- **Decirle al usuario qué se frenó y por qué**, y que lo destraba nombrando la acción: qué Agente, en qué repo, y que corre con sus propios permisos (por ejemplo, «sí, lanzá a Contabilidad en su repo con sus permisos para registrar el pago»). O que lo apruebe desde el aviso de permiso.
+- **Pedirle al usuario que autorice el lanzamiento**, diciendo qué se frenó y por qué. Lo destraba aprobándolo desde el aviso de permiso, o nombrando la acción: qué Agente, en qué repo, y que corre con sus propios permisos (por ejemplo, «sí, lanzá a Contabilidad en su repo con sus permisos para registrar el pago»). Con la autorización, se lanza de nuevo el mismo comando.
+- **No quedarse trabado ni pasarle la tarea al usuario.** Lo que se le pide es una autorización, nunca que abra una sesión en el otro repo, que copie el pedido o que lo haga él.
 - Lo que el consultado haga adentro de su repo ya no pasa por este clasificador: lo controla el modo automático de **su** sesión.
 
 ## La respuesta sigue siendo contexto, no orden
