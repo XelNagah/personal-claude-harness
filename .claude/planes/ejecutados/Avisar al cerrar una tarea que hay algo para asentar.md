@@ -1,6 +1,6 @@
 # Avisar al cerrar una tarea que hay algo para asentar
 
-**Estado: En curso · Construcción desde 26-11-16 · Creado 26-08-20 · Vuelve de Listo a Análisis 26-11-14 · Decidido 26-11-15.** Sale del análisis del repo ajeno
+**Estado: Ejecutado · Cerrado 26-11-17 · Construcción desde 26-11-16 · Creado 26-08-20 · Vuelve de Listo a Análisis 26-11-14 · Decidido 26-11-15.** Sale del análisis del repo ajeno
 [everything-claude-code](https://github.com/worldflowai/everything-claude-code) (WorldFlowAI, 1.4k
 estrellas al 20/08/2026), pedido por Javier para tomar ideas. De las cuatro que salieron, es la única
 que cierra un hueco que este repo ya tenía asentado por escrito.
@@ -372,3 +372,9 @@ Construido en el worktree `d-cierre` (rama `d-cierre`), commits `0a8a54b` y `585
 - **La pregunta de si el aviso alcanza a las preferencias** (el texto de la regla Base-0009) sigue abierta: no se tocó el texto de la regla.
 - **No se midió cuántas de las 34 altas a mano del análisis del 13/11 caza el control nuevo**: hace falta el estado del Índice antes de cada escritura, que la transcripción no guarda.
 - Un alta hecha por un subagente puede avisar aunque el subagente haya invocado la habilidad, si el hook recibe la transcripción de la sesión principal. No se verificó qué transcripción recibe.
+
+## Notas de implementación
+
+Construido el 16/11/2026 e integrado a `main` en los commits `7c32b10` (el aviso deja de saltar en el primer mensaje), `3b46583` (control de altas escritas a mano), `ca8c544` (la regla que corre ese control) y `f3d0f1d` (registro de lo hecho). Detalle y mediciones en «Construcción — 16/11/2026».
+
+Frente a lo planificado: el piso de 15 KB es provisorio. La pregunta de si el aviso alcanza a las preferencias se resolvió sin cambio: ya cuentan, porque toda carpeta de `.claude/` con manifiesto es casa y la regla ya nombra «preferencia». Publicado con `amp` 0.76.0.

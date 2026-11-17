@@ -1,6 +1,6 @@
 # Que el agente consulte al otro repo por su cuenta en vez de pedirle al usuario que copie un texto a otra sesión
 
-**Estado: En curso · Construcción desde 26-11-16 · Creado 26-11-13 · Analizado 26-11-14 · Decidido 26-11-15.** Origen: plan Local-0129 (plan maestro), arreglo 4 del análisis de un mes de conversaciones. Informe: `D:\Proyectos\analisis\como-uso-claude\.claude\conocimiento\analisis-2026-11\agentes-que-no-usan-lo-guardado.md`.
+**Estado: Ejecutado · Cerrado 26-11-17 · Construcción desde 26-11-16 · Creado 26-11-13 · Analizado 26-11-14 · Decidido 26-11-15.** Origen: plan Local-0129 (plan maestro), arreglo 4 del análisis de un mes de conversaciones. Informe: `D:\Proyectos\analisis\como-uso-claude\.claude\conocimiento\analisis-2026-11\agentes-que-no-usan-lo-guardado.md`.
 
 ## El problema
 
@@ -72,3 +72,7 @@ Construido en la rama `c-repo` (grupo C del plan Local-0129), después del plan 
 - **#9 — fuera de este plan**, como se decidió.
 - **#10 (corregir `preguntar`) — hecho.** Ya no dice que `resolver` «la elige el usuario tipeándola»: dice que se usa cuando el usuario pidió que el otro repo quede modificado.
 - **Medir con la Herramienta Local-0012** — preparado, no medido: el banco suma `preguntar-03`, la consulta del caso del 13/11 vista del lado del usuario que se ofrece de intermediario. Esa Herramienta mide lo instalado, así que hay que publicar `amp-comunicacion` con versión nueva antes de correrla (`--id=preguntar-03`).
+
+## Notas de implementación
+
+Construido el 16/11/2026 e integrado a `main` en el commit `73712b3`; la regla de conducta que lo entrega en cada turno, en `b195a05`. Detalle en «Construcción — 16/11/2026». Publicado con `amp-comunicacion` 0.4.0 y `amp` 0.76.0.

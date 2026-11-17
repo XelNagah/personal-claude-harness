@@ -1,6 +1,6 @@
 # Que las reglas que hoy viven dentro de las habilidades se entreguen en cada turno, con un aviso cuando ese texto pese de más
 
-**Estado: En curso · Construcción desde 26-11-16 · Creado 26-11-13 · Analizado 26-11-14.** Origen: plan Local-0129 (plan maestro), arreglo 1 del análisis de un mes de conversaciones —el de mayor impacto—. Informe: `D:\Proyectos\analisis\como-uso-claude\.claude\conocimiento\analisis-2026-11\agentes-que-no-usan-lo-guardado.md`.
+**Estado: Ejecutado · Cerrado 26-11-17 · Construcción desde 26-11-16 · Creado 26-11-13 · Analizado 26-11-14.** Origen: plan Local-0129 (plan maestro), arreglo 1 del análisis de un mes de conversaciones —el de mayor impacto—. Informe: `D:\Proyectos\analisis\como-uso-claude\.claude\conocimiento\analisis-2026-11\agentes-que-no-usan-lo-guardado.md`.
 
 ## El problema
 
@@ -116,3 +116,9 @@ node .claude/herramientas/medir-contexto/medir-contexto.js --hook   # la línea 
 node .claude/herramientas/medir-contexto/pruebas.js
 echo '{"hook_event_name":"UserPromptSubmit","prompt":"hola"}' | node .claude/conducta/establecer-conducta/establecer-conducta.js
 ```
+
+## Notas de implementación
+
+Construido el 16/11/2026 e integrado a `main` en los commits `8b89539` (dos reglas que vivían en habilidades pasan a conducta), `3ff357a` (`medir-contexto` mide el texto de cada turno) y `6c8a8c0` (su ficha). Detalle en «Construcción — 16/11/2026».
+
+Frente a lo planificado: el tope de 5 KB para el texto de cada turno mide solo lo que aporta la Base, no lo que suma cada repo. Publicado con `amp` 0.76.0.

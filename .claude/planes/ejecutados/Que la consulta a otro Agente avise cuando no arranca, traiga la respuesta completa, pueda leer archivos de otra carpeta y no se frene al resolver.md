@@ -1,6 +1,6 @@
 # Que la consulta a otro Agente avise cuando no arranca, traiga la respuesta completa, pueda leer archivos de otra carpeta y no se frene al resolver
 
-**Estado: En curso · Construcción desde 26-11-16 · Creado 26-08-12 · Analizado 26-09-10 · Reanalizado 26-11-14 · Decidido y renombrado 26-11-15.** Origen: reportado por el usuario el 12/08/2026 desde otra PC.
+**Estado: Ejecutado · Cerrado 26-11-17 · Construcción desde 26-11-16 · Creado 26-08-12 · Analizado 26-09-10 · Reanalizado 26-11-14 · Decidido y renombrado 26-11-15.** Origen: reportado por el usuario el 12/08/2026 desde otra PC.
 
 > **CAMBIO DE RUMBO — 11/09/2026, decidido por el usuario. Este plan dejó de ser sobre
 > credenciales.**
@@ -201,3 +201,9 @@ Construido en la rama `c-repo` (grupo C del plan Local-0129). Lo que dice cada r
 Pruebas: el banco de `lint-comunicacion` suma casos de funciones puras (turno completo, falla de la API, corrida cortada, eventos de codex, `--leer`, la marca, el citado) y corre el mecanismo entero contra un `claude` doble que va primero en el PATH (sin lanzar ningún agente). Además una corrida real con un modelo económico sobre una carpeta de prueba: `--leer` de un archivo lo leyó y el vecino se denegó; con clave inválida salió la falla.
 
 No se hizo: los otros dos lanzadores (`actualizar-plugins.js`, `probar-disparo-de-skills.js`) siguen sin distinguir la falla de arranque — el CAMBIO DE RUMBO del 11/09 dejó el plan sobre la consulta.
+
+## Notas de implementación
+
+Construido el 16/11/2026 en una copia de trabajo propia e integrado a `main` en el commit `6e36989`; la regla de conducta y la página de conocimiento de la credencial, en `b195a05`. El detalle de lo hecho y lo medido está en la sección «Construcción — 16/11/2026».
+
+Frente a lo planificado: `resolver` frenado por el modo automático no se destraba solo; se dejó documentado que pide autorización, como recomendaba el análisis. Publicado con `amp-comunicacion` 0.4.0 y `amp` 0.76.0.

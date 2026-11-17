@@ -1,6 +1,6 @@
 # Los agentes saltean lo guardado cuando nada los lleva a consultarlo en el momento de actuar
 
-**Estado: Nuevo · Creado 26-11-13.** Plan maestro. Origen: el usuario planteó el 13/11/2026 que los agentes guardan cosas en los registros pero después no las leen, no usan las habilidades y le preguntan lo que ya tendrían que saber. El análisis lo hizo el Agente Desplegado *Cómo uso Claude Code* (`D:\Proyectos\analisis\como-uso-claude`) sobre un mes de conversaciones de todos los repos.
+**Estado: Nuevo · Creado 26-11-13 · Hijos cerrados 26-11-17.** Plan maestro. Origen: el usuario planteó el 13/11/2026 que los agentes guardan cosas en los registros pero después no las leen, no usan las habilidades y le preguntan lo que ya tendrían que saber. El análisis lo hizo el Agente Desplegado *Cómo uso Claude Code* (`D:\Proyectos\analisis\como-uso-claude`) sobre un mes de conversaciones de todos los repos.
 
 **Este plan no tiene trabajo propio.** Lleva el orden, qué va en paralelo y el estado de cada plan hijo. Cada hijo se analiza, se ejecuta y se cierra por su cuenta; al cerrar uno, se actualiza la tabla de abajo. Este plan se cierra cuando cierran todos sus hijos y se repitió la medición (último paso).
 
@@ -22,11 +22,12 @@ Informe completo: `D:\Proyectos\analisis\como-uso-claude\.claude\conocimiento\an
 
 | Orden | Plan | Arreglo del informe | Grupo | Estado |
 |---|---|---|---|---|
-| 1 | plan Local-0130 (Que las reglas que hoy viven dentro de las habilidades se entreguen en cada turno, con un aviso cuando ese texto pese de más) | 1 | A | En curso |
-| 2 | plan Local-0131 (Que el Contraste automático traiga también los planes vivos y las páginas de conocimiento que tocan el pedido, sin repetirse en los repos chicos) | 2 | B | En curso |
-| 3 | plan Local-0111 (Avisar al cerrar una tarea que hay algo para asentar) | 3 y 6 | D | En curso |
-| 4 | plan Local-0132 (Que el agente consulte al otro repo por su cuenta en vez de pedirle al usuario que copie un texto a otra sesión) | 4 | C | En curso |
-| 5 | plan Local-0107 (Que la consulta a otro Agente avise cuando no arranca, traiga la respuesta completa, pueda leer archivos de otra carpeta y no se frene al resolver) | 5 | C | En curso |
+| 1 | plan Local-0130 (Que las reglas que hoy viven dentro de las habilidades se entreguen en cada turno, con un aviso cuando ese texto pese de más) | 1 | A | Ejecutado 17/11/2026 |
+| 2 | plan Local-0131 (Que el Contraste automático traiga también los planes vivos y las páginas de conocimiento que tocan el pedido, sin repetirse en los repos chicos) | 2 | B | Ejecutado 17/11/2026 |
+| 3 | plan Local-0111 (Avisar al cerrar una tarea que hay algo para asentar) | 3 y 6 | D | Ejecutado 17/11/2026 |
+| 4 | plan Local-0132 (Que el agente consulte al otro repo por su cuenta en vez de pedirle al usuario que copie un texto a otra sesión) | 4 | C | Ejecutado 17/11/2026 |
+| 5 | plan Local-0107 (Que la consulta a otro Agente avise cuando no arranca, traiga la respuesta completa, pueda leer archivos de otra carpeta y no se frene al resolver) | 5 | C | Ejecutado 17/11/2026 |
+| 6 | plan Local-0133 (Que el Contraste automático traiga todas las filas que pasan el umbral, con su código y su nombre, en vez de tres) | 2, segunda vuelta | B | Ejecutado 17/11/2026 |
 
 Fuera de este plan, a propósito:
 - Arreglo 7 (depurar registros viejos o contradictorios): difuso; lo rozan el plan Local-0124 y el plan Local-0006.
@@ -48,6 +49,15 @@ Fuera de este plan, a propósito:
 Cuando cierren los hijos y hayan pasado al menos dos semanas de uso, pedirle al Agente *Cómo uso Claude Code* (habilidad `preguntar` o `resolver`) que repita el mismo análisis con su Herramienta `condensar-sesiones` y compare las tasas. Sin esta medición no se sabe si los arreglos sirvieron.
 
 ## Estado
+
+**17/11/2026 — construcción terminada; falta solo la medición de dos semanas.**
+
+- Los seis hijos están cerrados como `Ejecutado`, incluido el plan Local-0133, que nació el 17/11 para sacar el tope de tres filas del aviso de lo ya guardado.
+- Asentadas la Decisión Local-0082, la Decisión Local-0083 y la definición del término del glosario Local-0036, con el texto aprobado por el usuario.
+- Antes de publicar se revisó, a pedido del usuario, una muestra con mensajes reales del repo de Salud (sin abrir sus páginas). Aparecieron dos fallas del aviso y se arreglaron: filas de tablas sin columna `Nombre` llegaban nombradas solo por su tipo, y rutas con paréntesis llegaban cortadas. Queda ruido de puntaje (filas que comparten palabras sueltas con el mensaje), sin tocar.
+- Publicado: `amp` 0.76.0 y `amp-comunicacion` 0.4.0. Las cuatro copias de trabajo, borradas.
+- **Sigue:** dejar pasar dos semanas de uso desde la instalación de `amp` 0.76.0 y repetir la medición (sección «Último paso»). Recién ahí se cierra este plan.
+- Lo que el Agente Multipropósito carga al arrancar pasaba su tope (36,9 KB de 35) desde antes de esta tanda. El usuario eligió subirlo a 40 KB con el criterio de siempre (lo medido más unos 3 KB de margen), porque el margen lo consumió crecimiento legítimo.
 
 **16/11/2026 — construcción lanzada.**
 

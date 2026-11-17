@@ -1,6 +1,6 @@
 # Que el Contraste automático traiga también los planes vivos y las páginas de conocimiento que tocan el pedido, sin repetirse en los repos chicos
 
-**Estado: En curso · Construcción desde 26-11-16 · Creado 26-11-13 · Analizado 26-11-14 · Decidido 26-11-15.** Origen: plan Local-0129 (plan maestro), arreglo 2 del análisis de un mes de conversaciones. Informe: `D:\Proyectos\analisis\como-uso-claude\.claude\conocimiento\analisis-2026-11\agentes-que-no-usan-lo-guardado.md`.
+**Estado: Ejecutado · Cerrado 26-11-17 · Construcción desde 26-11-16 · Creado 26-11-13 · Analizado 26-11-14 · Decidido 26-11-15.** Origen: plan Local-0129 (plan maestro), arreglo 2 del análisis de un mes de conversaciones. Informe: `D:\Proyectos\analisis\como-uso-claude\.claude\conocimiento\analisis-2026-11\agentes-que-no-usan-lo-guardado.md`.
 
 ## El problema
 
@@ -133,3 +133,13 @@ Medida con el repartidor real sobre copias de los registros, 90 disparos por rep
 - La decisión nueva que precisa la Decisión Local-0062 y la definición nueva del término Local-0036 del glosario: se redactaron y se entregaron al coordinador; los escribe él después de mostrárselos al usuario (Decisión Local-0060).
 - Los mensajes largos generados por el sistema —el resumen al continuar una sesión, las consultas de otra instalación— disparan con tres filas casi siempre: el puntaje mide largo ahí. Queda fuera de este plan; lo roza el plan Local-0128.
 - Un Índice de carpeta más hondo que solo nombra el Índice raíz no se encuentra: leer los raíz costaba un milisegundo por turno.
+
+### Medido el 17/11/2026: el resumen de continuación no pasa por el contraste
+
+La línea de «Lo que no se hizo» sobre los mensajes largos salió de una simulación que pasaba todos los mensajes por el comparador. En la realidad, el resumen que arma Claude Code al continuar una sesión **no dispara el hook**: en 52 transcripciones de la máquina con resumen (35 de ellas con el contraste activo), ninguno de los 69 resúmenes recibió un contraste antes del siguiente mensaje real del usuario. Lo que sí pasa son las preguntas de otra instalación, del lado del consultado. La pregunta de fondo que abrió el usuario —por qué un tope fijo de 3 filas y no todas las necesarias— pasa a un plan propio (handoff `.claude/tmp/handoff-contraste-sin-tope-y-cierre.md`).
+
+## Notas de implementación
+
+Construido el 16/11/2026 e integrado a `main` en el commit `1926972`; registro de lo hecho y lo medido en `2d489a7`. Detalle en «Construcción — 16/11/2026». La Decisión Local-0082 y la definición del término del glosario Local-0036 quedaron asentadas el 17/11/2026 con el texto aprobado por el usuario.
+
+Frente a lo planificado: el tope de tres filas por turno que traía este arreglo se reemplazó enseguida por el corte relativo del plan Local-0133. Publicado con `amp` 0.76.0.
