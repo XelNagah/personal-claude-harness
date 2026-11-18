@@ -56,7 +56,8 @@ Cuando cierren los hijos y hayan pasado al menos dos semanas de uso, pedirle al 
 - Asentadas la Decisión Local-0082, la Decisión Local-0083 y la definición del término del glosario Local-0036, con el texto aprobado por el usuario.
 - Antes de publicar se revisó, a pedido del usuario, una muestra con mensajes reales del repo de Salud (sin abrir sus páginas). Aparecieron dos fallas del aviso y se arreglaron: filas de tablas sin columna `Nombre` llegaban nombradas solo por su tipo, y rutas con paréntesis llegaban cortadas. Queda ruido de puntaje (filas que comparten palabras sueltas con el mensaje), sin tocar.
 - Publicado: `amp` 0.76.0 y `amp-comunicacion` 0.4.0. Las cuatro copias de trabajo, borradas.
-- **Sigue:** dejar pasar dos semanas de uso desde la instalación de `amp` 0.76.0 y repetir la medición (sección «Último paso»). Recién ahí se cierra este plan.
+- **Instalado el 18/11/2026 en los 17 repos de la máquina**, con las dos fases verificadas: plugins en 0.76.0 y los programas de la Base del `.claude/` de cada repo iguales a los publicados.
+- **Sigue:** repetir la medición desde el 02/12/2026, dos semanas después de la instalación (sección «Último paso»). Recién ahí se cierra este plan.
 - Lo que el Agente Multipropósito carga al arrancar pasaba su tope (36,9 KB de 35) desde antes de esta tanda. El usuario eligió subirlo a 40 KB con el criterio de siempre (lo medido más unos 3 KB de margen), porque el margen lo consumió crecimiento legítimo.
 
 **16/11/2026 — construcción lanzada.**
