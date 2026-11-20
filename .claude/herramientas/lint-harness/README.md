@@ -55,6 +55,12 @@ Existe porque pasó, y por dos caminos distintos, los dos encontrados el 01/08/2
 
 Los dos habían quedado en verde durante meses. El control de divergencia **no tenía ningún caso en el banco**, que es el modo de falla «nadie lo probó nunca» del conocimiento `Local-0013`; hoy tiene dos, uno por cada control.
 
+## La forma de mostrar lo que se va a guardar
+
+Cada habilidad que escribe en un registro de subsistema lleva, en su paso de aprobación, el mismo bloque de texto con la forma de mostrarle al usuario lo que se va a guardar —el tipo como título, una línea por columna, antes y ahora de lo que cambia—, delimitado por los comentarios `<!-- forma-de-mostrar-lo-que-se-guarda: inicio -->` y `<!-- forma-de-mostrar-lo-que-se-guarda: fin -->`. Va escrito entero en cada una, no como remisión a la Preferencia: la remisión obliga a ir a buscar la forma a otro lado, y ese paso es el que se saltea.
+
+El control compara las copias todas contra todas —los plugins son independientes y ninguna copia es la fuente— y marca las que difieren de la que comparte la mayoría; con empate, marca todas. La sangría de la marca de inicio no cuenta, para que el bloque pueda ir adentro de un paso numerado. Aparte marca las habilidades de la lista `HABILIDADES_CON_FORMA` que no traen el bloque, o lo traen mal delimitado: una habilidad a la que le borraron el bloque entero no deja copia que comparar, y solo la lista la ve. Una habilidad de registro nueva se suma a esa lista.
+
 ## La marca de orden de bytes (U+FEFF)
 
 Un mismo carácter invisible, dos defectos según dónde caiga, y el lint los distingue en el mensaje:

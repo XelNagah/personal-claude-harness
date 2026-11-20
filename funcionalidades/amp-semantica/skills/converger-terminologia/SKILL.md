@@ -67,14 +67,53 @@ Con un alcance acotado, las autoexclusiones del paso 3 siguen valiendo, pero lo 
    porque una entrada del glosario tiene que seguir nombrando **una** cosa cuando ya nadie recuerda
    de qué se hablaba al escribirla.
 
-6. **Aplicar solo lo ratificado:** actualizar los registros; reescribir el texto plano de los reemplazos aprobados; dejar el grupo de código como lista informativa para refactors deliberados. Las filas de los dos registros llevan `Código` adelante: `Local-NNNN`, **el mayor de ese Índice más uno** —nunca la cantidad de filas más uno, que repetiría un código ya usado si alguna vez se retiró una entrada—, y un código retirado deja un hueco que no se reusa. En el glosario, `Nombre` es el concepto y `Descripción` su definición; en Terminología Farlopa, `Nombre` es el término y `Descripción` es el **Significado Farlopa**, el significado que se veta.
-7. **Cerrar con el lint** desde la raíz del repo:
+6. **Mostrar lo que se va a asentar.** La tabla de convergencia pide la decisión; antes de escribir, cada fila que entra o cambia en un registro —un concepto, un alias, un veto, un Nombre reformulado— se muestra con la forma de abajo y se espera el visto bueno. Acá los tipos son `FILA DEL GLOSARIO` y `FILA DE TERMINOLOGÍA FARLOPA`; sumar un alias o reformular un Nombre es una fila modificada.
+
+<!-- forma-de-mostrar-lo-que-se-guarda: inicio -->
+**Cómo se muestra lo que se va a guardar.** Antes de escribir, mostrarle al usuario lo que va a quedar escrito, con esta forma, y esperar su visto bueno. Un «sí» a «¿lo registro?» aprueba la acción, no un texto que el usuario no vio.
+
+- **Lo primero, en una línea sola, es qué cosa se va a guardar**, como título en mayúsculas y negrita: `## **<TIPO> — NUEVA**` o `## **<TIPO> — MODIFICADA**`. El tipo dice la forma y de qué es: `FILA DE HERRAMIENTA`, `PÁGINA DE CONOCIMIENTO`, `PÁGINA DE DETALLE DE DECISIÓN`. Debajo, en qué archivo va a quedar. Nunca «la página», «la fila» o «el texto» a secas.
+- **Fila nueva:** una línea por columna, con el nombre de la columna en negrita y la celda textual. Nunca la fila cruda `| … | … |`.
+- **Fila modificada:** solo las columnas que cambian, cada una con su texto de antes y el de ahora —una celda larga va entera en los dos—; después se nombran las columnas que no cambian.
+- **Página** (de conocimiento, de un plan, el detalle de una decisión): primero los datos del frontmatter, si los tiene, como lista igual que una fila nueva; después la lista de títulos de sección; después cada sección bajo su título, completa y renderizada, no dentro de un bloque de código. **Página modificada:** se nombran las secciones sin cambios y se muestran antes y ahora de las que cambian.
+- Si se guardan varias cosas juntas —una fila y su página—, cada una lleva su propio título.
+
+> ## **FILA DE HERRAMIENTA — NUEVA**
+> Va a quedar en `.claude/herramientas/INDICE-LOCAL.md`.
+>
+> - **Código:** Local-0013
+> - **Nombre:** …
+> - **Descripción:** …
+
+> ## **FILA DE DECISIÓN — MODIFICADA**
+> Va a quedar en `.claude/decisiones/INDICE.md`.
+>
+> - **Estado:** antes `vigente` · ahora `reemplazada por Local-0043`
+> - Sin cambios: Código, Nombre, Descripción, Fecha, Detalle.
+
+> ## **PÁGINA DE CONOCIMIENTO — NUEVA**
+> Va a quedar en `.claude/conocimiento/buscar-con-acentos.md`.
+>
+> **Datos de la página:**
+> - **caduca:** no
+>
+> **Secciones:**
+> 1. Qué pasa
+> 2. Por qué
+> 3. Cómo evitarlo
+>
+> **1. Qué pasa**
+> …
+<!-- forma-de-mostrar-lo-que-se-guarda: fin -->
+
+7. **Aplicar solo lo ratificado**, tal como se mostró: actualizar los registros; reescribir el texto plano de los reemplazos aprobados; dejar el grupo de código como lista informativa para refactors deliberados. Las filas de los dos registros llevan `Código` adelante: `Local-NNNN`, **el mayor de ese Índice más uno** —nunca la cantidad de filas más uno, que repetiría un código ya usado si alguna vez se retiró una entrada—, y un código retirado deja un hueco que no se reusa. En el glosario, `Nombre` es el concepto y `Descripción` su definición; en Terminología Farlopa, `Nombre` es el término y `Descripción` es el **Significado Farlopa**, el significado que se veta.
+8. **Cerrar con el lint** desde la raíz del repo:
 
    ```bash
    node .claude/semantica/lint-semantica/lint-semantica.js
    ```
 
-8. **Reportar**: el alcance sobre el que se corrió y **qué quedó afuera**, qué se ratificó/vetó/asentó, las filas que se propuso reformular con su conteo, cuánto texto plano se reescribió, y el grupo de código pendiente.
+9. **Reportar**: el alcance sobre el que se corrió y **qué quedó afuera**, qué se ratificó/vetó/asentó, las filas que se propuso reformular con su conteo, cuánto texto plano se reescribió, y el grupo de código pendiente.
 
 ## Cuándo dispararla
 

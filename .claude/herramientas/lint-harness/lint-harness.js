@@ -332,6 +332,93 @@ for (const frag of FRAGMENTOS) {
   if (n < MUESTRAS_MINIMAS) fragmentosSinMuestras.push(`"${frag.nombre}": ${n} muestra(s) — el ancla no matchea el codigo actual, o quedo un solo consumidor: reapuntar el patron o retirar el fragmento`);
 }
 
+// -- [4c] la forma de mostrar lo que se va a guardar, copiada en cada habilidad de registro ----
+// Cada habilidad que escribe en un registro de subsistema lleva, en su paso de aprobacion, el MISMO
+// bloque de texto que dice como mostrarle al usuario lo que se va a guardar: el tipo como titulo,
+// una linea por columna, antes y ahora de lo que cambia. Va escrito entero en cada una y no como
+// remision a la Preferencia: la remision obliga a ir a buscar la forma a otro lado, y ese paso es el
+// que se saltea. El costo es el dato en quince lugares, y este control es el que los compara.
+//
+// Los plugins son independientes entre si, asi que no hay una copia de la que las demas lean: se
+// comparan todas contra todas y la referencia es la que comparte la mayoria. Con empate no hay
+// referencia y se marcan todas — decidir cual es la buena es del que edita, no del control.
+//
+// Dos huecos que la comparacion sola no ve: la habilidad a la que le borraron el bloque entero (no
+// queda copia que comparar) y la que nunca lo tuvo. Por eso la lista HABILIDADES_CON_FORMA: es la
+// que dice cuales DEBEN traerlo. Una habilidad de registro nueva se suma aca y a su SKILL.md.
+const FORMA_INICIO = '<!-- forma-de-mostrar-lo-que-se-guarda: inicio -->';
+const FORMA_FIN = '<!-- forma-de-mostrar-lo-que-se-guarda: fin -->';
+const HABILIDADES_CON_FORMA = [
+  'amp-comunicacion/registrar-agente',
+  'amp-conducta/registrar-regla',
+  'amp-conocimiento/buscar-conocimiento',
+  'amp-conocimiento/registrar-conocimiento',
+  'amp-decisiones/registrar-decision',
+  'amp-herramientas/registrar-herramienta',
+  'amp-planes/analizar-plan',
+  'amp-planes/cerrar-plan',
+  'amp-planes/crear-plan',
+  'amp-planes/descartar-plan',
+  'amp-preferencias/adoptar-recomendadas',
+  'amp-preferencias/registrar-preferencia',
+  'amp-semantica/converger-terminologia',
+  'amp-subsistemas/agregar-subsistema',
+  'amp-subsistemas/reubicar-aprendizaje',
+];
+const formaDivergente = [], formaFaltante = [];
+// Extrae el bloque de un SKILL.md. La sangria de la marca de inicio se le quita a cada linea: el
+// bloque puede ir adentro de un paso numerado sin dejar de ser la misma copia.
+function bloqueDeForma(txt) {
+  const ls = txt.replace(/\r\n/g, '\n').split('\n');
+  const inicios = ls.map((l, i) => (l.trim() === FORMA_INICIO ? i : -1)).filter(i => i !== -1);
+  if (!inicios.length) return { error: 'no trae el bloque' };
+  if (inicios.length > 1) return { error: `trae ${inicios.length} marcas de inicio` };
+  const i = inicios[0];
+  const j = ls.findIndex((l, k) => k > i && l.trim() === FORMA_FIN);
+  if (j === -1) return { error: 'tiene la marca de inicio sin la de fin' };
+  const sangria = /^\s*/.exec(ls[i])[0];
+  const cuerpo = ls.slice(i + 1, j).map(l => (l.startsWith(sangria) ? l.slice(sangria.length) : l).replace(/\s+$/, ''));
+  return { cuerpo };
+}
+const copiasForma = []; // { rel, cuerpo, hash }
+const habilidadesListadas = new Set(HABILIDADES_CON_FORMA);
+for (const f of enDisco) {
+  const skillsDir = path.join(funcDir, f, 'skills');
+  if (!fs.existsSync(skillsDir)) continue;
+  for (const s of fs.readdirSync(skillsDir)) {
+    const skillMd = path.join(skillsDir, s, 'SKILL.md');
+    if (!fs.existsSync(skillMd)) continue;
+    const clave = `${f}/${s}`;
+    const txt = fs.readFileSync(skillMd, 'utf8');
+    const rel = path.relative(repo, skillMd).replace(/\\/g, '/');
+    // Una habilidad que no esta en la lista y no tiene ninguna marca no es asunto de este control.
+    if (!habilidadesListadas.has(clave) && !txt.includes(FORMA_INICIO) && !txt.includes(FORMA_FIN)) continue;
+    const r = bloqueDeForma(txt);
+    if (r.error) { formaFaltante.push(`${rel}  — ${r.error}`); continue; }
+    copiasForma.push({ rel, cuerpo: r.cuerpo, hash: crypto.createHash('sha1').update(r.cuerpo.join('\n')).digest('hex').slice(0, 10) });
+  }
+}
+for (const clave of HABILIDADES_CON_FORMA) {
+  const [f, s] = clave.split('/');
+  if (!fs.existsSync(path.join(funcDir, f, 'skills', s, 'SKILL.md'))) formaFaltante.push(`${clave}  — esta en HABILIDADES_CON_FORMA y no existe: sacarla de la lista o reponer la habilidad`);
+}
+if (copiasForma.length > 1) {
+  const porHash = new Map();
+  for (const c of copiasForma) porHash.set(c.hash, [...(porHash.get(c.hash) || []), c]);
+  const grupos = [...porHash.values()].sort((a, b) => b.length - a.length);
+  if (grupos.length > 1) {
+    const empate = grupos[0].length === grupos[1].length;
+    const ref = grupos[0][0];
+    for (const g of (empate ? grupos : grupos.slice(1))) {
+      for (const c of g) {
+        if (empate) { formaDivergente.push(`${c.rel} (${c.hash})  — sin mayoria: ${grupos.length} versiones distintas en ${copiasForma.length} copias`); continue; }
+        let k = 0; while (k < Math.max(c.cuerpo.length, ref.cuerpo.length) && c.cuerpo[k] === ref.cuerpo[k]) k++;
+        formaDivergente.push(`${c.rel} (${c.hash})  — difiere de la que comparten ${grupos[0].length} de ${copiasForma.length} copias desde la linea ${k + 1} del bloque`);
+      }
+    }
+  }
+}
+
 // -- [4b] el Agente Multiproposito que viaja vs el instalado en este repo ------
 // Los Componentes de Subsistema viajan como ARCHIVOS, en la carpeta `base/` de la skill de
 // instalacion, con el mismo arbol que ocupan en el destino. Este control compara ese arbol
@@ -816,6 +903,8 @@ const secciones = [
   ['CONTENIDO DE PLUGIN CAMBIADO SIN SUBIR SU VERSION', versionSinSubir],
   ['FRAGMENTOS DE CODIGO DIVERGENTES ENTRE LINTS', divergentes],
   [`FRAGMENTOS VIGILADOS CON MENOS DE ${MUESTRAS_MINIMAS} MUESTRAS (no controlan nada)`, fragmentosSinMuestras],
+  ['FORMA DE MOSTRAR LO QUE SE GUARDA: COPIAS QUE DIVERGEN ENTRE HABILIDADES', formaDivergente],
+  ['FORMA DE MOSTRAR LO QUE SE GUARDA: HABILIDADES QUE NO LA TRAEN', formaFaltante],
   ['LO QUE VIAJA DIFIERE DE LO INSTALADO EN .claude/', viajaDistinto],
   ['VIAJA UN COMPONENTE QUE NO EXISTE EN .claude/', viajaSinInstalar],
   ['INFRA BASE EN .claude/ QUE NO VIAJA', sinViajar],

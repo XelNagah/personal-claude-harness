@@ -317,6 +317,32 @@ caso('un subagente cuyo name no coincide con su archivo', 'SUBAGENTES CON FRONTM
   () => escribir(SUBAGENTE, leer(SUBAGENTE).replace(/^name: .*$/m, 'name: buscador-de-terminologias')),
   'no coincide con el archivo');
 
+// La forma de mostrar lo que se va a guardar viaja copiada en quince habilidades de registro. Tres
+// defectos, uno por caso: una copia que diverge del resto, una habilidad a la que le borraron el
+// bloque entero —no queda copia que comparar, asi que solo la lista de las que deben traerlo lo ve—,
+// y un bloque abierto sin su marca de fin, que se leeria hasta el final del archivo.
+const SECCION_FORMA_DIV = 'FORMA DE MOSTRAR LO QUE SE GUARDA: COPIAS QUE DIVERGEN ENTRE HABILIDADES';
+const SECCION_FORMA_FALTA = 'FORMA DE MOSTRAR LO QUE SE GUARDA: HABILIDADES QUE NO LA TRAEN';
+const FORMA_INICIO = '<!-- forma-de-mostrar-lo-que-se-guarda: inicio -->';
+const FORMA_FIN = '<!-- forma-de-mostrar-lo-que-se-guarda: fin -->';
+const SKILL_DECISION = 'funcionalidades/amp-decisiones/skills/registrar-decision/SKILL.md';
+const SKILL_AGENTE = 'funcionalidades/amp-comunicacion/skills/registrar-agente/SKILL.md';
+caso('una copia de la forma de mostrar diverge de las demás', SECCION_FORMA_DIV,
+  () => escribir(SKILL_DECISION, leer(SKILL_DECISION).replace('Nunca la fila cruda', 'Evitar la fila cruda')),
+  'registrar-decision');
+
+caso('una habilidad de registro perdió el bloque de la forma de mostrar', SECCION_FORMA_FALTA,
+  () => {
+    const t = leer(SKILL_AGENTE);
+    const i = t.indexOf(FORMA_INICIO), j = t.indexOf(FORMA_FIN) + FORMA_FIN.length;
+    escribir(SKILL_AGENTE, t.slice(0, i) + t.slice(j));
+  },
+  'registrar-agente/SKILL.md  — no trae el bloque');
+
+caso('el bloque de la forma de mostrar quedó sin marca de fin', SECCION_FORMA_FALTA,
+  () => escribir(SKILL_DECISION, leer(SKILL_DECISION).replace(FORMA_FIN, '')),
+  'sin la de fin');
+
 console.log('\n== CASOS MALOS: cada control se enciende ante su defecto ==');
 for (const c of casos) {
   armar();
@@ -370,6 +396,22 @@ escribir('funcionalidades/amp/README.md', leer('funcionalidades/amp/README.md') 
   const h = hallazgos(correr());
   const n = h['TERMINOLOGIA VETADA EN EL TEXTO QUE VIAJA (funcionalidades/)'] || 0;
   console.log(`${n === 0 ? 'OK  ' : 'FALLA'} citado entre comillas simples invertidas → ${n} hallazgos`);
+  if (n !== 0) malos++;
+}
+
+// -- CASO BUENO fino: la forma de mostrar sangrada adentro de un paso sigue siendo la misma copia --
+// El bloque puede ir adentro de un paso numerado. Si la sangria contara como diferencia, la primera
+// habilidad que lo anidara quedaria marcada sin haber cambiado una palabra.
+console.log('\n== CASO BUENO: la forma de mostrar sangrada adentro de un paso no diverge ==');
+armar();
+{
+  const t = leer(SKILL_DECISION);
+  const i = t.indexOf(FORMA_INICIO), j = t.indexOf(FORMA_FIN) + FORMA_FIN.length;
+  const sangrado = t.slice(i, j).split('\n').map(l => (l ? '   ' + l : l)).join('\n');
+  escribir(SKILL_DECISION, t.slice(0, i) + sangrado + t.slice(j));
+  const h = hallazgos(correr());
+  const n = (h[SECCION_FORMA_DIV] || 0) + (h[SECCION_FORMA_FALTA] || 0);
+  console.log(`${n === 0 ? 'OK  ' : 'FALLA'} bloque sangrado tres espacios → ${n} hallazgos`);
   if (n !== 0) malos++;
 }
 
@@ -429,7 +471,7 @@ if (!gitOk) {
 }
 
 fs.rmSync(REPO_PRUEBA, { recursive: true, force: true });
-console.log(`\ncasos: ${casos.length + 3}${gitOk ? ' + 3 (versión↔contenido, repo git de banco)' : ''}`);
+console.log(`\ncasos: ${casos.length + 4}${gitOk ? ' + 3 (versión↔contenido, repo git de banco)' : ''}`);
 console.log(`no cubierto a propósito: [${IGNORAR}] — compara contra los plugins instalados en la máquina, que un repo de prueba no tiene.`);
 console.log(malos ? `${malos} FALLARON.` : 'TODO VERDE.');
 process.exit(malos ? 1 : 0);

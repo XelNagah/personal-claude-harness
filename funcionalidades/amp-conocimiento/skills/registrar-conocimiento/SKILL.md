@@ -48,7 +48,7 @@ Leer `.claude/conocimiento/MANIFIESTO.md`, **todos los Índices que declare** y 
 
 Nombre en kebab-case, estable, sin fecha.
 
-### 4. Escribir
+### 4. Redactar la página
 
 Markdown corriente, sin frontmatter. Lo que no puede faltar:
 
@@ -69,16 +69,61 @@ Reglas duras:
 - **Fechas absolutas**, nunca "hoy" ni "la semana pasada".
 - **Terminología del glosario** si el repo tiene. No acuñar términos acá.
 
-### 5. Indexar
+### 5. Redactar la fila del Índice
 
-Una entrada nueva se agrega al Índice declarado con `origen: agente-desplegado`, con `Código | Nombre | Descripción | Detalle`. Nunca agregarla al Índice del Agente Multipropósito. Solo el puntero; el índice nunca lleva contenido. Si se actualizó una página local existente, revisar que su fila siga siendo fiel.
+Una entrada nueva va al Índice declarado con `origen: agente-desplegado`, con `Código | Nombre | Descripción | Detalle`. Nunca agregarla al Índice del Agente Multipropósito. Solo el puntero; el índice nunca lleva contenido. Si se actualizó una página local existente, revisar que su fila siga siendo fiel.
 
 - **Código** — `Local-NNNN`, porque el conocimiento lo acumula el Agente Desplegado. El número es **el mayor del Índice local más uno**, nunca la cantidad de filas más uno: si alguna vez se retiró una página, contar filas repite un código ya usado. Un código retirado deja un hueco y no se reusa.
 - **Nombre** — **qué se sabe**: la afirmación que la página sostiene, escrita para entenderse leída sola y sin link. Nunca el tema, salvo que la página sea una referencia y no una afirmación —la mecánica de un sistema externo, un relevamiento—, y ahí el nombre dice de qué sistema se trata.
 - **Descripción** — qué se sabe, desarrollado: lo suficiente para decidir si vale abrirla.
 - **Detalle** — el link a la página, o a la carpeta con su propio índice.
 
-### 6. Cerrar con el lint
+### 6. Mostrar y esperar el visto bueno, antes de escribir nada
+
+La página y su fila se muestran juntas, cada una con su título. Acá los tipos son `PÁGINA DE CONOCIMIENTO` y `FILA DE CONOCIMIENTO`.
+
+<!-- forma-de-mostrar-lo-que-se-guarda: inicio -->
+**Cómo se muestra lo que se va a guardar.** Antes de escribir, mostrarle al usuario lo que va a quedar escrito, con esta forma, y esperar su visto bueno. Un «sí» a «¿lo registro?» aprueba la acción, no un texto que el usuario no vio.
+
+- **Lo primero, en una línea sola, es qué cosa se va a guardar**, como título en mayúsculas y negrita: `## **<TIPO> — NUEVA**` o `## **<TIPO> — MODIFICADA**`. El tipo dice la forma y de qué es: `FILA DE HERRAMIENTA`, `PÁGINA DE CONOCIMIENTO`, `PÁGINA DE DETALLE DE DECISIÓN`. Debajo, en qué archivo va a quedar. Nunca «la página», «la fila» o «el texto» a secas.
+- **Fila nueva:** una línea por columna, con el nombre de la columna en negrita y la celda textual. Nunca la fila cruda `| … | … |`.
+- **Fila modificada:** solo las columnas que cambian, cada una con su texto de antes y el de ahora —una celda larga va entera en los dos—; después se nombran las columnas que no cambian.
+- **Página** (de conocimiento, de un plan, el detalle de una decisión): primero los datos del frontmatter, si los tiene, como lista igual que una fila nueva; después la lista de títulos de sección; después cada sección bajo su título, completa y renderizada, no dentro de un bloque de código. **Página modificada:** se nombran las secciones sin cambios y se muestran antes y ahora de las que cambian.
+- Si se guardan varias cosas juntas —una fila y su página—, cada una lleva su propio título.
+
+> ## **FILA DE HERRAMIENTA — NUEVA**
+> Va a quedar en `.claude/herramientas/INDICE-LOCAL.md`.
+>
+> - **Código:** Local-0013
+> - **Nombre:** …
+> - **Descripción:** …
+
+> ## **FILA DE DECISIÓN — MODIFICADA**
+> Va a quedar en `.claude/decisiones/INDICE.md`.
+>
+> - **Estado:** antes `vigente` · ahora `reemplazada por Local-0043`
+> - Sin cambios: Código, Nombre, Descripción, Fecha, Detalle.
+
+> ## **PÁGINA DE CONOCIMIENTO — NUEVA**
+> Va a quedar en `.claude/conocimiento/buscar-con-acentos.md`.
+>
+> **Datos de la página:**
+> - **caduca:** no
+>
+> **Secciones:**
+> 1. Qué pasa
+> 2. Por qué
+> 3. Cómo evitarlo
+>
+> **1. Qué pasa**
+> …
+<!-- forma-de-mostrar-lo-que-se-guarda: fin -->
+
+### 7. Escribir e indexar
+
+Escribir la página y agregar la fila tal como se aprobaron, sin retocarlas después del visto bueno.
+
+### 8. Cerrar con el lint
 
 Desde la raíz del repo:
 
@@ -88,7 +133,7 @@ node .claude/conocimiento/lint-conocimiento/lint-conocimiento.js
 
 Chequea refs rotas, índice incompleto y huérfanos. Resolver los hallazgos antes de dar por cerrado.
 
-### 7. Reportar
+### 9. Reportar
 
 Página creada o actualizada (cuál y por qué), dónde quedó, y el resultado del lint. Si el hallazgo se derivó a otro subsistema en el paso 1, decir a cuál y por qué.
 
