@@ -49,7 +49,7 @@ Salieron de descartar un primer intento —una regla que al arrancar leyera cual
 
 ## Se cruza con
 
-- [Crecer el subsistema conducta](Crecer%20el%20subsistema%20conducta.md) — la entrega al arrancar sería una regla de conducta; el repartidor ya existe.
+- [Crecer el subsistema conducta](../ejecutados/Crecer%20el%20subsistema%20conducta.md) — la entrega al arrancar sería una regla de conducta; el repartidor ya existe.
 - [Subagentes como componente distribuible del AMP](Subagentes%20como%20componente%20distribuible%20del%20AMP.md) — la comunicación hacia adentro de una sesión es el mismo problema a menor distancia.
 - [Habilidad de ejecución de planes](Habilidad%20de%20ejecucion%20de%20planes.md) — un motor que ejecuta un plan de punta a punta necesita justamente recibir y dejar estado.
 - [Verificar que el aprendizaje quede asentado en los subsistemas](Verificar%20que%20el%20aprendizaje%20quede%20asentado%20en%20los%20subsistemas.md) — un mensaje aceptado tiene que terminar asentado en algún subsistema, no quedarse en la bandeja.

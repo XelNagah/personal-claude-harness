@@ -1,4 +1,4 @@
-**Estado: Nuevo · Creado 26-08-06.**
+**Estado: Ejecutado · Creado 26-08-06 · Cerrado 26-11-18.**
 
 # Barrer «nivelar» y reemplazarlo por «actualizar»
 
@@ -56,7 +56,7 @@ Con 432 apariciones vivas, `bloquea` haría que editar cualquiera de esos 137 ar
 4. ~~**Verificar**~~ — hecho: 20 bancos en verde, 11 chequeos del control de cierre en verde salvo los tres avisos de «falta publicar».
 5. **Decidir** si Local-0042 pasa a `bloquea`. Ahora que el texto vivo está barrido, la razón para haberla puesto en `avisa` desapareció.
 
-## Ejecutado el 06/08/2026
+## Notas de implementación
 
 **360 apariciones barridas en 124 archivos**, con un script de reemplazo morfológico de once formas, largo a corto para que `nivelar` no se coma a `nivelarlos`. Quedó cero en el texto vivo: lo único que sobrevive es cita legítima —la fila del veto y este plan, que hablan *sobre* el término—.
 
@@ -71,3 +71,7 @@ El barrido pudo ser mecánico por un dato que se midió antes de tocar nada: **n
 **Dos planes vivos tenían la palabra en el título.** El Local-0092 pasó a `Garantizar que actualizar un Agente Desplegado no rompa nada` y su archivo se renombró con `git mv`. Este plan **conserva** la palabra en el título y en el nombre de archivo: es la cita de lo que barre.
 
 **Origen:** se desprende del plan Local-0092 (Garantizar que actualizar un Agente Desplegado no rompa nada), en cuya sesión salió a la luz al revisar la terminología de una decisión.
+
+### Cierre (18/11/2026)
+
+El paso 5 se resolvió: la fila Local-0042 pasó a `bloquea`, con el visto bueno del usuario. Antes de cerrar se verificó que fuera de este plan, de `PLANES.md` y del registro de vetados no queda ninguna aparición. El «falta publicar» del paso 3 quedó viejo: esas versiones salieron hace tiempo y los plugins van por la 0.76.0.

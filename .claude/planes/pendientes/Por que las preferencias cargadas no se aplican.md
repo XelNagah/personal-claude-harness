@@ -58,5 +58,5 @@ Corregida la consulta con contexto, comparación y recomendación, el usuario ra
 
 - [Revisar el modo de preguntar de amp planificar](Revisar%20el%20modo%20de%20preguntar%20de%20amp%20planificar.md) — la causa conocida de Base-0002. **Independiente:** su arreglo es editar un texto y subir la versión, y no debería esperar a esta investigación.
 - [Que el harness tenga efecto conductual](Que%20el%20harness%20tenga%20efecto%20conductual.md) — el plan madre del que este es un caso particular: aquel mide el incumplimiento en la demarcación, este en la forma de comunicar.
-- [Crecer el subsistema conducta](Crecer%20el%20subsistema%20conducta.md) — si la salida es un momento nuevo, se implementa ahí.
+- [Crecer el subsistema conducta](../ejecutados/Crecer%20el%20subsistema%20conducta.md) — si la salida es un momento nuevo, se implementa ahí.
 - [Controlar terminologia y preferencias en commits](Controlar%20terminologia%20y%20preferencias%20en%20commits.md) — el mismo eje, acotado a un momento que sí existe.

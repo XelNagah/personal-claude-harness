@@ -60,7 +60,7 @@ Deliberadamente chico, para probar la mecánica antes de decidir nada de lo de a
 
 - [Buzones de comunicación entre Agentes](Buzones%20de%20comunicacion%20entre%20Agentes.md) — mismo problema a la distancia "entre sesiones". Ese plan aporta las 5 condiciones que cualquier entrega de handoff tiene que cumplir; este aporta la mecánica de terminar y lanzar. Conviene que el buzón no se diseñe sin mirar esta Herramienta ni al revés.
 - [Control de desfase entre el harness en disco y el plugin cargado](Control%20de%20desfase%20entre%20el%20harness%20en%20disco%20y%20el%20plugin%20cargado.md) — ese plan detecta que hay que reiniciar; este es el que reiniciaría. `actualizar-plugins` ya deja la frase colgada.
-- [Crecer el subsistema conducta](Crecer%20el%20subsistema%20conducta.md) — si la entrega del handoff se hace en el momento `al arrancar la sesión`, es una regla de conducta y el repartidor ya existe.
+- [Crecer el subsistema conducta](../ejecutados/Crecer%20el%20subsistema%20conducta.md) — si la entrega del handoff se hace en el momento `al arrancar la sesión`, es una regla de conducta y el repartidor ya existe.
 - [Habilidad de ejecución de planes](Habilidad%20de%20ejecucion%20de%20planes.md) — un motor que ejecuta un plan de punta a punta necesita cortar y retomar sin perder el hilo; esta Herramienta sería su forma de reiniciarse.
 - [Título de sesión y momentos de disparo de la Pantalla de bienvenida](Titulo%20de%20sesion%20y%20momentos%20de%20disparo%20de%20la%20Pantalla%20de%20bienvenida.md) — con sesiones que se reinician solas, distinguir cuál ventana es cuál pesa más.
 

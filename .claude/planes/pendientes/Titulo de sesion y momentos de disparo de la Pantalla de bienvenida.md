@@ -25,4 +25,4 @@ A resolver: qué subconjunto de `source` dispara, y **dónde se declara** — ho
 ## Se cruza con
 
 - [Identidad del Agente — Título y Propósito persistidos](Identidad%20del%20Agente%20-%20Titulo%20y%20Proposito%20persistidos.md) — dueño del dato del Título; el punto 1 lo consume, no lo define.
-- [Crecer el subsistema conducta](Crecer%20el%20subsistema%20conducta.md) — el punto 2 es una condición sobre un momento existente; si ese plan reabre `MOMENTOS.md`, conviene resolver los dos juntos.
+- [Crecer el subsistema conducta](../ejecutados/Crecer%20el%20subsistema%20conducta.md) — el punto 2 es una condición sobre un momento existente; si ese plan reabre `MOMENTOS.md`, conviene resolver los dos juntos.

@@ -1,6 +1,6 @@
 # Skill `/contrastar` — contraste contra la sabiduría del repo
 
-**Estado: Nuevo · Creado 26-07-21.** Pedido de Javier: un skill `/contrastar` similar a `/planificar` pero que, **en vez de producir un plan, contraste lo solicitado** contra el conocimiento, el glosario y las decisiones. Si del contraste aparecen elementos nuevos válidos, que los **incorpore al subsistema apropiado**.
+**Estado: Ejecutado · Creado 26-07-21 · Cerrado 26-11-18.** Pedido de Javier: un skill `/contrastar` similar a `/planificar` pero que, **en vez de producir un plan, contraste lo solicitado** contra el conocimiento, el glosario y las decisiones. Si del contraste aparecen elementos nuevos válidos, que los **incorpore al subsistema apropiado**.
 
 ## Qué se pide
 
@@ -43,3 +43,14 @@ Anthropic, *"Building verification loops in Claude Code with skills"* (2026-07-2
 ## Depende de
 
 Diseñarla con `planificar` antes de construir. Coordinar con los planes de capa semántica (no duplicar el mecanismo).
+
+## Notas de implementación
+
+Se construyó como la habilidad transversal `amp:contrastar` (`funcionalidades/amp/skills/contrastar/SKILL.md`), que entró con el commit `32f0459` (02/09/2026) junto con el Contraste automático. Delega la lectura en el subagente `contrastador`.
+
+Diferencias con lo planificado:
+
+- **Contrasta contra más registros que los tres pedidos:** glosario, relaciones vetadas, decisiones y planes vivos.
+- **No escribe en ningún registro** (`SKILL.md:70`): trae las filas que el material toca y deja el veredicto y la incorporación al agente y al usuario, con las habilidades de registro de cada subsistema. El plan pedía que incorporara lo nuevo; eso no se construyó, y no hay una decisión registrada que lo descarte: es el diseño de la habilidad.
+- **La dirección hacia atrás** (contrastar lo ejecutado al cerrar una tarea) no entró en esta habilidad. La cubre en parte el aviso al cerrar una tarea, del plan Local-0111 (Avisar al cerrar una tarea que hay algo para asentar), y lo que falte sigue en el plan Local-0039 (Verificar que el aprendizaje quede asentado en los subsistemas).
+- La pregunta de si era un modo de `planificar` se resolvió por la habilidad aparte: `planificar` la reutiliza delegando en el mismo subagente.

@@ -1,6 +1,6 @@
 # Crecer el subsistema conducta
 
-**Estado: Diferido · Creado 26-07-23.** Origen: [Construir el subsistema conducta](../ejecutados/Construir%20el%20subsistema%20conducta.md), cerrado por path (a). Ese plan dejó el subsistema `conducta` **construido y funcionando** (registro + momentos + 3 reglas activas + hook repartidor + lint + MANIFIESTO, control 10/10, decisión 0021). Acá queda el **crecimiento**.
+**Estado: Ejecutado · Creado 26-07-23 · Cerrado 26-11-18.** Origen: [Construir el subsistema conducta](../ejecutados/Construir%20el%20subsistema%20conducta.md), cerrado por path (a). Ese plan dejó el subsistema `conducta` **construido y funcionando** (registro + momentos + 3 reglas activas + hook repartidor + lint + MANIFIESTO, control 10/10, decisión 0021). Acá queda el **crecimiento**.
 
 ## Por qué Diferido
 
@@ -31,3 +31,14 @@ Fuentes en el repo de mejora de uso:
 
 - **Plan madre** [Que el harness tenga efecto conductual](Que%20el%20harness%20tenga%20efecto%20conductual.md): la medición de acá es su frente C (verificar que el mecanismo cambie la conducta).
 - **Candidato** para la futura skill de ejecución de planes ([Habilidad de ejecucion de planes](Habilidad%20de%20ejecucion%20de%20planes.md)).
+
+## Notas de implementación
+
+Los cuatro frentes se resolvieron fuera de este plan, en otros:
+
+- **Repartidor del momento «al cerrar tarea»:** activo; lo construyó el plan Local-0111 (Avisar al cerrar una tarea que hay algo para asentar).
+- **Habilidades de gestión:** `registrar-regla` hace alta, modificación y baja de reglas.
+- **Empaquetado:** `amp-conducta` es uno de los nueve plugins de subsistema (Decisión Local-0029, Empaquetado en un plugin por subsistema).
+- **Medir el efecto conductual:** lo hace el plan Local-0129 (Los agentes saltean lo guardado cuando nada los lleva a consultarlo en el momento de actuar), que repite la medición el 02/12/2026.
+
+Al cerrarse, el subsistema tenía 15 reglas, contra las 3 con que se difirió.
